@@ -200,9 +200,10 @@ Widget _buildContainer(
   ShqlBindings shql,
 ) {
   return Container(
-    padding: Resolvers.edgeInsets(props['padding']),
-    margin: Resolvers.edgeInsets(props['margin']),
     color: Resolvers.color(props['color']),
+    width: (props['width'] as num?)?.toDouble(),
+    height: (props['height'] as num?)?.toDouble(),
+    padding: Resolvers.edgeInsets(props['padding']),
     child: child != null ? b(child, '$path.child') : null,
   );
 }
