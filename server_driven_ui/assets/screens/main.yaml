@@ -1,0 +1,68 @@
+screen:
+  type: Scaffold
+  props:
+    appBar:
+      type: AppBar
+      props:
+        title:
+          type: Text
+          props:
+            data: "YAML + SHQL™"
+    body:
+      type: Column
+      children:
+        - type: TextField
+          props:
+            decoration:
+              hintText: "Enter some text..."
+            onChanged: "shql: _current_text := value"
+            value: "shql: _current_text"
+        - type: Text
+          props:
+            data: "shql: 'You entered: ' + _current_text"
+        - type: ElevatedButton
+          props:
+            onPressed: "shql: NAVIGATE('stats')"
+            child:
+              type: Text
+              props:
+                data: "Go to Stats"
+        - type: ElevatedButton
+          props:
+            onPressed: "shql: NAVIGATE('stack_example')"
+            child:
+              type: Text
+              props:
+                data: "Go to Stack Example"
+        - type: ElevatedButton
+          props:
+            onPressed: "shql: NAVIGATE('inputs_example')"
+            child:
+              type: Text
+              props:
+                data: "Go to Inputs Example"
+        - type: ElevatedButton
+          props:
+            onPressed: "shql: NAVIGATE('posts')"
+            child:
+              type: Text
+              props:
+                data: "Fetch Posts"
+        - type: ElevatedButton
+          props:
+            onPressed: "shql: NAVIGATE('theme_demo')"
+            child:
+              type: Text
+              props:
+                data: "🎨 Theme Demo (Pure SHQL™)"
+        - type: ElevatedButton
+          props:
+            onPressed: "shql: NAVIGATE('advanced_features_demo')"
+            child:
+              type: Text
+              props:
+                data: "🚀 Advanced Features Demo"
+        - type: Expanded
+          child:
+            type: ListView
+            children: "shql: GENERATE_WIDGETS(20)"

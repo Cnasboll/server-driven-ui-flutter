@@ -1,0 +1,274 @@
+# HeroDex 3000 - Home Screen
+screen:
+  type: Scaffold
+  props:
+    appBar:
+      type: AppBar
+      props:
+        title:
+          type: Text
+          props:
+            data: "HeroDex 3000"
+            style:
+              fontFamily: "Orbitron"
+              fontWeight: "bold"
+        actions:
+          - type: IconButton
+            props:
+              icon: "shql: IF _is_dark_mode THEN 'light_mode' ELSE 'dark_mode'"
+              onPressed: "shql: TOGGLE_DARK_MODE()"
+
+    body:
+      type: SingleChildScrollView
+      props:
+        padding: 16
+        child:
+          type: Column
+          props:
+            crossAxisAlignment: "stretch"
+            children:
+              # War Status Banner
+              - type: Card
+                props:
+                  color: "0xFF1A237E"
+                  child:
+                    type: Padding
+                    props:
+                      padding: 16
+                      child:
+                        type: Column
+                        props:
+                          crossAxisAlignment: "start"
+                          children:
+                            - type: Row
+                              children:
+                                - type: Icon
+                                  props:
+                                    icon: "military_tech"
+                                    color: "0xFFFFD700"
+                                    size: 32
+                                - type: SizedBox
+                                  props:
+                                    width: 12
+                                - type: Text
+                                  props:
+                                    data: "INVASION STATUS"
+                                    style:
+                                      color: "0xFFFFFFFF"
+                                      fontWeight: "bold"
+                                      fontSize: 18
+                            - type: SizedBox
+                              props:
+                                height: 8
+                            - type: Observer
+                              props:
+                                query: "_total_heroes"
+                                builder:
+                                  type: Text
+                                  props:
+                                    data: "shql: GET_WAR_STATUS()"
+                                    style:
+                                      color: "0xFFB3E5FC"
+                                      fontSize: 14
+
+              - type: SizedBox
+                props:
+                  height: 16
+
+              # Weather Card
+              - type: Observer
+                props:
+                  query: "_weather_temp, _weather_description"
+                  builder:
+                    type: Card
+                    props:
+                      child:
+                        type: Padding
+                        props:
+                          padding: 16
+                          child:
+                            type: Row
+                            props:
+                              children:
+                                - type: Icon
+                                  props:
+                                    icon: "shql: _weather_icon"
+                                    color: "0xFF42A5F5"
+                                    size: 40
+                                - type: SizedBox
+                                  props:
+                                    width: 16
+                                - type: Column
+                                  props:
+                                    crossAxisAlignment: "start"
+                                    children:
+                                      - type: Text
+                                        props:
+                                          data: "shql: IF _weather_temp <> null THEN STRING(ROUND(_weather_temp)) + '°C' ELSE 'Loading...'"
+                                          style:
+                                            fontSize: 24
+                                            fontWeight: "bold"
+                                      - type: Text
+                                        props:
+                                          data: "shql: _weather_description"
+                                          style:
+                                            color: "0xFF757575"
+                                      - type: Text
+                                        props:
+                                          data: "shql: 'Wind: ' + STRING(ROUND(_weather_wind)) + ' km/h'"
+                                          style:
+                                            fontSize: 12
+                                            color: "0xFF9E9E9E"
+
+              - type: SizedBox
+                props:
+                  height: 12
+
+              # Filter list (scrollable, tapping navigates to heroes page)
+              - type: FilterEditor
+                props:
+                  mode: "apply"
+                  onSelect: "shql: GO_TO('heroes')"
+
+              - type: SizedBox
+                props:
+                  height: 12
+
+              # Total Fighting Power Card (animated)
+              - type: Card
+                props:
+                  child:
+                    type: Padding
+                    props:
+                      padding: 16
+                      child:
+                        type: Column
+                        props:
+                          crossAxisAlignment: "start"
+                          children:
+                            - type: Row
+                              children:
+                                - type: Icon
+                                  props:
+                                    icon: "flash_on"
+                                    color: "0xFFFF9800"
+                                    size: 28
+                                - type: SizedBox
+                                  props:
+                                    width: 8
+                                - type: Text
+                                  props:
+                                    data: "Total Fighting Power"
+                                    style:
+                                      fontSize: 16
+                                      fontWeight: "bold"
+                            - type: SizedBox
+                              props:
+                                height: 12
+                            - type: Observer
+                              props:
+                                query: "_total_fighting_power"
+                                builder:
+                                  type: AnimatedNumber
+                                  props:
+                                    value: "shql: _total_fighting_power"
+                                    fontSize: 36
+                                    fontWeight: "bold"
+                                    color: "0xFFFF9800"
+
+              - type: SizedBox
+                props:
+                  height: 12
+
+              # Battle Map Card
+              - type: Observer
+                props:
+                  query: "_heroes, _user_latitude, _user_longitude"
+                  builder:
+                    type: Card
+                    props:
+                      child:
+                        type: Padding
+                        props:
+                          padding: 8
+                          child:
+                            type: Column
+                            props:
+                              crossAxisAlignment: "start"
+                              children:
+                                - type: Padding
+                                  props:
+                                    padding: 8
+                                    child:
+                                      type: Row
+                                      children:
+                                        - type: Icon
+                                          props:
+                                            icon: "map"
+                                            color: "0xFF4CAF50"
+                                            size: 24
+                                        - type: SizedBox
+                                          props:
+                                            width: 8
+                                        - type: Text
+                                          props:
+                                            data: "Battle Map"
+                                            style:
+                                              fontSize: 16
+                                              fontWeight: "bold"
+                                - type: BattleMap
+                                  props:
+                                    latitude: "shql: _user_latitude"
+                                    longitude: "shql: _user_longitude"
+                                    zoom: 10
+                                    markers: "shql: GENERATE_BATTLE_LOCATIONS()"
+
+              - type: SizedBox
+                props:
+                  height: 12
+
+              # Database Info Card
+              - type: Card
+                props:
+                  child:
+                    type: Padding
+                    props:
+                      padding: 16
+                      child:
+                        type: Column
+                        props:
+                          crossAxisAlignment: "start"
+                          children:
+                            - type: Text
+                              props:
+                                data: "Database Status"
+                                style:
+                                  fontSize: 16
+                                  fontWeight: "bold"
+                            - type: SizedBox
+                              props:
+                                height: 8
+                            - type: Observer
+                              props:
+                                query: "_heroes"
+                                builder:
+                                  type: Text
+                                  props:
+                                    data: "shql: STRING(GET_HERO_COUNT()) + ' characters registered'"
+                                    style:
+                                      color: "0xFF757575"
+
+    bottomNavigationBar:
+      type: BottomNavigationBar
+      props:
+        currentIndex: 0
+        items:
+          - icon: "home"
+            label: "Home"
+          - icon: "cloud"
+            label: "Online"
+          - icon: "bookmark"
+            label: "Saved"
+          - icon: "settings"
+            label: "Settings"
+        onTap: "shql: TAB_NAV(0, value)"

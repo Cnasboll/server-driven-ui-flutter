@@ -1,0 +1,245 @@
+# HeroDex 3000 - Online Screen (Search & Reconcile)
+screen:
+  type: Scaffold
+  props:
+    appBar:
+      type: AppBar
+      props:
+        title:
+          type: Text
+          props:
+            data: "Online"
+            style:
+              fontFamily: "Orbitron"
+
+    body:
+      type: Column
+      props:
+        crossAxisAlignment: "stretch"
+        children:
+          # Search Input
+          - type: Padding
+            props:
+              padding: 16
+              child:
+                type: TextField
+                props:
+                  decoration:
+                    hintText: "Enter hero or villain name..."
+                    prefixIcon: "search"
+                    border: "outline"
+                  value: "shql: _search_query"
+                  onChanged: "shql: _search_query := value"
+                  onSubmitted: "shql: SEARCH_HEROES(value)"
+
+          # Search History
+          - type: Observer
+            props:
+              query: "_search_history"
+              builder:
+                type: Padding
+                props:
+                  padding:
+                    left: 16
+                    right: 16
+                    bottom: 8
+                  child:
+                    type: Wrap
+                    props:
+                      spacing: 8
+                      runSpacing: 4
+                      children: "shql: GENERATE_SEARCH_HISTORY()"
+
+          # Loading Indicator
+          - type: Observer
+            props:
+              query: "_is_loading"
+              builder:
+                type: "shql: IF _is_loading THEN 'LinearProgressIndicator' ELSE 'SizedBox'"
+                props:
+                  height: "shql: IF _is_loading THEN null ELSE 0"
+
+          # Reconcile progress (shown during reconciliation)
+          - type: Observer
+            props:
+              query: "_reconcile_active, _reconcile_current, _reconcile_status"
+              builder:
+                type: "shql: IF _reconcile_active THEN 'Padding' ELSE 'SizedBox'"
+                props:
+                  height: 0
+                  padding:
+                    left: 16
+                    right: 16
+                    bottom: 8
+                  child:
+                    type: Card
+                    props:
+                      child:
+                        type: Padding
+                        props:
+                          padding: 12
+                          child:
+                            type: Row
+                            props:
+                              children:
+                                - type: SizedBox
+                                  props:
+                                    width: 20
+                                    height: 20
+                                    child:
+                                      type: CircularProgressIndicator
+                                      props:
+                                        strokeWidth: 2
+                                - type: SizedBox
+                                  props:
+                                    width: 12
+                                - type: Expanded
+                                  child:
+                                    type: Column
+                                    props:
+                                      crossAxisAlignment: "start"
+                                      children:
+                                        - type: Text
+                                          props:
+                                            data: "shql: 'Reconciling: ' + _reconcile_current"
+                                            style:
+                                              fontWeight: "bold"
+                                              fontSize: 13
+                                        - type: Text
+                                          props:
+                                            data: "shql: _reconcile_status"
+                                            style:
+                                              fontSize: 12
+                                              color: "0xFF757575"
+                                - type: SizedBox
+                                  props:
+                                    width: 8
+                                - type: TextButton
+                                  props:
+                                    onPressed: "shql: ABORT_RECONCILE()"
+                                    child:
+                                      type: Text
+                                      props:
+                                        data: "Abort"
+                                        style:
+                                          color: "0xFFE53935"
+
+          # Search summary message (shown after dialog-based save flow)
+          - type: Observer
+            props:
+              query: "_search_summary"
+              builder:
+                type: "shql: IF LENGTH(_search_summary) > 0 THEN 'Padding' ELSE 'SizedBox'"
+                props:
+                  height: 0
+                  padding:
+                    left: 16
+                    right: 16
+                    bottom: 8
+                  child:
+                    type: Card
+                    props:
+                      child:
+                        type: Padding
+                        props:
+                          padding: 12
+                          child:
+                            type: Row
+                            props:
+                              children:
+                                - type: Icon
+                                  props:
+                                    icon: "info"
+                                    color: "0xFF1976D2"
+                                    size: 20
+                                - type: SizedBox
+                                  props:
+                                    width: 8
+                                - type: Expanded
+                                  child:
+                                    type: Text
+                                    props:
+                                      data: "shql: _search_summary"
+                                      style:
+                                        fontSize: 13
+
+          # Reconcile
+          - type: Padding
+            props:
+              padding:
+                left: 16
+                right: 16
+                bottom: 8
+              child:
+                type: OutlinedButton
+                props:
+                  onPressed: "shql: RECONCILE_HEROES()"
+                  child:
+                    type: Row
+                    props:
+                      mainAxisAlignment: "center"
+                      children:
+                        - type: Icon
+                          props:
+                            icon: "sync"
+                            size: 18
+                        - type: SizedBox
+                          props:
+                            width: 8
+                        - type: Text
+                          props:
+                            data: "Reconcile Saved Heroes"
+
+          # Reconcile log (live during reconciliation) or empty state
+          - type: Expanded
+            child:
+              type: Observer
+              props:
+                query: "_reconcile_log"
+                builder:
+                  type: "shql: IF LENGTH(_reconcile_log) > 0 THEN 'ListView' ELSE 'Center'"
+                  props:
+                    padding: 0
+                    children: "shql: _reconcile_log"
+                    child:
+                      type: Column
+                      props:
+                        mainAxisSize: "min"
+                        children:
+                          - type: Icon
+                            props:
+                              icon: "search"
+                              size: 64
+                              color: "0xFF9E9E9E"
+                          - type: SizedBox
+                            props:
+                              height: 16
+                          - type: Text
+                            props:
+                              data: "Search for heroes and villains"
+                              style:
+                                fontSize: 18
+                                color: "0xFF757575"
+                          - type: SizedBox
+                            props:
+                              height: 8
+                          - type: Text
+                            props:
+                              data: "Results will be shown one by one for review"
+                              style:
+                                color: "0xFF9E9E9E"
+
+    bottomNavigationBar:
+      type: BottomNavigationBar
+      props:
+        currentIndex: 1
+        items:
+          - icon: "home"
+            label: "Home"
+          - icon: "cloud"
+            label: "Online"
+          - icon: "bookmark"
+            label: "Saved"
+          - icon: "settings"
+            label: "Settings"
+        onTap: "shql: TAB_NAV(1, value)"

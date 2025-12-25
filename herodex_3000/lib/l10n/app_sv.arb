@@ -1,0 +1,10 @@
+{
+  "@@locale": "sv",
+  "appTitle": "HeroDex 3000",
+  "loadingMessage": "Laddar...",
+  "errorBuildingUi": "Fel vid byggnation av gränssnitt",
+  "noInternetConnection": "Ingen internetanslutning",
+  "backOnline": "Tillbaka online",
+  "locationUnavailable": "Plats ej tillgänglig",
+  "locationDenied": "Platstillstånd nekad"
+}

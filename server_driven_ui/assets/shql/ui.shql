@@ -1,0 +1,181 @@
+-- Initialize a global list to hold the counts for each item.
+_item_counts := [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+
+-- Data for a list element
+_WIDGET_TEXT(i) := BEGIN
+    RETURN 'Item ' + STRING(i + 1) + ': ' + STRING(_item_counts[i])
+END;
+
+-- This function is now only used to generate the initial cache.
+_GENERATE_WIDGET(i) := {
+    "type": "Container",
+    "props": {
+        "height": 50,
+        "color": '0xFF' + SUBSTRING(MD5('item' + STRING(i)), 0, 6),
+        "padding": { "left": 16, "right": 16 }
+    },
+    "child": {
+        "type": "Row",
+        "children": [
+            {
+                "type": "Text",
+                "props": {
+                    "data": _WIDGET_TEXT(i)
+                }
+            },
+            { "type": "Spacer" },
+            {
+                "type": "ElevatedButton",
+                "props": {
+                    "onPressed": "shql: INCREMENT_ITEM(" + STRING(i) + ")"
+                },
+                "child": {
+                    "type": "Text",
+                    "props": { "data": "+" }
+                }
+            }
+        ]
+    }
+};
+
+
+-- A global variable to store the rendered list of widgets.
+_widgets := [];
+
+GENERATE_WIDGETS(n) := BEGIN
+    IF LENGTH(_widgets) = 0 THEN
+        -- First-time generation:
+        FOR i := 1 TO n DO
+            _widgets := _widgets + [_GENERATE_WIDGET(i-1)];
+    RETURN _widgets;
+END;
+
+INCREMENT_ITEM(i) := BEGIN
+    _item_counts[i] := _item_counts[i] + 1;
+    _widgets[i]["child"]["children"][0]["props"]["data"] := _WIDGET_TEXT(i);
+END;
+
+_current_text := '';
+name := "";
+_telemetry_spam_enabled := LOAD_STATE('telemetry_spam_enabled', FALSE);
+_terms_accepted := LOAD_STATE('terms_accepted', FALSE);
+_posts := [];
+isDarkMode := LOAD_STATE('isDarkMode', FALSE);
+
+GENERATE_POST_CARDS() := BEGIN
+    result := [];
+    IF LENGTH(_posts) > 0 THEN
+        FOR i := 0 TO LENGTH(_posts) - 1 DO BEGIN
+            title := _posts[i]['title'];
+            body := _posts[i]['body'];
+            result := result + [{
+                "type": "Card",
+                "props": {
+                    "margin": 8,
+                    "child": {
+                        "type": "Padding",
+                        "props": {
+                            "padding": 16,
+                            "child": {
+                                "type": "Column",
+                                "props": {
+                                    "crossAxisAlignment": "start",
+                                    "children": [
+                                        {
+                                            "type": "Text",
+                                            "props": {
+                                                "data": title,
+                                                "style": { "fontWeight": "bold" }
+                                            }
+                                        },
+                                        {
+                                            "type": "SizedBox",
+                                            "props": { "height": 8 }
+                                        },
+                                        {
+                                            "type": "Text",
+                                            "props": {
+                                                "data": body
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                }
+            }];
+        END;
+    RETURN result;
+END;
+
+-- ============================================
+-- Navigation History Tracking
+-- ============================================
+-- Initialize global variable - will be loaded from state by first PUSH_ROUTE call
+navigation_stack := ['main'];
+
+PUSH_ROUTE(route) := BEGIN
+  -- Only push if it's not already the current route
+  IF LENGTH(navigation_stack) = 0 THEN
+    navigation_stack := [route]
+  ELSE BEGIN
+    current_route := navigation_stack[LENGTH(navigation_stack) - 1];
+    IF current_route != route THEN BEGIN
+      -- If route exists, truncate stack to that point; otherwise append
+      IF route IN navigation_stack THEN
+        navigation_stack := SLICE(navigation_stack, 0, INDEX_OF(navigation_stack, route))
+      ELSE
+        navigation_stack := navigation_stack + [route];
+    END;
+  END;
+  SET('navigation_stack', navigation_stack);
+  SAVE_STATE('navigation_stack', navigation_stack);
+  RETURN navigation_stack;
+END;
+
+POP_ROUTE() := BEGIN
+  IF LENGTH(navigation_stack) > 1 THEN BEGIN
+    navigation_stack := SLICE(navigation_stack, 0, LENGTH(navigation_stack) - 2);
+    SET('navigation_stack', navigation_stack);
+    SAVE_STATE('navigation_stack', navigation_stack);
+    RETURN navigation_stack[LENGTH(navigation_stack) - 1];
+  END ELSE
+    RETURN 'main';
+END;
+
+GO_BACK() := BEGIN
+  previous_route := POP_ROUTE();
+  NAVIGATE(previous_route);
+  RETURN previous_route;
+END;
+
+CAN_GO_BACK() := LENGTH(navigation_stack) > 1;
+
+GET_BREADCRUMB() := BEGIN
+  IF LENGTH(navigation_stack) = 0 THEN
+    RETURN 'main'
+  ELSE
+    RETURN STRING_JOIN(navigation_stack, ' > ')
+END;
+
+GET_CURRENT_ROUTE() := BEGIN
+  IF LENGTH(navigation_stack) > 0 THEN
+    RETURN navigation_stack[LENGTH(navigation_stack) - 1]
+  ELSE
+    RETURN 'main'
+END;
+
+-- ============================================
+-- Feature Flags System
+-- ============================================
+feature_new_ui := LOAD_STATE('feature_new_ui', FALSE);
+feature_dark_mode := LOAD_STATE('feature_dark_mode', TRUE);
+feature_logging := LOAD_STATE('feature_logging', TRUE);
+
+SET_FEATURE(feature_name, enabled) := BEGIN
+  SET(feature_name, enabled);
+  SAVE_STATE(feature_name, enabled);
+END;
+
+IS_FEATURE_ENABLED(feature_name) := LOAD_STATE(feature_name, FALSE);

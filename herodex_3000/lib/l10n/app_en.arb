@@ -1,0 +1,10 @@
+{
+  "@@locale": "en",
+  "appTitle": "HeroDex 3000",
+  "loadingMessage": "Loading...",
+  "errorBuildingUi": "Error building UI",
+  "noInternetConnection": "No internet connection",
+  "backOnline": "Back online",
+  "locationUnavailable": "Location unavailable",
+  "locationDenied": "Location permission denied"
+}

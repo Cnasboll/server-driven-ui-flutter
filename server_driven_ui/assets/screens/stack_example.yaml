@@ -1,0 +1,41 @@
+onLoad: "shql(targeted:true): PUSH_ROUTE('stack_example')"
+screen:
+  type: Scaffold
+  props:
+    appBar:
+      type: AppBar
+      props:
+        title:
+          type: Text
+          props:
+            data: "Stack Example"
+    body:
+      type: Stack
+      props:
+        alignment: "center"
+      children:
+        - type: Container
+          props:
+            width: 300
+            height: 300
+            color: "#FF0000"
+        - type: Positioned
+          props:
+            top: 20
+            left: 20
+            child:
+              type: Container
+              props:
+                width: 100
+                height: 100
+                color: "#00FF00"
+        - type: Text
+          props:
+            data: "I'm in the center!"
+        - type: ElevatedButton
+          props:
+            onPressed: "shql: GO_BACK()"
+            child:
+              type: Text
+              props:
+                data: "← Back"

@@ -1,0 +1,23 @@
+even() := BEGIN
+    for i := 0 to 1000 do
+        if i % 2 = 0 THEN PRINT("Even number: " + string(i));
+    PRINT("even() finished");
+END;
+
+odd() := BEGIN
+    for i := 0 to 1000 do
+        if i % 2 = 1 THEN PRINT("Odd number: " + string(i));
+    PRINT("odd() finished");        
+END;
+
+et := THREAD(even);
+ot := THREAD(odd);
+
+print("Joining et");
+join(et);
+print("Joined et");
+print("Joining ot");
+join(ot);
+print("Joined ot");
+
+PRINT("Finished");

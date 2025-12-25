@@ -1,0 +1,11 @@
+# HeroDex 3000 Router Configuration
+routes:
+  onboarding: screens/onboarding.yaml
+  home: screens/home.yaml
+  online: screens/online.yaml
+  heroes: screens/heroes.yaml
+  settings: screens/settings.yaml
+  hero_detail: screens/hero_detail.yaml
+
+# Initial route - SHQL™ will handle redirection based on onboarding status
+initial: "shql: IF _onboarding_completed THEN 'home' ELSE 'onboarding'"

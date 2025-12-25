@@ -1,0 +1,35 @@
+onLoad: "shql(targeted:true): BEGIN PUSH_ROUTE('posts'); SET('_posts', FETCH('https://jsonplaceholder.typicode.com/posts')); END"
+screen:
+  widget:
+    type: Scaffold
+    props:
+      appBar:
+        type: AppBar
+        props:
+          title:
+            type: Text
+            props:
+              data: "Fetched Posts"
+      body:
+        type: Column
+        children:
+          - type: Expanded
+            child:
+              type: Observer
+              props:
+                query: "_posts"
+                builder:
+                  type: "shql: IF LENGTH(_posts) = 0 THEN 'Center' ELSE 'ListView'"
+                  props:
+                    # Props for Center (loading state)
+                    child:
+                      type: CircularProgressIndicator
+                    # Props for ListView (data loaded state)
+                    children: "shql: GENERATE_POST_CARDS()"                                  
+          - type: ElevatedButton
+            props:
+              onPressed: "shql: GO_BACK()"
+              child:
+                type: Text
+                props:
+                  data: "← Back"

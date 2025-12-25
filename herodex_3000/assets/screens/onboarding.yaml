@@ -1,0 +1,313 @@
+# HeroDex 3000 - Onboarding Screen
+screen:
+  type: Scaffold
+  props:
+    body:
+      type: SafeArea
+      props:
+        child:
+          type: SingleChildScrollView
+          props:
+            child:
+              type: Padding
+              props:
+                padding: 24
+                child:
+                  type: Column
+                  props:
+                    crossAxisAlignment: "stretch"
+                    children:
+                      - type: SizedBox
+                        props:
+                          height: 24
+
+                      # Logo/Title
+                      - type: Column
+                        props:
+                          children:
+                            - type: Icon
+                              props:
+                                icon: "shield"
+                                size: 80
+                                color: "0xFF1976D2"
+                            - type: SizedBox
+                              props:
+                                height: 16
+                            - type: Text
+                              props:
+                                data: "HeroDex 3000"
+                                style:
+                                  fontSize: 32
+                                  fontWeight: "bold"
+                                  fontFamily: "Orbitron"
+                                textAlign: "center"
+                            - type: SizedBox
+                              props:
+                                height: 8
+                            - type: Text
+                              props:
+                                data: "Your Hero & Villain Database"
+                                style:
+                                  fontSize: 16
+                                  color: "0xFF757575"
+                                textAlign: "center"
+
+                      - type: SizedBox
+                        props:
+                          height: 24
+
+                      # Description
+                      - type: Card
+                        props:
+                          child:
+                            type: Padding
+                            props:
+                              padding: 16
+                              child:
+                                type: Column
+                                props:
+                                  children:
+                                    - type: Text
+                                      props:
+                                        data: "Welcome, Defender!"
+                                        style:
+                                          fontSize: 18
+                                          fontWeight: "bold"
+                                    - type: SizedBox
+                                      props:
+                                        height: 8
+                                    - type: Text
+                                      props:
+                                        data: "The world is recovering from the invasion. HeroDex 3000 helps you track heroes and villains who are fighting to restore peace."
+                                        style:
+                                          color: "0xFF616161"
+
+                      - type: SizedBox
+                        props:
+                          height: 24
+
+                      # =============================
+                      # API Configuration
+                      # =============================
+                      - type: Text
+                        props:
+                          data: "API Configuration"
+                          style:
+                            fontSize: 14
+                            fontWeight: "bold"
+                            color: "0xFF1976D2"
+
+                      - type: SizedBox
+                        props:
+                          height: 8
+
+                      - type: Text
+                        props:
+                          data: "Enter your Superhero API key to search for heroes. Get a free key at superheroapi.com"
+                          style:
+                            fontSize: 12
+                            color: "0xFF757575"
+
+                      - type: SizedBox
+                        props:
+                          height: 8
+
+                      - type: Observer
+                        props:
+                          query: "_api_key"
+                          builder:
+                            type: TextField
+                            props:
+                              initialValue: "shql: _api_key"
+                              decoration:
+                                hintText: "Your superheroapi.com API key"
+                                border: "outline"
+                                prefixIcon: "vpn_key"
+                              onSubmitted: "shql: SET_API_KEY(value)"
+
+                      - type: SizedBox
+                        props:
+                          height: 12
+
+                      - type: Observer
+                        props:
+                          query: "_api_host"
+                          builder:
+                            type: TextField
+                            props:
+                              initialValue: "shql: _api_host"
+                              decoration:
+                                hintText: "www.superheroapi.com"
+                                border: "outline"
+                              onSubmitted: "shql: SET_API_HOST(value)"
+
+                      - type: SizedBox
+                        props:
+                          height: 24
+
+                      # =============================
+                      # Filter Predicates
+                      # =============================
+                      - type: Text
+                        props:
+                          data: "Filter Predicates"
+                          style:
+                            fontSize: 14
+                            fontWeight: "bold"
+                            color: "0xFF1976D2"
+
+                      - type: SizedBox
+                        props:
+                          height: 8
+
+                      - type: Text
+                        props:
+                          data: "SHQL™ predicates classify characters. You can change these later in Settings."
+                          style:
+                            fontSize: 12
+                            color: "0xFF757575"
+
+                      - type: SizedBox
+                        props:
+                          height: 8
+
+                      - type: FilterEditor
+                        props:
+                          mode: "manage"
+
+                      - type: SizedBox
+                        props:
+                          height: 24
+
+                      # =============================
+                      # Privacy & Consent
+                      # =============================
+                      - type: Text
+                        props:
+                          data: "Privacy & Consent"
+                          style:
+                            fontSize: 14
+                            fontWeight: "bold"
+                            color: "0xFF1976D2"
+
+                      - type: SizedBox
+                        props:
+                          height: 8
+
+                      # Analytics consent
+                      - type: Card
+                        props:
+                          child:
+                            type: ListTile
+                            props:
+                              leading:
+                                type: Icon
+                                props:
+                                  icon: "analytics"
+                                  color: "0xFF1976D2"
+                              title:
+                                type: Text
+                                props:
+                                  data: "Analytics"
+                              subtitle:
+                                type: Text
+                                props:
+                                  data: "Help improve HeroDex"
+                              trailing:
+                                type: Observer
+                                props:
+                                  query: "_analytics_enabled"
+                                  builder:
+                                    type: Switch
+                                    props:
+                                      value: "shql: _analytics_enabled"
+                                      onChanged: "shql: SET_ANALYTICS_CONSENT(value)"
+
+                      - type: SizedBox
+                        props:
+                          height: 8
+
+                      # Crashlytics consent
+                      - type: Card
+                        props:
+                          child:
+                            type: ListTile
+                            props:
+                              leading:
+                                type: Icon
+                                props:
+                                  icon: "bug_report"
+                                  color: "0xFFFF9800"
+                              title:
+                                type: Text
+                                props:
+                                  data: "Crash Reports"
+                              subtitle:
+                                type: Text
+                                props:
+                                  data: "Send crash reports automatically"
+                              trailing:
+                                type: Observer
+                                props:
+                                  query: "_crashlytics_enabled"
+                                  builder:
+                                    type: Switch
+                                    props:
+                                      value: "shql: _crashlytics_enabled"
+                                      onChanged: "shql: SET_CRASHLYTICS_CONSENT(value)"
+
+                      - type: SizedBox
+                        props:
+                          height: 8
+
+                      # Location consent
+                      - type: Card
+                        props:
+                          child:
+                            type: ListTile
+                            props:
+                              leading:
+                                type: Icon
+                                props:
+                                  icon: "location_on"
+                                  color: "0xFF4CAF50"
+                              title:
+                                type: Text
+                                props:
+                                  data: "Location"
+                              subtitle:
+                                type: Text
+                                props:
+                                  data: "Track hero encounters on map"
+                              trailing:
+                                type: Observer
+                                props:
+                                  query: "_location_enabled"
+                                  builder:
+                                    type: Switch
+                                    props:
+                                      value: "shql: _location_enabled"
+                                      onChanged: "shql: SET_LOCATION_CONSENT(value)"
+
+                      - type: SizedBox
+                        props:
+                          height: 32
+
+                      # Continue Button
+                      - type: ElevatedButton
+                        props:
+                          onPressed: "shql: COMPLETE_ONBOARDING(); GO_TO('home')"
+                          style:
+                            minimumSize:
+                              width: "infinity"
+                              height: 56
+                          child:
+                            type: Text
+                            props:
+                              data: "Get Started"
+                              style:
+                                fontSize: 18
+
+                      - type: SizedBox
+                        props:
+                          height: 16

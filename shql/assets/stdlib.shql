@@ -1,0 +1,138 @@
+--- External unary fuctions
+CLONE(a) := _EXTERN("CLONE", [a]);
+MD5(a) := _EXTERN("MD5", [a]);
+SIN(a) := _EXTERN("SIN", [a]);
+COS(a) := _EXTERN("COS", [a]);
+TAN(a) := _EXTERN("TAN", [a]);
+ACOS(a) := _EXTERN("ACOS", [a]);
+ASIN(a) := _EXTERN("ASIN", [a]);
+ATAN(a) := _EXTERN("ATAN", [a]);
+SQRT(a) := _EXTERN("SQRT", [a]);
+EXP(a) := _EXTERN("EXP", [a]);
+LOG(a) := _EXTERN("LOG", [a]);
+LOWERCASE(a) := _EXTERN("LOWERCASE", [a]);
+UPPERCASE(a) := _EXTERN("UPPERCASE", [a]);
+TRIM(a) := _EXTERN("TRIM", [a]);
+INT(a) := _EXTERN("INT", [a]);
+DOUBLE(a) := _EXTERN("DOUBLE", [a]);
+STRING(a) := _EXTERN("STRING", [a]);
+ROUND(a) := _EXTERN("ROUND", [a]);
+LENGTH(a) := _EXTERN("LENGTH", [a]);
+MAP_VALUES(a) := _EXTERN("MAP_VALUES", [a]);
+MD5(a) := _EXTERN("MD5", [a]);
+
+-- External binary functions
+MIN(a,b) := _EXTERN("MIN", [a,b]);
+MAX(a,b) := _EXTERN("MAX", [a,b]);
+ATAN2(a,b) := _EXTERN("ATAN2", [a,b]);
+POW(a,b) := _EXTERN("POW", [a,b]);
+DIM(a,b) := _EXTERN("DIM", [a,b]);
+MAP_REMOVE(a,b) := _EXTERN("MAP_REMOVE", [a,b]);
+
+-- External ternary functions
+SUBSTRING(a, b, c) := _EXTERN("SUBSTRING", [a, b, c]);
+
+-- Find the index of an item in a list (-1 if not found)
+INDEX_OF(list, item) := BEGIN
+    FOR i := 0 TO LENGTH(list) - 1 DO
+        IF list[i] = item THEN
+            RETURN i;
+    RETURN -1;
+END;
+
+-- Extract a slice of a list from start index to end index (inclusive)
+SLICE(list, start_idx, end_idx) := BEGIN
+    result := [];
+    len := LENGTH(list);
+    IF start_idx >= len THEN RETURN result;
+    actual_end := MIN(end_idx, len - 1);
+    FOR i := start_idx TO actual_end DO
+        result := result + [list[i]];
+    RETURN result;
+END;
+
+-- Join array elements into a string with a separator
+STRING_JOIN(arr, separator) := BEGIN
+    len := LENGTH(arr);
+    IF len = 0 THEN
+        RETURN "";
+    IF len = 1 THEN
+        RETURN STRING(arr[0]);
+    result := STRING(arr[0]);
+    FOR i := 1 TO len - 1 DO
+        result := result + separator + STRING(arr[i]);
+    RETURN result;
+END;
+
+-- Null-safe value access: returns f(obj) if obj is not null, otherwise default_value.
+-- Usage: NVL(ps, ps => ps.strength, 0)
+NVL(obj, f, default_value) := IF obj = null THEN default_value ELSE f(obj);
+
+-- True if s is null or contains only whitespace.
+IS_NULL_OR_WHITESPACE(s) := s = null OR LENGTH(TRIM(s)) = 0;
+
+-- Compute the sum of values extracted from a list.
+-- Null values are excluded.
+-- Usage: SUM(heroes, h => NVL(h.powerstats, p => p.strength, 0))
+SUM(list, extractor) := BEGIN
+    IF LENGTH(list) = 0 THEN RETURN 0;
+    total := 0;
+    FOR i := 0 TO LENGTH(list) - 1 DO BEGIN
+        val := extractor(list[i]);
+        IF val <> null THEN
+            total := total + val;
+    END;
+    RETURN total;
+END;
+
+-- Compute the arithmetic mean of values extracted from a list.
+-- Null values are excluded.
+-- Usage: AVG(heroes, h => NVL(h.powerstats, p => p.strength, 0))
+AVG(list, extractor) := BEGIN
+    IF LENGTH(list) = 0 THEN RETURN 0;
+    total := 0;
+    count := 0;
+    FOR i := 0 TO LENGTH(list) - 1 DO BEGIN
+        val := extractor(list[i]);
+        IF val <> null THEN BEGIN
+            total := total + val;
+            count := count + 1;
+        END;
+    END;
+    RETURN IF count = 0 THEN 0 ELSE total / count;
+END;
+
+-- Compute the population standard deviation of values extracted from a list.
+-- Null values are excluded.
+-- Usage: STDEV(heroes, h => NVL(h.powerstats, p => p.strength, 0))
+STDEV(list, extractor) := BEGIN
+    IF LENGTH(list) = 0 THEN RETURN 0;
+    mean := AVG(list, extractor);
+    sum_sq := 0;
+    count := 0;
+    FOR i := 0 TO LENGTH(list) - 1 DO BEGIN
+        val := extractor(list[i]);
+        IF val <> null THEN BEGIN
+            diff := val - mean;
+            sum_sq := sum_sq + diff * diff;
+            count := count + 1;
+        END;
+    END;
+    RETURN IF count = 0 THEN 0 ELSE POW(sum_sq / count, 0.5);
+END;
+
+-- Plot a function
+PLOT(f, x1, x2) := BEGIN
+    x_vector := [];
+    y_vector := [];
+    range := DOUBLE(x2)-DOUBLE(x1);
+    step := MAX(0.1, range / 100.0);
+    start := DOUBLE(x1);
+    FOR x := start TO x2 STEP step DO BEGIN
+        x_vector := x_vector + [x];
+        y_vector := y_vector + [f(x)];
+        IF x > start THEN
+            _DISPLAY_GRAPH(x_vector, y_vector);
+    END;
+    PRINT("Type HIDE_GRAPH to hide graph again");
+END;

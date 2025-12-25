@@ -1,0 +1,90 @@
+# HeroDex 3000 - Edit Hero Screen
+screen:
+  type: Scaffold
+  props:
+    appBar:
+      type: AppBar
+      props:
+        leading:
+          type: IconButton
+          props:
+            icon: "arrow_back"
+            onPressed: "shql: GO_BACK()"
+        title:
+          type: Text
+          props:
+            data: "Edit Hero"
+            style:
+              fontFamily: "Orbitron"
+
+    body:
+      type: SingleChildScrollView
+      props:
+        child:
+          type: Padding
+          props:
+            padding: 16
+            child:
+              type: Column
+              props:
+                crossAxisAlignment: "stretch"
+                children:
+                  # Warning about locking
+                  - type: Card
+                    props:
+                      color: "0xFFFFF3E0"
+                      child:
+                        type: Padding
+                        props:
+                          padding: 12
+                          child:
+                            type: Row
+                            props:
+                              children:
+                                - type: Icon
+                                  props:
+                                    icon: "warning"
+                                    color: "0xFFFF9800"
+                                    size: 20
+                                - type: SizedBox
+                                  props:
+                                    width: 8
+                                - type: Expanded
+                                  child:
+                                    type: Text
+                                    props:
+                                      data: "Editing locks the hero from reconciliation"
+                                      style:
+                                        fontSize: 12
+                                        color: "0xFFE65100"
+
+                  - type: SizedBox
+                    props:
+                      height: 16
+
+                  # Dynamic edit form (generated from _edit_fields by GENERATE_EDIT_FORM)
+                  - type: Observer
+                    props:
+                      query: "_edit_fields"
+                      builder:
+                        type: Column
+                        props:
+                          crossAxisAlignment: "stretch"
+                          children: "shql: GENERATE_EDIT_FORM()"
+
+                  - type: SizedBox
+                    props:
+                      height: 16
+
+                  # Save button
+                  - type: ElevatedButton
+                    props:
+                      child:
+                        type: Text
+                        props:
+                          data: "Save Changes"
+                      onPressed: "shql: SAVE_AMENDMENTS()"
+
+                  - type: SizedBox
+                    props:
+                      height: 16

@@ -1,0 +1,104 @@
+# HeroDex 3000 - Saved Heroes/Villains Screen
+screen:
+  type: Scaffold
+  props:
+    appBar:
+      type: AppBar
+      props:
+        title:
+          type: Text
+          props:
+            data: "My Database"
+            style:
+              fontFamily: "Orbitron"
+
+    body:
+      type: Column
+      props:
+        crossAxisAlignment: "stretch"
+        children:
+          # Filter editor with chips, query field, and management controls
+          - type: FilterEditor
+            props:
+              mode: "apply"
+
+          # Filtered hero grid
+          - type: Expanded
+            child:
+              type: Observer
+              props:
+                query: "_hero_cards"
+                builder:
+                  type: "shql: IF LENGTH(_hero_cards) = 0 THEN 'Center' ELSE 'GridView'"
+                  props:
+                    # Empty state (no heroes saved yet)
+                    child:
+                      type: Column
+                      props:
+                        mainAxisAlignment: "center"
+                        children:
+                          - type: Icon
+                            props:
+                              icon: "person_search"
+                              size: 64
+                              color: "0xFF9E9E9E"
+                          - type: SizedBox
+                            props:
+                              height: 16
+                          - type: Text
+                            props:
+                              data: "No heroes saved yet"
+                              style:
+                                fontSize: 18
+                                color: "0xFF757575"
+                          - type: SizedBox
+                            props:
+                              height: 8
+                          - type: Text
+                            props:
+                              data: "Search and save heroes to build your database!"
+                              style:
+                                color: "0xFF9E9E9E"
+                          - type: SizedBox
+                            props:
+                              height: 24
+                          - type: ElevatedButton
+                            props:
+                              onPressed: "shql: GO_TO('online')"
+                              child:
+                                type: Row
+                                props:
+                                  mainAxisSize: "min"
+                                  children:
+                                    - type: Icon
+                                      props:
+                                        icon: "search"
+                                    - type: SizedBox
+                                      props:
+                                        width: 8
+                                    - type: Text
+                                      props:
+                                        data: "Search Heroes"
+
+                    # Grid of saved heroes (pre-built, cached by Dart)
+                    padding: 16
+                    crossAxisCount: 2
+                    childAspectRatio: 0.55
+                    crossAxisSpacing: 12
+                    mainAxisSpacing: 12
+                    children: "shql: _hero_cards"
+
+    bottomNavigationBar:
+      type: BottomNavigationBar
+      props:
+        currentIndex: 2
+        items:
+          - icon: "home"
+            label: "Home"
+          - icon: "cloud"
+            label: "Online"
+          - icon: "bookmark"
+            label: "Saved"
+          - icon: "settings"
+            label: "Settings"
+        onTap: "shql: TAB_NAV(2, value)"

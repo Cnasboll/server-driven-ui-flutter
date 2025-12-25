@@ -1,0 +1,70 @@
+onLoad: "shql(targeted:true): PUSH_ROUTE('inputs_example')"
+screen:
+  type: Scaffold
+  props:
+    appBar:
+      type: AppBar
+      props:
+        title:
+          type: Text
+          props:
+            data: "Inputs Example"
+    body:
+      type: Padding
+      props:
+        padding: 16
+        child:
+          type: Column
+          props:
+            crossAxisAlignment: "start"
+            children:
+              - type: Row
+                children:
+                  - type: Text
+                    props:
+                      data: "Enable Telemetry Spam:"
+                  - type: Switch
+                    props:
+                      value: "shql: _telemetry_spam_enabled"
+                      onChanged: "shql: SET('_telemetry_spam_enabled', value); SAVE_STATE('telemetry_spam_enabled', value)"
+              - type: Row
+                children:
+                  - type: Text
+                    props:
+                      data: "Accept terms:"
+                  - type: Checkbox
+                    props:
+                      value: "shql: _terms_accepted"
+                      onChanged: "shql: SET('_terms_accepted', value); SAVE_STATE('terms_accepted', value)"
+              - type: Observer
+                props:
+                  query: "_telemetry_spam_enabled, _terms_accepted"
+                  builder:
+                    type: Card
+                    props:
+                      margin:
+                        t: 20
+                      child:
+                        type: Padding
+                        props:
+                          padding: 16
+                          child:
+                            type: Column
+                            props:
+                              crossAxisAlignment: "start"
+                              children:
+                                - type: Text
+                                  props:
+                                    data: "shql: 'Telemetry Spam: ' + IF _telemetry_spam_enabled THEN '📡 ENABLED (all your data are belong to us)' ELSE '🚫 Disabled'"
+                                - type: Text
+                                  props:
+                                    data: "shql: 'Terms accepted: ' + STRING(_terms_accepted)"
+              - type: Row
+                children:                                    
+                  - type: ElevatedButton
+                    props:
+                      onPressed: "shql: GO_BACK()"
+                      child:
+                        type: Text
+                        props:
+                          data: "← Back"

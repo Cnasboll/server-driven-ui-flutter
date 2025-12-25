@@ -1,0 +1,63 @@
+import 'package:shql/engine/cancellation_token.dart';
+import 'package:shql/execution/execution_node.dart';
+import 'package:shql/execution/lambdas/user_function_execution_node.dart';
+import 'package:shql/execution/runtime/runtime.dart';
+
+class ExecutionContext {
+  late final Runtime runtime;
+  late final Thread mainThread;
+  late final Map<int, Thread> threads;
+  int nextThreadId = 1;
+
+  ExecutionContext({required this.runtime}) {
+    mainThread = Thread(id: 0);
+    threads = {0: mainThread};
+  }
+
+  Future<bool> tick([CancellationToken? cancellationToken]) async {
+    // Never remove main thread even if "idle"
+    threads.removeWhere((key, thread) => key > 0 && thread.isIdle);
+
+    // Cancellation is checked synchronously — no async overhead.
+    if (cancellationToken?.isCancelled ?? false) {
+      return true;
+    }
+
+    var activeThreads = threads.values
+        .where((thread) => !thread.isIdle)
+        .toList();
+
+    if (activeThreads.isEmpty) {
+      return true;
+    }
+
+    var tickFutures = activeThreads
+        .map((thread) => thread.tick(this, cancellationToken))
+        .toList();
+
+    await Future.any(tickFutures);
+
+    // If we get here, at least one thread has completed a tick.
+
+    if (!threads.values.any((thread) => !thread.isIdle)) {
+      // All threads are now idle.
+      return true;
+    }
+
+    // The overall execution is not yet complete.
+    return false;
+  }
+
+  Future<Thread> startThread(ExecutionNode caller, dynamic userFunction) async {
+    var thread = Thread(id: nextThreadId++);
+    threads[thread.id] = thread;
+
+    UserFunctionExecutionNode(
+      userFunction,
+      [],
+      thread: thread,
+      scope: caller.scope,
+    );
+    return thread;
+  }
+}

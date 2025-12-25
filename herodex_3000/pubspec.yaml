@@ -1,0 +1,84 @@
+name: herodex_3000
+description: "HeroDex 3000 - Hero & Villain Database for a world in recovery"
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.10.4
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+
+  # UI & Icons
+  cupertino_icons: ^1.0.8
+  google_fonts: ^6.1.0
+
+  # State Management
+  flutter_bloc: ^9.1.1
+
+  # Navigation
+  go_router: ^14.0.0
+
+  # Network & API
+  http: ^1.2.0
+  connectivity_plus: ^6.0.0
+
+  # Local Storage & Caching
+  shared_preferences: ^2.2.2
+  sqflite: ^2.3.0
+  path_provider: ^2.1.2
+  cached_network_image: ^3.3.1
+
+  # Location
+  geolocator: ^12.0.0
+  permission_handler: ^11.3.0
+
+  # YAML & SHQL™ (path dependency to SDUI framework)
+  server_driven_ui:
+    path: ../server_driven_ui
+  hero_common:
+    path: ../hero_common
+  shql:
+    path: ../shql
+
+  # Utilities
+  uuid: ^4.3.3
+  intl: ^0.20.2
+  path: ^1.9.0
+  equatable: ^2.0.5
+  collection: ^1.18.0
+  sqflite_common_ffi: ^2.4.0+2
+  flutter_map: ^8.2.2
+  latlong2: ^0.9.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+  mockito: ^5.4.4
+  build_runner: ^2.4.8
+  flutter_launcher_icons: ^0.14.0
+
+# App icon configuration — run: dart run flutter_launcher_icons
+# Place a 1024x1024 PNG at assets/images/app_icon.png first.
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/images/app_icon.png"
+  min_sdk_android: 21
+  adaptive_icon_background: "#1A237E"
+  adaptive_icon_foreground: "assets/images/app_icon.png"
+
+flutter:
+  generate: true
+  uses-material-design: true
+
+  assets:
+    - assets/
+    - assets/screens/
+    - assets/shql/
+    - assets/images/

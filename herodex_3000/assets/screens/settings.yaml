@@ -1,0 +1,448 @@
+# HeroDex 3000 - Settings Screen
+screen:
+  type: Scaffold
+  props:
+    appBar:
+      type: AppBar
+      props:
+        title:
+          type: Text
+          props:
+            data: "Settings"
+            style:
+              fontFamily: "Orbitron"
+
+    body:
+      type: SingleChildScrollView
+      props:
+        child:
+          type: Column
+          props:
+            crossAxisAlignment: "stretch"
+            children:
+              # Theme Section
+              - type: Padding
+                props:
+                  padding:
+                    left: 16
+                    top: 16
+                    bottom: 8
+                  child:
+                    type: Text
+                    props:
+                      data: "Appearance"
+                      style:
+                        fontSize: 14
+                        fontWeight: "bold"
+                        color: "0xFF1976D2"
+
+              - type: ListTile
+                props:
+                  leading:
+                    type: Icon
+                    props:
+                      icon: "shql: IF _is_dark_mode THEN 'dark_mode' ELSE 'light_mode'"
+                  title:
+                    type: Text
+                    props:
+                      data: "Dark Mode"
+                  trailing:
+                    type: Observer
+                    props:
+                      query: "_is_dark_mode"
+                      builder:
+                        type: Switch
+                        props:
+                          value: "shql: _is_dark_mode"
+                          onChanged: "shql: SET_DARK_MODE(value)"
+
+              - type: Divider
+
+              # API Configuration Section
+              - type: Padding
+                props:
+                  padding:
+                    left: 16
+                    top: 16
+                    bottom: 8
+                  child:
+                    type: Text
+                    props:
+                      data: "API Configuration"
+                      style:
+                        fontSize: 14
+                        fontWeight: "bold"
+                        color: "0xFF1976D2"
+
+              - type: Padding
+                props:
+                  padding:
+                    left: 16
+                    right: 16
+                    bottom: 8
+                  child:
+                    type: Column
+                    props:
+                      crossAxisAlignment: "start"
+                      children:
+                        - type: Text
+                          props:
+                            data: "Superhero API Key"
+                            style:
+                              fontWeight: "bold"
+                              fontSize: 14
+                        - type: SizedBox
+                          props:
+                            height: 4
+                        - type: Observer
+                          props:
+                            query: "_api_key"
+                            builder:
+                              type: TextField
+                              props:
+                                initialValue: "shql: _api_key"
+                                decoration:
+                                  hintText: "Enter your superheroapi.com API key"
+                                  border: "outline"
+                                  prefixIcon: "vpn_key"
+                                onChanged: "shql: SET_API_KEY(value)"
+                                onSubmitted: "shql: SET_API_KEY(value)"
+                        - type: SizedBox
+                          props:
+                            height: 4
+                        - type: Text
+                          props:
+                            data: "Get a free key at superheroapi.com"
+                            style:
+                              fontSize: 12
+                              color: "0xFF757575"
+
+              - type: Padding
+                props:
+                  padding:
+                    left: 16
+                    right: 16
+                    bottom: 8
+                  child:
+                    type: Column
+                    props:
+                      crossAxisAlignment: "start"
+                      children:
+                        - type: Text
+                          props:
+                            data: "API Host"
+                            style:
+                              fontWeight: "bold"
+                              fontSize: 14
+                        - type: SizedBox
+                          props:
+                            height: 4
+                        - type: Observer
+                          props:
+                            query: "_api_host"
+                            builder:
+                              type: TextField
+                              props:
+                                initialValue: "shql: _api_host"
+                                decoration:
+                                  hintText: "www.superheroapi.com"
+                                  border: "outline"
+                                onChanged: "shql: SET_API_HOST(value)"
+                                onSubmitted: "shql: SET_API_HOST(value)"
+
+              - type: Divider
+
+              # Privacy Section
+              - type: Padding
+                props:
+                  padding:
+                    left: 16
+                    top: 16
+                    bottom: 8
+                  child:
+                    type: Text
+                    props:
+                      data: "Privacy & Consent"
+                      style:
+                        fontSize: 14
+                        fontWeight: "bold"
+                        color: "0xFF1976D2"
+
+              - type: ListTile
+                props:
+                  leading:
+                    type: Icon
+                    props:
+                      icon: "analytics"
+                  title:
+                    type: Text
+                    props:
+                      data: "Analytics"
+                  subtitle:
+                    type: Text
+                    props:
+                      data: "Help improve HeroDex with usage data"
+                  trailing:
+                    type: Observer
+                    props:
+                      query: "_analytics_enabled"
+                      builder:
+                        type: Switch
+                        props:
+                          value: "shql: _analytics_enabled"
+                          onChanged: "shql: SET_ANALYTICS_CONSENT(value)"
+
+              - type: ListTile
+                props:
+                  leading:
+                    type: Icon
+                    props:
+                      icon: "bug_report"
+                  title:
+                    type: Text
+                    props:
+                      data: "Crash Reports"
+                  subtitle:
+                    type: Text
+                    props:
+                      data: "Automatically send crash reports"
+                  trailing:
+                    type: Observer
+                    props:
+                      query: "_crashlytics_enabled"
+                      builder:
+                        type: Switch
+                        props:
+                          value: "shql: _crashlytics_enabled"
+                          onChanged: "shql: SET_CRASHLYTICS_CONSENT(value)"
+
+              - type: ListTile
+                props:
+                  leading:
+                    type: Icon
+                    props:
+                      icon: "location_on"
+                  title:
+                    type: Text
+                    props:
+                      data: "Location Access"
+                  subtitle:
+                    type: Text
+                    props:
+                      data: "Show heroes on map"
+                  trailing:
+                    type: Observer
+                    props:
+                      query: "_location_enabled"
+                      builder:
+                        type: Switch
+                        props:
+                          value: "shql: _location_enabled"
+                          onChanged: "shql: SET_LOCATION_CONSENT(value)"
+
+              - type: Observer
+                props:
+                  query: "_location_description"
+                  builder:
+                    type: Padding
+                    props:
+                      padding:
+                        left: 56
+                        right: 16
+                        bottom: 8
+                      child:
+                        type: Text
+                        props:
+                          data: "shql: IF LENGTH(_location_description) > 0 THEN 'Your location: ' + _location_description ELSE ''"
+                          style:
+                            fontSize: 12
+                            color: "0xFF757575"
+
+              - type: Divider
+
+              # Named Filter Predicates Section
+              - type: Padding
+                props:
+                  padding:
+                    left: 16
+                    top: 16
+                    bottom: 8
+                  child:
+                    type: Text
+                    props:
+                      data: "Filter Predicates"
+                      style:
+                        fontSize: 14
+                        fontWeight: "bold"
+                        color: "0xFF1976D2"
+
+              - type: Padding
+                props:
+                  padding:
+                    left: 16
+                    right: 16
+                    bottom: 8
+                  child:
+                    type: Text
+                    props:
+                      data: "User-defined SHQL™ predicates for classifying characters. Select a filter to edit, or add new ones."
+                      style:
+                        fontSize: 12
+                        color: "0xFF757575"
+
+              - type: FilterEditor
+                props:
+                  mode: "manage"
+
+              - type: Divider
+
+              # About Section
+              - type: Padding
+                props:
+                  padding:
+                    left: 16
+                    top: 16
+                    bottom: 8
+                  child:
+                    type: Text
+                    props:
+                      data: "About"
+                      style:
+                        fontSize: 14
+                        fontWeight: "bold"
+                        color: "0xFF1976D2"
+
+              - type: ListTile
+                props:
+                  leading:
+                    type: Icon
+                    props:
+                      icon: "info"
+                  title:
+                    type: Text
+                    props:
+                      data: "HeroDex 3000"
+                  subtitle:
+                    type: Text
+                    props:
+                      data: "Version 1.0.0"
+
+              - type: ListTile
+                props:
+                  leading:
+                    type: Icon
+                    props:
+                      icon: "code"
+                  title:
+                    type: Text
+                    props:
+                      data: "Created by"
+                  subtitle:
+                    type: Text
+                    props:
+                      data: "Ikra Fintech Solutions AB"
+
+              - type: ListTile
+                props:
+                  leading:
+                    type: Icon
+                    props:
+                      icon: "calendar_today"
+                  title:
+                    type: Text
+                    props:
+                      data: "Year"
+                  subtitle:
+                    type: Text
+                    props:
+                      data: "2026"
+
+              - type: Divider
+
+              # Danger Zone
+              - type: Padding
+                props:
+                  padding:
+                    left: 16
+                    top: 16
+                    bottom: 8
+                  child:
+                    type: Text
+                    props:
+                      data: "Danger Zone"
+                      style:
+                        fontSize: 14
+                        fontWeight: "bold"
+                        color: "0xFFF44336"
+
+              - type: ListTile
+                props:
+                  leading:
+                    type: Icon
+                    props:
+                      icon: "delete_forever"
+                      color: "0xFFF44336"
+                  title:
+                    type: Text
+                    props:
+                      data: "Clear All Data"
+                      style:
+                        color: "0xFFF44336"
+                  subtitle:
+                    type: Text
+                    props:
+                      data: "Remove all saved heroes"
+                  onTap: "shql: CLEAR_ALL_DATA()"
+
+              - type: ListTile
+                props:
+                  leading:
+                    type: Icon
+                    props:
+                      icon: "info"
+                      color: "0xFFFF9800"
+                  title:
+                    type: Text
+                    props:
+                      data: "Show Onboarding"
+                      style:
+                        color: "0xFFFF9800"
+                  subtitle:
+                    type: Text
+                    props:
+                      data: "Reset and show welcome screen"
+                  onTap: "shql: RESET_ONBOARDING()"
+
+              - type: ListTile
+                props:
+                  leading:
+                    type: Icon
+                    props:
+                      icon: "logout"
+                      color: "0xFFF44336"
+                  title:
+                    type: Text
+                    props:
+                      data: "Sign Out"
+                      style:
+                        color: "0xFFF44336"
+                  subtitle:
+                    type: Text
+                    props:
+                      data: "Log out of your account"
+                  onTap: "shql: SIGN_OUT()"
+
+    bottomNavigationBar:
+      type: BottomNavigationBar
+      props:
+        currentIndex: 3
+        items:
+          - icon: "home"
+            label: "Home"
+          - icon: "cloud"
+            label: "Online"
+          - icon: "bookmark"
+            label: "Saved"
+          - icon: "settings"
+            label: "Settings"
+        onTap: "shql: TAB_NAV(3, value)"

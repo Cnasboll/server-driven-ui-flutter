@@ -1,0 +1,86 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "awesome_calculator",
+            "cwd": "awesome_calculator",
+            "request": "launch",
+            "type": "dart"
+        },
+        {
+            "name": "awesome_calculator (profile mode)",
+            "cwd": "awesome_calculator",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "profile"
+        },
+        {
+            "name": "awesome_calculator (release mode)",
+            "cwd": "awesome_calculator",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "release"
+        },
+        {
+            "name": "herodex_3000",
+            "cwd": "herodex_3000",
+            "request": "launch",
+            "type": "dart"
+        },
+        {
+            "name": "herodex_3000 (profile mode)",
+            "cwd": "herodex_3000",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "profile"
+        },
+        {
+            "name": "herodex_3000 (release mode)",
+            "cwd": "herodex_3000",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "release"
+        },
+        {
+            "name": "hero_common",
+            "cwd": "hero_common",
+            "request": "launch",
+            "type": "dart"
+        },
+        {
+            "name": "server_driven_ui",
+            "cwd": "server_driven_ui",
+            "request": "launch",
+            "type": "dart"
+        },
+        {
+            "name": "server_driven_ui (profile mode)",
+            "cwd": "server_driven_ui",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "profile"
+        },
+        {
+            "name": "server_driven_ui (release mode)",
+            "cwd": "server_driven_ui",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "release"
+        },
+        {
+            "name": "shql",
+            "cwd": "shql",
+            "request": "launch",
+            "type": "dart"
+        },
+        {
+            "name": "v04",
+            "cwd": "v04",
+            "request": "launch",
+            "type": "dart"
+        }
+    ]
+}
