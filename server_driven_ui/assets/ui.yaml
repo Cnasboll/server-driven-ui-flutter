@@ -19,7 +19,7 @@ screen:
         children:
           - type: Text
             props:
-              data: "expr: statusText()"
+              data: "shql: 'Count: ' + STRING(count)"
 
           - type: SizedBox
             props: { height: 12 }
@@ -27,4 +27,4 @@ screen:
           - type: ElevatedButton
             props:
               child: { type: Text, props: { data: "Increment" } }
-              onPressed: "call: inc()"
+              onPressed: "shql: count := count + 1"

@@ -236,7 +236,7 @@ Widget _buildText(
 ) {
   final data = props['data'];
   // Support: data: "literal" OR data: "expr: someFunc()"
-  if (isExprRef(data)) {
+  if (isShqlRef(data)) {
     final expr = stripPrefix(data as String);
     return _AsyncText(expr: expr, shql: shql);
   }
@@ -256,7 +256,7 @@ Widget _buildElevatedButton(
   final onPressed = props['onPressed'];
 
   VoidCallback? cb;
-  if (isCallRef(onPressed)) {
+  if (isShqlRef(onPressed)) {
     final callCode = stripPrefix(onPressed as String);
     cb = () {
       // Fire and forget; runtime is async. You can also await and show errors.

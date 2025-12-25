@@ -4,12 +4,9 @@ import 'package:server_driven_ui/shql/engine/engine.dart';
 import 'package:server_driven_ui/shql/execution/runtime.dart';
 import 'package:server_driven_ui/shql/parser/constants_set.dart';
 
-/// Wraps your SHQL runtime and exposes:
-/// - expr: <code>
-/// - call: <code>
 class ShqlBindings {
   late ConstantsSet _constantsSet;
-  late Runtime _runtime; // <-- replace with your Runtime type
+  late Runtime _runtime;
   final VoidCallback onMutated;
   final CancellationToken _cancellationToken = CancellationToken();
 
@@ -59,7 +56,7 @@ class ShqlBindings {
 
   /// Execute statement/procedure for events. Triggers rebuild after success.
   Future<dynamic> call(String code) async {
-    final res = await await Engine.execute(
+    final res = await Engine.execute(
       code,
       runtime: _runtime,
       constantsSet: _constantsSet,
@@ -71,6 +68,5 @@ class ShqlBindings {
 }
 
 /// Tiny helpers for YAML DSL parsing:
-bool isExprRef(dynamic v) => v is String && v.startsWith('expr:');
-bool isCallRef(dynamic v) => v is String && v.startsWith('call:');
+bool isShqlRef(dynamic v) => v is String && v.startsWith('shql:');
 String stripPrefix(String s) => s.substring(s.indexOf(':') + 1).trim();
