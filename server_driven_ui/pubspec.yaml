@@ -55,8 +55,9 @@ dev_dependencies:
 flutter:
   assets:
     - assets/ui.yaml
-    - assets/shql/program.shql
-    - assets/shql/stdlib.shql
+    - assets/shql/stdlib.shql    
+    - assets/shql/state.shql
+  
 
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in

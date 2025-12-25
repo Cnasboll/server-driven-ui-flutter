@@ -77,12 +77,12 @@ class _YamlDrivenScreenState extends State<YamlDrivenScreen> {
       "Failed to load standard library.",
     );
 
-    final programCode = await rootBundle.loadString('assets/shql/program.shql');
+    final programCode = await rootBundle.loadString('assets/shql/state.shql');
     await _shql.loadProgram(
       programCode,
-      "Loading program...",
-      "Program loaded.",
-      "Failed to load program.",
+      "Loading state script...",
+      "State script loaded.",
+      "Failed to load state script.",
     );
 
     setState(() {
