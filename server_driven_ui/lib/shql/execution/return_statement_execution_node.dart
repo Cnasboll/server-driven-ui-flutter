@@ -1,0 +1,53 @@
+import 'package:server_driven_ui/shql/engine/cancellation_token.dart';
+import 'package:server_driven_ui/shql/engine/engine.dart';
+import 'package:server_driven_ui/shql/execution/execution_node.dart';
+import 'package:server_driven_ui/shql/execution/lazy_execution_node.dart';
+import 'package:server_driven_ui/shql/execution/runtime.dart';
+
+class ReturnStatementExecutionNode extends LazyExecutionNode {
+  ReturnStatementExecutionNode(
+    super.node, {
+    required super.thread,
+    required super.scope,
+  });
+
+  @override
+  Future<TickResult> doTick(
+    Runtime runtime,
+    CancellationToken? cancellationToken,
+  ) async {
+    var returnTarget = thread.currentReturnTarget;
+    if (returnTarget == null) {
+      error = 'Return statement used outside of a function.';
+      return TickResult.completed;
+    }
+    if (node.children.isNotEmpty && _returnValueNode == null) {
+      if (node.children.length > 1) {
+        error = 'Return statement can have at most one child.';
+        return TickResult.completed;
+      }
+
+      _returnValueNode = Engine.createExecutionNode(
+        node.children[0],
+        thread,
+        scope,
+      );
+      if (_returnValueNode == null) {
+        error = 'Failed to create execution node for return value.';
+        return TickResult.completed;
+      }
+      return TickResult.delegated;
+    }
+
+    if (_returnValueNode != null) {
+      result = _returnValueNode!.result;
+      error ??= _returnValueNode!.error;
+      returnTarget.returnAValue(_returnValueNode!.result);
+    } else {
+      returnTarget.returnNothing();
+    }
+    return TickResult.completed;
+  }
+
+  ExecutionNode? _returnValueNode;
+}

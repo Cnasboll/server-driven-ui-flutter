@@ -1,0 +1,30 @@
+screen:
+  type: Scaffold
+  props:
+    appBar:
+      type: AppBar
+      props:
+        title:
+          type: Text
+          props:
+            data: "YAML + SHQL"
+
+    body:
+      type: Center
+      child:
+        type: Column
+        props:
+          mainAxisAlignment: center
+          mainAxisSize: min
+        children:
+          - type: Text
+            props:
+              data: "expr: statusText()"
+
+          - type: SizedBox
+            props: { height: 12 }
+
+          - type: ElevatedButton
+            props:
+              child: { type: Text, props: { data: "Increment" } }
+              onPressed: "call: inc()"

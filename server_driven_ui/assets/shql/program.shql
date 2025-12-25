@@ -1,0 +1,7 @@
+count := 0;
+
+statusText() := "Count: " + STRING(count);
+
+inc():=begin
+  count := count + 1;
+end;
