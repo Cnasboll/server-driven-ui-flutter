@@ -1,0 +1,14 @@
+screen:
+  type: Scaffold
+  props:
+    appBar:
+      type: AppBar
+      props:
+        title:
+          type: Text
+          props:
+            data: "YAML + SHQL"
+
+    body:
+      type: ListView
+      children: "shql: GEN_LIST(20)"

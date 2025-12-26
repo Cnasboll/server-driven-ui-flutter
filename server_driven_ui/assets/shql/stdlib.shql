@@ -1,0 +1,46 @@
+--- External unary fuctions
+CLONE(a) := _EXTERN("CLONE", [a]);
+MD5(a) := _EXTERN("MD5", [a]);
+SIN(a) := _EXTERN("SIN", [a]);
+COS(a) := _EXTERN("COS", [a]);
+TAN(a) := _EXTERN("TAN", [a]);
+ACOS(a) := _EXTERN("ACOS", [a]);
+ASIN(a) := _EXTERN("ASIN", [a]);
+ATAN(a) := _EXTERN("ATAN", [a]);
+SQRT(a) := _EXTERN("SQRT", [a]);
+EXP(a) := _EXTERN("EXP", [a]);
+LOG(a) := _EXTERN("LOG", [a]);
+LOWERCASE(a) := _EXTERN("LOWERCASE", [a]);
+UPPERCASE(a) := _EXTERN("UPPERCASE", [a]);
+INT(a) := _EXTERN("INT", [a]);
+DOUBLE(a) := _EXTERN("DOUBLE", [a]);
+STRING(a) := _EXTERN("STRING", [a]);
+ROUND(a) := _EXTERN("ROUND", [a]);
+LENGTH(a) := _EXTERN("LENGTH", [a]);
+MD5(a) := _EXTERN("MD5", [a]);
+
+-- External binary functions
+MIN(a,b) := _EXTERN("MIN", [a,b]);
+MAX(a,b) := _EXTERN("MAX", [a,b]);
+ATAN2(a,b) := _EXTERN("ATAN2", [a,b]);
+POW(a,b) := _EXTERN("POW", [a,b]);
+DIM(a,b) := _EXTERN("DIM", [a,b]);
+
+-- External ternary functions
+SUBSTRING(a, b, c) := _EXTERN("SUBSTRING", [a, b, c]);
+
+-- Plot a function
+PLOT(f, x1, x2) := BEGIN
+    x_vector := [];
+    y_vector := [];
+    range := DOUBLE(x2)-DOUBLE(x1)
+    step := MAX(0.1, range / 100.0);
+    start := DOUBLE(x1);
+    FOR x := start to X2 STEP step DO BEGIN
+        x_vector := x_vector + [x];
+        y_vector := y_vector + [f(x)];
+        if x > start then
+            _DISPLAY_GRAPH(x_vector, y_vector);    
+    END;
+    PRINT("Type HIDE_GRAPH to hide graph again");
+END;
