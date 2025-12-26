@@ -5,9 +5,6 @@ import 'yaml_ui/yaml_ui_engine.dart';
 import 'yaml_ui/widget_registry.dart';
 import 'yaml_ui/shql_bindings.dart';
 
-// TODO: Replace these imports with your interpreter/runtime types.
-// import 'your_shql/runtime.dart';
-
 void main() {
   runApp(const MyApp());
 }
@@ -192,13 +189,4 @@ class _ErrorPanel extends StatelessWidget {
       ),
     );
   }
-}
-
-/// ---------------------------------------------------------------------------
-/// Dummy runtime so the scaffold compiles. Replace with your real Runtime.
-/// ---------------------------------------------------------------------------
-class DummyRuntime {
-  Future<void> load(String program) async {}
-  Future<dynamic> evalExpr(String expr) async => null;
-  Future<dynamic> call(String code) async => null;
 }
