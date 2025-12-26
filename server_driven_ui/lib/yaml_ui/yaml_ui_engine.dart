@@ -53,22 +53,48 @@ class YamlUiEngine {
   }
 
   Future<dynamic> _resolveNode(dynamic node) async {
-    if (node is String && node.startsWith('shql:')) {
-      final expression = node.substring(5);
+    if (node is String && isShqlRef(node)) {
+      final expression = stripPrefix(node);
       final result = await shql.eval(expression);
       return _resolveNode(result);
     }
-    if (node is Map) {
+
+    if (node is YamlMap) {
       final newMap = <String, dynamic>{};
       for (final key in node.keys) {
+        final value = node[key];
         if (key is String && key.startsWith('on')) {
-          newMap[key] = node[key];
+          newMap[key] = value;
         } else {
-          newMap[key] = await _resolveNode(node[key]);
+          newMap[key] = await _resolveNode(value);
         }
       }
       return newMap;
     }
+
+    if (node is YamlList) {
+      final newList = <dynamic>[];
+      for (final item in node) {
+        newList.add(await _resolveNode(item));
+      }
+      return newList;
+    }
+
+    // This will handle non-YAML maps that might be returned from shql.eval
+    if (node is Map) {
+      final newMap = <String, dynamic>{};
+      for (final key in node.keys) {
+        final value = node[key];
+        if (key is String && key.startsWith('on')) {
+          newMap[key] = value;
+        } else {
+          newMap[key] = await _resolveNode(value);
+        }
+      }
+      return newMap;
+    }
+
+    // This will handle non-YAML lists that might be returned from shql.eval
     if (node is List) {
       final newList = <dynamic>[];
       for (final item in node) {
@@ -76,6 +102,7 @@ class YamlUiEngine {
       }
       return newList;
     }
+
     return node;
   }
 }

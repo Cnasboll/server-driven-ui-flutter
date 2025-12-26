@@ -15,12 +15,14 @@ class ShqlBindings {
     Function(dynamic value)? printLine,
     Future<String?> Function()? readline,
     Future<String?> Function(String prompt)? prompt,
+    Future<void> Function(String routeName)? navigate,
   }) {
     _constantsSet = Runtime.prepareConstantsSet();
     _runtime = Runtime.prepareRuntime(_constantsSet);
     _runtime.printFunction = printLine;
     _runtime.readlineFunction = readline;
     _runtime.promptFunction = prompt;
+    _runtime.navigateFunction = navigate;
   }
 
   final VoidCallback onMutated;

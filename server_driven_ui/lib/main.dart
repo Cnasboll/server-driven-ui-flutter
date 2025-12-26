@@ -3,15 +3,18 @@ import 'package:flutter/services.dart';
 import 'package:server_driven_ui/yaml_ui/shql_bindings.dart';
 import 'package:server_driven_ui/yaml_ui/widget_registry.dart';
 import 'package:server_driven_ui/yaml_ui/yaml_ui_engine.dart';
+import 'package:yaml/yaml.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  final yamlSource = await rootBundle.loadString('assets/ui.yaml');
+  final routerSource = await rootBundle.loadString('assets/router.yaml');
+  final routes = loadYaml(routerSource)['routes'] as YamlMap;
+
   final stdlibSource = await rootBundle.loadString('assets/shql/stdlib.shql');
   final uiSource = await rootBundle.loadString('assets/shql/ui.shql');
   runApp(
     MyApp(
-      yamlSource: yamlSource,
+      routes: routes.cast<String, String>(),
       stdlibSource: stdlibSource,
       uiSource: uiSource,
     ),
@@ -21,12 +24,12 @@ void main() async {
 class MyApp extends StatelessWidget {
   const MyApp({
     super.key,
-    required this.yamlSource,
+    required this.routes,
     required this.stdlibSource,
     required this.uiSource,
   });
 
-  final String yamlSource;
+  final Map<String, String> routes;
   final String stdlibSource;
   final String uiSource;
 
@@ -36,7 +39,8 @@ class MyApp extends StatelessWidget {
       title: 'Flutter Demo',
       theme: ThemeData(primarySwatch: Colors.blue),
       home: YamlDrivenScreen(
-        yamlSource: yamlSource,
+        routes: routes,
+        initialRoute: 'main',
         stdlibSource: stdlibSource,
         uiSource: uiSource,
       ),
@@ -47,12 +51,14 @@ class MyApp extends StatelessWidget {
 class YamlDrivenScreen extends StatefulWidget {
   const YamlDrivenScreen({
     super.key,
-    required this.yamlSource,
+    required this.routes,
+    required this.initialRoute,
     required this.stdlibSource,
     required this.uiSource,
   });
 
-  final String yamlSource;
+  final Map<String, String> routes;
+  final String initialRoute;
   final String stdlibSource;
   final String uiSource;
 
@@ -66,6 +72,7 @@ class _YamlDrivenScreenState extends State<YamlDrivenScreen> {
   bool _isLoading = true;
   Object? _error;
   final List<String> _logs = [];
+  late String _currentYamlSource;
 
   @override
   void initState() {
@@ -73,8 +80,29 @@ class _YamlDrivenScreenState extends State<YamlDrivenScreen> {
     _initAndResolve();
   }
 
+  Future<void> _navigate(String routeName) async {
+    if (!widget.routes.containsKey(routeName)) {
+      // ignore: avoid_print
+      print("Route '$routeName' not found!");
+      return;
+    }
+    final yamlPath = widget.routes[routeName]!;
+    final newYamlSource = await rootBundle.loadString(yamlPath);
+
+    setState(() {
+      _currentYamlSource = newYamlSource;
+      _isLoading = true; // Show loading indicator while resolving new UI
+    });
+
+    await _resolveUi();
+  }
+
   Future<void> _initAndResolve() async {
     try {
+      // Load initial YAML source
+      final initialYamlPath = widget.routes[widget.initialRoute]!;
+      _currentYamlSource = await rootBundle.loadString(initialYamlPath);
+
       final shql = ShqlBindings(
         onMutated: () {
           if (!mounted) return;
@@ -88,11 +116,12 @@ class _YamlDrivenScreenState extends State<YamlDrivenScreen> {
         },
         readline: () async => null,
         prompt: (_) async => null,
+        navigate: _navigate,
       );
 
       // Sequentially load the programs.
-      await shql.loadProgram(widget.stdlibSource, name: 'standard library');
-      await shql.loadProgram(widget.uiSource, name: 'UI script');
+      await shql.loadProgram(widget.stdlibSource);
+      await shql.loadProgram(widget.uiSource);
 
       final engine = YamlUiEngine(shql, WidgetRegistry.basic());
       setState(() {
@@ -114,7 +143,7 @@ class _YamlDrivenScreenState extends State<YamlDrivenScreen> {
   Future<void> _resolveUi() async {
     if (_engine == null) return;
     try {
-      final data = await _engine!.resolve(widget.yamlSource);
+      final data = await _engine!.resolve(_currentYamlSource);
       if (mounted) {
         setState(() {
           _resolvedUiData = data;

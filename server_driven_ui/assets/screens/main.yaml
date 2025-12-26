@@ -8,7 +8,6 @@ screen:
           type: Text
           props:
             data: "YAML + SHQL"
-
     body:
       type: Column
       children:
@@ -17,9 +16,17 @@ screen:
             decoration:
               hintText: "Enter some text..."
             onChanged: "shql: SET_TEXT(%)"
+            value: "shql: _current_text"
         - type: Text
           props:
             data: "shql: 'You entered: ' + _current_text"
+        - type: ElevatedButton
+          props:
+            onPressed: "shql: NAVIGATE('stats')"
+            child:
+              type: Text
+              props:
+                data: "Go to Stats"
         - type: Expanded
           child:
             type: ListView

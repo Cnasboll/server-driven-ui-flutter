@@ -1,0 +1,28 @@
+screen:
+  type: Scaffold
+  props:
+    appBar:
+      type: AppBar
+      props:
+        title:
+          type: Text
+          props:
+            data: "Stats Screen"
+    body:
+      type: Center
+      child:
+        type: Column
+        props:
+          mainAxisSize: "min"
+        children:
+          - type: Text
+            props:
+              data: "This is the stats screen."
+          - type: ElevatedButton
+            props:
+              onPressed: "shql: NAVIGATE('main')"
+              child:
+                type: Text
+                props:
+                  data: "Go back to Main"
+
