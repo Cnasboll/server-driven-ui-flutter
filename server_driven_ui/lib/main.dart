@@ -1,192 +1,172 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:server_driven_ui/yaml_ui/shql_bindings.dart';
+import 'package:server_driven_ui/yaml_ui/widget_registry.dart';
+import 'package:server_driven_ui/yaml_ui/yaml_ui_engine.dart';
 
-import 'yaml_ui/yaml_ui_engine.dart';
-import 'yaml_ui/widget_registry.dart';
-import 'yaml_ui/shql_bindings.dart';
-
-void main() {
-  runApp(const MyApp());
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  final yamlSource = await rootBundle.loadString('assets/ui.yaml');
+  final stdlibSource = await rootBundle.loadString('assets/shql/stdlib.shql');
+  final uiSource = await rootBundle.loadString('assets/shql/ui.shql');
+  runApp(
+    MyApp(
+      yamlSource: yamlSource,
+      stdlibSource: stdlibSource,
+      uiSource: uiSource,
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  const MyApp({
+    super.key,
+    required this.yamlSource,
+    required this.stdlibSource,
+    required this.uiSource,
+  });
+
+  final String yamlSource;
+  final String stdlibSource;
+  final String uiSource;
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'YAML + SHQL UI',
-      theme: ThemeData(useMaterial3: true),
-      home: const YamlDrivenScreen(),
+      title: 'Flutter Demo',
+      theme: ThemeData(primarySwatch: Colors.blue),
+      home: YamlDrivenScreen(
+        yamlSource: yamlSource,
+        stdlibSource: stdlibSource,
+        uiSource: uiSource,
+      ),
     );
   }
 }
 
 class YamlDrivenScreen extends StatefulWidget {
-  const YamlDrivenScreen({super.key});
+  const YamlDrivenScreen({
+    super.key,
+    required this.yamlSource,
+    required this.stdlibSource,
+    required this.uiSource,
+  });
+
+  final String yamlSource;
+  final String stdlibSource;
+  final String uiSource;
+
   @override
   State<YamlDrivenScreen> createState() => _YamlDrivenScreenState();
 }
 
 class _YamlDrivenScreenState extends State<YamlDrivenScreen> {
-  String? _yamlText;
-  late final WidgetRegistry _registry;
-
-  late final ShqlBindings _shql; // wraps your async runtime
-  late final YamlUiEngine _engine;
-
-  // Example: a simple console panel fed by SHQL PRINT
-  final List<String> _console = [];
+  YamlUiEngine? _engine;
+  dynamic _resolvedUiData;
+  bool _isLoading = true;
+  Object? _error;
+  final List<String> _logs = [];
 
   @override
   void initState() {
     super.initState();
-
-    _registry = WidgetRegistry.basic();
-
-    _shql = ShqlBindings(
-      // Replace with your runtime instance:
-      onMutated: () => setState(() {}),
-      printLine: (line) {
-        setState(() => _console.add(line));
-      },
-      readline: () => Future.value(null),
-      // Optional: provide UI helpers for externs
-      prompt: (message) => _promptDialog(context, message),
-    );
-
-    _engine = YamlUiEngine(
-      registry: _registry,
-      shql: _shql,
-      onErrorWidget: (title, details) =>
-          _ErrorPanel(title: title, details: details),
-    );
-
-    _loadAssets();
+    _initAndResolve();
   }
 
-  Future<void> _loadAssets() async {
-    final yaml = await rootBundle.loadString('assets/ui.yaml');
-    final stdlibCode = await rootBundle.loadString('assets/shql/stdlib.shql');
-    await _shql.loadProgram(
-      stdlibCode,
-      "Loading standard library...",
-      "Standard library loaded.",
-      "Failed to load standard library.",
-    );
+  Future<void> _initAndResolve() async {
+    try {
+      final shql = ShqlBindings(
+        onMutated: () {
+          if (!mounted) return;
+          _resolveUi();
+        },
+        printLine: (value) {
+          if (!mounted) return;
+          setState(() {
+            _logs.add(value.toString());
+          });
+        },
+        readline: () async => null,
+        prompt: (_) async => null,
+      );
 
-    final programCode = await rootBundle.loadString('assets/shql/state.shql');
-    await _shql.loadProgram(
-      programCode,
-      "Loading state script...",
-      "State script loaded.",
-      "Failed to load state script.",
-    );
+      // Sequentially load the programs.
+      await shql.loadProgram(widget.stdlibSource, name: 'standard library');
+      await shql.loadProgram(widget.uiSource, name: 'UI script');
 
-    final listUtilsCode = await rootBundle.loadString(
-      'assets/shql/list_utils.shql',
-    );
-    await _shql.loadProgram(
-      listUtilsCode,
-      "Loading list utils...",
-      "List utils loaded.",
-      "Failed to load list utils.",
-    );
+      final engine = YamlUiEngine(shql, WidgetRegistry.basic());
+      setState(() {
+        _engine = engine;
+      });
 
-    setState(() {
-      _yamlText = yaml;
-    });
+      // Perform the initial UI resolution.
+      await _resolveUi();
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _error = e;
+          _isLoading = false;
+        });
+      }
+    }
   }
 
-  Future<String?> _promptDialog(BuildContext context, String message) async {
-    final controller = TextEditingController();
-    return showDialog<String>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Input'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(message),
-            const SizedBox(height: 12),
-            TextField(controller: controller, autofocus: true),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, null),
-            child: const Text('Cancel'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(ctx, controller.text),
-            child: const Text('OK'),
-          ),
-        ],
-      ),
-    );
+  Future<void> _resolveUi() async {
+    if (_engine == null) return;
+    try {
+      final data = await _engine!.resolve(widget.yamlSource);
+      if (mounted) {
+        setState(() {
+          _resolvedUiData = data;
+          _isLoading = false;
+          _error = null;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _error = e;
+          _isLoading = false;
+        });
+      }
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    if (_yamlText == null) {
-      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    if (_isLoading) {
+      return const Material(child: Center(child: CircularProgressIndicator()));
     }
-
-    final ui = _engine.buildFromYamlString(_yamlText!, context);
-
-    return Scaffold(
-      body: SafeArea(
+    if (_error != null) {
+      return Material(
+        child: Center(
+          child: Text(
+            'Error: $_error',
+            style: const TextStyle(color: Colors.red),
+          ),
+        ),
+      );
+    }
+    if (_engine != null && _resolvedUiData != null) {
+      return Material(
         child: Column(
           children: [
-            Expanded(child: ui),
-            if (_console.isNotEmpty)
-              SizedBox(
-                height: 160,
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    border: Border(
-                      top: BorderSide(color: Theme.of(context).dividerColor),
-                    ),
-                  ),
-                  child: ListView.builder(
-                    padding: const EdgeInsets.all(8),
-                    itemCount: _console.length,
-                    itemBuilder: (ctx, i) => Text(_console[i]),
-                  ),
-                ),
+            Expanded(child: _engine!.build(_resolvedUiData, context)),
+            Container(
+              height: 200,
+              color: Colors.grey[200],
+              child: ListView.builder(
+                itemCount: _logs.length,
+                itemBuilder: (context, index) {
+                  return Text(_logs[index]);
+                },
               ),
+            ),
           ],
         ),
-      ),
-    );
-  }
-}
-
-class _ErrorPanel extends StatelessWidget {
-  final String title;
-  final String details;
-  const _ErrorPanel({required this.title, required this.details});
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Card(
-        margin: const EdgeInsets.all(16),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: DefaultTextStyle(
-            style: Theme.of(context).textTheme.bodyMedium!,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(title, style: Theme.of(context).textTheme.titleLarge),
-                const SizedBox(height: 8),
-                Text(details),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
+      );
+    }
+    // Should not happen, but provides a fallback.
+    return const Material(child: Center(child: Text('Engine not initialized')));
   }
 }

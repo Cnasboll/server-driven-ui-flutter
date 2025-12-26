@@ -1,12 +1,25 @@
 import 'package:flutter/material.dart';
 
+import 'package:server_driven_ui/yaml_ui/debouncer.dart';
 import 'resolvers.dart';
 import 'shql_bindings.dart';
 
 typedef ChildBuilder = Widget Function(dynamic node, String path);
 
+typedef WidgetFactory =
+    Widget Function(
+      BuildContext context,
+      Map<String, dynamic> props,
+      ChildBuilder buildChild,
+      dynamic child,
+      dynamic children,
+      String path,
+      ShqlBindings shql,
+      Key key,
+    );
+
 class WidgetRegistry {
-  final Map<String, _WidgetFactory> _factories;
+  final Map<String, WidgetFactory> _factories;
 
   WidgetRegistry(this._factories);
 
@@ -23,7 +36,11 @@ class WidgetRegistry {
     'Text': _buildText,
     'ElevatedButton': _buildElevatedButton,
     'ListView': _buildListView,
+    'TextField': _buildTextField,
+    'Expanded': _buildExpanded,
   });
+
+  WidgetFactory? get(String type) => _factories[type];
 
   Widget build({
     required String type,
@@ -39,7 +56,9 @@ class WidgetRegistry {
     if (f == null) {
       return _error(context, 'Unknown widget type: $type', 'Path: $path');
     }
-    return f(context, props, buildChild, child, children, path, shql);
+    // Create a key that is unique to the widget's path in the tree.
+    final key = ValueKey<String>(path);
+    return f(context, props, buildChild, child, children, path, shql, key);
   }
 
   static Widget _error(BuildContext context, String title, String details) {
@@ -66,17 +85,6 @@ class WidgetRegistry {
   }
 }
 
-typedef _WidgetFactory =
-    Widget Function(
-      BuildContext context,
-      Map<String, dynamic> props,
-      ChildBuilder buildChild,
-      dynamic child,
-      dynamic children,
-      String path,
-      ShqlBindings shql,
-    );
-
 Widget _buildScaffold(
   BuildContext context,
   Map<String, dynamic> props,
@@ -85,10 +93,12 @@ Widget _buildScaffold(
   dynamic children,
   String path,
   ShqlBindings shql,
+  Key key,
 ) {
   final appBarNode = props['appBar'];
-  final bodyNode = props['body'] ?? child;
+  final bodyNode = props['body'];
   return Scaffold(
+    key: key,
     appBar: appBarNode != null
         ? b(appBarNode, '$path.props.appBar') as PreferredSizeWidget
         : null,
@@ -104,9 +114,13 @@ Widget _buildAppBar(
   dynamic children,
   String path,
   ShqlBindings shql,
+  Key key,
 ) {
   final titleNode = props['title'] ?? child;
-  return AppBar(title: titleNode != null ? b(titleNode, '$path.title') : null);
+  return AppBar(
+    key: key,
+    title: titleNode != null ? b(titleNode, '$path.title') : null,
+  );
 }
 
 Widget _buildCenter(
@@ -117,8 +131,12 @@ Widget _buildCenter(
   dynamic children,
   String path,
   ShqlBindings shql,
+  Key key,
 ) {
-  return Center(child: child != null ? b(child, '$path.child') : null);
+  return Center(
+    key: key,
+    child: child != null ? b(child, '$path.child') : null,
+  );
 }
 
 Widget _buildColumn(
@@ -129,23 +147,31 @@ Widget _buildColumn(
   dynamic children,
   String path,
   ShqlBindings shql,
+  Key key,
 ) {
-  final list = (children is List) ? children : const [];
+  if (children != null && children is! List) {
+    return WidgetRegistry._error(
+      context,
+      'Invalid children for Column',
+      'Expected a list, but got ${children.runtimeType} at $path',
+    );
+  }
+
+  final childrenList = (children as List?) ?? [];
+
   return Column(
+    key: key,
     mainAxisAlignment: Resolvers.mainAxis(
-      props['mainAxisAlignment']?.toString(),
-      fallback: MainAxisAlignment.start,
+      props['mainAxisAlignment'] as String?,
     ),
     crossAxisAlignment: Resolvers.crossAxis(
-      props['crossAxisAlignment']?.toString(),
-      fallback: CrossAxisAlignment.center,
+      props['crossAxisAlignment'] as String?,
     ),
-    mainAxisSize: (props['mainAxisSize']?.toString().toLowerCase() == 'min')
-        ? MainAxisSize.min
-        : MainAxisSize.max,
-    children: [
-      for (var i = 0; i < list.length; i++) b(list[i], '$path.children[$i]'),
-    ],
+    children: childrenList
+        .asMap()
+        .entries
+        .map((entry) => b(entry.value, '$path.children[${entry.key}]'))
+        .toList(),
   );
 }
 
@@ -157,9 +183,11 @@ Widget _buildRow(
   dynamic children,
   String path,
   ShqlBindings shql,
+  Key key,
 ) {
   final list = (children is List) ? children : const [];
   return Row(
+    key: key,
     mainAxisAlignment: Resolvers.mainAxis(
       props['mainAxisAlignment']?.toString(),
       fallback: MainAxisAlignment.start,
@@ -185,8 +213,10 @@ Widget _buildPadding(
   dynamic children,
   String path,
   ShqlBindings shql,
+  Key key,
 ) {
   return Padding(
+    key: key,
     padding: Resolvers.edgeInsets(props['padding']),
     child: child != null ? b(child, '$path.child') : null,
   );
@@ -200,8 +230,10 @@ Widget _buildContainer(
   dynamic children,
   String path,
   ShqlBindings shql,
+  Key key,
 ) {
   return Container(
+    key: key,
     decoration: BoxDecoration(color: Resolvers.color(props['color'])),
     width: (props['width'] as num?)?.toDouble(),
     height: (props['height'] as num?)?.toDouble(),
@@ -218,8 +250,10 @@ Widget _buildSizedBox(
   dynamic children,
   String path,
   ShqlBindings shql,
+  Key key,
 ) {
   return SizedBox(
+    key: key,
     width: (props['width'] is num) ? (props['width'] as num).toDouble() : null,
     height: (props['height'] is num)
         ? (props['height'] as num).toDouble()
@@ -236,8 +270,9 @@ Widget _buildSpacer(
   dynamic children,
   String path,
   ShqlBindings shql,
+  Key key,
 ) {
-  return const Spacer();
+  return Spacer(key: key);
 }
 
 Widget _buildText(
@@ -248,14 +283,10 @@ Widget _buildText(
   dynamic children,
   String path,
   ShqlBindings shql,
+  Key key,
 ) {
   final data = props['data'];
-  // Support: data: "literal" OR data: "expr: someFunc()"
-  if (isShqlRef(data)) {
-    final expr = stripPrefix(data as String);
-    return _AsyncText(expr: expr, shql: shql);
-  }
-  return Text((data ?? '').toString());
+  return Text((data ?? '').toString(), key: key);
 }
 
 Widget _buildElevatedButton(
@@ -266,6 +297,7 @@ Widget _buildElevatedButton(
   dynamic children,
   String path,
   ShqlBindings shql,
+  Key key,
 ) {
   final childNode = props['child'] ?? child;
   final onPressed = props['onPressed'];
@@ -280,10 +312,128 @@ Widget _buildElevatedButton(
   }
 
   return ElevatedButton(
+    key: key,
     onPressed: cb,
     child: childNode != null
         ? b(childNode, '$path.child')
         : const Text('Button'),
+  );
+}
+
+Widget _buildExpanded(
+  BuildContext context,
+  Map<String, dynamic> props,
+  ChildBuilder b,
+  dynamic child,
+  dynamic children,
+  String path,
+  ShqlBindings shql,
+  Key key,
+) {
+  final childNode = props['child'] ?? child;
+  return Expanded(
+    key: key,
+    child: childNode != null
+        ? b(childNode, '$path.child')
+        : const SizedBox.shrink(),
+  );
+}
+
+class _StatefulTextField extends StatefulWidget {
+  const _StatefulTextField({
+    required this.shql,
+    this.onChanged,
+    this.initialValue,
+    this.decoration,
+    super.key,
+  });
+
+  final ShqlBindings shql;
+  final String? onChanged;
+  final String? initialValue;
+  final Map<String, dynamic>? decoration;
+
+  @override
+  State<_StatefulTextField> createState() => _StatefulTextFieldState();
+}
+
+class _StatefulTextFieldState extends State<_StatefulTextField> {
+  late final TextEditingController _controller;
+  late final Debouncer _debouncer;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = TextEditingController(text: widget.initialValue);
+    _debouncer = Debouncer(milliseconds: 500);
+  }
+
+  @override
+  void didUpdateWidget(covariant _StatefulTextField oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // If the initial value from the YAML changes, update the controller,
+    // but only if the text is not the same as the user is currently editing.
+    if (widget.initialValue != oldWidget.initialValue &&
+        widget.initialValue != _controller.text) {
+      // Using a post-frame callback to avoid conflicts with widget builds.
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _controller.text = widget.initialValue ?? '';
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    _debouncer.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final onChanged = widget.onChanged;
+    final decoration = widget.decoration ?? {};
+
+    return TextField(
+      controller: _controller,
+      onChanged: (value) {
+        // When the user types, we use the debouncer to delay the shql call.
+        if (isShqlRef(onChanged)) {
+          _debouncer.run(() {
+            final escapedValue = value.replaceAll("'", "''");
+            final callCode = stripPrefix(
+              onChanged as String,
+            ).replaceAll('%', "'$escapedValue'");
+            widget.shql.call(callCode).catchError((e) {
+              debugPrint('Error in debounced onChanged: $e');
+            });
+          });
+        }
+      },
+      decoration: InputDecoration(
+        hintText: decoration['hintText']?.toString(),
+        border: const OutlineInputBorder(),
+      ),
+    );
+  }
+}
+
+Widget _buildTextField(
+  BuildContext context,
+  Map<String, dynamic> props,
+  ChildBuilder b,
+  dynamic child,
+  dynamic children,
+  String path,
+  ShqlBindings shql,
+  Key key,
+) {
+  return _StatefulTextField(
+    key: key,
+    shql: shql,
+    onChanged: props['onChanged'] as String?,
+    initialValue: props['value'],
+    decoration: props['decoration'] as Map<String, dynamic>?,
   );
 }
 
@@ -295,34 +445,24 @@ Widget _buildListView(
   dynamic children,
   String path,
   ShqlBindings shql,
+  Key key,
 ) {
-  final childrenList = (children as List?) ?? [];
+  // By the time this factory is called, the engine has already resolved any
+  // shql: expression for `children`. We can assume it's a List.
+  if (children is! List) {
+    return WidgetRegistry._error(
+      context,
+      'Invalid children for ListView',
+      'Expected a list, but got ${children.runtimeType} at $path.children',
+    );
+  }
+
+  final childrenList = children;
   return ListView.builder(
+    key: key,
     itemCount: childrenList.length,
     itemBuilder: (BuildContext context, int i) {
       return b(childrenList[i], '$path.children[$i]');
     },
   );
-}
-
-/// A tiny async binding widget. Evaluates SHQL each build (OK for demos).
-/// If you want: cache per-frame or per-variable dependency later.
-class _AsyncText extends StatelessWidget {
-  final String expr;
-  final ShqlBindings shql;
-  const _AsyncText({required this.expr, required this.shql});
-
-  @override
-  Widget build(BuildContext context) {
-    return FutureBuilder<dynamic>(
-      future: shql.eval(expr),
-      builder: (ctx, snap) {
-        if (snap.connectionState != ConnectionState.done) {
-          return const Text('…');
-        }
-        if (snap.hasError) return Text('ERR: ${snap.error}');
-        return Text((snap.data ?? '').toString());
-      },
-    );
-  }
 }

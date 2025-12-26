@@ -8,14 +8,13 @@ import 'package:server_driven_ui/shql/parser/constants_set.dart';
 class ShqlBindings {
   late ConstantsSet _constantsSet;
   late Runtime _runtime;
-  VoidCallback onMutated;
   final CancellationToken _cancellationToken = CancellationToken();
 
   ShqlBindings({
     required this.onMutated,
-    required Function(dynamic value) printLine,
-    required Future<String?> Function() readline,
-    required Future<String?> Function(String prompt) prompt,
+    Function(dynamic value)? printLine,
+    Future<String?> Function()? readline,
+    Future<String?> Function(String prompt)? prompt,
   }) {
     _constantsSet = Runtime.prepareConstantsSet();
     _runtime = Runtime.prepareRuntime(_constantsSet);
@@ -24,48 +23,65 @@ class ShqlBindings {
     _runtime.promptFunction = prompt;
   }
 
-  Future<void> loadProgram(
-    String programText,
-    String loading,
-    String success,
-    String failure,
-  ) async {
-    _runtime.printFunction?.call(loading);
+  final VoidCallback onMutated;
+
+  Future<void> loadProgram(String programText, {String? name}) async {
+    if (name != null) {
+      _runtime.printFunction?.call('Loading $name ...');
+    }
     _runtime.printFunction?.call(programText);
+
     await Engine.execute(
           programText,
-          runtime: _runtime,
           constantsSet: _constantsSet,
+          runtime: _runtime,
           cancellationToken: _cancellationToken,
         )
-        .then((value) {
-          _runtime.printFunction?.call(success);
+        .then((_) {
+          if (name != null) {
+            _runtime.printFunction?.call('Finished loading $name.');
+          }
         })
-        .catchError((error, stackTrace) {
-          _runtime.printFunction?.call('$failure\n$error');
+        .catchError((e) {
+          if (name != null) {
+            _runtime.printFunction?.call(
+              'Failed to load $name: ${e.toString()}.',
+            );
+          }
+          throw e;
         });
   }
 
-  /// Evaluate expression for binding.
   Future<dynamic> eval(String expr) async {
-    return await Engine.execute(
-      expr,
-      runtime: _runtime,
-      constantsSet: _constantsSet,
-      cancellationToken: _cancellationToken,
-    );
+    try {
+      return await Engine.execute(
+        expr,
+        runtime: _runtime,
+        constantsSet: _constantsSet,
+        cancellationToken: _cancellationToken,
+      );
+    } catch (e) {
+      // Rethrow the exception to be handled by the FutureBuilder in the UI.
+      rethrow;
+    }
   }
 
-  /// Execute statement/procedure for events. Triggers rebuild after success.
   Future<dynamic> call(String code) async {
-    final res = await Engine.execute(
-      code,
-      runtime: _runtime,
-      constantsSet: _constantsSet,
-      cancellationToken: _cancellationToken,
-    );
-    onMutated();
-    return res;
+    try {
+      final result = await Engine.execute(
+        code,
+        runtime: _runtime,
+        constantsSet: _constantsSet,
+        cancellationToken: _cancellationToken,
+      );
+
+      // If the call was successful, assume a mutation occurred and notify listeners.
+      onMutated();
+      return result;
+    } catch (e) {
+      // Rethrow to allow the caller (e.g., event handler in a widget) to handle it.
+      rethrow;
+    }
   }
 }
 

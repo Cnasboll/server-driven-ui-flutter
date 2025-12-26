@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:server_driven_ui/yaml_ui/shql_bindings.dart';
 
 /// Minimal type resolvers you can expand.
 class Resolvers {
@@ -71,9 +72,18 @@ class Resolvers {
         final full = hex.length == 6 ? 'FF$hex' : hex;
         return Color(int.parse(full, radix: 16));
       }
-      if (s.startsWith('0x'))
+      if (s.startsWith('0x')) {
         return Color(int.parse(s.substring(2), radix: 16));
+      }
     }
     return null;
   }
+}
+
+Map<String, dynamic> resolveMap(Map map, ShqlBindings shql) {
+  final newMap = <String, dynamic>{};
+  for (var entry in map.entries) {
+    newMap[entry.key.toString()] = entry.value;
+  }
+  return newMap;
 }
