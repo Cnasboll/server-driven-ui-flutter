@@ -1,3 +1,19 @@
+-- Initialize a global list to hold the counts for each item.
+item_counts := [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+
+
+-- A global function to increment the count for a specific item.
+INCREMENT_ITEM(index) := BEGIN
+    item_counts[index] := item_counts[index] + 1;
+END;
+
+
+-- A cache to hold the static parts of the list items.
+_list_item_cache := [];
+
+-- A global variable to store the rendered list of widgets.
+_live_list := [];
+
 -- This function is now only used to generate the initial cache.
 _GEN_LIST_ITEM_TEMPLATE(i) := {
     "type": "Container",
@@ -60,4 +76,13 @@ INCREMENT_ITEM(i) := BEGIN
     
     -- Directly mutate the data in the live list.
     _live_list[i]["child"]["children"][0]["props"]["data"] := 'Item ' + STRING(i + 1) + ': ' + STRING(item_counts[i]);
+END;
+
+
+_current_text := '';
+
+SET_TEXT(new_text) := BEGIN
+    -- print('SET_TEXT("'+new_text+'")');
+    _current_text := new_text;
+    -- print('_current_text = "'+_current_text+'"');
 END;

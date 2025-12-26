@@ -10,5 +10,17 @@ screen:
             data: "YAML + SHQL"
 
     body:
-      type: ListView
-      children: "shql: GEN_LIST(20)"
+      type: Column
+      children:
+        - type: TextField
+          props:
+            decoration:
+              hintText: "Enter some text..."
+            onChanged: "shql: SET_TEXT(%)"
+        - type: Text
+          props:
+            data: "shql: 'You entered: ' + _current_text"
+        - type: Expanded
+          child:
+            type: ListView
+            children: "shql: GEN_LIST(20)"
