@@ -248,6 +248,67 @@ void main() {
     expect(list.symbol, Symbols.list);
     expect(list.children.length, 2);
   });
+
+  test('Parse list indexing', () {
+    var v = Tokenizer.tokenize('list[0]').toList();
+    var constantsSet = ConstantsSet();
+    var p = Parser.parseExpression(v.lookahead(), constantsSet);
+    expect(p.symbol, Symbols.call);
+    expect(p.children.length, 2);
+  });
+
+  test('Parse list and map indexing', () {
+    var v = Tokenizer.tokenize('(list[0])["props"]').toList();
+    var constantsSet = ConstantsSet();
+    var p = Parser.parseExpression(v.lookahead(), constantsSet);
+    expect(p.symbol, Symbols.call);
+    expect(p.children.length, 2);
+
+    var callNode = p.children[0];
+    expect(callNode.symbol, Symbols.call);
+    expect(callNode.children.length, 2);
+
+    var list = p.children[1];
+    expect(list.symbol, Symbols.list);
+    expect(list.children.length, 1);
+  });
+
+  test('Parse nested list indexing without parentheses', () {
+    var v = Tokenizer.tokenize('list[0]["prop"]').toList();
+    var constantsSet = ConstantsSet();
+    var p = Parser.parseExpression(v.lookahead(), constantsSet);
+    expect(p.symbol, Symbols.call);
+    expect(p.children.length, 2);
+
+    var innerCall = p.children[0];
+    expect(innerCall.symbol, Symbols.call);
+    expect(innerCall.children.length, 2);
+
+    var listIdentifier = innerCall.children[0];
+    expect(listIdentifier.symbol, Symbols.identifier);
+
+    var firstIndex = innerCall.children[1];
+    expect(firstIndex.symbol, Symbols.list);
+    expect(firstIndex.children.length, 1);
+    expect(firstIndex.children[0].symbol, Symbols.integerLiteral);
+
+    var secondIndex = p.children[1];
+    expect(secondIndex.symbol, Symbols.list);
+    expect(secondIndex.children.length, 1);
+    expect(secondIndex.children[0].symbol, Symbols.stringLiteral);
+  });
+
+  test('Parse nested list indexing', () {
+    var v = Tokenizer.tokenize('list[0][1]').toList();
+    var constantsSet = ConstantsSet();
+    var p = Parser.parseExpression(v.lookahead(), constantsSet);
+    expect(p.symbol, Symbols.call);
+    expect(p.children.length, 2);
+    var list = p.children[1];
+    expect(list.symbol, Symbols.list);
+    expect(list.children.length, 1);
+  });
+
   test('Parse member access', () {
     var v = Tokenizer.tokenize('powerstats.strength').toList();
     var constantsSet = ConstantsSet();

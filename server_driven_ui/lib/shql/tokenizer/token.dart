@@ -357,6 +357,9 @@ class Token {
       Symbols.or: precedence,
       Symbols.xor: precedence++,
 
+      // Colon
+      Symbols.colon: precedence++,
+
       // Lambda
       Symbols.lambdaExpression: precedence++,
 

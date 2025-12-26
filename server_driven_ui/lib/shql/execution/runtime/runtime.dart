@@ -1,8 +1,11 @@
 import 'dart:math';
+import 'dart:convert';
+
+import 'package:crypto/crypto.dart';
 
 import 'package:server_driven_ui/shql/engine/cancellation_token.dart';
 import 'package:server_driven_ui/shql/execution/execution_node.dart';
-import 'package:server_driven_ui/shql/execution/lambdas/user_function_execution_node.dart';
+import 'package:server_driven_ui/shql/execution/runtime/execution.dart';
 import 'package:server_driven_ui/shql/parser/constants_set.dart';
 import 'package:server_driven_ui/shql/parser/parse_tree.dart';
 
@@ -29,7 +32,7 @@ class UserFunction extends Callable {
 }
 
 class NullaryFunction extends Callable {
-  final Function(ExecutionNode caller) function;
+  final Function(Execution execution, ExecutionNode caller) function;
 
   NullaryFunction({
     required super.name,
@@ -39,7 +42,8 @@ class NullaryFunction extends Callable {
 }
 
 class UnaryFunction extends Callable {
-  final Function(ExecutionNode caller, dynamic p1) function;
+  final Function(Execution execution, ExecutionNode caller, dynamic p1)
+  function;
 
   UnaryFunction({
     required super.name,
@@ -49,7 +53,13 @@ class UnaryFunction extends Callable {
 }
 
 class BinaryFunction extends Callable {
-  final Function(ExecutionNode caller, dynamic p1, dynamic p2) function;
+  final Function(
+    Execution execution,
+    ExecutionNode caller,
+    dynamic p1,
+    dynamic p2,
+  )
+  function;
 
   BinaryFunction({
     required super.name,
@@ -63,6 +73,139 @@ class Constant {
   final int identifier;
 
   Constant(this.value, this.identifier);
+}
+
+class Object {
+  final Map<int, dynamic> members = {};
+  final Map<int, dynamic> variables = {};
+  final Map<int, UserFunction> userFunctons = {};
+
+  dynamic resolveIdentifier(int identifier) {
+    return members[identifier];
+  }
+
+  bool hasMember(int identifier) {
+    return members.containsKey(identifier);
+  }
+
+  void setVariable(int identifier, dynamic value) {
+    members[identifier] = variables[identifier] = value;
+    userFunctons.remove(identifier);
+  }
+
+  UserFunction defineUserFunction(int identifier, UserFunction userFunction) {
+    members[identifier] = userFunctons[identifier] = userFunction;
+    variables.remove(identifier);
+    return userFunction;
+  }
+
+  Object clone() {
+    var newObject = Object();
+    newObject.members.addAll(members);
+    newObject.variables.addAll(variables);
+    newObject.userFunctons.addAll(userFunctons);
+    return newObject;
+  }
+}
+
+class Scope {
+  Object members;
+  ConstantsTable<dynamic>? constants;
+  Scope? parent;
+  Scope(this.members, {this.constants, this.parent});
+
+  (dynamic, Scope?, bool) resolveIdentifier(int identifier) {
+    Scope? current = this;
+    while (current != null) {
+      var member = current.members.resolveIdentifier(identifier);
+      if (member != null) {
+        return (member, current, false);
+      }
+      current = current.parent;
+    }
+
+    if (constants != null) {
+      var (value, index) = constants!.getByIdentifier(identifier);
+      if (index != null) {
+        return (value, this, true);
+      }
+    }
+
+    return (null, null, false);
+  }
+
+  bool hasMember(int identifier) {
+    Scope? current = this;
+    while (current != null) {
+      if (current.members.hasMember(identifier)) {
+        return true;
+      }
+      current = current.parent;
+    }
+
+    if (constants != null) {
+      var (value, index) = constants!.getByIdentifier(identifier);
+      return index != null;
+    }
+    return false;
+  }
+
+  (Scope, String?) setVariable(int identifier, dynamic value) {
+    var (existingValue, containingScope, isConstant) = resolveIdentifier(
+      identifier,
+    );
+    if (existingValue != null && isConstant) {
+      // Cannot modify constant
+      return (containingScope!, "Cannot modify constant");
+    }
+    containingScope ??= this;
+    containingScope.members.setVariable(identifier, value);
+    return (containingScope, null);
+  }
+
+  (Scope, UserFunction, String?) defineUserFunction(
+    int identifier,
+    UserFunction userFunction,
+  ) {
+    var (existingValue, containingScope, isConstant) = resolveIdentifier(
+      identifier,
+    );
+    if (isConstant) {
+      // Cannot modify constant
+      return (
+        containingScope!,
+        userFunction,
+        "Cannot shadow constant with function",
+      );
+    }
+
+    containingScope ??= this;
+    return (
+      containingScope,
+      containingScope.members.defineUserFunction(identifier, userFunction),
+      null,
+    );
+  }
+
+  Scope clone() {
+    Scope? current = this;
+    Scope? tail;
+    Scope? head;
+    while (current != null) {
+      var newNode = Scope(
+        current.members.clone(),
+        constants: current.constants,
+      );
+      if (head == null) {
+        head = tail = newNode;
+      } else {
+        tail!.parent = newNode;
+        tail = newNode;
+      }
+      current = current.parent;
+    }
+    return head!;
+  }
 }
 
 enum BreakState { none, breaked, continued }
@@ -247,7 +390,7 @@ class Thread {
   }
 
   Future<bool> tick(
-    Runtime runtime, [
+    Execution execution, [
     CancellationToken? cancellationToken,
   ]) async {
     while ((cancellationToken == null || !await cancellationToken.check())) {
@@ -265,7 +408,7 @@ class Thread {
       if (currentNode == null) {
         return true;
       }
-      var tickResult = await currentNode.tick(runtime, cancellationToken);
+      var tickResult = await currentNode.tick(execution, cancellationToken);
       if (tickResult == TickResult.iterated) {
         return false;
       }
@@ -286,149 +429,31 @@ class Thread {
   Thread? _joinTarget;
 }
 
-class Object {
-  final Map<int, dynamic> members = {};
-  final Map<int, dynamic> variables = {};
-  final Map<int, UserFunction> userFunctons = {};
-
-  dynamic resolveIdentifier(int identifier) {
-    return members[identifier];
-  }
-
-  bool hasMember(int identifier) {
-    return members.containsKey(identifier);
-  }
-
-  void setVariable(int identifier, dynamic value) {
-    members[identifier] = variables[identifier] = value;
-    userFunctons.remove(identifier);
-  }
-
-  UserFunction defineUserFunction(int identifier, UserFunction userFunction) {
-    members[identifier] = userFunctons[identifier] = userFunction;
-    variables.remove(identifier);
-    return userFunction;
-  }
-
-  Object clone() {
-    var newObject = Object();
-    newObject.members.addAll(members);
-    newObject.variables.addAll(variables);
-    newObject.userFunctons.addAll(userFunctons);
-    return newObject;
-  }
-}
-
-class Scope {
-  Object members;
-  ConstantsTable<dynamic>? constants;
-  Scope? parent;
-  Scope(this.members, {this.constants, this.parent});
-
-  (dynamic, Scope?, bool) resolveIdentifier(int identifier) {
-    Scope? current = this;
-    while (current != null) {
-      var member = current.members.resolveIdentifier(identifier);
-      if (member != null) {
-        return (member, current, false);
-      }
-      current = current.parent;
-    }
-
-    if (constants != null) {
-      var (value, index) = constants!.getByIdentifier(identifier);
-      if (index != null) {
-        return (value, this, true);
-      }
-    }
-
-    return (null, null, false);
-  }
-
-  bool hasMember(int identifier) {
-    Scope? current = this;
-    while (current != null) {
-      if (current.members.hasMember(identifier)) {
-        return true;
-      }
-      current = current.parent;
-    }
-
-    if (constants != null) {
-      var (value, index) = constants!.getByIdentifier(identifier);
-      return index != null;
-    }
-    return false;
-  }
-
-  (Scope, String?) setVariable(int identifier, dynamic value) {
-    var (existingValue, containingScope, isConstant) = resolveIdentifier(
-      identifier,
-    );
-    if (existingValue != null && isConstant) {
-      // Cannot modify constant
-      return (containingScope!, "Cannot modify constant");
-    }
-    containingScope ??= this;
-    containingScope.members.setVariable(identifier, value);
-    return (containingScope, null);
-  }
-
-  (Scope, UserFunction, String?) defineUserFunction(
-    int identifier,
-    UserFunction userFunction,
-  ) {
-    var (existingValue, containingScope, isConstant) = resolveIdentifier(
-      identifier,
-    );
-    if (isConstant) {
-      // Cannot modify constant
-      return (
-        containingScope!,
-        userFunction,
-        "Cannot shadow constant with function",
-      );
-    }
-
-    containingScope ??= this;
-    return (
-      containingScope,
-      containingScope.members.defineUserFunction(identifier, userFunction),
-      null,
-    );
-  }
-
-  Scope clone() {
-    Scope? current = this;
-    Scope? tail;
-    Scope? head;
-    while (current != null) {
-      var newNode = Scope(
-        current.members.clone(),
-        constants: current.constants,
-      );
-      if (head == null) {
-        head = tail = newNode;
-      } else {
-        tail!.parent = newNode;
-        tail = newNode;
-      }
-      current = current.parent;
-    }
-    return head!;
-  }
-}
-
 class Runtime {
   late final ConstantsTable<String> _identifiers;
-  final Map<String, Function(ExecutionNode caller)> _nullaryFunctions = {};
-  late final Map<int, Function(ExecutionNode caller, dynamic p1)>
+  final Map<String, Function(Execution execution, ExecutionNode caller)>
+  _nullaryFunctions = {};
+  late final Map<
+    int,
+    Function(Execution execution, ExecutionNode caller, dynamic p1)
+  >
   _unaryFunctions;
-  late final Map<int, Function(ExecutionNode caller, dynamic p1, dynamic p2)>
+  late final Map<
+    int,
+    Function(Execution execution, ExecutionNode caller, dynamic p1, dynamic p2)
+  >
   _binaryFunctions;
-  late final Thread mainThread;
-  late final Map<int, Thread> threads;
-  int nextThreadId = 1;
+  late final Map<
+    int,
+    Function(
+      Execution execution,
+      ExecutionNode caller,
+      dynamic p1,
+      dynamic p2,
+      dynamic p3,
+    )
+  >
+  _ternaryFunctions;
   late final Scope globalScope;
   final Map<int, Runtime> _subModelScopes = {};
   bool _sandboxed = false;
@@ -444,12 +469,13 @@ class Runtime {
     ConstantsSet? constantsSet,
     required Map<int, Function(dynamic p1)> unaryFunctions,
     required Map<int, Function(dynamic p1, dynamic p2)> binaryFunctions,
+    required Map<int, Function(dynamic p1, dynamic p2, dynamic p3)>
+    ternaryFunctions,
   }) {
     _identifiers = constantsSet?.identifiers ?? ConstantsTable();
     _unaryFunctions = Map.from(unaryFunctions);
     _binaryFunctions = Map.from(binaryFunctions);
-    mainThread = Thread(id: 0);
-    threads = {0: mainThread};
+    _ternaryFunctions = Map.from(ternaryFunctions);
     globalScope = Scope(
       Object(),
       constants: constantsSet?.constants ?? ConstantsTable(),
@@ -462,8 +488,7 @@ class Runtime {
     _nullaryFunctions.addAll(other._nullaryFunctions);
     _unaryFunctions = Map.from(other._unaryFunctions);
     _binaryFunctions = Map.from(other._binaryFunctions);
-    mainThread = Thread(id: 0);
-    threads = {0: mainThread};
+    _ternaryFunctions = Map.from(other._ternaryFunctions);
     globalScope = other.globalScope.clone();
     _subModelScopes.addAll(other._subModelScopes);
     printFunction = other.printFunction;
@@ -477,9 +502,6 @@ class Runtime {
   }
 
   Runtime._subModel(Runtime parent) {
-    mainThread = parent.mainThread;
-    nextThreadId = parent.nextThreadId;
-    threads = parent.threads;
     globalScope = Scope(Object(), constants: parent.globalScope.constants);
     _identifiers = parent._identifiers;
     // Sub-models have their own global scope
@@ -500,48 +522,19 @@ class Runtime {
     return scope;
   }
 
-  Future<bool> tick(
-    Runtime runtime, [
-    CancellationToken? cancellationToken,
-  ]) async {
-    // Never remove main thread even if "idle"
-    threads.removeWhere((key, thread) => key > 0 && thread.isIdle);
-    var allTreads = threads.values.toList();
-    for (var thread in allTreads) {
-      if (thread.isIdle) {
-        continue;
-      }
-      if (cancellationToken != null && await cancellationToken.check()) {
-        return true;
-      }
-
-      if (await thread.tick(runtime, cancellationToken)) {
-        if (cancellationToken != null && await cancellationToken.check()) {
-          return true;
-        }
-        continue;
-      }
-    }
-    return threads.values.every((thread) => thread.isIdle);
-  }
-
-  void reset() {
-    for (var thread in threads.values) {
-      thread.reset();
-    }
-  }
-
   bool hasNullaryFunction(String name) {
     return _nullaryFunctions.containsKey(name);
   }
 
-  Function(ExecutionNode caller)? getNullaryFunction(String name) {
+  Function(Execution execution, ExecutionNode caller)? getNullaryFunction(
+    String name,
+  ) {
     return _nullaryFunctions[name];
   }
 
   void setNullaryFunction(
     String name,
-    dynamic Function(ExecutionNode caller) nullaryFunction,
+    dynamic Function(Execution execution, ExecutionNode caller) nullaryFunction,
   ) {
     _nullaryFunctions[name] = nullaryFunction;
   }
@@ -550,20 +543,21 @@ class Runtime {
     return _unaryFunctions.containsKey(identifier);
   }
 
-  Function(ExecutionNode caller, dynamic p1)? getUnaryFunction(int identifier) {
+  Function(Execution execution, ExecutionNode caller, dynamic p1)?
+  getUnaryFunction(int identifier) {
     return _unaryFunctions[identifier];
   }
 
   void setUnaryFunction(
     String name,
-    dynamic Function(ExecutionNode caller, dynamic p1) unaryFunction,
+    dynamic Function(Execution execution, ExecutionNode caller, dynamic p1)
+    unaryFunction,
   ) {
     _unaryFunctions[identifiers.include(name)] = unaryFunction;
   }
 
-  Function(ExecutionNode caller, dynamic p1, dynamic p2)? getBinaryFunction(
-    int identifier,
-  ) {
+  Function(Execution execution, ExecutionNode caller, dynamic p1, dynamic p2)?
+  getBinaryFunction(int identifier) {
     return _binaryFunctions[identifier];
   }
 
@@ -573,13 +567,47 @@ class Runtime {
 
   void setBinaryFunction(
     String name,
-    dynamic Function(ExecutionNode caller, dynamic p1, dynamic p2)
+    dynamic Function(
+      Execution execution,
+      ExecutionNode caller,
+      dynamic p1,
+      dynamic p2,
+    )
     binaryFunction,
   ) {
     _binaryFunctions[identifiers.include(name)] = binaryFunction;
   }
 
-  void print(ExecutionNode caller, dynamic value) {
+  Function(
+    Execution execution,
+    ExecutionNode caller,
+    dynamic p1,
+    dynamic p2,
+    dynamic p3,
+  )?
+  getTernaryFunction(int identifier) {
+    return _ternaryFunctions[identifier];
+  }
+
+  bool hasTernaryFunction(int identifier) {
+    return _ternaryFunctions.containsKey(identifier);
+  }
+
+  void setTernaryFunction(
+    String name,
+    dynamic Function(
+      Execution execution,
+      ExecutionNode caller,
+      dynamic p1,
+      dynamic p2,
+      dynamic p3,
+    )
+    ternaryFunction,
+  ) {
+    _ternaryFunctions[identifiers.include(name)] = ternaryFunction;
+  }
+
+  void print(Execution execution, ExecutionNode caller, dynamic value) {
     if (sandboxed) {
       return;
     }
@@ -587,7 +615,11 @@ class Runtime {
     printFunction?.call(value);
   }
 
-  Future<String> prompt(ExecutionNode caller, dynamic prompt) async {
+  Future<String> prompt(
+    Execution execution,
+    ExecutionNode caller,
+    dynamic prompt,
+  ) async {
     if (sandboxed) {
       return "";
     }
@@ -595,7 +627,7 @@ class Runtime {
     return await promptFunction?.call(prompt) ?? "";
   }
 
-  Future<String> readLine(ExecutionNode caller) async {
+  Future<String> readLine(Execution execution, ExecutionNode caller) async {
     if (sandboxed) {
       return "";
     }
@@ -604,6 +636,7 @@ class Runtime {
   }
 
   Future<void> plot(
+    Execution execution,
     ExecutionNode caller,
     dynamic xVector,
     dynamic yVector,
@@ -614,7 +647,7 @@ class Runtime {
     return await plotFunction?.call(xVector, yVector);
   }
 
-  Future<void> cls(ExecutionNode caller) async {
+  Future<void> cls(Execution execution, ExecutionNode caller) async {
     if (sandboxed) {
       return;
     }
@@ -622,7 +655,7 @@ class Runtime {
     await clsFunction?.call();
   }
 
-  Future<void> hideGraph(ExecutionNode caller) async {
+  Future<void> hideGraph(Execution execution, ExecutionNode caller) async {
     if (sandboxed) {
       return;
     }
@@ -630,20 +663,15 @@ class Runtime {
     await hideGraphFunction?.call();
   }
 
-  Future<Thread> startThread(ExecutionNode caller, dynamic userFunction) async {
-    var thread = Thread(id: nextThreadId++);
-    threads[thread.id] = thread;
-
-    UserFunctionExecutionNode(
-      userFunction,
-      [],
-      thread: thread,
-      scope: caller.scope,
-    );
-    return thread;
+  Future<Thread> startThread(
+    Execution execution,
+    ExecutionNode caller,
+    dynamic userFunction,
+  ) async {
+    return execution.startThread(caller, userFunction);
   }
 
-  void joinThread(ExecutionNode caller, dynamic thread) {
+  void joinThread(Execution execution, ExecutionNode caller, dynamic thread) {
     if (sandboxed) {
       return;
     }
@@ -651,7 +679,12 @@ class Runtime {
     caller.thread.join(thread);
   }
 
-  extern(ExecutionNode caller, dynamic name, dynamic args) {
+  dynamic extern(
+    Execution execution,
+    ExecutionNode caller,
+    dynamic name,
+    dynamic args,
+  ) {
     var unaryFunction = unaryFunctions[name];
     if (unaryFunction != null) {
       if (args is List && args.length == 1) {
@@ -662,6 +695,13 @@ class Runtime {
     if (binaryFunction != null) {
       if (args is List && args.length == 2) {
         return binaryFunction(args[0], args[1]);
+      }
+    }
+
+    var ternaryFunction = ternaryFunctions[name];
+    if (ternaryFunction != null) {
+      if (args is List && args.length == 3) {
+        return ternaryFunction(args[0], args[1], args[2]);
       }
     }
     return null;
@@ -698,10 +738,13 @@ class Runtime {
 
     final binaryFns = <int, Function(dynamic p1, dynamic p2)>{};
 
+    final ternaryFns = <int, Function(dynamic p1, dynamic p2, dynamic p3)>{};
+
     var runtime = Runtime(
       constantsSet: constantsSet,
       unaryFunctions: unaryFns,
       binaryFunctions: binaryFns,
+      ternaryFunctions: ternaryFns,
     );
     return runtime;
   }
@@ -723,6 +766,22 @@ class Runtime {
 
   static final Map<String, dynamic Function(ExecutionNode caller, dynamic)>
   unaryFunctions = {
+    "CLONE": (caller, a) {
+      if (a is Map) {
+        return _deepCopyMap(a);
+      }
+      if (a is List) {
+        return _deepCopy(a);
+      }
+      if (a is String) {
+        return String.fromCharCodes(a.codeUnits);
+      }
+      if (a is Object) {
+        return a.clone();
+      }
+      return a;
+    },
+    "MD5": (caller, a) => md5.convert(utf8.encode(a.toString())).toString(),
     "SIN": (caller, a) => sin(a),
     "COS": (caller, a) => cos(a),
     "TAN": (caller, a) => tan(a),
@@ -771,6 +830,23 @@ class Runtime {
     },
   };
 
+  static dynamic _deepCopy(dynamic obj) {
+    if (obj is Map) {
+      return _deepCopyMap(obj);
+    } else if (obj is List) {
+      return obj.map((e) => _deepCopy(e)).toList();
+    }
+    return obj;
+  }
+
+  static Map<dynamic, dynamic> _deepCopyMap(Map<dynamic, dynamic> map) {
+    final newMap = <dynamic, dynamic>{};
+    map.forEach((key, value) {
+      newMap[_deepCopy(key)] = _deepCopy(value);
+    });
+    return newMap;
+  }
+
   static final Map<String, dynamic Function(dynamic, dynamic)> binaryFunctions =
       {
         "MIN": (a, b) => min(a, b),
@@ -789,6 +865,16 @@ class Runtime {
           return a;
         },
       };
+
+  static final Map<String, dynamic Function(dynamic, dynamic, dynamic)>
+  ternaryFunctions = {
+    "SUBSTRING": (a, start, end) {
+      if (a is String && start is int && end is int) {
+        return a.substring(start, end);
+      }
+      return a;
+    },
+  };
 
   bool get sandboxed => _sandboxed;
 }

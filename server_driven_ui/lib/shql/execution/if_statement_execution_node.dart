@@ -2,7 +2,7 @@ import 'package:server_driven_ui/shql/engine/cancellation_token.dart';
 import 'package:server_driven_ui/shql/engine/engine.dart';
 import 'package:server_driven_ui/shql/execution/execution_node.dart';
 import 'package:server_driven_ui/shql/execution/lazy_execution_node.dart';
-import 'package:server_driven_ui/shql/execution/runtime.dart';
+import 'package:server_driven_ui/shql/execution/runtime/execution.dart';
 
 class IfStatementExecutionNode extends LazyExecutionNode {
   IfStatementExecutionNode(
@@ -16,7 +16,7 @@ class IfStatementExecutionNode extends LazyExecutionNode {
 
   @override
   Future<TickResult> doTick(
-    Runtime runtime,
+    Execution execution,
     CancellationToken? cancellationToken,
   ) async {
     if (_conditionNode == null) {

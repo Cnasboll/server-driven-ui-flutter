@@ -19,8 +19,10 @@ class WidgetRegistry {
     'Padding': _buildPadding,
     'Container': _buildContainer,
     'SizedBox': _buildSizedBox,
+    'Spacer': _buildSpacer,
     'Text': _buildText,
     'ElevatedButton': _buildElevatedButton,
+    'ListView': _buildListView,
   });
 
   Widget build({
@@ -200,7 +202,7 @@ Widget _buildContainer(
   ShqlBindings shql,
 ) {
   return Container(
-    color: Resolvers.color(props['color']),
+    decoration: BoxDecoration(color: Resolvers.color(props['color'])),
     width: (props['width'] as num?)?.toDouble(),
     height: (props['height'] as num?)?.toDouble(),
     padding: Resolvers.edgeInsets(props['padding']),
@@ -224,6 +226,18 @@ Widget _buildSizedBox(
         : null,
     child: child != null ? b(child, '$path.child') : null,
   );
+}
+
+Widget _buildSpacer(
+  BuildContext context,
+  Map<String, dynamic> props,
+  ChildBuilder b,
+  dynamic child,
+  dynamic children,
+  String path,
+  ShqlBindings shql,
+) {
+  return const Spacer();
 }
 
 Widget _buildText(
@@ -270,6 +284,24 @@ Widget _buildElevatedButton(
     child: childNode != null
         ? b(childNode, '$path.child')
         : const Text('Button'),
+  );
+}
+
+Widget _buildListView(
+  BuildContext context,
+  Map<String, dynamic> props,
+  ChildBuilder b,
+  dynamic child,
+  dynamic children,
+  String path,
+  ShqlBindings shql,
+) {
+  final childrenList = (children as List?) ?? [];
+  return ListView.builder(
+    itemCount: childrenList.length,
+    itemBuilder: (BuildContext context, int i) {
+      return b(childrenList[i], '$path.children[$i]');
+    },
   );
 }
 

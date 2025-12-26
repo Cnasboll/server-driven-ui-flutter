@@ -1,5 +1,5 @@
 import 'package:server_driven_ui/shql/engine/engine.dart';
-import 'package:server_driven_ui/shql/execution/runtime.dart';
+import 'package:server_driven_ui/shql/execution/runtime/runtime.dart';
 import 'package:server_driven_ui/shql/parser/constants_set.dart';
 import 'package:server_driven_ui/shql/parser/lookahead_iterator.dart';
 import 'package:server_driven_ui/shql/parser/parser.dart';
@@ -12,6 +12,8 @@ Future<(Runtime, ConstantsSet)> _loadStdLib() async {
   var runtime = Runtime.prepareRuntime(constantsSet);
   final stdlibCode = """
 --- External unary fuctions
+CLONE(a) := _EXTERN("CLONE", [a]);
+MD5(a) := _EXTERN("MD5", [a]);
 SIN(a) := _EXTERN("SIN", [a]);
 COS(a) := _EXTERN("COS", [a]);
 TAN(a) := _EXTERN("TAN", [a]);
@@ -28,6 +30,7 @@ DOUBLE(a) := _EXTERN("DOUBLE", [a]);
 STRING(a) := _EXTERN("STRING", [a]);
 ROUND(a) := _EXTERN("ROUND", [a]);
 LENGTH(a) := _EXTERN("LENGTH", [a]);
+MD5(a) := _EXTERN("MD5", [a]);
 
 -- External binary functions
 MIN(a,b) := _EXTERN("MIN", [a,b]);
@@ -35,6 +38,26 @@ MAX(a,b) := _EXTERN("MAX", [a,b]);
 ATAN2(a,b) := _EXTERN("ATAN2", [a,b]);
 POW(a,b) := _EXTERN("POW", [a,b]);
 DIM(a,b) := _EXTERN("DIM", [a,b]);
+
+-- External ternary functions
+SUBSTRING(a, b, c) := _EXTERN("SUBSTRING", [a, b, c]);
+
+-- Plot a function
+PLOT(f, x1, x2) := BEGIN
+    x_vector := [];
+    y_vector := [];
+    range := DOUBLE(x2)-DOUBLE(x1)
+    step := MAX(0.1, range / 100.0);
+    start := DOUBLE(x1);
+    FOR x := start to X2 STEP step DO BEGIN
+        x_vector := x_vector + [x];
+        y_vector := y_vector + [f(x)];
+        if x > start then
+            _DISPLAY_GRAPH(x_vector, y_vector);    
+    END;
+    PRINT("Type HIDE_GRAPH to hide graph again");
+END;
+
 """;
   await Engine.execute(
     stdlibCode,
@@ -521,6 +544,95 @@ void main() {
     );
   });
 
+  test("Test list utils", () async {
+    var (runtime, constantsSet) = await _loadStdLib();
+
+    var listUtilsCodde = """
+-- This function is now only used to generate the initial cache.
+_GEN_LIST_ITEM_TEMPLATE(i) := {
+    "type": "Container",
+    "props": {
+        "height": 50,
+        "color": '0xFF' + SUBSTRING(MD5('item' + STRING(i)), 0, 6),
+        "padding": { "left": 16, "right": 16 }
+    },
+    "child": {
+        "type": "Row",
+        "children": [
+            {
+                "type": "Text",
+                "props": {
+                    "data": ""  -- The data will be injected dynamically.
+                }
+            },
+            { "type": "Spacer" },
+            {
+                "type": "ElevatedButton",
+                "props": {
+                    "onPressed": "shql: INCREMENT_ITEM(" + STRING(i-1) + ")"
+                },
+                "child": {
+                    "type": "Text",
+                    "props": { "data": "+" }
+                }
+            }
+        ]
+    }
+};
+
+-- This is the new, fast function that the UI will call on every rebuild.
+GEN_LIST(n) := BEGIN
+    -- If the cache is empty, populate it once.
+    IF LENGTH(_list_item_cache) = 0 THEN BEGIN
+        FOR i := 1 TO n DO
+            _list_item_cache := _list_item_cache + [_GEN_LIST_ITEM_TEMPLATE(i)];
+    END;
+
+    -- Now, create the final list by injecting the current counts into the cached templates.
+    items := [];
+    FOR i := 1 TO n DO
+        -- Important: We need to create a copy of the map from the cache,
+        -- otherwise we would be modifying the cache itself.
+        item_template := CLONE(_list_item_cache[i-1]);
+        
+        -- Inject the current count into the Text widget's data property.
+        item_template["child"]["children"][0]["props"]["data"] := 'Item ' + STRING(i) + ': ' + STRING(item_counts[i-1]);
+        
+        items := items + [item_template];
+    RETURN items;
+END;
+
+""";
+    await Engine.execute(
+      listUtilsCodde,
+      runtime: runtime,
+      constantsSet: constantsSet,
+    );
+    await Engine.execute(
+      "list := [_GEN_LIST_ITEM_TEMPLATE(1)];",
+      runtime: runtime,
+      constantsSet: constantsSet,
+    );
+    expect(
+      (await Engine.execute(
+            "list[0]",
+            runtime: runtime,
+            constantsSet: constantsSet,
+          )
+          is Map),
+      true,
+    );
+    expect(
+      (await Engine.execute(
+            "list[0]['props']",
+            runtime: runtime,
+            constantsSet: constantsSet,
+          )
+          is Map),
+      true,
+    );
+  });
+
   test("Test for loop with step", () async {
     expect(
       (await Engine.execute(
@@ -548,6 +660,16 @@ void main() {
 
   test("Can create thread", () async {
     expect((await Engine.execute("THREAD( () => 9 )")) is Thread, true);
+  });
+
+  test("Can assign to map variable", () async {
+    expect((await Engine.execute("x := {'a':1,'b':2,'c':3};x['a']")), 1);
+  });
+  test("Can assign to map member", () async {
+    expect(
+      (await Engine.execute("x := {'a':1,'b':2,'c':3};x['b']:=4;x['b']")),
+      4,
+    );
   });
 
   test("Can start thread", () async {

@@ -85,6 +85,16 @@ class _YamlDrivenScreenState extends State<YamlDrivenScreen> {
       "Failed to load state script.",
     );
 
+    final listUtilsCode = await rootBundle.loadString(
+      'assets/shql/list_utils.shql',
+    );
+    await _shql.loadProgram(
+      listUtilsCode,
+      "Loading list utils...",
+      "List utils loaded.",
+      "Failed to load list utils.",
+    );
+
     setState(() {
       _yamlText = yaml;
     });

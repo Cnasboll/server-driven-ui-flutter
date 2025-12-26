@@ -1,7 +1,8 @@
 import 'package:server_driven_ui/shql/engine/cancellation_token.dart';
 import 'package:server_driven_ui/shql/execution/execution_node.dart';
 import 'package:server_driven_ui/shql/execution/lazy_execution_node.dart';
-import 'package:server_driven_ui/shql/execution/runtime.dart';
+import 'package:server_driven_ui/shql/execution/runtime/execution.dart';
+import 'package:server_driven_ui/shql/execution/runtime/runtime.dart';
 import 'package:server_driven_ui/shql/parser/parse_tree.dart';
 import 'package:server_driven_ui/shql/tokenizer/token.dart';
 
@@ -69,7 +70,7 @@ class LambdaExpressionExecutionNode extends LazyExecutionNode {
 
   @override
   Future<TickResult> doTick(
-    Runtime runtime,
+    Execution execution,
     CancellationToken? cancellationToken,
   ) async {
     return TickResult.completed;

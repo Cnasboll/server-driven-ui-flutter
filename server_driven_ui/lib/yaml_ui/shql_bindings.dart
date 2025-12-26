@@ -1,13 +1,14 @@
+import 'dart:async';
 import 'package:flutter/widgets.dart';
 import 'package:server_driven_ui/shql/engine/cancellation_token.dart';
 import 'package:server_driven_ui/shql/engine/engine.dart';
-import 'package:server_driven_ui/shql/execution/runtime.dart';
+import 'package:server_driven_ui/shql/execution/runtime/runtime.dart';
 import 'package:server_driven_ui/shql/parser/constants_set.dart';
 
 class ShqlBindings {
   late ConstantsSet _constantsSet;
   late Runtime _runtime;
-  final VoidCallback onMutated;
+  VoidCallback onMutated;
   final CancellationToken _cancellationToken = CancellationToken();
 
   ShqlBindings({
@@ -47,10 +48,11 @@ class ShqlBindings {
 
   /// Evaluate expression for binding.
   Future<dynamic> eval(String expr) async {
-    return await Engine.evalExpr(
+    return await Engine.execute(
       expr,
       runtime: _runtime,
       constantsSet: _constantsSet,
+      cancellationToken: _cancellationToken,
     );
   }
 

@@ -3,7 +3,8 @@ import 'package:server_driven_ui/shql/execution/execution_node.dart';
 import 'package:server_driven_ui/shql/execution/lambdas/lambda_expression_execution_node.dart';
 import 'package:server_driven_ui/shql/execution/lambdas/nullary_function_execution_node.dart';
 import 'package:server_driven_ui/shql/execution/lazy_execution_node.dart';
-import 'package:server_driven_ui/shql/execution/runtime.dart';
+import 'package:server_driven_ui/shql/execution/runtime/execution.dart';
+import 'package:server_driven_ui/shql/execution/runtime/runtime.dart';
 
 class IdentifierExecutionNode extends LazyExecutionNode {
   IdentifierExecutionNode(
@@ -16,11 +17,11 @@ class IdentifierExecutionNode extends LazyExecutionNode {
 
   @override
   Future<TickResult> doTick(
-    Runtime runtime,
+    Execution execution,
     CancellationToken? cancellationToken,
   ) async {
     if (_childNode == null) {
-      var (childNode, value, error) = createChildNode(runtime);
+      var (childNode, value, error) = createChildNode(execution);
       if (error != null) {
         this.error = error;
         return TickResult.completed;
@@ -38,9 +39,9 @@ class IdentifierExecutionNode extends LazyExecutionNode {
     return TickResult.completed;
   }
 
-  (ExecutionNode?, dynamic, String?) createChildNode(Runtime runtime) {
+  (ExecutionNode?, dynamic, String?) createChildNode(Execution execution) {
     var identifier = node.qualifier!;
-    var name = runtime.identifiers.constants[identifier];
+    var name = execution.runtime.identifiers.constants[identifier];
 
     // A identifier can have 0 or 1 chhildren
     if (node.children.length > 1) {
@@ -76,7 +77,9 @@ class IdentifierExecutionNode extends LazyExecutionNode {
       return (null, value, null);
     }
 
-    var nullaryFunction = resolved ? null : runtime.getNullaryFunction(name);
+    var nullaryFunction = resolved
+        ? null
+        : execution.runtime.getNullaryFunction(name);
 
     if (nullaryFunction != null) {
       return (
@@ -94,7 +97,7 @@ class IdentifierExecutionNode extends LazyExecutionNode {
       );
     }
 
-    var unaryFunction = runtime.getUnaryFunction(identifier);
+    var unaryFunction = execution.runtime.getUnaryFunction(identifier);
 
     if (unaryFunction != null) {
       return (
@@ -114,7 +117,7 @@ class IdentifierExecutionNode extends LazyExecutionNode {
       );
     }
 
-    var binaryFunction = runtime.getBinaryFunction(identifier);
+    var binaryFunction = execution.runtime.getBinaryFunction(identifier);
 
     if (binaryFunction != null) {
       return (

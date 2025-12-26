@@ -1,4 +1,6 @@
 --- External unary fuctions
+CLONE(a) := _EXTERN("CLONE", [a]);
+MD5(a) := _EXTERN("MD5", [a]);
 SIN(a) := _EXTERN("SIN", [a]);
 COS(a) := _EXTERN("COS", [a]);
 TAN(a) := _EXTERN("TAN", [a]);
@@ -15,6 +17,7 @@ DOUBLE(a) := _EXTERN("DOUBLE", [a]);
 STRING(a) := _EXTERN("STRING", [a]);
 ROUND(a) := _EXTERN("ROUND", [a]);
 LENGTH(a) := _EXTERN("LENGTH", [a]);
+MD5(a) := _EXTERN("MD5", [a]);
 
 -- External binary functions
 MIN(a,b) := _EXTERN("MIN", [a,b]);
@@ -23,6 +26,8 @@ ATAN2(a,b) := _EXTERN("ATAN2", [a,b]);
 POW(a,b) := _EXTERN("POW", [a,b]);
 DIM(a,b) := _EXTERN("DIM", [a,b]);
 
+-- External ternary functions
+SUBSTRING(a, b, c) := _EXTERN("SUBSTRING", [a, b, c]);
 
 -- Plot a function
 PLOT(f, x1, x2) := BEGIN

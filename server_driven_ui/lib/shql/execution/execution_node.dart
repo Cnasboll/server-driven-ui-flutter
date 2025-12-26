@@ -1,5 +1,6 @@
 import 'package:server_driven_ui/shql/engine/cancellation_token.dart';
-import 'package:server_driven_ui/shql/execution/runtime.dart';
+import 'package:server_driven_ui/shql/execution/runtime/execution.dart';
+import 'package:server_driven_ui/shql/execution/runtime/runtime.dart';
 
 enum TickResult { completed, iterated, delegated }
 
@@ -14,7 +15,7 @@ abstract class ExecutionNode {
   }
 
   Future<TickResult> tick(
-    Runtime runtime, [
+    Execution execution, [
     CancellationToken? cancellationToken,
   ]) async {
     if (isLoop) {
@@ -36,7 +37,7 @@ abstract class ExecutionNode {
         thread.popNode();
         return TickResult.completed;
       }
-      var tickResult = await doTick(runtime, cancellationToken);
+      var tickResult = await doTick(execution, cancellationToken);
       if (tickResult == TickResult.completed) {
         completed = true;
         thread.onExecutionNodeComplete(this);
@@ -60,7 +61,7 @@ abstract class ExecutionNode {
   }
 
   Future<TickResult> doTick(
-    Runtime runtime,
+    Execution execution,
     CancellationToken? cancellationToken,
   );
   bool completed = false;

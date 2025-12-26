@@ -2,7 +2,8 @@ import 'package:server_driven_ui/shql/engine/cancellation_token.dart';
 import 'package:server_driven_ui/shql/engine/engine.dart';
 import 'package:server_driven_ui/shql/execution/execution_node.dart';
 import 'package:server_driven_ui/shql/execution/lazy_execution_node.dart';
-import 'package:server_driven_ui/shql/execution/runtime.dart';
+import 'package:server_driven_ui/shql/execution/runtime/execution.dart';
+import 'package:server_driven_ui/shql/execution/runtime/runtime.dart';
 
 class CompoundStatementExecutionNode extends LazyExecutionNode {
   CompoundStatementExecutionNode(
@@ -13,7 +14,7 @@ class CompoundStatementExecutionNode extends LazyExecutionNode {
 
   @override
   Future<TickResult> doTick(
-    Runtime runtime,
+    Execution execution,
     CancellationToken? cancellationToken,
   ) async {
     if (_currentStatement != null) {

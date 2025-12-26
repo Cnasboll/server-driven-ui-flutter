@@ -107,33 +107,34 @@ class Parser {
         }
         operandStack.add(parseTree);
       }
-      // If we find a left parenthesis after the operand, consider this a call!
-      if (tokenEnumerator.hasNext) {
+
+      // Handle postfix operators like function calls and indexing in a loop
+      // to ensure left-associativity. e.g. func(a)(b) or list[a][b]
+      while (tokenEnumerator.hasNext) {
         var token = tokenEnumerator.peek();
         var lineNumber = token.lineNumber;
         var columnNumber = token.columnNumber;
         var (brackets, leftBracket, rightBracket, bracketsError) =
             tryParseBrackets(tokenEnumerator, constantsSet);
+
         if (brackets != null) {
-          operandStack.add(brackets);
-          operatorStack.add(
+          var lhs = operandStack.removeLast();
+          var callNode = ParseTree(
             Token.parser(
               TokenTypes.call,
               leftBracket!.lexeme + rightBracket!.lexeme,
               lineNumber,
               columnNumber,
-            ),
+            ).symbol,
+            [lhs, brackets],
           );
-          var (operand, error) = popOperatorStack(
-            tokenEnumerator,
-            operandStack,
-            operatorStack,
-          );
-          if (error != null) {
-            return (null, error);
+          operandStack.add(callNode);
+        } else {
+          if (bracketsError != null) {
+            return (null, bracketsError);
           }
-        } else if (bracketsError != null) {
-          return (null, bracketsError);
+          // No more postfix operators, break the loop
+          break;
         }
       }
 

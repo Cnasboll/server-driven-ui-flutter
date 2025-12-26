@@ -10,26 +10,5 @@ screen:
             data: "YAML + SHQL"
 
     body:
-      type: Center
-      child:
-        type: Column
-        props:
-          mainAxisAlignment: center
-          mainAxisSize: min
-        children:
-          - type: Container
-            props:
-              width: 100
-              height: 100
-              color: '#FF0000'
-          - type: SizedBox
-            props: { height: 12 }
-          - type: Text
-            props:
-              data: "shql: 'Count: ' + STRING(count)"
-          - type: SizedBox
-            props: { height: 12 }
-          - type: ElevatedButton
-            props:
-              child: { type: Text, props: { data: "Increment" } }
-              onPressed: "shql: count := count + 1"
+      type: ListView
+      children: "shql: GEN_LIST(20)"

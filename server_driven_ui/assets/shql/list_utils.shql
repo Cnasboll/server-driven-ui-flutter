@@ -1,0 +1,63 @@
+-- This function is now only used to generate the initial cache.
+_GEN_LIST_ITEM_TEMPLATE(i) := {
+    "type": "Container",
+    "props": {
+        "height": 50,
+        "color": '0xFF' + SUBSTRING(MD5('item' + STRING(i)), 0, 6),
+        "padding": { "left": 16, "right": 16 }
+    },
+    "child": {
+        "type": "Row",
+        "children": [
+            {
+                "type": "Text",
+                "props": {
+                    "data": ""  -- The data will be injected dynamically.
+                }
+            },
+            { "type": "Spacer" },
+            {
+                "type": "ElevatedButton",
+                "props": {
+                    "onPressed": "shql: INCREMENT_ITEM(" + STRING(i-1) + ")"
+                },
+                "child": {
+                    "type": "Text",
+                    "props": { "data": "+" }
+                }
+            }
+        ]
+    }
+};
+
+-- This is the new, fast function that the UI will call on every rebuild.
+GEN_LIST(n) := BEGIN
+    -- If the list has already been generated, return the live instance immediately.
+    IF LENGTH(_live_list) > 0 THEN
+        RETURN _live_list;
+
+    -- First-time generation:
+    -- If the cache is empty, populate it once.
+    IF LENGTH(_list_item_cache) = 0 THEN BEGIN
+        FOR i := 1 TO n DO
+            _list_item_cache := _list_item_cache + [_GEN_LIST_ITEM_TEMPLATE(i)];
+    END;
+
+    -- Now, create the final list by injecting the current counts into the cached templates.
+    items := [];
+    FOR i := 1 TO n DO BEGIN
+        item_template := CLONE(_list_item_cache[i-1]);
+        item_template["child"]["children"][0]["props"]["data"] := 'Item ' + STRING(i) + ': ' + STRING(item_counts[i-1]);
+        items := items + [item_template];
+    END;
+    
+    _live_list := items;
+    RETURN _live_list;
+END;
+
+INCREMENT_ITEM(i) := BEGIN
+    item_counts[i] := item_counts[i] + 1;
+    
+    -- Directly mutate the data in the live list.
+    _live_list[i]["child"]["children"][0]["props"]["data"] := 'Item ' + STRING(i + 1) + ': ' + STRING(item_counts[i]);
+END;

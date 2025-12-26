@@ -2,7 +2,7 @@ import 'package:server_driven_ui/shql/engine/cancellation_token.dart';
 import 'package:server_driven_ui/shql/engine/engine.dart';
 import 'package:server_driven_ui/shql/execution/execution_node.dart';
 import 'package:server_driven_ui/shql/execution/lazy_execution_node.dart';
-import 'package:server_driven_ui/shql/execution/runtime.dart';
+import 'package:server_driven_ui/shql/execution/runtime/execution.dart';
 
 class WhileLoopExecutionNode extends LazyExecutionNode {
   WhileLoopExecutionNode(
@@ -16,7 +16,7 @@ class WhileLoopExecutionNode extends LazyExecutionNode {
 
   @override
   Future<TickResult> doTick(
-    Runtime runtime,
+    Execution execution,
     CancellationToken? cancellationToken,
   ) async {
     if (_conditionNode == null) {
@@ -30,7 +30,7 @@ class WhileLoopExecutionNode extends LazyExecutionNode {
 
     var conditionResult = _conditionNode!.result;
     if (!conditionResult) {
-      _complete(runtime);
+      _complete(execution);
       return TickResult.completed;
     }
 
@@ -59,7 +59,7 @@ class WhileLoopExecutionNode extends LazyExecutionNode {
     _bodyNode = null;
   }
 
-  TickResult _complete(Runtime runtime) {
+  TickResult _complete(Execution execution) {
     _propagateResult();
     return TickResult.completed;
   }

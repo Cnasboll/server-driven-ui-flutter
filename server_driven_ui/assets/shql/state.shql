@@ -1,1 +1,13 @@
-count := 0;
+-- Initialize a global list to hold the counts for each item.
+item_counts := [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+
+-- A cache to hold the static parts of the list items.
+_list_item_cache := [];
+
+-- A global variable to store the rendered list of widgets.
+_live_list := [];
+
+-- A global function to increment the count for a specific item.
+INCREMENT_ITEM(index) := BEGIN
+    item_counts[index] := item_counts[index] + 1;
+END;
