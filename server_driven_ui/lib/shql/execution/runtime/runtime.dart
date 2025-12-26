@@ -461,6 +461,7 @@ class Runtime {
   Function(dynamic value)? printFunction;
   Future<String?> Function()? readlineFunction;
   Future<String?> Function(String prompt)? promptFunction;
+  Future<void> Function(String routeName)? navigateFunction;
   Future<void> Function()? clsFunction;
   Future<void> Function()? hideGraphFunction;
   Future<void> Function(dynamic, dynamic)? plotFunction;
@@ -494,6 +495,7 @@ class Runtime {
     printFunction = other.printFunction;
     readlineFunction = other.readlineFunction;
     promptFunction = other.promptFunction;
+    navigateFunction = other.navigateFunction;
     clsFunction = other.clsFunction;
     hideGraphFunction = other.hideGraphFunction;
     plotFunction = other.plotFunction;
@@ -627,6 +629,18 @@ class Runtime {
     return await promptFunction?.call(prompt) ?? "";
   }
 
+  Future<void> navigate(
+    Execution execution,
+    ExecutionNode caller,
+    dynamic routeName,
+  ) async {
+    if (sandboxed) {
+      return;
+    }
+
+    return await navigateFunction?.call(routeName);
+  }
+
   Future<String> readLine(Execution execution, ExecutionNode caller) async {
     if (sandboxed) {
       return "";
@@ -710,6 +724,7 @@ class Runtime {
   void hookUpConsole() {
     setUnaryFunction("PRINT", print);
     setUnaryFunction("PROMPT", prompt);
+    setUnaryFunction("NAVIGATE", navigate);
     setNullaryFunction("READLINE", readLine);
     setBinaryFunction("_DISPLAY_GRAPH", plot);
     setNullaryFunction("CLS", cls);

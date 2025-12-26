@@ -55,9 +55,9 @@ dev_dependencies:
 # The following section is specific to Flutter packages.
 flutter:
   assets:
-    - assets/ui.yaml
-    - assets/shql/stdlib.shql
-    - assets/shql/ui.shql
+    - assets/router.yaml
+    - assets/screens/
+    - assets/shql/
   
 
   # The following line ensures that the Material Icons font is

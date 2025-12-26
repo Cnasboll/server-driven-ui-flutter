@@ -102,7 +102,7 @@ Widget _buildScaffold(
     appBar: appBarNode != null
         ? b(appBarNode, '$path.props.appBar') as PreferredSizeWidget
         : null,
-    body: bodyNode != null ? b(bodyNode, '$path.body') : null,
+    body: bodyNode != null ? b(bodyNode, '$path.props.body') : null,
   );
 }
 
