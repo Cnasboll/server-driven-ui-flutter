@@ -270,8 +270,12 @@ class Thread {
   final List<ExecutionNode> executionStack = [];
   final List<BreakTarget> _breakTargets = [];
   final List<ReturnTarget> _returnTargets = [];
+
+  Future<bool>? _pendingOperation;
+  bool _isOperationPending = false;
+
   Thread({required this.id});
-  bool get isIdle => executionStack.isEmpty;
+  bool get isIdle => executionStack.isEmpty && !_isOperationPending;
   bool get isRunning => executionStack.isNotEmpty;
   ExecutionNode? get currentNode => isRunning ? executionStack.last : null;
 
@@ -390,6 +394,22 @@ class Thread {
   }
 
   Future<bool> tick(
+    Execution execution, [
+    CancellationToken? cancellationToken,
+  ]) async {
+    if (_pendingOperation != null && _isOperationPending) {
+      return _pendingOperation!;
+    }
+
+    _isOperationPending = true;
+    _pendingOperation = _tick(execution, cancellationToken).then((value) {
+      _isOperationPending = false;
+      return value;
+    });
+    return _pendingOperation!;
+  }
+
+  Future<bool> _tick(
     Execution execution, [
     CancellationToken? cancellationToken,
   ]) async {
