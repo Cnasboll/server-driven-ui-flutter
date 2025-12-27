@@ -30,4 +30,4 @@ screen:
         - type: Expanded
           child:
             type: ListView
-            children: "shql: GEN_LIST(20)"
+            children: "shql: GENERATE_WIDGETS(20)"
