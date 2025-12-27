@@ -581,7 +581,7 @@ _GEN_LIST_ITEM_TEMPLATE(i) := {
 };
 
 -- This is the new, fast function that the UI will call on every rebuild.
-GEN_LIST(n) := BEGIN
+GENERATE_WIDGETS(n) := BEGIN
     -- If the cache is empty, populate it once.
     IF LENGTH(_list_item_cache) = 0 THEN BEGIN
         FOR i := 1 TO n DO

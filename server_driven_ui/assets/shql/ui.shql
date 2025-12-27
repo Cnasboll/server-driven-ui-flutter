@@ -1,21 +1,13 @@
 -- Initialize a global list to hold the counts for each item.
-item_counts := [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+_item_counts := [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
 
-
--- A global function to increment the count for a specific item.
-INCREMENT_ITEM(index) := BEGIN
-    item_counts[index] := item_counts[index] + 1;
+-- Data for a list element
+_WIDGET_TEXT(i) := BEGIN
+    RETURN 'Item ' + STRING(i + 1) + ': ' + STRING(_item_counts[i])
 END;
 
-
--- A cache to hold the static parts of the list items.
-_list_item_cache := [];
-
--- A global variable to store the rendered list of widgets.
-_live_list := [];
-
 -- This function is now only used to generate the initial cache.
-_GEN_LIST_ITEM_TEMPLATE(i) := {
+_GENERATE_WIDGET(i) := {
     "type": "Container",
     "props": {
         "height": 50,
@@ -28,14 +20,14 @@ _GEN_LIST_ITEM_TEMPLATE(i) := {
             {
                 "type": "Text",
                 "props": {
-                    "data": ""  -- The data will be injected dynamically.
+                    "data": _WIDGET_TEXT(i)
                 }
             },
             { "type": "Spacer" },
             {
                 "type": "ElevatedButton",
                 "props": {
-                    "onPressed": "shql: INCREMENT_ITEM(" + STRING(i-1) + ")"
+                    "onPressed": "shql: INCREMENT_ITEM(" + STRING(i) + ")"
                 },
                 "child": {
                     "type": "Text",
@@ -46,43 +38,25 @@ _GEN_LIST_ITEM_TEMPLATE(i) := {
     }
 };
 
--- This is the new, fast function that the UI will call on every rebuild.
-GEN_LIST(n) := BEGIN
-    -- If the list has already been generated, return the live instance immediately.
-    IF LENGTH(_live_list) > 0 THEN
-        RETURN _live_list;
 
-    -- First-time generation:
-    -- If the cache is empty, populate it once.
-    IF LENGTH(_list_item_cache) = 0 THEN BEGIN
+-- A global variable to store the rendered list of widgets.
+_widgets := [];
+
+GENERATE_WIDGETS(n) := BEGIN
+    IF LENGTH(_widgets) = 0 THEN
+        -- First-time generation:
         FOR i := 1 TO n DO
-            _list_item_cache := _list_item_cache + [_GEN_LIST_ITEM_TEMPLATE(i)];
-    END;
-
-    -- Now, create the final list by injecting the current counts into the cached templates.
-    items := [];
-    FOR i := 1 TO n DO BEGIN
-        item_template := CLONE(_list_item_cache[i-1]);
-        item_template["child"]["children"][0]["props"]["data"] := 'Item ' + STRING(i) + ': ' + STRING(item_counts[i-1]);
-        items := items + [item_template];
-    END;
-    
-    _live_list := items;
-    RETURN _live_list;
+            _widgets := _widgets + [_GENERATE_WIDGET(i-1)];
+    RETURN _widgets;
 END;
 
 INCREMENT_ITEM(i) := BEGIN
-    item_counts[i] := item_counts[i] + 1;
-    
-    -- Directly mutate the data in the live list.
-    _live_list[i]["child"]["children"][0]["props"]["data"] := 'Item ' + STRING(i + 1) + ': ' + STRING(item_counts[i]);
+    _item_counts[i] := _item_counts[i] + 1;
+    _widgets[i]["child"]["children"][0]["props"]["data"] := _WIDGET_TEXT(i);
 END;
-
 
 _current_text := '';
 
 SET_TEXT(new_text) := BEGIN
-    -- print('SET_TEXT("'+new_text+'")');
     _current_text := new_text;
-    -- print('_current_text = "'+_current_text+'"');
 END;
