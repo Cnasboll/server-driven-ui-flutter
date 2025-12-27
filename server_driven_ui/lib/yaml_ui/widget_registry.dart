@@ -39,6 +39,8 @@ class WidgetRegistry {
     'TextField': _buildTextField,
     'Expanded': _buildExpanded,
     'Card': _buildCard,
+    'Image': _buildImage,
+    'ClipRRect': _buildClipRRect,
   });
 
   WidgetFactory? get(String type) => _factories[type];
@@ -365,6 +367,66 @@ Widget _buildCard(
     elevation: (props['elevation'] as num?)?.toDouble(),
     child: childNode != null ? b(childNode, '$path.child') : null,
   );
+}
+
+Widget _buildClipRRect(
+  BuildContext context,
+  Map<String, dynamic> props,
+  ChildBuilder b,
+  dynamic child,
+  dynamic children,
+  String path,
+  ShqlBindings shql,
+  Key key,
+) {
+  final childNode = props['child'] ?? child;
+  return ClipRRect(
+    key: key,
+    borderRadius: Resolvers.borderRadius(props['borderRadius']) ?? BorderRadius.zero,
+    child: childNode != null ? b(childNode, '$path.child') : null,
+  );
+}
+
+Widget _buildImage(
+  BuildContext context,
+  Map<String, dynamic> props,
+  ChildBuilder b,
+  dynamic child,
+  dynamic children,
+  String path,
+  ShqlBindings shql,
+  Key key,
+) {
+  final source = props['source'] as String?;
+  if (source == null) {
+    return WidgetRegistry._error(
+      context,
+      'Image requires a source',
+      'No `source` property found at $path',
+    );
+  }
+
+  final width = (props['width'] as num?)?.toDouble();
+  final height = (props['height'] as num?)?.toDouble();
+  final fit = Resolvers.boxFit(props['fit'] as String?);
+
+  if (source.startsWith('http')) {
+    return Image.network(
+      source,
+      key: key,
+      width: width,
+      height: height,
+      fit: fit,
+    );
+  } else {
+    return Image.asset(
+      source,
+      key: key,
+      width: width,
+      height: height,
+      fit: fit,
+    );
+  }
 }
 
 class _StatefulTextField extends StatefulWidget {

@@ -78,6 +78,32 @@ class Resolvers {
     }
     return null;
   }
+
+  static BoxFit? boxFit(String? v) {
+    switch (v?.toLowerCase()) {
+      case 'fill':
+        return BoxFit.fill;
+      case 'contain':
+        return BoxFit.contain;
+      case 'cover':
+        return BoxFit.cover;
+      case 'fitwidth':
+        return BoxFit.fitWidth;
+      case 'fitheight':
+        return BoxFit.fitHeight;
+      case 'none':
+        return BoxFit.none;
+      case 'scaledown':
+        return BoxFit.scaleDown;
+      default:
+        return null;
+    }
+  }
+
+  static BorderRadius? borderRadius(dynamic v) {
+    if (v is num) return BorderRadius.circular(v.toDouble());
+    return null;
+  }
 }
 
 Map<String, dynamic> resolveMap(Map map, ShqlBindings shql) {

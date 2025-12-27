@@ -36,6 +36,18 @@ screen:
                         - type: Text
                           props:
                             data: "It can contain other widgets."
+                        - type: SizedBox
+                          props:
+                            height: 16
+                        - type: ClipRRect
+                          props:
+                            borderRadius: 8
+                            child:
+                              type: Image
+                              props:
+                                source: "https://picsum.photos/seed/picsum/200/300"
+                                height: 200
+                                fit: "contain"
           - type: SizedBox
             props:
               height: 16
