@@ -17,23 +17,34 @@ class Execution {
   Future<bool> tick([CancellationToken? cancellationToken]) async {
     // Never remove main thread even if "idle"
     threads.removeWhere((key, thread) => key > 0 && thread.isIdle);
-    var allTreads = threads.values.toList();
-    for (var thread in allTreads) {
-      if (thread.isIdle) {
-        continue;
-      }
-      if (cancellationToken != null && await cancellationToken.check()) {
-        return true;
-      }
 
-      if (await thread.tick(this, cancellationToken)) {
-        if (cancellationToken != null && await cancellationToken.check()) {
-          return true;
-        }
-        continue;
-      }
+    if (cancellationToken != null && await cancellationToken.check()) {
+      return true;
     }
-    return threads.values.every((thread) => thread.isIdle);
+
+    var activeThreads = threads.values
+        .where((thread) => !thread.isIdle)
+        .toList();
+
+    if (activeThreads.isEmpty) {
+      return true;
+    }
+
+    var tickFutures = activeThreads
+        .map((thread) => thread.tick(this, cancellationToken))
+        .toList();
+
+    await Future.any(tickFutures);
+
+    // If we get here, at least one thread has completed a tick.
+
+    if (!threads.values.any((thread) => !thread.isIdle)) {
+      // All threads are now idle.
+      return true;
+    }
+
+    // The overall execution is not yet complete.
+    return false;
   }
 
   Future<Thread> startThread(ExecutionNode caller, dynamic userFunction) async {
