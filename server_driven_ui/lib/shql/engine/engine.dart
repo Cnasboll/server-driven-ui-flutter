@@ -40,7 +40,7 @@ import 'package:server_driven_ui/shql/execution/operators/relational/less_than_o
 import 'package:server_driven_ui/shql/execution/operators/relational/not_equality_execution_node.dart';
 import 'package:server_driven_ui/shql/execution/repeat_until_loop_execution_node.dart';
 import 'package:server_driven_ui/shql/execution/return_statement_execution_node.dart';
-import 'package:server_driven_ui/shql/execution/runtime/execution.dart';
+import 'package:server_driven_ui/shql/execution/runtime/execution_context.dart';
 import 'package:server_driven_ui/shql/execution/runtime/runtime.dart';
 import 'package:server_driven_ui/shql/execution/tuple_literal_node.dart';
 import 'package:server_driven_ui/shql/execution/while_loop_execution_node.dart';
@@ -95,10 +95,10 @@ class Engine {
     Runtime runtime,
     CancellationToken? cancellationToken,
   ) async {
-    var execution = Execution(runtime: runtime);
+    var executionContext = ExecutionContext(runtime: runtime);
     var executionNode = createExecutionNode(
       parseTree,
-      execution.mainThread,
+      executionContext.mainThread,
       runtime.globalScope,
     );
     if (executionNode == null) {
@@ -106,40 +106,40 @@ class Engine {
     }
 
     while ((cancellationToken == null || !await cancellationToken.check()) &&
-        !await execution.tick(cancellationToken)) {
+        !await executionContext.tick(cancellationToken)) {
       await Future.delayed(const Duration(milliseconds: 1));
     }
 
-    if (execution.mainThread.error != null) {
-      throw RuntimeException(execution.mainThread.error!);
+    if (executionContext.mainThread.error != null) {
+      throw RuntimeException(executionContext.mainThread.error!);
     }
 
-    return execution.mainThread.result;
+    return executionContext.mainThread.result;
   }
 
   static Future<(dynamic, bool)> _evaluate(
     ParseTree parseTree,
     Runtime runtime,
   ) async {
-    var execution = Execution(runtime: runtime);
+    var executionContext = ExecutionContext(runtime: runtime);
     var executionNode = createExecutionNode(
       parseTree,
-      execution.mainThread,
+      executionContext.mainThread,
       runtime.globalScope,
     );
     if (executionNode == null) {
       throw RuntimeException('Failed to create execution node.');
     }
 
-    if (!await execution.tick()) {
+    if (!await executionContext.tick()) {
       return (null, false);
     }
 
-    if (execution.mainThread.error != null) {
-      throw RuntimeException(execution.mainThread.error!);
+    if (executionContext.mainThread.error != null) {
+      throw RuntimeException(executionContext.mainThread.error!);
     }
 
-    return (execution.mainThread.result, true);
+    return (executionContext.mainThread.result, true);
   }
 
   static ExecutionNode? createExecutionNode(

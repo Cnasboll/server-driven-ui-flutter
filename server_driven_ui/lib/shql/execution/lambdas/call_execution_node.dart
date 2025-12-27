@@ -8,7 +8,7 @@ import 'package:server_driven_ui/shql/execution/lambdas/nullary_function_executi
 import 'package:server_driven_ui/shql/execution/lambdas/unary_function_execution_node.dart';
 import 'package:server_driven_ui/shql/execution/lambdas/user_function_execution_node.dart';
 import 'package:server_driven_ui/shql/execution/lazy_execution_node.dart';
-import 'package:server_driven_ui/shql/execution/runtime/execution.dart';
+import 'package:server_driven_ui/shql/execution/runtime/execution_context.dart';
 import 'package:server_driven_ui/shql/execution/runtime/runtime.dart';
 import 'package:server_driven_ui/shql/tokenizer/token.dart';
 
@@ -17,7 +17,7 @@ class CallExecutionNode extends LazyExecutionNode {
 
   @override
   Future<TickResult> doTick(
-    Execution execution,
+    ExecutionContext executionContext,
     CancellationToken? cancellationToken,
   ) async {
     // We need to verify that the lhs is a callable entity, i.e. an identifier or a lambda expression

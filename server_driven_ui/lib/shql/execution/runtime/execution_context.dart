@@ -3,13 +3,13 @@ import 'package:server_driven_ui/shql/execution/execution_node.dart';
 import 'package:server_driven_ui/shql/execution/lambdas/user_function_execution_node.dart';
 import 'package:server_driven_ui/shql/execution/runtime/runtime.dart';
 
-class Execution {
+class ExecutionContext {
   late final Runtime runtime;
   late final Thread mainThread;
   late final Map<int, Thread> threads;
   int nextThreadId = 1;
 
-  Execution({required this.runtime}) {
+  ExecutionContext({required this.runtime}) {
     mainThread = Thread(id: 0);
     threads = {0: mainThread};
   }
