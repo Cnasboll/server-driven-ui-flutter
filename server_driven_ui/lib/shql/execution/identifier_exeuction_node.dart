@@ -3,7 +3,7 @@ import 'package:server_driven_ui/shql/execution/execution_node.dart';
 import 'package:server_driven_ui/shql/execution/lambdas/lambda_expression_execution_node.dart';
 import 'package:server_driven_ui/shql/execution/lambdas/nullary_function_execution_node.dart';
 import 'package:server_driven_ui/shql/execution/lazy_execution_node.dart';
-import 'package:server_driven_ui/shql/execution/runtime/execution.dart';
+import 'package:server_driven_ui/shql/execution/runtime/execution_context.dart';
 import 'package:server_driven_ui/shql/execution/runtime/runtime.dart';
 
 class IdentifierExecutionNode extends LazyExecutionNode {
@@ -17,11 +17,11 @@ class IdentifierExecutionNode extends LazyExecutionNode {
 
   @override
   Future<TickResult> doTick(
-    Execution execution,
+    ExecutionContext executionContext,
     CancellationToken? cancellationToken,
   ) async {
     if (_childNode == null) {
-      var (childNode, value, error) = createChildNode(execution);
+      var (childNode, value, error) = createChildNode(executionContext);
       if (error != null) {
         this.error = error;
         return TickResult.completed;
@@ -39,7 +39,9 @@ class IdentifierExecutionNode extends LazyExecutionNode {
     return TickResult.completed;
   }
 
-  (ExecutionNode?, dynamic, String?) createChildNode(Execution execution) {
+  (ExecutionNode?, dynamic, String?) createChildNode(
+    ExecutionContext execution,
+  ) {
     var identifier = node.qualifier!;
     var name = execution.runtime.identifiers.constants[identifier];
 

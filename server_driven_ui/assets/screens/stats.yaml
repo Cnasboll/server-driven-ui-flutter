@@ -13,8 +13,32 @@ screen:
       child:
         type: Column
         props:
-          mainAxisSize: "min"
+          crossAxisAlignment: "stretch"
         children:
+          - type: Expanded
+            child:
+              type: Card
+              props:
+                color: "0xFFF5F5F5" # A light grey color
+                elevation: 4
+                child:
+                  type: Padding
+                  props:
+                    padding: [16, 16]
+                    child:
+                      type: Column
+                      props:
+                        crossAxisAlignment: "stretch"
+                      children:
+                        - type: Text
+                          props:
+                            data: "This is a card!"
+                        - type: Text
+                          props:
+                            data: "It can contain other widgets."
+          - type: SizedBox
+            props:
+              height: 16
           - type: Text
             props:
               data: "This is the stats screen."

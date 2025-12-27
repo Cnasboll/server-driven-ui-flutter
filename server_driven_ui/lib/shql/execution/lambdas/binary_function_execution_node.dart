@@ -1,6 +1,6 @@
 import 'package:server_driven_ui/shql/engine/cancellation_token.dart';
 import 'package:server_driven_ui/shql/execution/execution_node.dart';
-import 'package:server_driven_ui/shql/execution/runtime/execution.dart';
+import 'package:server_driven_ui/shql/execution/runtime/execution_context.dart';
 import 'package:server_driven_ui/shql/execution/runtime/runtime.dart';
 
 class BinaryFunctionExecutionNode extends ExecutionNode {
@@ -18,11 +18,11 @@ class BinaryFunctionExecutionNode extends ExecutionNode {
 
   @override
   Future<TickResult> doTick(
-    Execution execution,
+    ExecutionContext executionContext,
     CancellationToken? cancellationToken,
   ) async {
     result = await binaryFunction.function(
-      execution,
+      executionContext,
       this,
       argument1,
       argument2,

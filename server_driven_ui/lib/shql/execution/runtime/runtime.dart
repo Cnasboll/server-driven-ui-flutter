@@ -5,7 +5,7 @@ import 'package:crypto/crypto.dart';
 
 import 'package:server_driven_ui/shql/engine/cancellation_token.dart';
 import 'package:server_driven_ui/shql/execution/execution_node.dart';
-import 'package:server_driven_ui/shql/execution/runtime/execution.dart';
+import 'package:server_driven_ui/shql/execution/runtime/execution_context.dart';
 import 'package:server_driven_ui/shql/parser/constants_set.dart';
 import 'package:server_driven_ui/shql/parser/parse_tree.dart';
 
@@ -32,7 +32,8 @@ class UserFunction extends Callable {
 }
 
 class NullaryFunction extends Callable {
-  final Function(Execution execution, ExecutionNode caller) function;
+  final Function(ExecutionContext executionContext, ExecutionNode caller)
+  function;
 
   NullaryFunction({
     required super.name,
@@ -42,7 +43,11 @@ class NullaryFunction extends Callable {
 }
 
 class UnaryFunction extends Callable {
-  final Function(Execution execution, ExecutionNode caller, dynamic p1)
+  final Function(
+    ExecutionContext executionContext,
+    ExecutionNode caller,
+    dynamic p1,
+  )
   function;
 
   UnaryFunction({
@@ -54,7 +59,7 @@ class UnaryFunction extends Callable {
 
 class BinaryFunction extends Callable {
   final Function(
-    Execution execution,
+    ExecutionContext executionContext,
     ExecutionNode caller,
     dynamic p1,
     dynamic p2,
@@ -394,7 +399,7 @@ class Thread {
   }
 
   Future<bool> tick(
-    Execution execution, [
+    ExecutionContext executionContext, [
     CancellationToken? cancellationToken,
   ]) async {
     if (_pendingOperation != null && _isOperationPending) {
@@ -402,7 +407,9 @@ class Thread {
     }
 
     _isOperationPending = true;
-    _pendingOperation = _tick(execution, cancellationToken).then((value) {
+    _pendingOperation = _tick(executionContext, cancellationToken).then((
+      value,
+    ) {
       _isOperationPending = false;
       return value;
     });
@@ -410,7 +417,7 @@ class Thread {
   }
 
   Future<bool> _tick(
-    Execution execution, [
+    ExecutionContext executionContext, [
     CancellationToken? cancellationToken,
   ]) async {
     while ((cancellationToken == null || !await cancellationToken.check())) {
@@ -428,7 +435,10 @@ class Thread {
       if (currentNode == null) {
         return true;
       }
-      var tickResult = await currentNode.tick(execution, cancellationToken);
+      var tickResult = await currentNode.tick(
+        executionContext,
+        cancellationToken,
+      );
       if (tickResult == TickResult.iterated) {
         return false;
       }
@@ -451,22 +461,34 @@ class Thread {
 
 class Runtime {
   late final ConstantsTable<String> _identifiers;
-  final Map<String, Function(Execution execution, ExecutionNode caller)>
+  final Map<
+    String,
+    Function(ExecutionContext executionContext, ExecutionNode caller)
+  >
   _nullaryFunctions = {};
   late final Map<
     int,
-    Function(Execution execution, ExecutionNode caller, dynamic p1)
+    Function(
+      ExecutionContext executionContext,
+      ExecutionNode caller,
+      dynamic p1,
+    )
   >
   _unaryFunctions;
   late final Map<
     int,
-    Function(Execution execution, ExecutionNode caller, dynamic p1, dynamic p2)
+    Function(
+      ExecutionContext executionContext,
+      ExecutionNode caller,
+      dynamic p1,
+      dynamic p2,
+    )
   >
   _binaryFunctions;
   late final Map<
     int,
     Function(
-      Execution execution,
+      ExecutionContext executionContext,
       ExecutionNode caller,
       dynamic p1,
       dynamic p2,
@@ -548,15 +570,15 @@ class Runtime {
     return _nullaryFunctions.containsKey(name);
   }
 
-  Function(Execution execution, ExecutionNode caller)? getNullaryFunction(
-    String name,
-  ) {
+  Function(ExecutionContext executionContext, ExecutionNode caller)?
+  getNullaryFunction(String name) {
     return _nullaryFunctions[name];
   }
 
   void setNullaryFunction(
     String name,
-    dynamic Function(Execution execution, ExecutionNode caller) nullaryFunction,
+    dynamic Function(ExecutionContext executionContext, ExecutionNode caller)
+    nullaryFunction,
   ) {
     _nullaryFunctions[name] = nullaryFunction;
   }
@@ -565,20 +587,29 @@ class Runtime {
     return _unaryFunctions.containsKey(identifier);
   }
 
-  Function(Execution execution, ExecutionNode caller, dynamic p1)?
+  Function(ExecutionContext executionContext, ExecutionNode caller, dynamic p1)?
   getUnaryFunction(int identifier) {
     return _unaryFunctions[identifier];
   }
 
   void setUnaryFunction(
     String name,
-    dynamic Function(Execution execution, ExecutionNode caller, dynamic p1)
+    dynamic Function(
+      ExecutionContext executionContext,
+      ExecutionNode caller,
+      dynamic p1,
+    )
     unaryFunction,
   ) {
     _unaryFunctions[identifiers.include(name)] = unaryFunction;
   }
 
-  Function(Execution execution, ExecutionNode caller, dynamic p1, dynamic p2)?
+  Function(
+    ExecutionContext executionContext,
+    ExecutionNode caller,
+    dynamic p1,
+    dynamic p2,
+  )?
   getBinaryFunction(int identifier) {
     return _binaryFunctions[identifier];
   }
@@ -590,7 +621,7 @@ class Runtime {
   void setBinaryFunction(
     String name,
     dynamic Function(
-      Execution execution,
+      ExecutionContext executionContext,
       ExecutionNode caller,
       dynamic p1,
       dynamic p2,
@@ -601,7 +632,7 @@ class Runtime {
   }
 
   Function(
-    Execution execution,
+    ExecutionContext executionContext,
     ExecutionNode caller,
     dynamic p1,
     dynamic p2,
@@ -618,7 +649,7 @@ class Runtime {
   void setTernaryFunction(
     String name,
     dynamic Function(
-      Execution execution,
+      ExecutionContext executionContext,
       ExecutionNode caller,
       dynamic p1,
       dynamic p2,
@@ -629,7 +660,11 @@ class Runtime {
     _ternaryFunctions[identifiers.include(name)] = ternaryFunction;
   }
 
-  void print(Execution execution, ExecutionNode caller, dynamic value) {
+  void print(
+    ExecutionContext executionContext,
+    ExecutionNode caller,
+    dynamic value,
+  ) {
     if (sandboxed) {
       return;
     }
@@ -638,7 +673,7 @@ class Runtime {
   }
 
   Future<String> prompt(
-    Execution execution,
+    ExecutionContext executionContext,
     ExecutionNode caller,
     dynamic prompt,
   ) async {
@@ -650,7 +685,7 @@ class Runtime {
   }
 
   Future<void> navigate(
-    Execution execution,
+    ExecutionContext executionContext,
     ExecutionNode caller,
     dynamic routeName,
   ) async {
@@ -661,7 +696,10 @@ class Runtime {
     return await navigateFunction?.call(routeName);
   }
 
-  Future<String> readLine(Execution execution, ExecutionNode caller) async {
+  Future<String> readLine(
+    ExecutionContext executionContext,
+    ExecutionNode caller,
+  ) async {
     if (sandboxed) {
       return "";
     }
@@ -670,7 +708,7 @@ class Runtime {
   }
 
   Future<void> plot(
-    Execution execution,
+    ExecutionContext executionContext,
     ExecutionNode caller,
     dynamic xVector,
     dynamic yVector,
@@ -681,7 +719,10 @@ class Runtime {
     return await plotFunction?.call(xVector, yVector);
   }
 
-  Future<void> cls(Execution execution, ExecutionNode caller) async {
+  Future<void> cls(
+    ExecutionContext executionContext,
+    ExecutionNode caller,
+  ) async {
     if (sandboxed) {
       return;
     }
@@ -689,7 +730,10 @@ class Runtime {
     await clsFunction?.call();
   }
 
-  Future<void> hideGraph(Execution execution, ExecutionNode caller) async {
+  Future<void> hideGraph(
+    ExecutionContext executionContext,
+    ExecutionNode caller,
+  ) async {
     if (sandboxed) {
       return;
     }
@@ -698,14 +742,18 @@ class Runtime {
   }
 
   Future<Thread> startThread(
-    Execution execution,
+    ExecutionContext executionContext,
     ExecutionNode caller,
     dynamic userFunction,
   ) async {
-    return execution.startThread(caller, userFunction);
+    return executionContext.startThread(caller, userFunction);
   }
 
-  void joinThread(Execution execution, ExecutionNode caller, dynamic thread) {
+  void joinThread(
+    ExecutionContext executionContext,
+    ExecutionNode caller,
+    dynamic thread,
+  ) {
     if (sandboxed) {
       return;
     }
@@ -714,7 +762,7 @@ class Runtime {
   }
 
   dynamic extern(
-    Execution execution,
+    ExecutionContext executionContext,
     ExecutionNode caller,
     dynamic name,
     dynamic args,

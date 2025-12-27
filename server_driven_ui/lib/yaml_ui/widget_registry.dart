@@ -38,6 +38,7 @@ class WidgetRegistry {
     'ListView': _buildListView,
     'TextField': _buildTextField,
     'Expanded': _buildExpanded,
+    'Card': _buildCard,
   });
 
   WidgetFactory? get(String type) => _factories[type];
@@ -215,10 +216,11 @@ Widget _buildPadding(
   ShqlBindings shql,
   Key key,
 ) {
+  final childNode = props['child'] ?? child;
   return Padding(
     key: key,
     padding: Resolvers.edgeInsets(props['padding']),
-    child: child != null ? b(child, '$path.child') : null,
+    child: childNode != null ? b(childNode, '$path.child') : null,
   );
 }
 
@@ -286,7 +288,14 @@ Widget _buildText(
   Key key,
 ) {
   final data = props['data'];
-  return Text((data ?? '').toString(), key: key);
+  final style = props['style'] as Map?;
+  return Text(
+    (data ?? '').toString(),
+    key: key,
+    style: TextStyle(
+      color: Resolvers.color(style?['color']),
+    ),
+  );
 }
 
 Widget _buildElevatedButton(
@@ -336,6 +345,25 @@ Widget _buildExpanded(
     child: childNode != null
         ? b(childNode, '$path.child')
         : const SizedBox.shrink(),
+  );
+}
+
+Widget _buildCard(
+  BuildContext context,
+  Map<String, dynamic> props,
+  ChildBuilder b,
+  dynamic child,
+  dynamic children,
+  String path,
+  ShqlBindings shql,
+  Key key,
+) {
+  final childNode = props['child'] ?? child;
+  return Card(
+    key: key,
+    color: Resolvers.color(props['color']),
+    elevation: (props['elevation'] as num?)?.toDouble(),
+    child: childNode != null ? b(childNode, '$path.child') : null,
   );
 }
 

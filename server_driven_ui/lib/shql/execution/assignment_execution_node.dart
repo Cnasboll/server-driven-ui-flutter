@@ -2,7 +2,7 @@ import 'package:server_driven_ui/shql/engine/cancellation_token.dart';
 import 'package:server_driven_ui/shql/engine/engine.dart';
 import 'package:server_driven_ui/shql/execution/index_to_execution_node.dart';
 import 'package:server_driven_ui/shql/execution/lambdas/call_execution_node.dart';
-import 'package:server_driven_ui/shql/execution/runtime/execution.dart';
+import 'package:server_driven_ui/shql/execution/runtime/execution_context.dart';
 import 'package:server_driven_ui/shql/execution/set_variable_execution_node.dart';
 import 'package:server_driven_ui/shql/execution/execution_node.dart';
 import 'package:server_driven_ui/shql/execution/lazy_execution_node.dart';
@@ -19,11 +19,11 @@ class AssignmentExecutionNode extends LazyExecutionNode {
 
   @override
   Future<TickResult> doTick(
-    Execution execution,
+    ExecutionContext executionContext,
     CancellationToken? cancellationToken,
   ) async {
     if (_rhs == null) {
-      var (rhs, e) = createRhs(execution);
+      var (rhs, e) = createRhs(executionContext);
       if (e != null) {
         error = e;
         return TickResult.completed;
@@ -36,7 +36,7 @@ class AssignmentExecutionNode extends LazyExecutionNode {
     }
 
     if (_lhs == null) {
-      var (lhs, error) = createLhs(execution);
+      var (lhs, error) = createLhs(executionContext);
       if (error != null) {
         this.error = error;
         return TickResult.completed;
@@ -58,7 +58,7 @@ class AssignmentExecutionNode extends LazyExecutionNode {
     return TickResult.completed;
   }
 
-  (ExecutionNode?, String?) createLhs(Execution execution) {
+  (ExecutionNode?, String?) createLhs(ExecutionContext execution) {
     if (node.children[0].symbol == Symbols.identifier) {
       return (
         SetVariableExecutionNode(
@@ -73,7 +73,7 @@ class AssignmentExecutionNode extends LazyExecutionNode {
     return (Engine.createExecutionNode(node.children[0], thread, scope), null);
   }
 
-  (ExecutionNode?, String?) createRhs(Execution execution) {
+  (ExecutionNode?, String?) createRhs(ExecutionContext executionContext) {
     // Verify that node has exactly two children
     if (node.children.length != 2) {
       return (
@@ -98,9 +98,9 @@ class AssignmentExecutionNode extends LazyExecutionNode {
           );
         }
         var identifier = identifierChild.qualifier!;
-        var name = execution.runtime.identifiers.constants[identifier];
+        var name = executionContext.runtime.identifiers.constants[identifier];
 
-        if (defineUserFunction(name, argumentsNode, execution, identifier)) {
+        if (defineUserFunction(name, argumentsNode, executionContext, identifier)) {
           return (null, null);
         } else {
           return (null, "Cannot create user function for identifier $name.");
@@ -114,7 +114,7 @@ class AssignmentExecutionNode extends LazyExecutionNode {
   bool defineUserFunction(
     String name,
     ParseTree argumentsNode,
-    Execution execution,
+    ExecutionContext execution,
     int identifier,
   ) {
     var arguments = argumentsNode.children;
@@ -145,7 +145,7 @@ class AssignmentExecutionNode extends LazyExecutionNode {
   bool assignToListMember(
     String name,
     ParseTree indexNode,
-    Execution execution,
+    ExecutionContext execution,
     int identifier,
   ) {
     var indexes = indexNode.children;
