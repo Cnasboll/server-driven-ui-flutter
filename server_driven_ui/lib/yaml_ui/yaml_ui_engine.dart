@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:server_driven_ui/yaml_ui/resolvers.dart';
 import 'package:server_driven_ui/yaml_ui/shql_bindings.dart';
 import 'package:server_driven_ui/yaml_ui/widget_registry.dart';
 import 'package:yaml/yaml.dart';
@@ -23,10 +22,10 @@ class YamlUiEngine {
 
   /// Synchronously builds the widget tree from a fully resolved data structure.
   Widget build(dynamic resolvedData, BuildContext context) {
-    return _buildNode(resolvedData, context, 'screen');
+    return _buildWidget(resolvedData, context, 'screen');
   }
 
-  Widget _buildNode(dynamic node, BuildContext context, String path) {
+  Widget _buildWidget(dynamic node, BuildContext context, String path) {
     if (node is Map && node.containsKey('type')) {
       final type = node['type'] as String;
       final props = (node['props'] as Map?) ?? {};
@@ -36,12 +35,13 @@ class YamlUiEngine {
       return registry.build(
         type: type,
         context: context,
-        props: resolveMap(props, shql),
-        buildChild: (node, childPath) => _buildNode(node, context, childPath),
+        props: Map<String, dynamic>.from(props),
+        buildChild: (node, childPath) => _buildWidget(node, context, childPath),
         child: child,
         children: children,
         path: path,
         shql: shql,
+        engine: this,
       );
     }
 
@@ -53,16 +53,33 @@ class YamlUiEngine {
   }
 
   Future<dynamic> _resolveNode(dynamic node) async {
-    if (node is String && isShqlRef(node)) {
-      final expression = parseShql(node).code;
-      final result = await shql.eval(expression);
-      return _resolveNode(result);
+    if (node is String) {
+      if (isShqlRef(node)) {
+        final expression = parseShql(node).code;
+        final result = await shql.eval(expression);
+        return _resolveNode(result);
+      }
+      return node;
     }
 
     if (node is YamlMap) {
       final newMap = <String, dynamic>{};
       for (final key in node.keys) {
         final value = node[key];
+
+        if (node['type'] == 'Observer' && key == 'props' && value is YamlMap) {
+          final newProps = <String, dynamic>{};
+          for (final propKey in value.keys) {
+            if (propKey == 'builder') {
+              newProps[propKey] = value[propKey];
+            } else {
+              newProps[propKey] = await _resolveNode(value[propKey]);
+            }
+          }
+          newMap[key] = newProps;
+          continue;
+        }
+
         if (key is String && key.startsWith('on')) {
           newMap[key] = value;
         } else {
@@ -80,7 +97,6 @@ class YamlUiEngine {
       return newList;
     }
 
-    // This will handle non-YAML maps that might be returned from shql.eval
     if (node is Map) {
       final newMap = <String, dynamic>{};
       for (final key in node.keys) {
@@ -94,7 +110,6 @@ class YamlUiEngine {
       return newMap;
     }
 
-    // This will handle non-YAML lists that might be returned from shql.eval
     if (node is List) {
       final newList = <dynamic>[];
       for (final item in node) {

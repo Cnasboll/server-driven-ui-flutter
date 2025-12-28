@@ -9,71 +9,67 @@ screen:
           props:
             data: "Stats Screen"
     body:
-      type: Center
-      child:
-        type: Column
-        props:
-          crossAxisAlignment: "stretch"
-        children:
-          - type: Expanded
-            child:
-              type: Card
-              props:
-                color: "0xFFF5F5F5" # A light grey color
-                elevation: 4
-                child:
-                  type: Padding
-                  props:
-                    padding: [16, 16]
-                    child:
-                      type: Column
-                      props:
-                        crossAxisAlignment: "stretch"
-                      children:
-                        - type: Text
-                          props:
-                            data: "This is a card!"
-                        - type: Text
-                          props:
-                            data: "It can contain other widgets."
-                        - type: SizedBox
-                          props:
-                            height: 16
-                        - type: ClipRRect
-                          props:
-                            borderRadius: 8
-                            child:
-                              type: Image
-                              props:
-                                source: "https://picsum.photos/seed/picsum/200/300"
-                                height: 200
-                                fit: "contain"
-          - type: SizedBox
+      type: Column
+      children:
+        - type: Expanded
+          child:
+            type: Card
             props:
-              height: 16
-          - type: TextField
-            props:
-              onChanged: "shql(targeted: true): SET('name', %)"
-              decoration:
-                hintText: "Enter your name"
-          - type: Observer
-            props:
-              query: "name"
-              builder:
-                type: Text
-                props:
-                  data: "Hello, $!"
-          - type: SizedBox
-            props:
-              height: 16
-          - type: Text
-            props:
-              data: "This is the stats screen."
-          - type: ElevatedButton
-            props:
-              onPressed: "shql: NAVIGATE('main')"
+              color: "0xFFF5F5F5" # A light grey color
+              elevation: 4
               child:
-                type: Text
+                type: Padding
                 props:
-                  data: "Go back to Main"
+                  padding: [16, 16]
+                  child:
+                    type: Column
+                    props:
+                      crossAxisAlignment: "stretch"
+                    children:
+                      - type: Text
+                        props:
+                          data: "This is a card!"
+                      - type: Text
+                        props:
+                          data: "It can contain other widgets."
+                      - type: SizedBox
+                        props:
+                          height: 16
+                      - type: ClipRRect
+                        props:
+                          borderRadius: 8
+                          child:
+                            type: Image
+                            props:
+                              source: "https://picsum.photos/seed/picsum/200/300"
+                              height: 200
+                              fit: "contain"
+        - type: SizedBox
+          props:
+            height: 16
+        - type: TextField
+          props:
+            onChanged: "shql(targeted: true): SET('name', %)"
+            decoration:
+              hintText: "Enter your name"
+        - type: Observer
+          props:
+            query: "name"
+            builder:
+              type: Text
+              props:
+                data: "shql: 'Hello, ' + name"
+        - type: SizedBox
+          props:
+          height: 16
+        - type: Text
+          props:
+            data: "This is the stats screen."
+        - type: ElevatedButton
+          props:
+            onPressed: "shql: NAVIGATE('main')"
+            child:
+              type: Text
+              props:
+                data: "Go back to Main"
 
