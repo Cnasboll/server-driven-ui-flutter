@@ -100,7 +100,12 @@ class AssignmentExecutionNode extends LazyExecutionNode {
         var identifier = identifierChild.qualifier!;
         var name = executionContext.runtime.identifiers.constants[identifier];
 
-        if (defineUserFunction(name, argumentsNode, executionContext, identifier)) {
+        if (defineUserFunction(
+          name,
+          argumentsNode,
+          executionContext,
+          identifier,
+        )) {
           return (null, null);
         } else {
           return (null, "Cannot create user function for identifier $name.");

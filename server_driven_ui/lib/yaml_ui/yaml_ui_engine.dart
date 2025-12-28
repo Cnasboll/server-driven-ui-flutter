@@ -54,7 +54,7 @@ class YamlUiEngine {
 
   Future<dynamic> _resolveNode(dynamic node) async {
     if (node is String && isShqlRef(node)) {
-      final expression = stripPrefix(node);
+      final expression = parseShql(node).code;
       final result = await shql.eval(expression);
       return _resolveNode(result);
     }

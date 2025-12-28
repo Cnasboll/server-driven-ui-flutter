@@ -507,6 +507,7 @@ class Runtime {
   Future<void> Function()? clsFunction;
   Future<void> Function()? hideGraphFunction;
   Future<void> Function(dynamic, dynamic)? plotFunction;
+  void Function(String name)? notifyListeners;
 
   Runtime({
     ConstantsSet? constantsSet,
@@ -541,6 +542,7 @@ class Runtime {
     clsFunction = other.clsFunction;
     hideGraphFunction = other.hideGraphFunction;
     plotFunction = other.plotFunction;
+    notifyListeners = other.notifyListeners;
     hookUpConsole();
     _sandboxed = true;
   }
@@ -716,7 +718,21 @@ class Runtime {
     if (sandboxed) {
       return;
     }
-    return await plotFunction?.call(xVector, yVector);
+    await plotFunction?.call(xVector, yVector);
+  }
+
+  Future<void> set(
+    ExecutionContext executionContext,
+    ExecutionNode caller,
+    dynamic name,
+    dynamic value,
+  ) async {
+    if (sandboxed) {
+      return;
+    }
+
+    caller.scope.setVariable(identifiers.include(name.toUpperCase()), value);
+    notifyListeners?.call(name);
   }
 
   Future<void> cls(
@@ -795,6 +811,7 @@ class Runtime {
     setUnaryFunction("NAVIGATE", navigate);
     setNullaryFunction("READLINE", readLine);
     setBinaryFunction("_DISPLAY_GRAPH", plot);
+    setBinaryFunction("SET", set);
     setNullaryFunction("CLS", cls);
     setNullaryFunction("HIDE_GRAPH", hideGraph);
     setUnaryFunction("THREAD", startThread);

@@ -60,3 +60,5 @@ _current_text := '';
 SET_TEXT(new_text) := BEGIN
     _current_text := new_text;
 END;
+
+name := "";

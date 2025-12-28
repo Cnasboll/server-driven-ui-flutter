@@ -51,6 +51,21 @@ screen:
           - type: SizedBox
             props:
               height: 16
+          - type: TextField
+            props:
+              onChanged: "shql(targeted: true): SET('name', %)"
+              decoration:
+                hintText: "Enter your name"
+          - type: Observer
+            props:
+              query: "name"
+              builder:
+                type: Text
+                props:
+                  data: "Hello, $!"
+          - type: SizedBox
+            props:
+              height: 16
           - type: Text
             props:
               data: "This is the stats screen."

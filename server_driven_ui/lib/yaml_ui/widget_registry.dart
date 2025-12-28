@@ -41,6 +41,7 @@ class WidgetRegistry {
     'Card': _buildCard,
     'Image': _buildImage,
     'ClipRRect': _buildClipRRect,
+    'Observer': _buildObserver,
   });
 
   WidgetFactory? get(String type) => _factories[type];
@@ -294,9 +295,7 @@ Widget _buildText(
   return Text(
     (data ?? '').toString(),
     key: key,
-    style: TextStyle(
-      color: Resolvers.color(style?['color']),
-    ),
+    style: TextStyle(color: Resolvers.color(style?['color'])),
   );
 }
 
@@ -315,10 +314,10 @@ Widget _buildElevatedButton(
 
   VoidCallback? cb;
   if (isShqlRef(onPressed)) {
-    final callCode = stripPrefix(onPressed as String);
+    final (:code, :targeted) = parseShql(onPressed as String);
     cb = () {
       // Fire and forget; runtime is async. You can also await and show errors.
-      shql.call(callCode);
+      shql.call(code, targeted: targeted);
     };
   }
 
@@ -382,7 +381,8 @@ Widget _buildClipRRect(
   final childNode = props['child'] ?? child;
   return ClipRRect(
     key: key,
-    borderRadius: Resolvers.borderRadius(props['borderRadius']) ?? BorderRadius.zero,
+    borderRadius:
+        Resolvers.borderRadius(props['borderRadius']) ?? BorderRadius.zero,
     child: childNode != null ? b(childNode, '$path.child') : null,
   );
 }
@@ -491,10 +491,9 @@ class _StatefulTextFieldState extends State<_StatefulTextField> {
         if (isShqlRef(onChanged)) {
           _debouncer.run(() {
             final escapedValue = value.replaceAll("'", "''");
-            final callCode = stripPrefix(
-              onChanged as String,
-            ).replaceAll('%', "'$escapedValue'");
-            widget.shql.call(callCode).catchError((e) {
+            final (:code, :targeted) = parseShql(onChanged as String);
+            final finalCode = code.replaceAll('%', "'$escapedValue'");
+            widget.shql.call(finalCode, targeted: targeted).catchError((e) {
               debugPrint('Error in debounced onChanged: $e');
             });
           });
@@ -555,4 +554,111 @@ Widget _buildListView(
       return b(childrenList[i], '$path.children[$i]');
     },
   );
+}
+
+Widget _buildObserver(
+  BuildContext context,
+  Map<String, dynamic> props,
+  ChildBuilder b,
+  dynamic child,
+  dynamic children,
+  String path,
+  ShqlBindings shql,
+  Key key,
+) {
+  final query = props['query'] as String?;
+  final builder = props['builder'];
+
+  if (query == null) {
+    return WidgetRegistry._error(context, 'Observer requires a query', path);
+  }
+  if (builder == null) {
+    return WidgetRegistry._error(context, 'Observer requires a builder', path);
+  }
+
+  return _Observer(
+    key: key,
+    shql: shql,
+    query: query,
+    builder: builder,
+    buildChild: b,
+    path: path,
+  );
+}
+
+class _Observer extends StatefulWidget {
+  const _Observer({
+    required this.shql,
+    required this.query,
+    required this.builder,
+    required this.buildChild,
+    required this.path,
+    super.key,
+  });
+
+  final ShqlBindings shql;
+  final String query;
+  final dynamic builder;
+  final ChildBuilder buildChild;
+  final String path;
+
+  @override
+  State<_Observer> createState() => _ObserverState();
+}
+
+class _ObserverState extends State<_Observer> {
+  dynamic _data;
+
+  @override
+  void initState() {
+    super.initState();
+    // Subscribe to changes
+    widget.shql.addListener(widget.query, _onDataChanged);
+    // Fetch initial data
+    _fetchData();
+  }
+
+  @override
+  void dispose() {
+    // Unsubscribe to prevent memory leaks
+    widget.shql.removeListener(widget.query, _onDataChanged);
+    super.dispose();
+  }
+
+  void _onDataChanged() {
+    // When data changes, fetch it again and trigger a rebuild
+    _fetchData();
+  }
+
+  Future<void> _fetchData() async {
+    final newData = await widget.shql.eval(widget.query);
+    if (mounted && newData != _data) {
+      setState(() {
+        _data = newData;
+      });
+    }
+  }
+
+  // Recursively substitutes '$!' with the data in the template
+  dynamic _substitute(dynamic template, dynamic data) {
+    if (template is String) {
+      return template.replaceAll(r'$!', data?.toString() ?? '');
+    }
+    if (template is Map) {
+      return template.map(
+        (key, value) => MapEntry(key, _substitute(value, data)),
+      );
+    }
+    if (template is List) {
+      return template.map((item) => _substitute(item, data)).toList();
+    }
+    return template;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // Create the widget from the template with the substituted data
+    final newBuilder = _substitute(widget.builder, _data);
+    return widget.buildChild(newBuilder, '${widget.path}.builder');
+  }
 }
