@@ -27,6 +27,13 @@ screen:
               type: Text
               props:
                 data: "Go to Stats"
+        - type: ElevatedButton
+          props:
+            onPressed: "shql: NAVIGATE('stack_example')"
+            child:
+              type: Text
+              props:
+                data: "Go to Stack Example"
         - type: Expanded
           child:
             type: ListView
