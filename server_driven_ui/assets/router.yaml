@@ -1,3 +1,5 @@
 routes:
   main: "assets/screens/main.yaml"
   stats: "assets/screens/stats.yaml"
+  stack_example: "assets/screens/stack_example.yaml"
+

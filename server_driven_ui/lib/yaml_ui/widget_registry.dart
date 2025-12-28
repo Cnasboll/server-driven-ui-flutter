@@ -44,6 +44,8 @@ class WidgetRegistry {
     'Image': _buildImage,
     'ClipRRect': _buildClipRRect,
     'Observer': _buildObserver,
+    'Stack': _buildStack,
+    'Positioned': _buildPositioned,
   });
 
   WidgetFactory? get(String type) => _factories[type];
@@ -257,12 +259,28 @@ Widget _buildContainer(
   Key key,
   YamlUiEngine engine,
 ) {
+  final decorationMap = props['decoration'] as Map?;
+  final borderMap = decorationMap?['border'] as Map?;
+  BoxBorder? border;
+  if (borderMap != null) {
+    border = Border.all(
+      color: Resolvers.color(borderMap['color']) ?? Colors.black,
+      width: (borderMap['width'] as num?)?.toDouble() ?? 1.0,
+    );
+  }
+
   return Container(
     key: key,
-    decoration: BoxDecoration(color: Resolvers.color(props['color'])),
     width: (props['width'] as num?)?.toDouble(),
     height: (props['height'] as num?)?.toDouble(),
     padding: Resolvers.edgeInsets(props['padding']),
+    margin: Resolvers.edgeInsets(props['margin']),
+    alignment: Resolvers.alignment(props['alignment'] as String?),
+    decoration: BoxDecoration(
+      color: Resolvers.color(props['color'] ?? decorationMap?['color']),
+      borderRadius: Resolvers.borderRadius(decorationMap?['borderRadius']),
+      border: border,
+    ),
     child: child != null ? b(child, '$path.child') : null,
   );
 }
@@ -735,4 +753,62 @@ class _ObserverState extends State<_Observer> {
     // The state change will naturally cause this to rebuild with new data.
     return widget.buildChild(_resolvedBuilder, '${widget.path}.builder');
   }
+}
+
+Widget _buildStack(
+  BuildContext context,
+  Map<String, dynamic> props,
+  ChildBuilder b,
+  dynamic child,
+  dynamic children,
+  String path,
+  ShqlBindings shql,
+  Key key,
+  YamlUiEngine engine,
+) {
+  if (children != null && children is! List) {
+    return WidgetRegistry._error(
+      context,
+      'Invalid children for Stack',
+      'Expected a list, but got ${children.runtimeType} at $path',
+    );
+  }
+
+  final childrenList = (children as List?) ?? [];
+
+  return Stack(
+    key: key,
+    alignment:
+        Resolvers.alignment(props['alignment'] as String?) ??
+        AlignmentDirectional.topStart,
+    children: childrenList
+        .asMap()
+        .entries
+        .map((entry) => b(entry.value, '$path.children[${entry.key}]'))
+        .toList(),
+  );
+}
+
+Widget _buildPositioned(
+  BuildContext context,
+  Map<String, dynamic> props,
+  ChildBuilder b,
+  dynamic child,
+  dynamic children,
+  String path,
+  ShqlBindings shql,
+  Key key,
+  YamlUiEngine engine,
+) {
+  final childNode = props['child'] ?? child;
+  return Positioned(
+    key: key,
+    top: (props['top'] as num?)?.toDouble(),
+    right: (props['right'] as num?)?.toDouble(),
+    bottom: (props['bottom'] as num?)?.toDouble(),
+    left: (props['left'] as num?)?.toDouble(),
+    child: childNode != null
+        ? b(childNode, '$path.child')
+        : const SizedBox.shrink(),
+  );
 }

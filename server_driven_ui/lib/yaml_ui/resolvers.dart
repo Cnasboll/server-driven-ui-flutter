@@ -104,6 +104,31 @@ class Resolvers {
     if (v is num) return BorderRadius.circular(v.toDouble());
     return null;
   }
+
+  static Alignment? alignment(String? v) {
+    switch (v?.toLowerCase()) {
+      case 'topLeft':
+        return Alignment.topLeft;
+      case 'topCenter':
+        return Alignment.topCenter;
+      case 'topRight':
+        return Alignment.topRight;
+      case 'centerLeft':
+        return Alignment.centerLeft;
+      case 'center':
+        return Alignment.center;
+      case 'centerRight':
+        return Alignment.centerRight;
+      case 'bottomLeft':
+        return Alignment.bottomLeft;
+      case 'bottomCenter':
+        return Alignment.bottomCenter;
+      case 'bottomRight':
+        return Alignment.bottomRight;
+      default:
+        return null;
+    }
+  }
 }
 
 Map<String, dynamic> resolveMap(Map map, ShqlBindings shql) {
