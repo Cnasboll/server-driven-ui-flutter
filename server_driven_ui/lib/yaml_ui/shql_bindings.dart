@@ -10,6 +10,8 @@ class ShqlBindings {
   late Runtime _runtime;
   final CancellationToken _cancellationToken = CancellationToken();
 
+  final Map<String, List<VoidCallback>> _listeners = {};
+
   ShqlBindings({
     required this.onMutated,
     Function(dynamic value)? printLine,
@@ -23,9 +25,26 @@ class ShqlBindings {
     _runtime.readlineFunction = readline;
     _runtime.promptFunction = prompt;
     _runtime.navigateFunction = navigate;
+    _runtime.notifyListeners = notifyListeners;
   }
 
   final VoidCallback onMutated;
+
+  void addListener(String key, VoidCallback listener) {
+    _listeners.putIfAbsent(key, () => []).add(listener);
+  }
+
+  void removeListener(String key, VoidCallback listener) {
+    _listeners[key]?.remove(listener);
+  }
+
+  void notifyListeners(String key) {
+    final a = _listeners[key] ?? [];
+    final b = _listeners['*'] ?? [];
+    for (final listener in [...a, ...b]) {
+      listener();
+    }
+  }
 
   Future<void> loadProgram(String programText, {String? name}) async {
     if (name != null) {
@@ -68,7 +87,7 @@ class ShqlBindings {
     }
   }
 
-  Future<dynamic> call(String code) async {
+  Future<dynamic> call(String code, {bool targeted = false}) async {
     try {
       final result = await Engine.execute(
         code,
@@ -77,8 +96,11 @@ class ShqlBindings {
         cancellationToken: _cancellationToken,
       );
 
-      // If the call was successful, assume a mutation occurred and notify listeners.
-      onMutated();
+      // If the call was successful and not a targeted update,
+      // assume a general mutation occurred and rebuild the whole UI.
+      if (!targeted) {
+        onMutated();
+      }
       return result;
     } catch (e) {
       // Rethrow to allow the caller (e.g., event handler in a widget) to handle it.
@@ -88,5 +110,31 @@ class ShqlBindings {
 }
 
 /// Tiny helpers for YAML DSL parsing:
-bool isShqlRef(dynamic v) => v is String && v.startsWith('shql:');
-String stripPrefix(String s) => s.substring(s.indexOf(':') + 1).trim();
+bool isShqlRef(dynamic v) => v is String && v.startsWith('shql');
+
+typedef ShqlParseResult = ({String code, bool targeted});
+
+ShqlParseResult parseShql(String ref) {
+  if (!isShqlRef(ref)) {
+    return (code: ref, targeted: false);
+  }
+
+  final match = RegExp(
+    r'^shql(\(targeted:\s*(true)\))?:\s*(.*)',
+    dotAll: true,
+  ).firstMatch(ref);
+
+  if (match != null) {
+    final isTargeted = match.group(2) == 'true';
+    final code = match.group(3) ?? '';
+    return (code: code.trim(), targeted: isTargeted);
+  }
+
+  // Fallback for old syntax, just in case
+  final parts = ref.split(':');
+  if (parts.length > 1) {
+    return (code: parts.sublist(1).join(':').trim(), targeted: false);
+  }
+
+  return (code: '', targeted: false);
+}
