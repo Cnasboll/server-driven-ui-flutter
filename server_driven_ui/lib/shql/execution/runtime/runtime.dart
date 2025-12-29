@@ -505,6 +505,8 @@ class Runtime {
   Future<String?> Function(String prompt)? promptFunction;
   Future<void> Function(String routeName)? navigateFunction;
   Future<dynamic> Function(String url)? fetchFunction;
+  Future<void> Function(String key, dynamic value)? saveStateFunction;
+  Future<dynamic> Function(String key, dynamic defaultValue)? loadStateFunction;
   Future<void> Function()? clsFunction;
   Future<void> Function()? hideGraphFunction;
   Future<void> Function(dynamic, dynamic)? plotFunction;
@@ -541,6 +543,8 @@ class Runtime {
     promptFunction = other.promptFunction;
     navigateFunction = other.navigateFunction;
     fetchFunction = other.fetchFunction;
+    saveStateFunction = other.saveStateFunction;
+    loadStateFunction = other.loadStateFunction;
     clsFunction = other.clsFunction;
     hideGraphFunction = other.hideGraphFunction;
     plotFunction = other.plotFunction;
@@ -749,6 +753,32 @@ class Runtime {
     notifyListeners?.call(name);
   }
 
+  Future<void> saveState(
+    ExecutionContext executionContext,
+    ExecutionNode caller,
+    dynamic key,
+    dynamic value,
+  ) async {
+    if (sandboxed) {
+      return;
+    }
+
+    await saveStateFunction?.call(key, value);
+  }
+
+  Future<dynamic> loadState(
+    ExecutionContext executionContext,
+    ExecutionNode caller,
+    dynamic key,
+    dynamic defaultValue,
+  ) async {
+    if (sandboxed) {
+      return;
+    }
+
+    return loadStateFunction?.call(key, defaultValue);
+  }
+
   Future<void> cls(
     ExecutionContext executionContext,
     ExecutionNode caller,
@@ -827,6 +857,8 @@ class Runtime {
     setNullaryFunction("READLINE", readLine);
     setBinaryFunction("_DISPLAY_GRAPH", plot);
     setBinaryFunction("SET", set);
+    setBinaryFunction("SAVE_STATE", saveState);
+    setBinaryFunction("LOAD_STATE", loadState);
     setNullaryFunction("CLS", cls);
     setNullaryFunction("HIDE_GRAPH", hideGraph);
     setUnaryFunction("THREAD", startThread);

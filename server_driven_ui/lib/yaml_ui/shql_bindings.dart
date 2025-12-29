@@ -19,6 +19,8 @@ class ShqlBindings {
     Future<String?> Function(String prompt)? prompt,
     Future<void> Function(String routeName)? navigate,
     Future<dynamic> Function(String url)? fetch,
+    Future<void> Function(String key, dynamic value)? saveState,
+    Future<dynamic> Function(String key, dynamic defaultValue)? loadState,
   }) {
     _constantsSet = Runtime.prepareConstantsSet();
     _runtime = Runtime.prepareRuntime(_constantsSet);
@@ -27,6 +29,8 @@ class ShqlBindings {
     _runtime.promptFunction = prompt;
     _runtime.navigateFunction = navigate;
     _runtime.fetchFunction = fetch;
+    _runtime.saveStateFunction = saveState;
+    _runtime.loadStateFunction = loadState;
     _runtime.notifyListeners = notifyListeners;
   }
 

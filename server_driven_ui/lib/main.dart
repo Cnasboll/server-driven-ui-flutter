@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:server_driven_ui/yaml_ui/shql_bindings.dart';
 import 'package:server_driven_ui/yaml_ui/widget_registry.dart';
 import 'package:server_driven_ui/yaml_ui/yaml_ui_engine.dart';
@@ -114,6 +115,25 @@ class _YamlDrivenScreenState extends State<YamlDrivenScreen> {
     }
   }
 
+  Future<void> _saveState(String key, dynamic value) async {
+    final prefs = await SharedPreferences.getInstance();
+    if (value is bool) {
+      await prefs.setBool(key, value);
+    } else if (value is int) {
+      await prefs.setInt(key, value);
+    } else if (value is double) {
+      await prefs.setDouble(key, value);
+    } else if (value is String) {
+      await prefs.setString(key, value);
+    }
+    // Note: Complex types are not supported by shared_preferences.
+  }
+
+  Future<dynamic> _loadState(String key, dynamic defaultValue) async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.get(key) ?? defaultValue;
+  }
+
   Future<void> _initAndResolve() async {
     try {
       // Load initial YAML source
@@ -135,6 +155,8 @@ class _YamlDrivenScreenState extends State<YamlDrivenScreen> {
         prompt: (_) async => null,
         navigate: _navigate,
         fetch: _fetch,
+        saveState: _saveState,
+        loadState: _loadState,
       );
 
       // Sequentially load the programs.

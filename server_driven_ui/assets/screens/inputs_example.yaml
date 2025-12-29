@@ -1,5 +1,9 @@
 screen:
   type: Scaffold
+  onLoad: |
+    shql:
+      SET('_feature_enabled', LOAD_STATE('feature_enabled', FALSE));
+      SET('_terms_accepted', LOAD_STATE('terms_accepted', FALSE));
   props:
     appBar:
       type: AppBar
@@ -25,7 +29,7 @@ screen:
                   - type: Switch
                     props:
                       value: "shql: _feature_enabled"
-                      onChanged: "shql: SET('_feature_enabled', value)"
+                      onChanged: "shql: SET('_feature_enabled', value); SAVE_STATE('feature_enabled', value)"
               - type: Row
                 children:
                   - type: Text
@@ -34,7 +38,7 @@ screen:
                   - type: Checkbox
                     props:
                       value: "shql: _terms_accepted"
-                      onChanged: "shql: SET('_terms_accepted', value)"
+                      onChanged: "shql: SET('_terms_accepted', value); SAVE_STATE('terms_accepted', value)"
               - type: Observer
                 props:
                   query: "_feature_enabled, _terms_accepted"
