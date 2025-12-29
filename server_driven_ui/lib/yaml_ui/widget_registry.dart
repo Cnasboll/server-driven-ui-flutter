@@ -46,6 +46,9 @@ class WidgetRegistry {
     'Observer': _buildObserver,
     'Stack': _buildStack,
     'Positioned': _buildPositioned,
+    'CircularProgressIndicator': _buildCircularProgressIndicator,
+    'Switch': _buildSwitch,
+    'Checkbox': _buildCheckbox,
   });
 
   WidgetFactory? get(String type) => _factories[type];
@@ -209,7 +212,8 @@ Widget _buildRow(
   Key key,
   YamlUiEngine engine,
 ) {
-  final list = (children is List) ? children : const [];
+  final childrenList = (children is List) ? children : [];
+
   return Row(
     key: key,
     mainAxisAlignment: Resolvers.mainAxis(
@@ -224,7 +228,8 @@ Widget _buildRow(
         ? MainAxisSize.min
         : MainAxisSize.max,
     children: [
-      for (var i = 0; i < list.length; i++) b(list[i], '$path.children[$i]'),
+      for (var i = 0; i < childrenList.length; i++)
+        b(childrenList[i], '$path.children[$i]'),
     ],
   );
 }
@@ -538,12 +543,13 @@ class _StatefulTextFieldState extends State<_StatefulTextField> {
         // When the user types, we use the debouncer to delay the shql call.
         if (isShqlRef(onChanged)) {
           _debouncer.run(() {
-            final escapedValue = value.replaceAll("'", "''");
+            var boundValues = {'value': value};
             final (:code, :targeted) = parseShql(onChanged as String);
-            final finalCode = code.replaceAll('%', "'$escapedValue'");
-            widget.shql.call(finalCode, targeted: targeted).catchError((e) {
-              debugPrint('Error in debounced onChanged: $e');
-            });
+            widget.shql
+                .call(code, targeted: targeted, boundValues: boundValues)
+                .catchError((e) {
+                  debugPrint('Error in debounced onChanged: $e');
+                });
           });
         }
       },
@@ -663,11 +669,12 @@ class _Observer extends StatefulWidget {
 
 class _ObserverState extends State<_Observer> {
   dynamic _resolvedBuilder;
+  List<String> _queries = [];
 
   @override
   void initState() {
     super.initState();
-    widget.shql.addListener(widget.query, _onDataChanged);
+    _subscribeToQueries();
     // Initial resolution
     _resolveBuilder();
   }
@@ -676,8 +683,8 @@ class _ObserverState extends State<_Observer> {
   void didUpdateWidget(covariant _Observer oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (widget.query != oldWidget.query) {
-      widget.shql.removeListener(oldWidget.query, _onDataChanged);
-      widget.shql.addListener(widget.query, _onDataChanged);
+      _unsubscribeFromQueries();
+      _subscribeToQueries();
       _resolveBuilder();
     } else if (widget.builder != oldWidget.builder) {
       // If the builder template itself changes, re-resolve.
@@ -687,8 +694,26 @@ class _ObserverState extends State<_Observer> {
 
   @override
   void dispose() {
-    widget.shql.removeListener(widget.query, _onDataChanged);
+    _unsubscribeFromQueries();
     super.dispose();
+  }
+
+  void _subscribeToQueries() {
+    _queries = widget.query
+        .split(',')
+        .map((q) => q.trim())
+        .where((q) => q.isNotEmpty)
+        .toList();
+    for (final q in _queries) {
+      widget.shql.addListener(q, _onDataChanged);
+    }
+  }
+
+  void _unsubscribeFromQueries() {
+    for (final q in _queries) {
+      widget.shql.removeListener(q, _onDataChanged);
+    }
+    _queries = [];
   }
 
   void _onDataChanged() {
@@ -748,7 +773,7 @@ class _ObserverState extends State<_Observer> {
   Widget build(BuildContext context) {
     if (_resolvedBuilder == null) {
       // Initial loading state or if resolution fails.
-      return const SizedBox.shrink();
+      return const Center(child: CircularProgressIndicator());
     }
     // The state change will naturally cause this to rebuild with new data.
     return widget.buildChild(_resolvedBuilder, '${widget.path}.builder');
@@ -810,5 +835,274 @@ Widget _buildPositioned(
     child: childNode != null
         ? b(childNode, '$path.child')
         : const SizedBox.shrink(),
+  );
+}
+
+Widget _buildCircularProgressIndicator(
+  BuildContext context,
+  Map<String, dynamic> props,
+  ChildBuilder b,
+  dynamic child,
+  dynamic children,
+  String path,
+  ShqlBindings shql,
+  Key key,
+  YamlUiEngine engine,
+) {
+  return CircularProgressIndicator(
+    key: key,
+    value: (props['value'] as num?)?.toDouble(),
+    backgroundColor: Resolvers.color(props['backgroundColor']),
+    color: Resolvers.color(props['color']),
+    strokeWidth: (props['strokeWidth'] as num?)?.toDouble() ?? 4.0,
+  );
+}
+
+class _StatefulSwitch extends StatefulWidget {
+  const _StatefulSwitch({
+    required this.shql,
+    this.onChanged,
+    this.value,
+    required this.engine,
+    super.key,
+  });
+
+  final ShqlBindings shql;
+  final String? onChanged;
+  final dynamic value;
+  final YamlUiEngine engine;
+
+  @override
+  State<_StatefulSwitch> createState() => _StatefulSwitchState();
+}
+
+class _StatefulSwitchState extends State<_StatefulSwitch> {
+  bool _currentValue = false;
+  String? _valueBinding;
+
+  @override
+  void initState() {
+    super.initState();
+    _initializeValue();
+  }
+
+  void _initializeValue() {
+    // Check if the value is a SHQL binding string
+    if (widget.value is String && isShqlRef(widget.value as String)) {
+      final (:code, targeted: _) = parseShql(widget.value as String);
+      _valueBinding = code;
+      widget.shql.addListener(_valueBinding!, _onDataChanged);
+      // Immediately try to resolve the current value
+      _resolveValue();
+    } else if (widget.value is bool) {
+      // Handle direct boolean value
+      _currentValue = widget.value;
+    }
+  }
+
+  Future<void> _resolveValue() async {
+    if (_valueBinding == null) return;
+    try {
+      final result = await widget.shql.eval(_valueBinding!);
+      if (mounted && result is bool) {
+        setState(() {
+          _currentValue = result;
+        });
+      }
+    } catch (e) {
+      debugPrint('Error resolving Switch value: $e');
+    }
+  }
+
+  void _onDataChanged() {
+    if (mounted) {
+      _resolveValue();
+    }
+  }
+
+  @override
+  void didUpdateWidget(covariant _StatefulSwitch oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.value != oldWidget.value) {
+      // If the binding itself changes, remove old listener and set up new one
+      if (_valueBinding != null) {
+        widget.shql.removeListener(_valueBinding!, _onDataChanged);
+      }
+      _initializeValue();
+    }
+  }
+
+  @override
+  void dispose() {
+    if (_valueBinding != null) {
+      widget.shql.removeListener(_valueBinding!, _onDataChanged);
+    }
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final onChanged = widget.onChanged;
+    return Switch(
+      value: _currentValue,
+      onChanged: (newValue) {
+        // Optimistically update the UI
+        setState(() {
+          _currentValue = newValue;
+        });
+        // Then notify the backend via SHQL
+        if (isShqlRef(onChanged)) {
+          var boundValues = {'value': newValue};
+          final (:code, :targeted) = parseShql(onChanged as String);
+          widget.shql
+              .call(code, targeted: targeted, boundValues: boundValues)
+              .catchError((e) {
+                debugPrint('Error in Switch onChanged: $e');
+              });
+        }
+      },
+    );
+  }
+}
+
+Widget _buildSwitch(
+  BuildContext context,
+  Map<String, dynamic> props,
+  ChildBuilder b,
+  dynamic child,
+  dynamic children,
+  String path,
+  ShqlBindings shql,
+  Key key,
+  YamlUiEngine engine,
+) {
+  return _StatefulSwitch(
+    key: key,
+    shql: shql,
+    onChanged: props['onChanged'] as String?,
+    value: props['value'],
+    engine: engine,
+  );
+}
+
+class _StatefulCheckbox extends StatefulWidget {
+  const _StatefulCheckbox({
+    required this.shql,
+    this.onChanged,
+    this.value,
+    required this.engine,
+    super.key,
+  });
+
+  final ShqlBindings shql;
+  final String? onChanged;
+  final dynamic value;
+  final YamlUiEngine engine;
+
+  @override
+  State<_StatefulCheckbox> createState() => _StatefulCheckboxState();
+}
+
+class _StatefulCheckboxState extends State<_StatefulCheckbox> {
+  bool _currentValue = false;
+  String? _valueBinding;
+
+  @override
+  void initState() {
+    super.initState();
+    _initializeValue();
+  }
+
+  void _initializeValue() {
+    if (widget.value is String && isShqlRef(widget.value as String)) {
+      final (:code, targeted: _) = parseShql(widget.value as String);
+      _valueBinding = code;
+      widget.shql.addListener(_valueBinding!, _onDataChanged);
+      _resolveValue();
+    } else if (widget.value is bool) {
+      _currentValue = widget.value;
+    }
+  }
+
+  Future<void> _resolveValue() async {
+    if (_valueBinding == null) return;
+    try {
+      final result = await widget.shql.eval(_valueBinding!);
+      if (mounted && result is bool) {
+        setState(() {
+          _currentValue = result;
+        });
+      }
+    } catch (e) {
+      debugPrint('Error resolving Checkbox value: $e');
+    }
+  }
+
+  void _onDataChanged() {
+    if (mounted) {
+      _resolveValue();
+    }
+  }
+
+  @override
+  void didUpdateWidget(covariant _StatefulCheckbox oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.value != oldWidget.value) {
+      if (_valueBinding != null) {
+        widget.shql.removeListener(_valueBinding!, _onDataChanged);
+      }
+      _initializeValue();
+    }
+  }
+
+  @override
+  void dispose() {
+    if (_valueBinding != null) {
+      widget.shql.removeListener(_valueBinding!, _onDataChanged);
+    }
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final onChanged = widget.onChanged;
+    return Checkbox(
+      value: _currentValue,
+      onChanged: (newValue) {
+        if (newValue == null) return;
+        setState(() {
+          _currentValue = newValue;
+        });
+        if (isShqlRef(onChanged)) {
+          var boundValues = {'value': newValue};
+          final (:code, :targeted) = parseShql(onChanged as String);
+          widget.shql
+              .call(code, targeted: targeted, boundValues: boundValues)
+              .catchError((e) {
+                debugPrint('Error in Checkbox onChanged: $e');
+              });
+        }
+      },
+    );
+  }
+}
+
+Widget _buildCheckbox(
+  BuildContext context,
+  Map<String, dynamic> props,
+  ChildBuilder b,
+  dynamic child,
+  dynamic children,
+  String path,
+  ShqlBindings shql,
+  Key key,
+  YamlUiEngine engine,
+) {
+  return _StatefulCheckbox(
+    key: key,
+    shql: shql,
+    onChanged: props['onChanged'] as String?,
+    value: props['value'],
+    engine: engine,
   );
 }

@@ -64,13 +64,19 @@ class Engine {
     Runtime? runtime,
     ConstantsSet? constantsSet,
     CancellationToken? cancellationToken,
+    Map<String, dynamic>? boundValues,
   }) async {
     constantsSet ??= Runtime.prepareConstantsSet();
     runtime ??= Runtime.prepareRuntime(constantsSet);
 
     var program = Parser.parse(code, constantsSet);
 
-    return await _execute(program, runtime, cancellationToken);
+    return await _execute(
+      program,
+      runtime,
+      cancellationToken,
+      boundValues: boundValues,
+    );
   }
 
   static Future<dynamic> evalExpr(
@@ -90,16 +96,32 @@ class Engine {
     return result.$1;
   }
 
+  static Scope getScope(Runtime runtime, Map<String, dynamic>? boundValues) {
+    var scope = runtime.globalScope;
+    if (boundValues != null) {
+      scope = Scope(Object(), parent: scope);
+      for (var entry in boundValues.entries) {
+        scope.members.setVariable(
+          runtime.identifiers.include(entry.key.toUpperCase()),
+          entry.value,
+        );
+      }
+    }
+    return scope;
+  }
+
   static Future<dynamic> _execute(
     ParseTree parseTree,
     Runtime runtime,
-    CancellationToken? cancellationToken,
-  ) async {
+    CancellationToken? cancellationToken, {
+    Map<String, dynamic>? boundValues,
+  }) async {
     var executionContext = ExecutionContext(runtime: runtime);
+    Scope scope = getScope(runtime, boundValues);
     var executionNode = createExecutionNode(
       parseTree,
       executionContext.mainThread,
-      runtime.globalScope,
+      scope,
     );
     if (executionNode == null) {
       throw RuntimeException('Failed to create execution node.');
@@ -119,13 +141,15 @@ class Engine {
 
   static Future<(dynamic, bool)> _evaluate(
     ParseTree parseTree,
-    Runtime runtime,
-  ) async {
+    Runtime runtime, [
+    Map<String, dynamic>? boundValues,
+  ]) async {
     var executionContext = ExecutionContext(runtime: runtime);
+    Scope scope = getScope(runtime, boundValues);
     var executionNode = createExecutionNode(
       parseTree,
       executionContext.mainThread,
-      runtime.globalScope,
+      scope,
     );
     if (executionNode == null) {
       throw RuntimeException('Failed to create execution node.');

@@ -29,8 +29,8 @@ class YamlUiEngine {
     if (node is Map && node.containsKey('type')) {
       final type = node['type'] as String;
       final props = (node['props'] as Map?) ?? {};
-      final child = node['child'];
-      final children = node['children'];
+      final child = node['child'] ?? props['child'];
+      final children = node['children'] ?? props['children'];
 
       return registry.build(
         type: type,
