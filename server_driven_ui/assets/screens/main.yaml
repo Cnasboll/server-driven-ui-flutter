@@ -15,7 +15,7 @@ screen:
           props:
             decoration:
               hintText: "Enter some text..."
-            onChanged: "shql: SET_TEXT(value)"
+            onChanged: "shql: _current_text := value"
             value: "shql: _current_text"
         - type: Text
           props:
