@@ -62,3 +62,7 @@ SET_TEXT(new_text) := BEGIN
 END;
 
 name := "";
+
+
+_feature_enabled := FALSE;
+_terms_accepted := FALSE;

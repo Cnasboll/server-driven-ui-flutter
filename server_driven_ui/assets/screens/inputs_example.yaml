@@ -1,0 +1,69 @@
+screen:
+  type: Scaffold
+  props:
+    appBar:
+      type: AppBar
+      props:
+        title:
+          type: Text
+          props:
+            data: "Inputs Example"
+    body:
+      type: Padding
+      props:
+        padding: 16
+        child:
+          type: Column
+          props:
+            crossAxisAlignment: "start"
+            children:
+              - type: Row
+                children:
+                  - type: Text
+                    props:
+                      data: "Enable feature:"
+                  - type: Switch
+                    props:
+                      value: "shql: _feature_enabled"
+                      onChanged: "shql: SET('_feature_enabled', %)"
+              - type: Row
+                children:
+                  - type: Text
+                    props:
+                      data: "Accept terms:"
+                  - type: Checkbox
+                    props:
+                      value: "shql: _terms_accepted"
+                      onChanged: "shql: SET('_terms_accepted', %)"
+              - type: Observer
+                props:
+                  query: "_feature_enabled, _terms_accepted"
+                  builder:
+                    type: Card
+                    props:
+                      margin:
+                        t: 20
+                      child:
+                        type: Padding
+                        props:
+                          padding: 16
+                          child:
+                            type: Column
+                            props:
+                              crossAxisAlignment: "start"
+                              children:
+                                - type: Text
+                                  props:
+                                    data: "shql: 'Feature enabled: ' + _feature_enabled"
+                                - type: Text
+                                  props:
+                                    data: "shql: 'Terms accepted: ' + _terms_accepted"
+              - type: Row
+                children:                                    
+                  - type: ElevatedButton
+                    props:
+                      onPressed: "shql: NAVIGATE('main')"
+                      child:
+                        type: Text
+                        props:
+                          data: "Go back to Main"
