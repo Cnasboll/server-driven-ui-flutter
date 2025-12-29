@@ -56,13 +56,6 @@ INCREMENT_ITEM(i) := BEGIN
 END;
 
 _current_text := '';
-
-SET_TEXT(new_text) := BEGIN
-    _current_text := new_text;
-END;
-
 name := "";
-
-
 _feature_enabled := FALSE;
 _terms_accepted := FALSE;
