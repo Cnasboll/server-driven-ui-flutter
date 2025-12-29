@@ -17,7 +17,23 @@ class YamlUiEngine {
     final rootNode = (data is YamlMap && data.containsKey('screen'))
         ? data['screen']
         : data;
-    return _resolveNode(rootNode);
+
+    // Check for and execute onLoad at the screen level
+    if (rootNode is YamlMap && rootNode.containsKey('onLoad')) {
+      final onLoadShql = rootNode['onLoad'] as String?;
+      if (onLoadShql != null && isShqlRef(onLoadShql)) {
+        final (:code, :targeted) = parseShql(onLoadShql);
+        // Fire and forget. The mutation will trigger a rebuild.
+        shql.call(code, targeted: targeted);
+      }
+    }
+
+    // After handling onLoad, resolve the actual widget tree
+    final widgetNode = (rootNode is YamlMap && rootNode.containsKey('widget'))
+        ? rootNode['widget']
+        : rootNode;
+
+    return _resolveNode(widgetNode);
   }
 
   /// Synchronously builds the widget tree from a fully resolved data structure.

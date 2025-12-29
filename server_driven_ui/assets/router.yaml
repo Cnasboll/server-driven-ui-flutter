@@ -3,5 +3,6 @@ routes:
   stats: "assets/screens/stats.yaml"
   stack_example: "assets/screens/stack_example.yaml"
   inputs_example: "assets/screens/inputs_example.yaml"
+  posts: "assets/screens/posts.yaml"
 
 
