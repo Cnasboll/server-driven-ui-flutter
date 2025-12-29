@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 import 'package:server_driven_ui/yaml_ui/shql_bindings.dart';
 import 'package:server_driven_ui/yaml_ui/widget_registry.dart';
 import 'package:server_driven_ui/yaml_ui/yaml_ui_engine.dart';
@@ -97,6 +99,21 @@ class _YamlDrivenScreenState extends State<YamlDrivenScreen> {
     await _resolveUi();
   }
 
+  Future<dynamic> _fetch(String url) async {
+    try {
+      final response = await http.get(Uri.parse(url));
+      if (response.statusCode >= 200 && response.statusCode < 300) {
+        return jsonDecode(response.body);
+      } else {
+        // You might want to return an error object or throw
+        return null;
+      }
+    } catch (e) {
+      // Handle exceptions like invalid URL, no network, etc.
+      return null;
+    }
+  }
+
   Future<void> _initAndResolve() async {
     try {
       // Load initial YAML source
@@ -117,6 +134,7 @@ class _YamlDrivenScreenState extends State<YamlDrivenScreen> {
         readline: () async => null,
         prompt: (_) async => null,
         navigate: _navigate,
+        fetch: _fetch,
       );
 
       // Sequentially load the programs.

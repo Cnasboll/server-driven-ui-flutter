@@ -72,4 +72,3 @@ screen:
               type: Text
               props:
                 data: "Go back to Main"
-

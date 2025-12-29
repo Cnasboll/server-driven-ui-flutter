@@ -1,0 +1,59 @@
+screen:
+  onLoad: "shql: SET('_posts', FETCH('https://jsonplaceholder.typicode.com/posts'))"
+  widget:
+    type: Scaffold
+    props:
+      appBar:
+        type: AppBar
+        props:
+          title:
+            type: Text
+            props:
+              data: "Fetched Posts"
+      body:
+        type: Column
+        children:
+          - type: Expanded
+            child:
+              type: Observer
+              props:
+                query: "_posts"
+                builder:
+                  type: "shql: if LENGTH(_POSTS) = 0 THEN 'Center' ELSE 'ListView'"
+                  props:
+                    # Props for Center (loading state)
+                    child:
+                      type: CircularProgressIndicator
+                    # Props for ListView (data loaded state)
+                    children: "shql: _posts"
+                    itemBuilder:
+                      type: Card
+                      props:
+                        margin: 8
+                        child:
+                          type: Padding
+                          props:
+                            padding: 16
+                            child:
+                              type: Column
+                              props:
+                                crossAxisAlignment: "start"
+                                children:
+                                  - type: Text
+                                    props:
+                                      data: "shql: item['title']"
+                                      style:
+                                        fontWeight: "bold"
+                                  - type: SizedBox
+                                    props:
+                                      height: 8
+                                  - type: Text
+                                    props:
+                                      data: "shql: item['body']"                                  
+          - type: ElevatedButton
+            props:
+              onPressed: "shql: NAVIGATE('main')"
+              child:
+                type: Text
+                props:
+                  data: "Go back to Main"

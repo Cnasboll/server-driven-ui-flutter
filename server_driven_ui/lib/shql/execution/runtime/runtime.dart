@@ -504,6 +504,7 @@ class Runtime {
   Future<String?> Function()? readlineFunction;
   Future<String?> Function(String prompt)? promptFunction;
   Future<void> Function(String routeName)? navigateFunction;
+  Future<dynamic> Function(String url)? fetchFunction;
   Future<void> Function()? clsFunction;
   Future<void> Function()? hideGraphFunction;
   Future<void> Function(dynamic, dynamic)? plotFunction;
@@ -539,6 +540,7 @@ class Runtime {
     readlineFunction = other.readlineFunction;
     promptFunction = other.promptFunction;
     navigateFunction = other.navigateFunction;
+    fetchFunction = other.fetchFunction;
     clsFunction = other.clsFunction;
     hideGraphFunction = other.hideGraphFunction;
     plotFunction = other.plotFunction;
@@ -698,6 +700,18 @@ class Runtime {
     return await navigateFunction?.call(routeName);
   }
 
+  Future<dynamic> fetch(
+    ExecutionContext executionContext,
+    ExecutionNode caller,
+    dynamic url,
+  ) async {
+    if (sandboxed) {
+      return;
+    }
+
+    return fetchFunction?.call(url);
+  }
+
   Future<String> readLine(
     ExecutionContext executionContext,
     ExecutionNode caller,
@@ -809,6 +823,7 @@ class Runtime {
     setUnaryFunction("PRINT", print);
     setUnaryFunction("PROMPT", prompt);
     setUnaryFunction("NAVIGATE", navigate);
+    setUnaryFunction("FETCH", fetch);
     setNullaryFunction("READLINE", readLine);
     setBinaryFunction("_DISPLAY_GRAPH", plot);
     setBinaryFunction("SET", set);
@@ -924,6 +939,9 @@ class Runtime {
         return a.length;
       }
       if (a is List) {
+        return a.length;
+      }
+      if (a is Map) {
         return a.length;
       }
       return 0;
