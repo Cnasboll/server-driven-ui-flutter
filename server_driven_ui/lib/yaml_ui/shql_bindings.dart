@@ -73,13 +73,14 @@ class ShqlBindings {
         });
   }
 
-  Future<dynamic> eval(String expr) async {
+  Future<dynamic> eval(String expr, {Map<String, dynamic>? boundValues}) async {
     try {
       return await Engine.execute(
         expr,
         runtime: _runtime,
         constantsSet: _constantsSet,
         cancellationToken: _cancellationToken,
+        boundValues: boundValues,
       );
     } catch (e) {
       // Rethrow the exception to be handled by the FutureBuilder in the UI.
@@ -87,13 +88,18 @@ class ShqlBindings {
     }
   }
 
-  Future<dynamic> call(String code, {bool targeted = false}) async {
+  Future<dynamic> call(
+    String code, {
+    bool targeted = false,
+    Map<String, dynamic>? boundValues,
+  }) async {
     try {
       final result = await Engine.execute(
         code,
         runtime: _runtime,
         constantsSet: _constantsSet,
         cancellationToken: _cancellationToken,
+        boundValues: boundValues,
       );
 
       // If the call was successful and not a targeted update,

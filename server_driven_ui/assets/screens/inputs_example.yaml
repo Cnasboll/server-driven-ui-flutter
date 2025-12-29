@@ -25,7 +25,7 @@ screen:
                   - type: Switch
                     props:
                       value: "shql: _feature_enabled"
-                      onChanged: "shql: SET('_feature_enabled', %)"
+                      onChanged: "shql: SET('_feature_enabled', value)"
               - type: Row
                 children:
                   - type: Text
@@ -34,7 +34,7 @@ screen:
                   - type: Checkbox
                     props:
                       value: "shql: _terms_accepted"
-                      onChanged: "shql: SET('_terms_accepted', %)"
+                      onChanged: "shql: SET('_terms_accepted', value)"
               - type: Observer
                 props:
                   query: "_feature_enabled, _terms_accepted"
@@ -54,10 +54,10 @@ screen:
                               children:
                                 - type: Text
                                   props:
-                                    data: "shql: 'Feature enabled: ' + _feature_enabled"
+                                    data: "shql: 'Feature enabled: ' + STRING(_feature_enabled)"
                                 - type: Text
                                   props:
-                                    data: "shql: 'Terms accepted: ' + _terms_accepted"
+                                    data: "shql: 'Terms accepted: ' + STRING(_terms_accepted)"
               - type: Row
                 children:                                    
                   - type: ElevatedButton

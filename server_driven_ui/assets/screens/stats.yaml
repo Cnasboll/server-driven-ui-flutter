@@ -49,7 +49,7 @@ screen:
             height: 16
         - type: TextField
           props:
-            onChanged: "shql(targeted: true): SET('name', %)"
+            onChanged: "shql(targeted: true): SET('name', value)"
             decoration:
               hintText: "Enter your name"
         - type: Observer

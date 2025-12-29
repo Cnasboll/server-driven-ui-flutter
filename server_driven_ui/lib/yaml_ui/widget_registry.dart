@@ -543,12 +543,13 @@ class _StatefulTextFieldState extends State<_StatefulTextField> {
         // When the user types, we use the debouncer to delay the shql call.
         if (isShqlRef(onChanged)) {
           _debouncer.run(() {
-            final escapedValue = value.replaceAll("'", "''");
+            var boundValues = {'value': value};
             final (:code, :targeted) = parseShql(onChanged as String);
-            final finalCode = code.replaceAll('%', "'$escapedValue'");
-            widget.shql.call(finalCode, targeted: targeted).catchError((e) {
-              debugPrint('Error in debounced onChanged: $e');
-            });
+            widget.shql
+                .call(code, targeted: targeted, boundValues: boundValues)
+                .catchError((e) {
+                  debugPrint('Error in debounced onChanged: $e');
+                });
           });
         }
       },
@@ -668,11 +669,12 @@ class _Observer extends StatefulWidget {
 
 class _ObserverState extends State<_Observer> {
   dynamic _resolvedBuilder;
+  List<String> _queries = [];
 
   @override
   void initState() {
     super.initState();
-    widget.shql.addListener(widget.query, _onDataChanged);
+    _subscribeToQueries();
     // Initial resolution
     _resolveBuilder();
   }
@@ -681,8 +683,8 @@ class _ObserverState extends State<_Observer> {
   void didUpdateWidget(covariant _Observer oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (widget.query != oldWidget.query) {
-      widget.shql.removeListener(oldWidget.query, _onDataChanged);
-      widget.shql.addListener(widget.query, _onDataChanged);
+      _unsubscribeFromQueries();
+      _subscribeToQueries();
       _resolveBuilder();
     } else if (widget.builder != oldWidget.builder) {
       // If the builder template itself changes, re-resolve.
@@ -692,8 +694,26 @@ class _ObserverState extends State<_Observer> {
 
   @override
   void dispose() {
-    widget.shql.removeListener(widget.query, _onDataChanged);
+    _unsubscribeFromQueries();
     super.dispose();
+  }
+
+  void _subscribeToQueries() {
+    _queries = widget.query
+        .split(',')
+        .map((q) => q.trim())
+        .where((q) => q.isNotEmpty)
+        .toList();
+    for (final q in _queries) {
+      widget.shql.addListener(q, _onDataChanged);
+    }
+  }
+
+  void _unsubscribeFromQueries() {
+    for (final q in _queries) {
+      widget.shql.removeListener(q, _onDataChanged);
+    }
+    _queries = [];
   }
 
   void _onDataChanged() {
@@ -932,11 +952,13 @@ class _StatefulSwitchState extends State<_StatefulSwitch> {
         });
         // Then notify the backend via SHQL
         if (isShqlRef(onChanged)) {
+          var boundValues = {'value': newValue};
           final (:code, :targeted) = parseShql(onChanged as String);
-          final finalCode = code.replaceAll('%', '$newValue');
-          widget.shql.call(finalCode, targeted: targeted).catchError((e) {
-            debugPrint('Error in Switch onChanged: $e');
-          });
+          widget.shql
+              .call(code, targeted: targeted, boundValues: boundValues)
+              .catchError((e) {
+                debugPrint('Error in Switch onChanged: $e');
+              });
         }
       },
     );
@@ -1052,11 +1074,13 @@ class _StatefulCheckboxState extends State<_StatefulCheckbox> {
           _currentValue = newValue;
         });
         if (isShqlRef(onChanged)) {
+          var boundValues = {'value': newValue};
           final (:code, :targeted) = parseShql(onChanged as String);
-          final finalCode = code.replaceAll('%', '$newValue');
-          widget.shql.call(finalCode, targeted: targeted).catchError((e) {
-            debugPrint('Error in Checkbox onChanged: $e');
-          });
+          widget.shql
+              .call(code, targeted: targeted, boundValues: boundValues)
+              .catchError((e) {
+                debugPrint('Error in Checkbox onChanged: $e');
+              });
         }
       },
     );
