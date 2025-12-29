@@ -700,8 +700,11 @@ class Runtime {
     return await navigateFunction?.call(routeName);
   }
 
-  Future<dynamic> fetch(ExecutionContext executionContext,
-      ExecutionNode caller, dynamic url) async {
+  Future<dynamic> fetch(
+    ExecutionContext executionContext,
+    ExecutionNode caller,
+    dynamic url,
+  ) async {
     if (sandboxed) {
       return;
     }
@@ -936,6 +939,9 @@ class Runtime {
         return a.length;
       }
       if (a is List) {
+        return a.length;
+      }
+      if (a is Map) {
         return a.length;
       }
       return 0;
