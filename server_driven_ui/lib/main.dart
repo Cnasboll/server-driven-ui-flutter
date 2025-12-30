@@ -104,14 +104,16 @@ class _YamlDrivenScreenState extends State<YamlDrivenScreen> {
     try {
       final response = await http.get(Uri.parse(url));
       if (response.statusCode >= 200 && response.statusCode < 300) {
-        return jsonDecode(response.body);
+         return jsonDecode(response.body) ?? {};
       } else {
         // You might want to return an error object or throw
-        return null;
+        //return null;
+        return {};
       }
     } catch (e) {
       // Handle exceptions like invalid URL, no network, etc.
-      return null;
+      //return null;
+      return {};
     }
   }
 

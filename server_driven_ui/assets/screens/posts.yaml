@@ -27,29 +27,33 @@ screen:
                     # Props for ListView (data loaded state)
                     children: "shql: _posts"
                     itemBuilder:
-                      type: Card
+                      type: InkWell
                       props:
-                        margin: 8
+                        onTap: "shql: NAVIGATE('post_details', {'id': item['id']})"
                         child:
-                          type: Padding
+                          type: Card
                           props:
-                            padding: 16
+                            margin: 8
                             child:
-                              type: Column
+                              type: Padding
                               props:
-                                crossAxisAlignment: "start"
-                                children:
-                                  - type: Text
-                                    props:
-                                      data: "shql: item['title']"
-                                      style:
-                                        fontWeight: "bold"
-                                  - type: SizedBox
-                                    props:
-                                      height: 8
-                                  - type: Text
-                                    props:
-                                      data: "shql: item['body']"                                  
+                                padding: 16
+                                child:
+                                  type: Column
+                                  props:
+                                    crossAxisAlignment: "start"
+                                    children:
+                                      - type: Text
+                                        props:
+                                          data: "shql: item['title']"
+                                          style:
+                                            fontWeight: "bold"
+                                      - type: SizedBox
+                                        props:
+                                          height: 8
+                                      - type: Text
+                                        props:
+                                          data: "shql: item['body']"                                  
           - type: ElevatedButton
             props:
               onPressed: "shql: NAVIGATE('main')"

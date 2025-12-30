@@ -696,11 +696,12 @@ class Runtime {
     ExecutionContext executionContext,
     ExecutionNode caller,
     dynamic routeName,
+    dynamic params,
   ) async {
     if (sandboxed) {
       return;
     }
-
+    globalScope.setVariable(identifiers.include('_ROUTE_PARAMS'), params);
     return await navigateFunction?.call(routeName);
   }
 
@@ -749,7 +750,7 @@ class Runtime {
       return;
     }
 
-    caller.scope.setVariable(identifiers.include(name.toUpperCase()), value);
+    globalScope.setVariable(identifiers.include(name.toUpperCase()), value);
     notifyListeners?.call(name);
   }
 
@@ -852,10 +853,10 @@ class Runtime {
   void hookUpConsole() {
     setUnaryFunction("PRINT", print);
     setUnaryFunction("PROMPT", prompt);
-    setUnaryFunction("NAVIGATE", navigate);
     setUnaryFunction("FETCH", fetch);
     setNullaryFunction("READLINE", readLine);
     setBinaryFunction("_DISPLAY_GRAPH", plot);
+    setBinaryFunction("NAVIGATE", navigate);
     setBinaryFunction("SET", set);
     setBinaryFunction("SAVE_STATE", saveState);
     setBinaryFunction("LOAD_STATE", loadState);

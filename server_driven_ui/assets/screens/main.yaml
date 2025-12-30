@@ -22,28 +22,28 @@ screen:
             data: "shql: 'You entered: ' + _current_text"
         - type: ElevatedButton
           props:
-            onPressed: "shql: NAVIGATE('stats')"
+            onPressed: "shql: NAVIGATE('stats', {})"
             child:
               type: Text
               props:
                 data: "Go to Stats"
         - type: ElevatedButton
           props:
-            onPressed: "shql: NAVIGATE('stack_example')"
+            onPressed: "shql: NAVIGATE('stack_example', {})"
             child:
               type: Text
               props:
                 data: "Go to Stack Example"
         - type: ElevatedButton
           props:
-            onPressed: "shql: NAVIGATE('inputs_example')"
+            onPressed: "shql: NAVIGATE('inputs_example', {})"
             child:
               type: Text
               props:
                 data: "Go to Inputs Example"
         - type: ElevatedButton
           props:
-            onPressed: "shql: NAVIGATE('posts')"
+            onPressed: "shql: NAVIGATE('posts', {})"
             child:
               type: Text
               props:

@@ -67,7 +67,7 @@ screen:
             data: "This is the stats screen."
         - type: ElevatedButton
           props:
-            onPressed: "shql: NAVIGATE('main')"
+            onPressed: "shql: NAVIGATE('main', {})"
             child:
               type: Text
               props:

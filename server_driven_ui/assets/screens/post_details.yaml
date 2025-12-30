@@ -1,0 +1,52 @@
+screen:
+  onLoad: "shql: SET('_post', FETCH('https://jsonplaceholder.typicode.com/posts/' + STRING(_route_params['id'])))"
+  widget:
+    type: Scaffold
+    props:
+      appBar:
+        type: AppBar
+        props:
+          title:
+            type: Text
+            props:
+              data: "shql: 'Post #' + STRING(_route_params['id'])"
+      body:
+        type: Observer
+        props:
+          query: "_post"
+          builder: "shql: |
+            IF LENGTH(_POST) = 0 THEN
+              {
+                'type': 'Center',
+                'props': {
+                  'child': { 'type': 'CircularProgressIndicator' }
+                }
+              }
+            ELSE
+              {
+                'type': 'Padding',
+                'props': {
+                  'padding': 16,
+                  'child': {
+                    'type': 'Column',
+                    'props': {
+                      'crossAxisAlignment': 'start',
+                      'children': [
+                        {
+                          'type': 'Text',
+                          'props': {
+                            'data': _post['title'],
+                            'style': { 'fontWeight': 'bold', 'fontSize': 22 }
+                          }
+                        },
+                        { 'type': 'SizedBox', 'props': { 'height': 16 } },
+                        {
+                          'type': 'Text',
+                          'props': { 'data': _post['body'] }
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            )"
