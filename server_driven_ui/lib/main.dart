@@ -3,10 +3,12 @@ import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:server_driven_ui/screen_cubit/screen_cubit.dart';
 import 'package:server_driven_ui/yaml_ui/shql_bindings.dart';
 import 'package:server_driven_ui/yaml_ui/widget_registry.dart';
 import 'package:server_driven_ui/yaml_ui/yaml_ui_engine.dart';
 import 'package:yaml/yaml.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -41,11 +43,14 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Flutter Demo',
       theme: ThemeData(primarySwatch: Colors.blue),
-      home: YamlDrivenScreen(
-        routes: routes,
-        initialRoute: 'main',
-        stdlibSource: stdlibSource,
-        uiSource: uiSource,
+      home: BlocProvider(
+        create: (context) => ScreenCubit(),
+        child: YamlDrivenScreen(
+          routes: routes,
+          initialRoute: 'main',
+          stdlibSource: stdlibSource,
+          uiSource: uiSource,
+        ),
       ),
     );
   }
@@ -96,6 +101,11 @@ class _YamlDrivenScreenState extends State<YamlDrivenScreen> {
       _currentYamlSource = newYamlSource;
       _isLoading = true; // Show loading indicator while resolving new UI
     });
+
+    // Update Cubit state (BLoC pattern)
+    if (mounted) {
+      context.read<ScreenCubit>().setLoading();
+    }
 
     await _resolveUi();
   }
@@ -176,6 +186,8 @@ class _YamlDrivenScreenState extends State<YamlDrivenScreen> {
           _error = e;
           _isLoading = false;
         });
+        // Update Cubit state (BLoC pattern)
+        context.read<ScreenCubit>().setError(e.toString());
       }
     }
   }
@@ -190,6 +202,8 @@ class _YamlDrivenScreenState extends State<YamlDrivenScreen> {
           _isLoading = false;
           _error = null;
         });
+        // Update Cubit state (BLoC pattern)
+        context.read<ScreenCubit>().setLoaded();
       }
     } catch (e) {
       if (mounted) {
@@ -197,6 +211,8 @@ class _YamlDrivenScreenState extends State<YamlDrivenScreen> {
           _error = e;
           _isLoading = false;
         });
+        // Update Cubit state (BLoC pattern)
+        context.read<ScreenCubit>().setError(e.toString());
       }
     }
   }
