@@ -59,4 +59,5 @@ _current_text := '';
 name := "";
 _feature_enabled := FALSE;
 _terms_accepted := FALSE;
-_posts := {}
+_posts := {};
+isDarkMode := FALSE;

@@ -48,6 +48,13 @@ screen:
               type: Text
               props:
                 data: "Fetch Posts"
+        - type: ElevatedButton
+          props:
+            onPressed: "shql: NAVIGATE('theme_demo')"
+            child:
+              type: Text
+              props:
+                data: "🎨 Theme Demo (BLoC+SHQL)"
         - type: Expanded
           child:
             type: ListView
