@@ -45,17 +45,19 @@ import 'package:server_driven_ui/shql/execution/runtime/runtime.dart';
 import 'package:server_driven_ui/shql/execution/tuple_literal_node.dart';
 import 'package:server_driven_ui/shql/execution/while_loop_execution_node.dart';
 import 'package:server_driven_ui/shql/parser/constants_set.dart';
+import 'package:server_driven_ui/shql/execution/runtime_error.dart';
 import 'package:server_driven_ui/shql/parser/parse_tree.dart';
 import 'package:server_driven_ui/shql/parser/parser.dart';
 import 'package:server_driven_ui/shql/tokenizer/token.dart';
+import 'package:server_driven_ui/shql/tokenizer/code_span.dart';
 
 class RuntimeException implements Exception {
-  final String message;
+  final RuntimeError error;
 
-  RuntimeException(this.message);
+  RuntimeException(this.error);
 
   @override
-  String toString() => 'RuntimeException: $message';
+  String toString() => 'RuntimeException: ${error.formattedMessage}';
 }
 
 class Engine {
@@ -66,6 +68,7 @@ class Engine {
     CancellationToken? cancellationToken,
     Map<String, dynamic>? boundValues,
   }) async {
+    // print('Executing SHQL code:\n$code');
     constantsSet ??= Runtime.prepareConstantsSet();
     runtime ??= Runtime.prepareRuntime(constantsSet);
 
@@ -76,6 +79,7 @@ class Engine {
       runtime,
       cancellationToken,
       boundValues: boundValues,
+      sourceCode: code,
     );
   }
 
@@ -84,11 +88,13 @@ class Engine {
     Runtime? runtime,
     ConstantsSet? constantsSet,
   }) async {
+    // print('Evaluating SHQL expression:\n$expression');
     constantsSet ??= Runtime.prepareConstantsSet();
     runtime ??= Runtime.prepareRuntime(constantsSet);
+
     var program = Parser.parse(expression, constantsSet);
 
-    var result = await _evaluate(program, runtime);
+    var result = await _evaluate(program, runtime, null, expression);
 
     if (result.$2 == false) {
       return null;
@@ -115,8 +121,12 @@ class Engine {
     Runtime runtime,
     CancellationToken? cancellationToken, {
     Map<String, dynamic>? boundValues,
+    String? sourceCode,
   }) async {
-    var executionContext = ExecutionContext(runtime: runtime);
+    var executionContext = ExecutionContext(
+      runtime: runtime,
+      sourceCode: sourceCode,
+    );
     Scope scope = getScope(runtime, boundValues);
     var executionNode = createExecutionNode(
       parseTree,
@@ -124,7 +134,7 @@ class Engine {
       scope,
     );
     if (executionNode == null) {
-      throw RuntimeException('Failed to create execution node.');
+      throw RuntimeException(RuntimeError('Failed to create execution node.'));
     }
 
     while ((cancellationToken == null || !await cancellationToken.check()) &&
@@ -143,8 +153,12 @@ class Engine {
     ParseTree parseTree,
     Runtime runtime, [
     Map<String, dynamic>? boundValues,
+    String? sourceCode,
   ]) async {
-    var executionContext = ExecutionContext(runtime: runtime);
+    var executionContext = ExecutionContext(
+      runtime: runtime,
+      sourceCode: sourceCode,
+    );
     Scope scope = getScope(runtime, boundValues);
     var executionNode = createExecutionNode(
       parseTree,
@@ -152,7 +166,7 @@ class Engine {
       scope,
     );
     if (executionNode == null) {
-      throw RuntimeException('Failed to create execution node.');
+      throw RuntimeException(RuntimeError('Failed to create execution node.'));
     }
 
     if (!await executionContext.tick()) {

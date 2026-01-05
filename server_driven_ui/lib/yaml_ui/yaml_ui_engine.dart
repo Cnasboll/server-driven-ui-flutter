@@ -14,19 +14,20 @@ class YamlUiEngine {
   /// Asynchronously resolves all `shql:` expressions in the YAML tree.
   Future<dynamic> resolve(String yaml) async {
     final data = loadYaml(yaml);
-    final rootNode = (data is YamlMap && data.containsKey('screen'))
-        ? data['screen']
-        : data;
 
-    // Check for and execute onLoad at the screen level
-    if (rootNode is YamlMap && rootNode.containsKey('onLoad')) {
-      final onLoadShql = rootNode['onLoad'] as String?;
+    // Check for and execute onLoad at the top level (before extracting screen)
+    if (data is YamlMap && data.containsKey('onLoad')) {
+      final onLoadShql = data['onLoad'] as String?;
       if (onLoadShql != null && isShqlRef(onLoadShql)) {
         final (:code, :targeted) = parseShql(onLoadShql);
         // Fire and forget. The mutation will trigger a rebuild.
         shql.call(code, targeted: targeted);
       }
     }
+
+    final rootNode = (data is YamlMap && data.containsKey('screen'))
+        ? data['screen']
+        : data;
 
     // After handling onLoad, resolve the actual widget tree
     final widgetNode = (rootNode is YamlMap && rootNode.containsKey('widget'))

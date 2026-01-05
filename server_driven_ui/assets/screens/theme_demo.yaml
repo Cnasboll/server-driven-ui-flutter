@@ -1,4 +1,4 @@
-onLoad: "shql: SET('isDarkMode', LOAD_STATE('isDarkMode', FALSE))"
+onLoad: "shql(targeted:true): PUSH_ROUTE('theme_demo')"
 
 screen:
   type: Scaffold
@@ -234,8 +234,8 @@ screen:
               # Back Button
               - type: ElevatedButton
                 props:
-                  onPressed: "shql: NAVIGATE('main')"
+                  onPressed: "shql: GO_BACK()"
                   child:
                     type: Text
                     props:
-                      data: "Back to Main"
+                      data: "← Back"

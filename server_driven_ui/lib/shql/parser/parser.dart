@@ -4,77 +4,151 @@ import 'package:server_driven_ui/shql/parser/lookahead_iterator.dart';
 import 'package:server_driven_ui/shql/tokenizer/string_escaper.dart';
 import 'package:server_driven_ui/shql/tokenizer/token.dart';
 import 'package:server_driven_ui/shql/tokenizer/tokenizer.dart';
+import 'package:server_driven_ui/shql/tokenizer/code_span.dart';
 
 class ParseException implements Exception {
   final String message;
+  final List<Token> tokens;
+  final String? sourceCode;
 
-  ParseException(this.message);
+  ParseException(this.message, this.tokens, [this.sourceCode]);
+
+  CodeSpan get tokenSpan => tokens.isEmpty ? (null, null) : tokens.tokenSpan;
+  CodeSpan get statementSpan =>
+      tokens.isEmpty ? (null, null) : tokens.statementSpan;
+
+  String get _formattedMessage {
+    if (sourceCode == null) {
+      return 'ParseException: $message';
+    }
+    final excerpt = statementSpan.excerpt(sourceCode!);
+    if (excerpt.isEmpty) {
+      return 'ParseException: $message';
+    }
+    return 'ParseException: $message\n$excerpt';
+  }
 
   @override
-  String toString() => 'ParseException: $message';
+  String toString() => _formattedMessage;
+}
+
+class TokenConsumer {
+  final LookaheadIterator<Token> tokenEnumerator;
+  final TokenConsumer? parent;
+
+  TokenConsumer(this.tokenEnumerator) : parent = null;
+  TokenConsumer.fromParent(this.parent)
+    : tokenEnumerator = parent!.tokenEnumerator;
+
+  List<Token> consumedTokens = [];
+
+  Token consume() {
+    var token = parent != null ? parent!.consume() : tokenEnumerator.next();
+    consumedTokens.add(token);
+    return token;
+  }
+
+  bool get hasNext => tokenEnumerator.hasNext;
+  Token peek() => tokenEnumerator.peek();
+  Token get current => tokenEnumerator.current;
+  List<Token> flushConsumedTokens() {
+    var tokens = consumedTokens;
+    consumedTokens = [];
+    return tokens;
+  }
+
+  List<Token> flushConsumedTokensAndPeek() {
+    var tokens = flushConsumedTokens();
+    if (hasNext) {
+      tokens.add(peek());
+    }
+    return tokens;
+  }
 }
 
 class Parser {
   static ParseTree parse(String code, ConstantsSet constantsSet) {
     var v = Tokenizer.tokenize(code).toList();
     var tokenEnumerator = v.lookahead();
+    var tokenConsumer = TokenConsumer(tokenEnumerator);
     List<ParseTree> statements = [];
-    while (tokenEnumerator.hasNext) {
+    while (tokenConsumer.hasNext) {
       if (statements.isNotEmpty) {
-        if (tokenEnumerator.peek().tokenType != TokenTypes.semiColon) {
+        if (tokenConsumer.peek().tokenType != TokenTypes.semiColon) {
           throw ParseException(
-            'Unexpected token "${tokenEnumerator.next().lexeme}" after parsing expression.',
+            'Unexpected token "${tokenConsumer.consume().lexeme}" after parsing expression.',
+            tokenConsumer.flushConsumedTokens(),
+            code,
           );
         }
         // Consume the semicolon
-        tokenEnumerator.next();
+        tokenConsumer.consume();
       }
 
-      if (!tokenEnumerator.hasNext) {
+      if (!tokenConsumer.hasNext) {
         break;
       }
       var (parseTree, error) = tryParseExpression(
-        tokenEnumerator,
+        TokenConsumer.fromParent(tokenConsumer),
         constantsSet,
       );
       if (parseTree == null) {
-        throw ParseException(error ?? "Could not parse expression.");
+        throw ParseException(
+          error ?? "Could not parse expression.",
+          tokenConsumer.flushConsumedTokensAndPeek(),
+          code,
+        );
       }
       statements.add(parseTree);
     }
     return statements.length == 1
         ? statements[0]
-        : ParseTree(Symbols.program, statements);
+        : ParseTree(
+            Symbols.program,
+            tokenConsumer.flushConsumedTokens(),
+            statements,
+          );
   }
 
   static ParseTree parseExpression(
     LookaheadIterator<Token> tokenEnumerator,
     ConstantsSet constantsSet,
   ) {
-    var (parseTree, error) = tryParseExpression(tokenEnumerator, constantsSet);
+    var tokenConsumer = TokenConsumer(tokenEnumerator);
+    var (parseTree, error) = tryParseExpression(tokenConsumer, constantsSet);
     if (parseTree == null) {
-      throw ParseException(error ?? "Could not parse expression.");
+      throw ParseException(
+        error ?? "Could not parse expression.",
+        tokenConsumer.flushConsumedTokensAndPeek(),
+      );
     }
     return parseTree;
   }
 
   static (ParseTree?, String?) tryParseExpression(
-    LookaheadIterator<Token> tokenEnumerator,
+    TokenConsumer tokenConsumer,
     ConstantsSet constantsSet,
   ) {
     var operandStack = <ParseTree>[];
     var operatorStack = <Token>[];
 
     do {
-      if (!tokenEnumerator.hasNext) {
+      if (!tokenConsumer.hasNext) {
         return (
           null,
           "Unexpected End of token stream while expecting operand.",
         );
       }
 
-      var (brackets, leftBracket, rightBracket, bracketsError) =
-          tryParseBrackets(tokenEnumerator, constantsSet);
+      var (
+        brackets,
+        leftBracket,
+        rightBracket,
+        bracketsError,
+      ) = tryParseBrackets(
+        TokenConsumer.fromParent(tokenConsumer),
+        constantsSet,
+      );
       if (brackets != null) {
         if (brackets.symbol == Symbols.tuple && brackets.children.length == 1) {
           operandStack.add(brackets.children[0]);
@@ -82,16 +156,16 @@ class Parser {
           // and push a multiplication operator to the operator stack
           // So we need a tryParseOperand that doesn't throw on failure and dosen't advance the enumerator
           // if no operand is found
-          if (tokenEnumerator.hasNext) {
-            var token = tokenEnumerator.peek();
-            var lineNumber = token.lineNumber;
-            var columnNumber = token.columnNumber;
-            var (operand, _) = tryParseOperand(tokenEnumerator, constantsSet);
+          if (tokenConsumer.hasNext) {
+            var token = tokenConsumer.peek();
+            var location = token.startLocation;
+            var (operand, _) = tryParseOperand(
+              TokenConsumer.fromParent(tokenConsumer),
+              constantsSet,
+            );
             if (operand != null) {
               operandStack.add(operand);
-              operatorStack.add(
-                Token.parser(TokenTypes.mul, "*", lineNumber, columnNumber),
-              );
+              operatorStack.add(Token.parser(TokenTypes.mul, "*", location));
             }
           }
         } else {
@@ -101,7 +175,10 @@ class Parser {
         if (bracketsError != null) {
           return (null, bracketsError);
         }
-        var (parseTree, error) = tryParseOperand(tokenEnumerator, constantsSet);
+        var (parseTree, error) = tryParseOperand(
+          TokenConsumer.fromParent(tokenConsumer),
+          constantsSet,
+        );
         if (parseTree == null) {
           return (null, error ?? "Could not parse operand.");
         }
@@ -110,12 +187,18 @@ class Parser {
 
       // Handle postfix operators like function calls and indexing in a loop
       // to ensure left-associativity. e.g. func(a)(b) or list[a][b]
-      while (tokenEnumerator.hasNext) {
-        var token = tokenEnumerator.peek();
-        var lineNumber = token.lineNumber;
-        var columnNumber = token.columnNumber;
-        var (brackets, leftBracket, rightBracket, bracketsError) =
-            tryParseBrackets(tokenEnumerator, constantsSet);
+      while (tokenConsumer.hasNext) {
+        var token = tokenConsumer.peek();
+        var location = token.startLocation;
+        var (
+          brackets,
+          leftBracket,
+          rightBracket,
+          bracketsError,
+        ) = tryParseBrackets(
+          TokenConsumer.fromParent(tokenConsumer),
+          constantsSet,
+        );
 
         if (brackets != null) {
           var lhs = operandStack.removeLast();
@@ -123,9 +206,9 @@ class Parser {
             Token.parser(
               TokenTypes.call,
               leftBracket!.lexeme + rightBracket!.lexeme,
-              lineNumber,
-              columnNumber,
+              location,
             ).symbol,
+            tokenConsumer.flushConsumedTokens(),
             [lhs, brackets],
           );
           operandStack.add(callNode);
@@ -138,11 +221,11 @@ class Parser {
         }
       }
 
-      if (tryConsumeOperator(tokenEnumerator)) {
+      if (tryConsumeOperator(tokenConsumer)) {
         while (operatorStack.isNotEmpty &&
-            !tokenEnumerator.current.takesPrecedence(operatorStack.last)) {
+            !tokenConsumer.current.takesPrecedence(operatorStack.last)) {
           var (operand, error) = popOperatorStack(
-            tokenEnumerator,
+            tokenConsumer,
             operandStack,
             operatorStack,
           );
@@ -150,12 +233,12 @@ class Parser {
             return (null, error);
           }
         }
-        operatorStack.add(tokenEnumerator.current);
+        operatorStack.add(tokenConsumer.current);
       } else {
         // No more operators.
         while (operatorStack.isNotEmpty) {
           var (operand, error) = popOperatorStack(
-            tokenEnumerator,
+            tokenConsumer,
             operandStack,
             operatorStack,
           );
@@ -170,13 +253,13 @@ class Parser {
   }
 
   static (ParseTree?, String?) popOperatorStack(
-    LookaheadIterator<Token> tokenEnumerator,
+    TokenConsumer tokenConsumer,
     List<ParseTree> operandStack,
     List<Token> operatorStack,
   ) {
     Token operatorToken = operatorStack.removeLast();
     if (operandStack.length < 2) {
-      var unexpectedLexeme = tokenEnumerator.peek().lexeme;
+      var unexpectedLexeme = tokenConsumer.peek().lexeme;
       var operatorLexeme = operatorStack.last.lexeme;
       return (
         null,
@@ -185,64 +268,83 @@ class Parser {
     }
     var rhs = operandStack.removeLast();
     var lhs = operandStack.removeLast();
-    var operand = ParseTree(operatorToken.symbol, [lhs, rhs]);
+    var operand = ParseTree(
+      operatorToken.symbol,
+      tokenConsumer.flushConsumedTokens() + lhs.tokens + rhs.tokens,
+      [lhs, rhs],
+    );
     operandStack.add(operand);
     return (operand, null);
   }
 
   static (ParseTree?, String?) tryParseOperand(
-    LookaheadIterator<Token> tokenEnumerator,
+    TokenConsumer tokenConsumer,
     ConstantsSet constantsSet, [
     bool allowSign = true,
   ]) {
-    if (!tokenEnumerator.hasNext) {
+    if (!tokenConsumer.hasNext) {
       return (null, 'End of token stream when expecting operand.');
     }
 
-    if (tryConsumeSymbol(tokenEnumerator, Symbols.nullLiteral)) {
+    if (tryConsumeSymbol(tokenConsumer, Symbols.nullLiteral)) {
       return (ParseTree(Symbols.nullLiteral, []), null);
     }
 
     // If we find a plus or minus sign here, consider that a sign for the operand, then we recurse
-    if (tryConsumeSymbol(tokenEnumerator, Symbols.add)) {
+    if (tryConsumeSymbol(tokenConsumer, Symbols.add)) {
       var (parseTree, error) = tryParseOperand(
-        tokenEnumerator,
+        TokenConsumer.fromParent(tokenConsumer),
         constantsSet,
         false,
       );
       if (parseTree == null && error != null) {
         return (null, error);
       }
-      return (ParseTree.withChildren(Symbols.unaryPlus, [parseTree!]), null);
+      return (
+        ParseTree.withChildren(Symbols.unaryPlus, [
+          parseTree!,
+        ], tokenConsumer.flushConsumedTokens()),
+        null,
+      );
     }
 
-    if (tryConsumeSymbol(tokenEnumerator, Symbols.sub)) {
+    if (tryConsumeSymbol(tokenConsumer, Symbols.sub)) {
       var (parseTree, error) = tryParseOperand(
-        tokenEnumerator,
+        TokenConsumer.fromParent(tokenConsumer),
         constantsSet,
         false,
       );
       if (parseTree == null && error != null) {
         return (null, error);
       }
-      return (ParseTree.withChildren(Symbols.unaryMinus, [parseTree!]), null);
+      return (
+        ParseTree.withChildren(Symbols.unaryMinus, [
+          parseTree!,
+        ], tokenConsumer.flushConsumedTokens()),
+        null,
+      );
     }
 
-    if (tryConsumeSymbol(tokenEnumerator, Symbols.not)) {
+    if (tryConsumeSymbol(tokenConsumer, Symbols.not)) {
       var (parseTree, error) = tryParseOperand(
-        tokenEnumerator,
+        TokenConsumer.fromParent(tokenConsumer),
         constantsSet,
         false,
       );
       if (parseTree == null && error != null) {
         return (null, error);
       }
-      return (ParseTree.withChildren(Symbols.not, [parseTree!]), null);
+      return (
+        ParseTree.withChildren(Symbols.not, [
+          parseTree!,
+        ], tokenConsumer.flushConsumedTokens()),
+        null,
+      );
     }
 
-    if (tryConsumeSymbol(tokenEnumerator, Symbols.ifStatement)) {
+    if (tryConsumeSymbol(tokenConsumer, Symbols.ifStatement)) {
       var (parseTree, error) = tryParseExpression(
-        tokenEnumerator,
+        TokenConsumer.fromParent(tokenConsumer),
         constantsSet,
       );
       if (parseTree == null) {
@@ -250,30 +352,43 @@ class Parser {
       }
       var children = <ParseTree>[parseTree];
 
-      if (!tryConsumeSymbol(tokenEnumerator, Symbols.thenKeyword)) {
+      if (!tryConsumeSymbol(tokenConsumer, Symbols.thenKeyword)) {
         return (null, 'Expected THEN after IF condition.');
       }
 
-      (parseTree, error) = tryParseExpression(tokenEnumerator, constantsSet);
+      (parseTree, error) = tryParseExpression(
+        TokenConsumer.fromParent(tokenConsumer),
+        constantsSet,
+      );
       if (parseTree == null) {
         return (null, error ?? 'Expected expression after THEN.');
       }
       children.add(parseTree);
 
-      if (tryConsumeSymbol(tokenEnumerator, Symbols.elseKeyword)) {
-        (parseTree, error) = tryParseExpression(tokenEnumerator, constantsSet);
+      if (tryConsumeSymbol(tokenConsumer, Symbols.elseKeyword)) {
+        (parseTree, error) = tryParseExpression(
+          TokenConsumer.fromParent(tokenConsumer),
+          constantsSet,
+        );
         if (parseTree == null) {
           return (null, error ?? 'Expected expression after ELSE.');
         }
         children.add(parseTree);
       }
 
-      return (ParseTree(Symbols.ifStatement, children), null);
+      return (
+        ParseTree(
+          Symbols.ifStatement,
+          tokenConsumer.flushConsumedTokens(),
+          children,
+        ),
+        null,
+      );
     }
 
-    if (tryConsumeSymbol(tokenEnumerator, Symbols.whileLoop)) {
+    if (tryConsumeSymbol(tokenConsumer, Symbols.whileLoop)) {
       var (parseTree, error) = tryParseExpression(
-        tokenEnumerator,
+        TokenConsumer.fromParent(tokenConsumer),
         constantsSet,
       );
       if (parseTree == null) {
@@ -281,22 +396,32 @@ class Parser {
       }
       var children = <ParseTree>[parseTree];
 
-      if (!tryConsumeSymbol(tokenEnumerator, Symbols.doKeyword)) {
+      if (!tryConsumeSymbol(tokenConsumer, Symbols.doKeyword)) {
         return (null, 'Expected DO after WHILE condition.');
       }
 
-      (parseTree, error) = tryParseExpression(tokenEnumerator, constantsSet);
+      (parseTree, error) = tryParseExpression(
+        TokenConsumer.fromParent(tokenConsumer),
+        constantsSet,
+      );
       if (parseTree == null) {
         return (null, error ?? 'Expected expression after DO.');
       }
       children.add(parseTree);
 
-      return (ParseTree(Symbols.whileLoop, children), null);
+      return (
+        ParseTree(
+          Symbols.whileLoop,
+          tokenConsumer.flushConsumedTokens(),
+          children,
+        ),
+        null,
+      );
     }
 
-    if (tryConsumeSymbol(tokenEnumerator, Symbols.repeatUntilLoop)) {
+    if (tryConsumeSymbol(tokenConsumer, Symbols.repeatUntilLoop)) {
       var (parseTree, error) = tryParseExpression(
-        tokenEnumerator,
+        TokenConsumer.fromParent(tokenConsumer),
         constantsSet,
       );
       if (parseTree == null) {
@@ -304,11 +429,14 @@ class Parser {
       }
       var children = <ParseTree>[parseTree];
 
-      if (!tryConsumeSymbol(tokenEnumerator, Symbols.untilKeyword)) {
+      if (!tryConsumeSymbol(tokenConsumer, Symbols.untilKeyword)) {
         return (null, 'Expected UNTIL after REPEAT statement.');
       }
 
-      (parseTree, error) = tryParseExpression(tokenEnumerator, constantsSet);
+      (parseTree, error) = tryParseExpression(
+        TokenConsumer.fromParent(tokenConsumer),
+        constantsSet,
+      );
 
       if (parseTree == null) {
         return (null, error ?? 'Expected expression after UNTIL.');
@@ -316,12 +444,19 @@ class Parser {
 
       children.add(parseTree);
 
-      return (ParseTree(Symbols.repeatUntilLoop, children), null);
+      return (
+        ParseTree(
+          Symbols.repeatUntilLoop,
+          tokenConsumer.flushConsumedTokens(),
+          children,
+        ),
+        null,
+      );
     }
 
-    if (tryConsumeSymbol(tokenEnumerator, Symbols.forLoop)) {
+    if (tryConsumeSymbol(tokenConsumer, Symbols.forLoop)) {
       var (parseTree, error) = tryParseExpression(
-        tokenEnumerator,
+        TokenConsumer.fromParent(tokenConsumer),
         constantsSet,
       );
       if (parseTree == null) {
@@ -330,11 +465,14 @@ class Parser {
 
       var initialization = parseTree;
 
-      if (!tryConsumeSymbol(tokenEnumerator, Symbols.toKeyword)) {
+      if (!tryConsumeSymbol(tokenConsumer, Symbols.toKeyword)) {
         return (null, 'Expected TO after FOR statement.');
       }
 
-      (parseTree, error) = tryParseExpression(tokenEnumerator, constantsSet);
+      (parseTree, error) = tryParseExpression(
+        TokenConsumer.fromParent(tokenConsumer),
+        constantsSet,
+      );
       if (parseTree == null) {
         return (null, error ?? 'Expected expression after TO.');
       }
@@ -342,21 +480,27 @@ class Parser {
       var toExpression = parseTree;
 
       ParseTree? stepExpression;
-      if (tryConsumeSymbol(tokenEnumerator, Symbols.stepKeyword)) {
-        (parseTree, error) = tryParseExpression(tokenEnumerator, constantsSet);
+      if (tryConsumeSymbol(tokenConsumer, Symbols.stepKeyword)) {
+        (parseTree, error) = tryParseExpression(
+          TokenConsumer.fromParent(tokenConsumer),
+          constantsSet,
+        );
         if (parseTree == null) {
           return (null, error ?? 'Expected expression after STEP.');
         }
         stepExpression = parseTree;
       }
 
-      if (!tryConsumeSymbol(tokenEnumerator, Symbols.doKeyword)) {
+      if (!tryConsumeSymbol(tokenConsumer, Symbols.doKeyword)) {
         return (null, 'Expected DO after FOR loop range.');
       }
 
       var children = <ParseTree>[initialization];
 
-      (parseTree, error) = tryParseExpression(tokenEnumerator, constantsSet);
+      (parseTree, error) = tryParseExpression(
+        TokenConsumer.fromParent(tokenConsumer),
+        constantsSet,
+      );
       if (parseTree == null) {
         return (null, error ?? 'Expected body after DO.');
       }
@@ -370,23 +514,30 @@ class Parser {
         children.add(stepExpression);
       }
 
-      return (ParseTree(Symbols.forLoop, children), null);
+      return (
+        ParseTree(
+          Symbols.forLoop,
+          tokenConsumer.flushConsumedTokens(),
+          children,
+        ),
+        null,
+      );
     }
 
-    if (tryConsumeSymbol(tokenEnumerator, Symbols.breakStatement)) {
+    if (tryConsumeSymbol(tokenConsumer, Symbols.breakStatement)) {
       return (ParseTree(Symbols.breakStatement, []), null);
     }
 
-    if (tryConsumeSymbol(tokenEnumerator, Symbols.continueStatement)) {
+    if (tryConsumeSymbol(tokenConsumer, Symbols.continueStatement)) {
       return (ParseTree(Symbols.continueStatement, []), null);
     }
 
-    if (tryConsumeSymbol(tokenEnumerator, Symbols.returnStatement)) {
+    if (tryConsumeSymbol(tokenConsumer, Symbols.returnStatement)) {
       var children = <ParseTree>[];
-      if (tokenEnumerator.hasNext &&
-          tokenEnumerator.peek().symbol != Symbols.semiColon) {
+      if (tokenConsumer.hasNext &&
+          tokenConsumer.peek().symbol != Symbols.semiColon) {
         var (parseTree, error) = tryParseExpression(
-          tokenEnumerator,
+          TokenConsumer.fromParent(tokenConsumer),
           constantsSet,
         );
         if (parseTree == null) {
@@ -395,34 +546,46 @@ class Parser {
 
         children.add(parseTree);
       }
-      return (ParseTree(Symbols.returnStatement, children), null);
+      return (
+        ParseTree(
+          Symbols.returnStatement,
+          tokenConsumer.flushConsumedTokens(),
+          children,
+        ),
+        null,
+      );
     }
 
-    if (tryConsumeSymbol(tokenEnumerator, Symbols.compoundStatement)) {
+    if (tryConsumeSymbol(tokenConsumer, Symbols.compoundStatement)) {
       List<ParseTree> statements = [];
-      while (!tryConsumeSymbol(tokenEnumerator, Symbols.endKeyword)) {
+      while (!tryConsumeSymbol(tokenConsumer, Symbols.endKeyword)) {
         var (parseTree, error) = tryParseExpression(
-          tokenEnumerator,
+          TokenConsumer.fromParent(tokenConsumer),
           constantsSet,
         );
         if (parseTree == null) {
           return (null, error ?? 'Expected expression after semicolon.');
         }
         statements.add(parseTree);
-        if (tokenEnumerator.hasNext &&
-            tokenEnumerator.peek().symbol == Symbols.semiColon) {
-          // Consume the semicolon
-          tokenEnumerator.next();
+        while (tryConsumeSymbol(tokenConsumer, Symbols.semiColon)) {
+          // Consume zero or many semicolons
         }
-        if (!tokenEnumerator.hasNext) {
+        if (!tokenConsumer.hasNext) {
           return (null, 'Expected END to close BEGIN block.');
         }
       }
-      return (ParseTree(Symbols.compoundStatement, statements), null);
+      return (
+        ParseTree(
+          Symbols.compoundStatement,
+          tokenConsumer.flushConsumedTokens(),
+          statements,
+        ),
+        null,
+      );
     }
 
-    if (tryConsumeTokenType(tokenEnumerator, TokenTypes.identifier)) {
-      String identifierName = tokenEnumerator.current.lexeme;
+    if (tryConsumeTokenType(tokenConsumer, TokenTypes.identifier)) {
+      String identifierName = tokenConsumer.current.lexeme;
       /*var (brackets, leftBracket, rightBracket, bracketsError) =
           tryParseBrackets(tokenEnumerator, constantsSet);
       List<ParseTree> children = [];
@@ -435,6 +598,7 @@ class Parser {
       return (
         ParseTree(
           Symbols.identifier,
+          tokenConsumer.flushConsumedTokens(),
           [],
           constantsSet.identifiers.include(identifierName.toUpperCase()),
         ),
@@ -442,9 +606,9 @@ class Parser {
       );
     }
 
-    var literalType = tokenEnumerator.peek().literalType;
+    var literalType = tokenConsumer.peek().literalType;
     if (literalType != LiteralTypes.none) {
-      tokenEnumerator.next();
+      tokenConsumer.consume();
     }
     switch (literalType) {
       case LiteralTypes.integerLiteral:
@@ -452,8 +616,9 @@ class Parser {
           ParseTree.withQualifier(
             Symbols.integerLiteral,
             constantsSet.includeConstant(
-              int.parse(tokenEnumerator.current.lexeme),
+              int.parse(tokenConsumer.current.lexeme),
             ),
+            tokenConsumer.flushConsumedTokens(),
           ),
           null,
         );
@@ -462,8 +627,9 @@ class Parser {
           ParseTree.withQualifier(
             Symbols.floatLiteral,
             constantsSet.includeConstant(
-              double.parse(tokenEnumerator.current.lexeme),
+              double.parse(tokenConsumer.current.lexeme),
             ),
+            tokenConsumer.flushConsumedTokens(),
           ),
           null,
         );
@@ -473,8 +639,9 @@ class Parser {
           ParseTree.withQualifier(
             Symbols.stringLiteral,
             constantsSet.includeConstant(
-              StringEscaper.unescape(tokenEnumerator.current.lexeme),
+              StringEscaper.unescape(tokenConsumer.current.lexeme),
             ),
+            tokenConsumer.flushConsumedTokens(),
           ),
           null,
         );
@@ -484,46 +651,51 @@ class Parser {
           ParseTree.withQualifier(
             Symbols.stringLiteral,
             constantsSet.includeConstant(
-              tokenEnumerator.current.lexeme.substring(
+              tokenConsumer.current.lexeme.substring(
                 2,
-                tokenEnumerator.current.lexeme.length - 1,
+                tokenConsumer.current.lexeme.length - 1,
               ),
             ),
+            tokenConsumer.flushConsumedTokens(),
           ),
           null,
         );
       default:
     }
 
-    String currentLexeme = tokenEnumerator.peek().lexeme;
+    String currentLexeme = tokenConsumer.peek().lexeme;
 
     return (null, 'Unexpected token "$currentLexeme" when expecting operand.');
   }
 
   static (ParseTree?, Token?, Token?, String?) tryParseBrackets(
-    LookaheadIterator<Token> tokenEnumerator,
+    TokenConsumer tokenConsumer,
     ConstantsSet constantsSet,
   ) {
-    if (!tokenEnumerator.hasNext || !tokenEnumerator.peek().isLeftBracket) {
+    if (!tokenConsumer.hasNext || !tokenConsumer.peek().isLeftBracket) {
       return (null, null, null, null);
     }
 
     // Consume the left bracket
-    var leftBracket = tokenEnumerator.next();
+    var leftBracket = tokenConsumer.consume();
     var rightBracketType = leftBracket.correspondingRightBracket!;
 
     List<ParseTree> arguments = [];
-    var result = ParseTree(leftBracket.bracketSymbol!, arguments);
+    var result = ParseTree(
+      leftBracket.bracketSymbol!,
+      tokenConsumer.flushConsumedTokens(),
+      arguments,
+    );
 
     // Proceed to next token
-    if (tryConsumeTokenType(tokenEnumerator, rightBracketType)) {
+    if (tryConsumeTokenType(tokenConsumer, rightBracketType)) {
       // Empty argument list
-      return (result, leftBracket, tokenEnumerator.current, null);
+      return (result, leftBracket, tokenConsumer.current, null);
     }
 
     for (;;) {
       var (parseTree, error) = tryParseExpression(
-        tokenEnumerator,
+        TokenConsumer.fromParent(tokenConsumer),
         constantsSet,
       );
       if (parseTree == null) {
@@ -536,7 +708,7 @@ class Parser {
       }
       arguments.add(parseTree);
 
-      if (!tokenEnumerator.hasNext) {
+      if (!tokenConsumer.hasNext) {
         return (
           null,
           leftBracket,
@@ -545,13 +717,13 @@ class Parser {
         );
       }
 
-      tokenEnumerator.next();
+      tokenConsumer.consume();
 
-      if (tokenEnumerator.current.tokenType == rightBracketType) {
+      if (tokenConsumer.current.tokenType == rightBracketType) {
         break;
       }
 
-      if (tokenEnumerator.current.tokenType != TokenTypes.comma) {
+      if (tokenConsumer.current.tokenType != TokenTypes.comma) {
         var n = arguments.length;
         return (
           null,
@@ -561,40 +733,40 @@ class Parser {
         );
       }
     }
-    return (result, leftBracket, tokenEnumerator.current, null);
+    return (result, leftBracket, tokenConsumer.current, null);
   }
 
-  static bool tryConsumeOperator(LookaheadIterator<Token> tokenEnumerator) {
-    if (tokenEnumerator.hasNext && tokenEnumerator.peek().isOperator()) {
-      tokenEnumerator.next();
+  static bool tryConsumeOperator(TokenConsumer tokenConsumer) {
+    if (tokenConsumer.hasNext && tokenConsumer.peek().isOperator()) {
+      tokenConsumer.consume();
       return true;
     }
     return false;
   }
 
   static bool tryConsumeTokenType(
-    LookaheadIterator<Token> tokenEnumerator,
+    TokenConsumer tokenConsumer,
     TokenTypes expectedTokenType,
   ) {
-    if (!tokenEnumerator.hasNext) {
+    if (!tokenConsumer.hasNext) {
       return false;
     }
-    if (tokenEnumerator.peek().tokenType == expectedTokenType) {
-      tokenEnumerator.next();
+    if (tokenConsumer.peek().tokenType == expectedTokenType) {
+      tokenConsumer.consume();
       return true;
     }
     return false;
   }
 
   static bool tryConsumeSymbol(
-    LookaheadIterator<Token> tokenEnumerator,
+    TokenConsumer tokenConsumer,
     Symbols expectedSymbol,
   ) {
-    if (!tokenEnumerator.hasNext) {
+    if (!tokenConsumer.hasNext) {
       return false;
     }
-    if (tokenEnumerator.peek().symbol == expectedSymbol) {
-      tokenEnumerator.next();
+    if (tokenConsumer.peek().symbol == expectedSymbol) {
+      tokenConsumer.consume();
       return true;
     }
     return false;

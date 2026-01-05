@@ -1,5 +1,5 @@
+onLoad: "shql(targeted:true): BEGIN PUSH_ROUTE('posts'); SET('_posts', FETCH('https://jsonplaceholder.typicode.com/posts')); END"
 screen:
-  onLoad: "shql: SET('_posts', FETCH('https://jsonplaceholder.typicode.com/posts'))"
   widget:
     type: Scaffold
     props:
@@ -52,8 +52,8 @@ screen:
                                       data: "shql: item['body']"                                  
           - type: ElevatedButton
             props:
-              onPressed: "shql: NAVIGATE('main')"
+              onPressed: "shql: GO_BACK()"
               child:
                 type: Text
                 props:
-                  data: "Go back to Main"
+                  data: "← Back"

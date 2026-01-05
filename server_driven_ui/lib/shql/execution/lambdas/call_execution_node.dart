@@ -10,6 +10,7 @@ import 'package:server_driven_ui/shql/execution/lambdas/user_function_execution_
 import 'package:server_driven_ui/shql/execution/lazy_execution_node.dart';
 import 'package:server_driven_ui/shql/execution/runtime/execution_context.dart';
 import 'package:server_driven_ui/shql/execution/runtime/runtime.dart';
+import 'package:server_driven_ui/shql/execution/runtime_error.dart';
 import 'package:server_driven_ui/shql/tokenizer/token.dart';
 
 class CallExecutionNode extends LazyExecutionNode {
@@ -33,7 +34,13 @@ class CallExecutionNode extends LazyExecutionNode {
     var callableResult = _callableNode!.result;
 
     if (callableResult == null) {
-      error = _callableNode!.error ?? "Callable entity resolved to null.";
+      error =
+          _callableNode!.error ??
+          RuntimeError.fromParseTree(
+            "Callable entity resolved to null.",
+            node,
+            sourceCode: executionContext.sourceCode,
+          );
       return TickResult.completed;
     }
 
@@ -47,7 +54,7 @@ class CallExecutionNode extends LazyExecutionNode {
     }
 
     if (callNode == null) {
-      var (c, error) = createCallNode(callableResult);
+      var (c, error) = createCallNode(callableResult, executionContext);
       if (error != null) {
         this.error = error;
         return TickResult.completed;
@@ -70,7 +77,10 @@ class CallExecutionNode extends LazyExecutionNode {
     return TickResult.completed;
   }
 
-  (ExecutionNode?, String?) createCallNode(dynamic callableResult) {
+  (ExecutionNode?, RuntimeError?) createCallNode(
+    dynamic callableResult,
+    ExecutionContext executionContext,
+  ) {
     var argumentsResult = _argumentsNode!.result as List;
     var callableResult = _callableNode!.result;
     var argumentCount = argumentsResult.length;
@@ -79,13 +89,22 @@ class CallExecutionNode extends LazyExecutionNode {
     var lhsIsList = node.children[1].symbol == Symbols.list;
 
     if (lhsIsList) {
-      return _createIndexerNode(callableResult, argumentsResult, argumentCount);
+      return _createIndexerNode(
+        callableResult,
+        argumentsResult,
+        argumentCount,
+        executionContext,
+      );
     }
 
     if (!lhsIsTuple || _argumentsNode!.result is! List) {
       return (
         null,
-        "Expected tuple of arguments for function call, got ${_argumentsNode!.result.runtimeType}.",
+        RuntimeError.fromParseTree(
+          "Expected tuple of arguments for function call, got ${_argumentsNode!.result.runtimeType}.",
+          node.children[0],
+          sourceCode: executionContext.sourceCode,
+        ),
       );
     }
 
@@ -108,7 +127,11 @@ class CallExecutionNode extends LazyExecutionNode {
         if (argumentCount != 0) {
           return (
             null,
-            "Attempt to use nullary function with $argumentCount argument(s).",
+            RuntimeError.fromParseTree(
+              "Attempt to use nullary function with $argumentCount argument(s).",
+              node.children[0],
+              sourceCode: executionContext.sourceCode,
+            ),
           );
         }
         return (
@@ -126,7 +149,11 @@ class CallExecutionNode extends LazyExecutionNode {
         if (argumentCount != 1) {
           return (
             null,
-            "Attempt to use unary function with $argumentCount argument(s).",
+            RuntimeError.fromParseTree(
+              "Attempt to use unary function with $argumentCount argument(s).",
+              node.children[0],
+              sourceCode: executionContext.sourceCode,
+            ),
           );
         }
         return (
@@ -145,7 +172,11 @@ class CallExecutionNode extends LazyExecutionNode {
         if (argumentCount != 2) {
           return (
             null,
-            "Attempt to use binary function with $argumentCount argument(s).",
+            RuntimeError.fromParseTree(
+              "Attempt to use binary function with $argumentCount argument(s).",
+              node.children[0],
+              sourceCode: executionContext.sourceCode,
+            ),
           );
         }
         return (
@@ -170,22 +201,34 @@ class CallExecutionNode extends LazyExecutionNode {
     return (AprioriExecutionNode(product, thread: thread, scope: scope), null);
   }
 
-  (IndexToExecutionNode?, String?) _createIndexerNode(
+  (IndexToExecutionNode?, RuntimeError?) _createIndexerNode(
     dynamic callableResult,
     List argumentsResult,
     int argumentCount,
+    ExecutionContext executionContext,
   ) {
     if (argumentCount != 1) {
       return (
         null,
-        "Expected single argument for list index, got $argumentCount.",
+        RuntimeError.fromParseTree(
+          "Expected single argument for list index, got $argumentCount.",
+          node.children[1],
+          sourceCode: executionContext.sourceCode,
+        ),
       );
     }
 
     if (callableResult is! List &&
         callableResult is! Map &&
         callableResult is! String) {
-      return (null, "${callableResult.runtimeType} used with an indexer.");
+      return (
+        null,
+        RuntimeError.fromParseTree(
+          "${callableResult.runtimeType} used with an indexer.",
+          node.children[1],
+          sourceCode: executionContext.sourceCode,
+        ),
+      );
     }
 
     return (

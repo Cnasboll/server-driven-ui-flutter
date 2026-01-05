@@ -3,6 +3,7 @@ import 'package:server_driven_ui/shql/execution/execution_node.dart';
 import 'package:server_driven_ui/shql/execution/lazy_execution_node.dart';
 import 'package:server_driven_ui/shql/execution/runtime/execution_context.dart';
 import 'package:server_driven_ui/shql/execution/runtime/runtime.dart';
+import 'package:server_driven_ui/shql/execution/runtime_error.dart';
 import 'package:server_driven_ui/shql/parser/parse_tree.dart';
 import 'package:server_driven_ui/shql/tokenizer/token.dart';
 
@@ -13,9 +14,9 @@ class LambdaExpressionExecutionNode extends LazyExecutionNode {
     required super.thread,
     required super.scope,
   }) {
-    var (userFunction, e) = createUserFunction();
-    if (e != null) {
-      error = e;
+    var (userFunction, errorMsg) = createUserFunction();
+    if (errorMsg != null) {
+      error = RuntimeError.fromParseTree(errorMsg, node, sourceCode: null);
       return;
     }
     result = userFunction;

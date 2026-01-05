@@ -1,0 +1,388 @@
+onLoad: "shql(targeted:true): PUSH_ROUTE('advanced_features_demo')"
+
+screen:
+  type: Scaffold
+  props:
+    appBar:
+      type: AppBar
+      props:
+        title:
+          type: Text
+          props:
+            data: "SHQL Advanced Features"
+    body:
+      type: SingleChildScrollView
+      child:
+        type: Padding
+        props:
+          padding:
+            all: 16
+          child:
+            type: Column
+            props:
+              crossAxisAlignment: start
+              children:
+                # Header
+                - type: Text
+                  props:
+                    data: "SHQL Can Do Everything BLoC Does!"
+                    style:
+                      fontSize: 24
+                      fontWeight: bold
+
+                - type: SizedBox
+                  props:
+                    height: 8
+
+                - type: Text
+                  props:
+                    data: "All of these features work without any BLoC/Cubit code"
+                    style:
+                      fontSize: 14
+                      fontStyle: italic
+
+                - type: SizedBox
+                  props:
+                    height: 24
+
+                # ============================================
+                # 1. Navigation History Demo
+                # ============================================
+                - type: Card
+                  props:
+                    margin:
+                      bottom: 16
+                    child:
+                      type: Padding
+                      props:
+                        padding:
+                          all: 16
+                        child:
+                          type: Column
+                          props:
+                            crossAxisAlignment: start
+                            children:
+                              - type: Text
+                                props:
+                                  data: "1. Navigation History (Global State)"
+                                  style:
+                                    fontSize: 18
+                                    fontWeight: bold
+
+                              - type: SizedBox
+                                props:
+                                  height: 8
+
+                              - type: Observer
+                                props:
+                                  query: "navigation_stack"
+                                  builder:
+                                    type: Container
+                                    props:
+                                      padding:
+                                        all: 12
+                                      color: "0xFFE8F5E9"
+                                      child:
+                                        type: Column
+                                        props:
+                                          crossAxisAlignment: start
+                                          children:
+                                            - type: Text
+                                              props:
+                                                data: "shql: 'Breadcrumb: ' + GET_BREADCRUMB()"
+                                                style:
+                                                  fontSize: 14
+                                                  fontFamily: monospace
+
+                                            - type: SizedBox
+                                              props:
+                                                height: 8
+
+                                            - type: Text
+                                              props:
+                                                data: "shql: 'Can go back: ' + IF CAN_GO_BACK() THEN 'YES' ELSE 'NO'"
+                                                style:
+                                                  fontSize: 14
+
+                              - type: SizedBox
+                                props:
+                                  height: 8
+
+                              - type: Text
+                                props:
+                                  data: "Navigate around the app to see the breadcrumb trail update!"
+                                  style:
+                                    fontSize: 12
+                                    fontStyle: italic
+
+                # ============================================
+                # 2. Logging System Demo
+                # ============================================
+                - type: Card
+                  props:
+                    margin:
+                      bottom: 16
+                    child:
+                      type: Padding
+                      props:
+                        padding:
+                          all: 16
+                        child:
+                          type: Column
+                          props:
+                            crossAxisAlignment: start
+                            children:
+                              - type: Text
+                                props:
+                                  data: "2. Centralized Logging (Callbacks)"
+                                  style:
+                                    fontSize: 18
+                                    fontWeight: bold
+
+                              - type: SizedBox
+                                props:
+                                  height: 8
+
+                              - type: ElevatedButton
+                                props:
+                                  onPressed: "shql: DEBUG_LOG('User clicked the test logging button!')"
+                                  child:
+                                    type: Text
+                                    props:
+                                      data: "Test Logging"
+
+                              - type: SizedBox
+                                props:
+                                  height: 8
+
+                              - type: Text
+                                props:
+                                  data: "Check the debug console for timestamped log messages"
+                                  style:
+                                    fontSize: 12
+                                    fontStyle: italic
+
+                #============================================
+                # 3. Feature Flags Demo
+                # ============================================
+                - type: Card
+                  props:
+                    margin:
+                      bottom: 16
+                    child:
+                      type: Padding
+                      props:
+                        padding:
+                          all: 16
+                        child:
+                          type: Column
+                          props:
+                            crossAxisAlignment: start
+                            children:
+                              - type: Text
+                                props:
+                                  data: "3. Feature Flags (Persistent State)"
+                                  style:
+                                    fontSize: 18
+                                    fontWeight: bold
+
+                              - type: SizedBox
+                                props:
+                                  height: 8
+
+                              - type: Row
+                                children:
+                                  - type: Observer
+                                    props:
+                                      query: "feature_new_ui"
+                                      builder:
+                                        type: Text
+                                        props:
+                                          data: "shql: 'New UI: ' + IF feature_new_ui THEN 'ENABLED ✅' ELSE 'DISABLED ❌'"
+                                          style:
+                                            fontSize: 14
+
+                                  - type: Spacer
+
+                                  - type: ElevatedButton
+                                    props:
+                                      onPressed: "shql(targeted:true): BEGIN feature_new_ui := NOT feature_new_ui; SET_FEATURE('feature_new_ui', feature_new_ui); DEBUG_LOG('Feature flag toggled: feature_new_ui = ' + STRING(feature_new_ui)); END"
+                                      child:
+                                        type: Text
+                                        props:
+                                          data: "Toggle"
+
+                              - type: SizedBox
+                                props:
+                                  height: 8
+
+                              - type: Row
+                                children:
+                                  - type: Observer
+                                    props:
+                                      query: "feature_logging"
+                                      builder:
+                                        type: Text
+                                        props:
+                                          data: "shql: 'Logging: ' + IF feature_logging THEN 'ENABLED ✅' ELSE 'DISABLED ❌'"
+                                          style:
+                                            fontSize: 14
+
+                                  - type: Spacer
+
+                                  - type: ElevatedButton
+                                    props:
+                                      onPressed: "shql(targeted:true): BEGIN feature_logging := NOT feature_logging; SET_FEATURE('feature_logging', feature_logging); DEBUG_LOG('Feature flag toggled: feature_logging = ' + STRING(feature_logging)); END"
+                                      child:
+                                        type: Text
+                                        props:
+                                          data: "Toggle"
+
+                              - type: SizedBox
+                                props:
+                                  height: 8
+
+                              - type: Text
+                                props:
+                                  data: "Feature flags persist across app restarts!"
+                                  style:
+                                    fontSize: 12
+                                    fontStyle: italic
+
+                # ============================================
+                # 4. Persistent Theme (Already demoed)
+                # ============================================
+                - type: Card
+                  props:
+                    margin:
+                      bottom: 16
+                    child:
+                      type: Padding
+                      props:
+                        padding:
+                          all: 16
+                        child:
+                          type: Column
+                          props:
+                            crossAxisAlignment: start
+                            children:
+                              - type: Text
+                                props:
+                                  data: "4. Persistent State (Theme Demo)"
+                                  style:
+                                    fontSize: 18
+                                    fontWeight: bold
+
+                              - type: SizedBox
+                                props:
+                                  height: 8
+
+                              - type: Text
+                                props:
+                                  data: "See the Theme Demo for SAVE_STATE/LOAD_STATE examples"
+                                  style:
+                                    fontSize: 14
+
+                              - type: SizedBox
+                                props:
+                                  height: 8
+
+                              - type: ElevatedButton
+                                props:
+                                  onPressed: "shql: NAVIGATE('theme_demo')"
+                                  child:
+                                    type: Text
+                                    props:
+                                      data: "Go to Theme Demo"
+
+                # ============================================
+                # Summary Card
+                # ============================================
+                - type: Card
+                  props:
+                    color: "0xFF1976D2"
+                    child:
+                      type: Padding
+                      props:
+                        padding:
+                          all: 16
+                        child:
+                          type: Column
+                          props:
+                            crossAxisAlignment: start
+                            children:
+                              - type: Text
+                                props:
+                                  data: "💡 The Point"
+                                  style:
+                                    fontSize: 18
+                                    fontWeight: bold
+                                    color: "0xFFFFFFFF"
+
+                              - type: SizedBox
+                                props:
+                                  height: 8
+
+                              - type: Text
+                                props:
+                                  data: "Every feature you see here is implemented in pure SHQL:"
+                                  style:
+                                    fontSize: 14
+                                    color: "0xFFFFFFFF"
+
+                              - type: SizedBox
+                                props:
+                                  height: 4
+
+                              - type: Text
+                                props:
+                                  data: "✓ Global state (navigation_stack)"
+                                  style:
+                                    fontSize: 14
+                                    color: "0xFFFFFFFF"
+
+                              - type: Text
+                                props:
+                                  data: "✓ Callbacks (LOG function)"
+                                  style:
+                                    fontSize: 14
+                                    color: "0xFFFFFFFF"
+
+                              - type: Text
+                                props:
+                                  data: "✓ Persistence (SAVE_STATE/LOAD_STATE)"
+                                  style:
+                                    fontSize: 14
+                                    color: "0xFFFFFFFF"
+
+                              - type: Text
+                                props:
+                                  data: "✓ Reactivity (Observer widget)"
+                                  style:
+                                    fontSize: 14
+                                    color: "0xFFFFFFFF"
+
+                              - type: SizedBox
+                                props:
+                                  height: 8
+
+                              - type: Text
+                                props:
+                                  data: "No BLoC needed. Just SHQL + callbacks."
+                                  style:
+                                    fontSize: 14
+                                    fontWeight: bold
+                                    color: "0xFFFFDD00"
+
+                - type: SizedBox
+                  props:
+                    height: 16
+
+                # Back button
+                - type: ElevatedButton
+                  props:
+                    onPressed: "shql: GO_BACK()"
+                    child:
+                      type: Text
+                      props:
+                        data: "← Back"

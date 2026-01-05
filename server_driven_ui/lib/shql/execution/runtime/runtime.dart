@@ -6,6 +6,7 @@ import 'package:crypto/crypto.dart';
 import 'package:server_driven_ui/shql/engine/cancellation_token.dart';
 import 'package:server_driven_ui/shql/execution/execution_node.dart';
 import 'package:server_driven_ui/shql/execution/runtime/execution_context.dart';
+import 'package:server_driven_ui/shql/execution/runtime_error.dart';
 import 'package:server_driven_ui/shql/parser/constants_set.dart';
 import 'package:server_driven_ui/shql/parser/parse_tree.dart';
 
@@ -155,20 +156,20 @@ class Scope {
     return false;
   }
 
-  (Scope, String?) setVariable(int identifier, dynamic value) {
+  (Scope, RuntimeError?) setVariable(int identifier, dynamic value) {
     var (existingValue, containingScope, isConstant) = resolveIdentifier(
       identifier,
     );
     if (existingValue != null && isConstant) {
       // Cannot modify constant
-      return (containingScope!, "Cannot modify constant");
+      return (containingScope!, RuntimeError("Cannot modify constant"));
     }
     containingScope ??= this;
     containingScope.members.setVariable(identifier, value);
     return (containingScope, null);
   }
 
-  (Scope, UserFunction, String?) defineUserFunction(
+  (Scope, UserFunction, RuntimeError?) defineUserFunction(
     int identifier,
     UserFunction userFunction,
   ) {
@@ -180,7 +181,7 @@ class Scope {
       return (
         containingScope!,
         userFunction,
-        "Cannot shadow constant with function",
+        RuntimeError("Cannot shadow constant with function"),
       );
     }
 
@@ -352,11 +353,13 @@ class Thread {
     _breakTargets.clear();
   }
 
-  (ReturnTarget?, String?) pushReturnTarget() {
+  (ReturnTarget?, RuntimeError?) pushReturnTarget() {
     if (_returnTargets.length >= 10) {
       return (
         null,
-        'Stack overflow. Too many nested function calls. 10 is the reasonable, chronological maximum allowed for a steam driven computing machine.',
+        RuntimeError(
+          'Stack overflow. Too many nested function calls. 10 is the reasonable, chronological maximum allowed for a steam driven computing machine.',
+        ),
       );
     }
     var returnTarget = ReturnTarget();
@@ -450,7 +453,7 @@ class Thread {
     _joinTarget = joinTarget;
   }
 
-  String? error;
+  RuntimeError? error;
   dynamic result;
   dynamic getResult() {
     return result;
@@ -510,6 +513,7 @@ class Runtime {
   Future<void> Function()? clsFunction;
   Future<void> Function()? hideGraphFunction;
   Future<void> Function(dynamic, dynamic)? plotFunction;
+  Function(String message)? debugLogFunction;
   void Function(String name)? notifyListeners;
 
   Runtime({
@@ -548,6 +552,7 @@ class Runtime {
     clsFunction = other.clsFunction;
     hideGraphFunction = other.hideGraphFunction;
     plotFunction = other.plotFunction;
+    debugLogFunction = other.debugLogFunction;
     notifyListeners = other.notifyListeners;
     hookUpConsole();
     _sandboxed = true;
@@ -801,6 +806,18 @@ class Runtime {
     await hideGraphFunction?.call();
   }
 
+  void debugLog(
+    ExecutionContext executionContext,
+    ExecutionNode caller,
+    dynamic message,
+  ) {
+    if (sandboxed) {
+      return;
+    }
+
+    debugLogFunction?.call(message.toString());
+  }
+
   Future<Thread> startThread(
     ExecutionContext executionContext,
     ExecutionNode caller,
@@ -863,6 +880,7 @@ class Runtime {
     setNullaryFunction("HIDE_GRAPH", hideGraph);
     setUnaryFunction("THREAD", startThread);
     setUnaryFunction("JOIN", joinThread);
+    setUnaryFunction("DEBUG_LOG", debugLog);
     setBinaryFunction("_EXTERN", extern);
   }
 

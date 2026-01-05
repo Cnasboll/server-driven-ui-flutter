@@ -29,6 +29,19 @@ DIM(a,b) := _EXTERN("DIM", [a,b]);
 -- External ternary functions
 SUBSTRING(a, b, c) := _EXTERN("SUBSTRING", [a, b, c]);
 
+-- Join array elements into a string with a separator
+STRING_JOIN(arr, separator) := BEGIN
+    len := LENGTH(arr);
+    IF len = 0 THEN
+        RETURN "";
+    IF len = 1 THEN
+        RETURN STRING(arr[0]);
+    result := STRING(arr[0]);
+    FOR i := 1 TO len - 1 DO
+        result := result + separator + STRING(arr[i]);
+    RETURN result;
+END;
+
 -- Plot a function
 PLOT(f, x1, x2) := BEGIN
     x_vector := [];
@@ -40,7 +53,7 @@ PLOT(f, x1, x2) := BEGIN
         x_vector := x_vector + [x];
         y_vector := y_vector + [f(x)];
         if x > start then
-            _DISPLAY_GRAPH(x_vector, y_vector);    
+            _DISPLAY_GRAPH(x_vector, y_vector);
     END;
     PRINT("Type HIDE_GRAPH to hide graph again");
 END;

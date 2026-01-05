@@ -110,11 +110,7 @@ class TokenizerException implements Exception {
 }
 
 class StateMachine {
-  Iterable<Token> accept(Char charCode) sync* {
-    if (isNewline(charCode)) {
-      _lineNumber++;
-      _columnNumber = 1;
-    }
+  Iterable<Token> accept(Char charCode, {bool updatePosition = true}) sync* {
     try {
       bool wasStartOrComment =
           _state == TokenizerState.start || _state == TokenizerState.comment;
@@ -124,8 +120,10 @@ class StateMachine {
         if (_state != TokenizerState.start &&
             _state != TokenizerState.comment) {
           if (wasStartOrComment) {
-            _bufferStartLineNumber = _lineNumber;
-            _bufferStartColumnNumber = _columnNumber;
+            _bufferStartLocation = CodeLocation(
+              lineNumber: _lineNumber,
+              columnNumber: _columnNumber,
+            );
             _buffer = StringBuffer();
           }
           _buffer.writeCharCode(charCode);
@@ -145,7 +143,8 @@ class StateMachine {
             yield token;
 
             //Don't consume the char, run the char again.
-            for (var t in accept(charCode)) {
+            // Don't update position on recursive call since we already did it
+            for (var t in accept(charCode, updatePosition: false)) {
               yield t;
             }
           }
@@ -156,8 +155,13 @@ class StateMachine {
         }
       }
     } finally {
-      if (!isNewline(charCode)) {
-        _columnNumber++;
+      if (updatePosition) {
+        if (isNewline(charCode)) {
+          _lineNumber++;
+          _columnNumber = 1;
+        } else {
+          _columnNumber++;
+        }
       }
     }
   }
@@ -190,8 +194,7 @@ class StateMachine {
       var token = Token.parser(
         tokenType,
         _buffer.toString(),
-        _bufferStartLineNumber,
-        _bufferStartColumnNumber,
+        _bufferStartLocation!,
       );
       _state = TokenizerState.start;
       return token;
@@ -426,8 +429,7 @@ class StateMachine {
   int _lineNumber = 1;
   int _columnNumber = 1;
   StringBuffer _buffer = StringBuffer();
-  int _bufferStartLineNumber = 1;
-  int _bufferStartColumnNumber = 1;
+  CodeLocation? _bufferStartLocation;
 
   static final Map<String, ECharCodeClasses> _charCodeClassTable =
       createCharCodeClassTable();

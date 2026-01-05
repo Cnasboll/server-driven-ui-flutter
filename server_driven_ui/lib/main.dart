@@ -135,13 +135,31 @@ class _YamlDrivenScreenState extends State<YamlDrivenScreen> {
       await prefs.setDouble(key, value);
     } else if (value is String) {
       await prefs.setString(key, value);
+    } else {
+      // Serialize complex types (arrays, objects) to JSON
+      await prefs.setString(key, jsonEncode(value));
     }
-    // Note: Complex types are not supported by shared_preferences.
   }
 
   Future<dynamic> _loadState(String key, dynamic defaultValue) async {
     final prefs = await SharedPreferences.getInstance();
-    return prefs.get(key) ?? defaultValue;
+    final value = prefs.get(key);
+
+    if (value == null) {
+      return defaultValue;
+    }
+
+    // If it's a string, try to decode it as JSON (for complex types)
+    if (value is String) {
+      try {
+        return jsonDecode(value);
+      } catch (e) {
+        // If JSON decoding fails, return the string as-is
+        return value;
+      }
+    }
+
+    return value;
   }
 
   Future<void> _initAndResolve() async {
@@ -159,6 +177,14 @@ class _YamlDrivenScreenState extends State<YamlDrivenScreen> {
           if (!mounted) return;
           setState(() {
             _logs.add(value.toString());
+          });
+        },
+        debugLog: (message) {
+          if (!mounted) return;
+          setState(() {
+            _logs.add(
+              '[${DateTime.now().toString().substring(11, 19)}] $message',
+            );
           });
         },
         readline: () async => null,

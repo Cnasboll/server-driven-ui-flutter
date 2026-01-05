@@ -3,6 +3,7 @@ import 'package:server_driven_ui/shql/engine/engine.dart';
 import 'package:server_driven_ui/shql/execution/execution_node.dart';
 import 'package:server_driven_ui/shql/execution/lazy_execution_node.dart';
 import 'package:server_driven_ui/shql/execution/runtime/execution_context.dart';
+import 'package:server_driven_ui/shql/execution/runtime_error.dart';
 
 class ProgramExecutionNode extends LazyExecutionNode {
   ProgramExecutionNode(
@@ -27,7 +28,11 @@ class ProgramExecutionNode extends LazyExecutionNode {
         scope,
       );
       if (_currentStatement == null) {
-        error = 'Failed to create execution node for statement.';
+        error = RuntimeError.fromParseTree(
+          'Failed to create execution node for statement.',
+          node,
+          sourceCode: executionContext.sourceCode,
+        );
         return TickResult.completed;
       }
       return TickResult.delegated;

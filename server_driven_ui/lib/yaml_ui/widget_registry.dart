@@ -38,6 +38,7 @@ class WidgetRegistry {
     'Text': _buildText,
     'ElevatedButton': _buildElevatedButton,
     'ListView': _buildListView,
+    'SingleChildScrollView': _buildSingleChildScrollView,
     'TextField': _buildTextField,
     'Expanded': _buildExpanded,
     'Card': _buildCard,
@@ -611,6 +612,28 @@ Widget _buildListView(
       return b(childrenList[i], '$path.children[$i]');
     },
   );
+}
+
+Widget _buildSingleChildScrollView(
+  BuildContext context,
+  Map<String, dynamic> props,
+  ChildBuilder b,
+  dynamic child,
+  dynamic children,
+  String path,
+  ShqlBindings shql,
+  Key key,
+  YamlUiEngine engine,
+) {
+  if (child == null) {
+    return WidgetRegistry._error(
+      context,
+      'SingleChildScrollView requires a child',
+      path,
+    );
+  }
+
+  return SingleChildScrollView(key: key, child: b(child, '$path.child'));
 }
 
 Widget _buildObserver(

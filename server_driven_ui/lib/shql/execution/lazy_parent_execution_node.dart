@@ -3,6 +3,7 @@ import 'package:server_driven_ui/shql/engine/engine.dart';
 import 'package:server_driven_ui/shql/execution/execution_node.dart';
 import 'package:server_driven_ui/shql/execution/lazy_execution_node.dart';
 import 'package:server_driven_ui/shql/execution/runtime/execution_context.dart';
+import 'package:server_driven_ui/shql/execution/runtime_error.dart';
 
 abstract class LazyParentExecutionNode extends LazyExecutionNode {
   LazyParentExecutionNode(
@@ -21,7 +22,11 @@ abstract class LazyParentExecutionNode extends LazyExecutionNode {
       for (var child in node.children.reversed) {
         var childRuntime = Engine.createExecutionNode(child, thread, scope);
         if (childRuntime == null) {
-          error = 'Failed to create execution node for child node.';
+          error = RuntimeError.fromParseTree(
+            'Failed to create execution node for child node.',
+            node,
+            sourceCode: executionContext.sourceCode,
+          );
           return TickResult.completed;
         }
 

@@ -4,6 +4,7 @@ import 'package:server_driven_ui/shql/execution/execution_node.dart';
 import 'package:server_driven_ui/shql/execution/lazy_execution_node.dart';
 import 'package:server_driven_ui/shql/execution/runtime/execution_context.dart';
 import 'package:server_driven_ui/shql/execution/runtime/runtime.dart';
+import 'package:server_driven_ui/shql/execution/runtime_error.dart';
 
 class CompoundStatementExecutionNode extends LazyExecutionNode {
   CompoundStatementExecutionNode(
@@ -33,7 +34,11 @@ class CompoundStatementExecutionNode extends LazyExecutionNode {
         _localScope,
       );
       if (_currentStatement == null) {
-        error = 'Failed to create execution node for statement.';
+        error = RuntimeError.fromParseTree(
+          'Failed to create execution node for statement.',
+          node,
+          sourceCode: executionContext.sourceCode,
+        );
         return TickResult.completed;
       }
       return TickResult.delegated;

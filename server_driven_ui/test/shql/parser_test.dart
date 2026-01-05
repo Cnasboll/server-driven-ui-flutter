@@ -396,4 +396,201 @@ end''';
     expect(p.symbol, Symbols.program);
     expect(p.children.isNotEmpty, true);
   });
+
+  group('ParseException error messages', () {
+    test('Should include source excerpt for single-line error', () {
+      var code = '10 + INVALID_SYNTAX !!!';
+      var constantsSet = ConstantsSet();
+
+      try {
+        Parser.parse(code, constantsSet);
+        fail('Expected ParseException to be thrown');
+      } on ParseException catch (e) {
+        var errorMessage = e.toString();
+        // Should contain the error message
+        expect(errorMessage, contains('ParseException:'));
+        // Should contain the line number
+        expect(errorMessage, contains('Line 1:'));
+        // Should contain the source code
+        expect(errorMessage, contains('10 + INVALID_SYNTAX !!!'));
+        // Should have visual indicator (tildes)
+        expect(errorMessage, contains('~'));
+      }
+    });
+
+    test('Should include source excerpt for multi-line error', () {
+      var code = '''x := 10;
+y := 20 INVALID
+z := 30''';
+      var constantsSet = ConstantsSet();
+
+      try {
+        Parser.parse(code, constantsSet);
+        fail('Expected ParseException to be thrown');
+      } on ParseException catch (e) {
+        var errorMessage = e.toString();
+        // Should contain the error message
+        expect(errorMessage, contains('ParseException:'));
+        // Should show only line 2 (current statement after the semicolon)
+        expect(errorMessage, contains('Line 2:'));
+        // Should NOT contain line 1 (previous statement)
+        expect(errorMessage, isNot(contains('x := 10')));
+        // Should contain line 2 (where error was detected)
+        expect(errorMessage, contains('y := 20 INVALID'));
+        // Should have visual indicator (tildes)
+        expect(errorMessage, contains('~'));
+        // Should NOT contain line 3
+        expect(errorMessage, isNot(contains('z := 30')));
+      }
+    });
+
+    test('Should handle error at beginning of line', () {
+      var code = 'FUNCTION foo() BEGIN';
+      var constantsSet = ConstantsSet();
+
+      try {
+        Parser.parse(code, constantsSet);
+        fail('Expected ParseException to be thrown');
+      } on ParseException catch (e) {
+        var errorMessage = e.toString();
+        // Should contain the line number
+        expect(errorMessage, contains('Line 1:'));
+        // Should contain the source code
+        expect(errorMessage, contains('FUNCTION foo() BEGIN'));
+        // Should have visual indicator
+        expect(errorMessage, contains('~'));
+      }
+    });
+
+    test('Should handle error at end of line', () {
+      var code = 'x := 10 +';
+      var constantsSet = ConstantsSet();
+
+      try {
+        Parser.parse(code, constantsSet);
+        fail('Expected ParseException to be thrown');
+      } on ParseException catch (e) {
+        var errorMessage = e.toString();
+        // Should contain the error message
+        expect(errorMessage, contains('ParseException:'));
+        // Should contain the line number
+        expect(errorMessage, contains('Line 1:'));
+        // Should contain the source code
+        expect(errorMessage, contains('x := 10 +'));
+      }
+    });
+
+    test('Should provide token span information', () {
+      var code = '10 + 20 ERROR 30';
+      var constantsSet = ConstantsSet();
+
+      try {
+        Parser.parse(code, constantsSet);
+        fail('Expected ParseException to be thrown');
+      } on ParseException catch (e) {
+        // Should have non-null token span
+        final (start, end) = e.tokenSpan;
+        expect(start, isNotNull);
+        expect(end, isNotNull);
+        // Line numbers should be 1-based
+        expect(start!.lineNumber, greaterThanOrEqualTo(1));
+        expect(end!.lineNumber, greaterThanOrEqualTo(1));
+        // Column numbers should be 1-based
+        expect(start.columnNumber, greaterThanOrEqualTo(1));
+        expect(end.columnNumber, greaterThanOrEqualTo(1));
+      }
+    });
+
+    test('Should show only THEN branch context for IF statement errors', () {
+      var code = '''x := 10;
+IF x > 5 THEN y := 20 ERROR''';
+      var constantsSet = ConstantsSet();
+
+      try {
+        Parser.parse(code, constantsSet);
+        fail('Expected ParseException to be thrown');
+      } on ParseException catch (e) {
+        var errorMessage = e.toString();
+        var (start, end) = e.statementSpan;
+        // The statement span should start after THEN (not include IF condition)
+        expect(start, isNotNull);
+        expect(end, isNotNull);
+        // Should show the error token
+        expect(errorMessage, contains('y := 20 ERROR'));
+        // Should NOT contain previous statement from line 1
+        expect(errorMessage, isNot(contains('x := 10')));
+      }
+    });
+
+    test('Should show only ELSE branch context for IF-ELSE errors', () {
+      var code = 'IF x > 5 THEN y := 10 ELSE z := 20 ERROR';
+      var constantsSet = ConstantsSet();
+
+      try {
+        Parser.parse(code, constantsSet);
+        fail('Expected ParseException to be thrown');
+      } on ParseException catch (e) {
+        var errorMessage = e.toString();
+        var (start, _) = e.statementSpan;
+        // Statement span should start after ELSE
+        expect(start, isNotNull);
+        expect(errorMessage, contains('z := 20 ERROR'));
+      }
+    });
+
+    test('Should show only DO body context for WHILE loop errors', () {
+      var code = '''x := 10;
+WHILE x > 0 DO x := 5 ERROR''';
+      var constantsSet = ConstantsSet();
+
+      try {
+        Parser.parse(code, constantsSet);
+        fail('Expected ParseException to be thrown');
+      } on ParseException catch (e) {
+        var errorMessage = e.toString();
+        var (start, _) = e.statementSpan;
+        // Statement span should start after DO
+        expect(start, isNotNull);
+        expect(errorMessage, contains('x := 5 ERROR'));
+        // Should NOT contain line 1
+        expect(errorMessage, isNot(contains('x := 10')));
+      }
+    });
+
+    test('Should show only REPEAT body context for REPEAT-UNTIL errors', () {
+      var code = '''x := 10;
+REPEAT x := 5 ERROR UNTIL x = 0''';
+      var constantsSet = ConstantsSet();
+
+      try {
+        Parser.parse(code, constantsSet);
+        fail('Expected ParseException to be thrown');
+      } on ParseException catch (e) {
+        var errorMessage = e.toString();
+        var (start, _) = e.statementSpan;
+        // Statement span should start after REPEAT
+        expect(start, isNotNull);
+        expect(errorMessage, contains('x := 5 ERROR'));
+        expect(errorMessage, isNot(contains('x := 10')));
+      }
+    });
+
+    test('Should show only FOR body context for FOR loop errors', () {
+      var code = '''x := 10;
+FOR i := 1 TO 10 DO sum := 5 ERROR''';
+      var constantsSet = ConstantsSet();
+
+      try {
+        Parser.parse(code, constantsSet);
+        fail('Expected ParseException to be thrown');
+      } on ParseException catch (e) {
+        var errorMessage = e.toString();
+        var (start, _) = e.statementSpan;
+        // Statement span should start after DO
+        expect(start, isNotNull);
+        expect(errorMessage, contains('sum := 5 ERROR'));
+        expect(errorMessage, isNot(contains('x := 10')));
+      }
+    });
+  });
 }

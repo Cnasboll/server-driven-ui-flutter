@@ -54,7 +54,14 @@ screen:
             child:
               type: Text
               props:
-                data: "🎨 Theme Demo (BLoC+SHQL)"
+                data: "🎨 Theme Demo (Pure SHQL)"
+        - type: ElevatedButton
+          props:
+            onPressed: "shql: NAVIGATE('advanced_features_demo')"
+            child:
+              type: Text
+              props:
+                data: "🚀 Advanced Features Demo"
         - type: Expanded
           child:
             type: ListView

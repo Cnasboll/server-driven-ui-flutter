@@ -1,15 +1,24 @@
 import 'package:server_driven_ui/shql/tokenizer/token.dart';
+import 'package:server_driven_ui/shql/tokenizer/code_span.dart';
 
 class ParseTree {
-  ParseTree(this._symbol, [this._children = const [], this._qualifier]);
+  ParseTree(
+    this._symbol,
+    this._tokens, [
+    this._children = const [],
+    this._qualifier,
+  ]);
 
-  ParseTree.withSymbol(Symbols symbol) : this(symbol, const [], null);
+  ParseTree.withSymbol(Symbols symbol, List<Token> tokens)
+    : this(symbol, tokens, const [], null);
+  ParseTree.withChildren(
+    Symbols symbol,
+    List<ParseTree> children,
+    List<Token> tokens,
+  ) : this(symbol, tokens, children, null);
 
-  ParseTree.withChildren(Symbols symbol, List<ParseTree> children)
-    : this(symbol, children, null);
-
-  ParseTree.withQualifier(Symbols symbol, int? qualifier)
-    : this(symbol, const [], qualifier);
+  ParseTree.withQualifier(Symbols symbol, int? qualifier, List<Token> tokens)
+    : this(symbol, tokens, const [], qualifier);
 
   Symbols get symbol {
     return _symbol;
@@ -46,7 +55,14 @@ class ParseTree {
     return Object.hash(_symbol, _children, _qualifier);
   }
 
+  List<Token> get tokens {
+    return _tokens;
+  }
+
+  CodeSpan get tokenSpan => _tokens.isEmpty ? (null, null) : _tokens.tokenSpan;
+
   final Symbols _symbol;
   final List<ParseTree> _children;
   final int? _qualifier;
+  final List<Token> _tokens;
 }

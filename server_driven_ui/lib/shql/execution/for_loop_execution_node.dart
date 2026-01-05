@@ -5,6 +5,7 @@ import 'package:server_driven_ui/shql/execution/execution_node.dart';
 import 'package:server_driven_ui/shql/execution/identifier_exeuction_node.dart';
 import 'package:server_driven_ui/shql/execution/lazy_execution_node.dart';
 import 'package:server_driven_ui/shql/execution/runtime/execution_context.dart';
+import 'package:server_driven_ui/shql/execution/runtime_error.dart';
 import 'package:server_driven_ui/shql/execution/set_variable_execution_node.dart';
 import 'package:server_driven_ui/shql/parser/parse_tree.dart';
 import 'package:server_driven_ui/shql/tokenizer/token.dart';
@@ -28,7 +29,9 @@ class ForLoopExecutionNode extends LazyExecutionNode {
     CancellationToken? cancellationToken,
   ) async {
     if (_initializationNode == null) {
-      var (initializationNode, initError) = _createInitializationNode();
+      var (initializationNode, initError) = _createInitializationNode(
+        executionContext,
+      );
       if (initError != null) {
         error = initError;
         return TickResult.completed;
@@ -110,9 +113,18 @@ class ForLoopExecutionNode extends LazyExecutionNode {
     return TickResult.completed;
   }
 
-  (AssignmentExecutionNode?, String?) _createInitializationNode() {
+  (AssignmentExecutionNode?, RuntimeError?) _createInitializationNode(
+    ExecutionContext executionContext,
+  ) {
     if (initializationParseTree.symbol != Symbols.assignment) {
-      return (null, 'For loop initialization must be an assignment.');
+      return (
+        null,
+        RuntimeError.fromParseTree(
+          'For loop initialization must be an assignment.',
+          initializationParseTree,
+          sourceCode: executionContext.sourceCode,
+        ),
+      );
     }
 
     var initializationNode = Engine.tryCreateAssignmentExecutionNode(
@@ -121,7 +133,14 @@ class ForLoopExecutionNode extends LazyExecutionNode {
       scope,
     );
     if (initializationNode == null) {
-      return (null, 'Could not create assignment execution node.');
+      return (
+        null,
+        RuntimeError.fromParseTree(
+          'Could not create assignment execution node.',
+          initializationParseTree,
+          sourceCode: executionContext.sourceCode,
+        ),
+      );
     }
     return (initializationNode, null);
   }
