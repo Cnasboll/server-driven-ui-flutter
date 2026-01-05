@@ -3,6 +3,7 @@ import 'package:server_driven_ui/shql/execution/execution_node.dart';
 import 'package:server_driven_ui/shql/execution/lazy_execution_node.dart';
 import 'package:server_driven_ui/shql/execution/runtime/execution_context.dart';
 import 'package:server_driven_ui/shql/execution/runtime/runtime.dart';
+import 'package:server_driven_ui/shql/execution/runtime_error.dart';
 import 'package:server_driven_ui/shql/parser/constants_set.dart';
 
 class ConstantNode<T> extends LazyExecutionNode {
@@ -23,7 +24,11 @@ class ConstantNode<T> extends LazyExecutionNode {
       currentScope = currentScope.parent;
     }
     if (constants == null) {
-      error = "No constants table found in scope chain.";
+      error = RuntimeError.fromParseTree(
+        "No constants table found in scope chain.",
+        node,
+        sourceCode: executionContext.sourceCode,
+      );
       return TickResult.completed;
     }
     result = constants.getByIndex(node.qualifier!);

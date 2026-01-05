@@ -1,3 +1,28 @@
+class CodeLocation implements Comparable<CodeLocation> {
+  final int _lineNumber;
+  final int _columnNumber;
+
+  CodeLocation({required int lineNumber, required int columnNumber})
+    : _lineNumber = lineNumber,
+      _columnNumber = columnNumber;
+
+  int get lineNumber {
+    return _lineNumber;
+  }
+
+  int get columnNumber {
+    return _columnNumber;
+  }
+
+  @override
+  int compareTo(CodeLocation other) {
+    if (_lineNumber != other._lineNumber) {
+      return _lineNumber - other._lineNumber;
+    }
+    return _columnNumber - other._columnNumber;
+  }
+}
+
 enum Symbols {
   none,
   program,
@@ -152,12 +177,16 @@ class Token {
     return _symbol;
   }
 
-  int get lineNumber {
-    return _lineNumber;
+  CodeLocation get startLocation {
+    return _startLocation;
   }
 
-  int get columnNumber {
-    return _columnNumber;
+  CodeLocation get endLocation {
+    return _endLocation;
+  }
+
+  (CodeLocation, CodeLocation) get tokenSpan {
+    return (_startLocation, _endLocation);
   }
 
   Token(
@@ -167,15 +196,14 @@ class Token {
     this._literalType,
     this._operatorPrecedence,
     this._symbol,
-    this._lineNumber,
-    this._columnNumber,
+    this._startLocation,
+    this._endLocation,
   );
 
   factory Token.parser(
     TokenTypes tokenType,
     String lexeme,
-    int lineNumber,
-    int columnNumber,
+    CodeLocation startLocation,
   ) {
     Keywords keyword = Keywords.none;
     LiteralTypes literalType = LiteralTypes.none;
@@ -221,6 +249,8 @@ class Token {
 
     int operatorPrecedence = _operatorPrecendences[symbol] ?? -1;
 
+    // Calculate end location properly - the token ends where it started plus its length
+    // For single-line tokens, just add the length to the column
     return Token(
       lexeme,
       tokenType,
@@ -228,8 +258,11 @@ class Token {
       literalType,
       operatorPrecedence,
       symbol,
-      lineNumber,
-      columnNumber,
+      startLocation,
+      CodeLocation(
+        lineNumber: startLocation.lineNumber,
+        columnNumber: startLocation.columnNumber + lexeme.length,
+      ),
     );
   }
 
@@ -514,6 +547,57 @@ class Token {
   final LiteralTypes _literalType;
   final int _operatorPrecedence;
   final Symbols _symbol;
-  final int _lineNumber;
-  final int _columnNumber;
+  final CodeLocation _startLocation;
+  final CodeLocation _endLocation;
+}
+
+// Extension to get token span from a list of tokens
+extension TokenListExtensions on List<Token> {
+  (CodeLocation, CodeLocation) get tokenSpan {
+    if (isEmpty) {
+      throw StateError('Cannot get token span from empty token list');
+    }
+    // All tokens in the list define the span
+    // Find the actual maximum end location across all tokens
+    var allLocations = expand((t) => [t.startLocation, t.endLocation]).toList();
+    allLocations.sort();
+    return (allLocations.first, allLocations.last);
+  }
+
+  /// Get the span for the current statement by scanning backwards for
+  /// statement boundaries (semicolon, BEGIN, THEN, ELSE, DO, REPEAT, WHILE, FOR).
+  (CodeLocation, CodeLocation) get statementSpan {
+    if (isEmpty) {
+      throw StateError('Cannot get token span from empty token list');
+    }
+
+    // Scan backwards to find last statement boundary
+    int startIndex = 0;
+    for (int i = length - 1; i >= 0; i--) {
+      if (this[i].tokenType == TokenTypes.semiColon ||
+          this[i].keyword == Keywords.beginKeyword ||
+          this[i].keyword == Keywords.thenKeyword ||
+          this[i].keyword == Keywords.elseKeyword ||
+          this[i].keyword == Keywords.doKeyword ||
+          this[i].keyword == Keywords.repeatKeyword ||
+          this[i].keyword == Keywords.whileKeyword ||
+          this[i].keyword == Keywords.forKeyword) {
+        startIndex = i + 1; // Start after the boundary
+        break;
+      }
+    }
+
+    // Get span from that point onwards
+    if (startIndex >= length) {
+      // Edge case: only boundary token in list, return full span
+      return tokenSpan;
+    }
+
+    var relevantTokens = sublist(startIndex);
+    var allLocations = relevantTokens
+        .expand((t) => [t.startLocation, t.endLocation])
+        .toList();
+    allLocations.sort();
+    return (allLocations.first, allLocations.last);
+  }
 }

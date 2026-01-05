@@ -4,3 +4,5 @@ routes:
   stack_example: "assets/screens/stack_example.yaml"
   inputs_example: "assets/screens/inputs_example.yaml"
   posts: "assets/screens/posts.yaml"
+  theme_demo: "assets/screens/theme_demo.yaml"
+  advanced_features_demo: "assets/screens/advanced_features_demo.yaml"

@@ -1,9 +1,10 @@
+onLoad: "shql(targeted:true): PUSH_ROUTE('inputs_example')"
 screen:
   type: Scaffold
   onLoad: |
     shql:
-      SET('_feature_enabled', LOAD_STATE('feature_enabled', FALSE));
-      SET('_terms_accepted', LOAD_STATE('terms_accepted', FALSE));
+      SET('_telemetry_spam_enabled', LOAD_STATE('telemetry_spam_enabled', false));
+      SET('_terms_accepted', LOAD_STATE('terms_accepted', false));
   props:
     appBar:
       type: AppBar
@@ -25,11 +26,11 @@ screen:
                 children:
                   - type: Text
                     props:
-                      data: "Enable feature:"
+                      data: "Enable Telemetry Spam:"
                   - type: Switch
                     props:
-                      value: "shql: _feature_enabled"
-                      onChanged: "shql: SET('_feature_enabled', value); SAVE_STATE('feature_enabled', value)"
+                      value: "shql: _telemetry_spam_enabled"
+                      onChanged: "shql: SET('_telemetry_spam_enabled', value); SAVE_STATE('telemetry_spam_enabled', value)"
               - type: Row
                 children:
                   - type: Text
@@ -41,7 +42,7 @@ screen:
                       onChanged: "shql: SET('_terms_accepted', value); SAVE_STATE('terms_accepted', value)"
               - type: Observer
                 props:
-                  query: "_feature_enabled, _terms_accepted"
+                  query: "_telemetry_spam_enabled, _terms_accepted"
                   builder:
                     type: Card
                     props:
@@ -58,7 +59,7 @@ screen:
                               children:
                                 - type: Text
                                   props:
-                                    data: "shql: 'Feature enabled: ' + STRING(_feature_enabled)"
+                                    data: "shql: 'Telemetry Spam: ' + IF _telemetry_spam_enabled THEN '📡 ENABLED (all your data are belong to us)' ELSE '🚫 Disabled'"
                                 - type: Text
                                   props:
                                     data: "shql: 'Terms accepted: ' + STRING(_terms_accepted)"
@@ -66,8 +67,8 @@ screen:
                 children:                                    
                   - type: ElevatedButton
                     props:
-                      onPressed: "shql: NAVIGATE('main')"
+                      onPressed: "shql: GO_BACK()"
                       child:
                         type: Text
                         props:
-                          data: "Go back to Main"
+                          data: "← Back"

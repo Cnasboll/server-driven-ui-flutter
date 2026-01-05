@@ -1,3 +1,4 @@
+onLoad: "shql(targeted:true): PUSH_ROUTE('stack_example')"
 screen:
   type: Scaffold
   props:
@@ -33,8 +34,8 @@ screen:
             data: "I'm in the center!"
         - type: ElevatedButton
           props:
-            onPressed: "shql: NAVIGATE('main')"
+            onPressed: "shql: GO_BACK()"
             child:
               type: Text
               props:
-                data: "Go back to Main"
+                data: "← Back"

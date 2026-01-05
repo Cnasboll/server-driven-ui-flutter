@@ -1,3 +1,4 @@
+onLoad: "shql(targeted:true): PUSH_ROUTE('stats')"
 screen:
   type: Scaffold
   props:
@@ -67,8 +68,8 @@ screen:
             data: "This is the stats screen."
         - type: ElevatedButton
           props:
-            onPressed: "shql: NAVIGATE('main')"
+            onPressed: "shql: GO_BACK()"
             child:
               type: Text
               props:
-                data: "Go back to Main"
+                data: "← Back"

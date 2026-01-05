@@ -21,6 +21,7 @@ class ShqlBindings {
     Future<dynamic> Function(String url)? fetch,
     Future<void> Function(String key, dynamic value)? saveState,
     Future<dynamic> Function(String key, dynamic defaultValue)? loadState,
+    Function(String message)? debugLog,
   }) {
     _constantsSet = Runtime.prepareConstantsSet();
     _runtime = Runtime.prepareRuntime(_constantsSet);
@@ -31,6 +32,7 @@ class ShqlBindings {
     _runtime.fetchFunction = fetch;
     _runtime.saveStateFunction = saveState;
     _runtime.loadStateFunction = loadState;
+    _runtime.debugLogFunction = debugLog;
     _runtime.notifyListeners = notifyListeners;
   }
 

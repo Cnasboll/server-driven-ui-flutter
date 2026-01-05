@@ -244,7 +244,7 @@ PI
     expect(v.length, 1);
     expect(v[0].tokenType, TokenTypes.identifier);
     expect(v[0].lexeme, 'PI');
-    expect(v[0].lineNumber, 7);
-    expect(v[0].columnNumber, 1);
+    expect(v[0].startLocation.lineNumber, 7);
+    expect(v[0].startLocation.columnNumber, 1);
   });
 }

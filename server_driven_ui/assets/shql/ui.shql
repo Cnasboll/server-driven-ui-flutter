@@ -57,6 +57,105 @@ END;
 
 _current_text := '';
 name := "";
-_feature_enabled := FALSE;
+_telemetry_spam_enabled := FALSE;
 _terms_accepted := FALSE;
-_posts := {}
+_posts := {};
+isDarkMode := FALSE;
+
+-- ============================================
+-- Navigation History Tracking
+-- ============================================
+-- Initialize global variable - will be loaded from state by first PUSH_ROUTE call
+navigation_stack := ['main'];
+
+PUSH_ROUTE(route) := BEGIN
+  -- Only push if it's not already the current route
+  IF LENGTH(navigation_stack) = 0 THEN BEGIN
+    navigation_stack := [route];
+    SET('navigation_stack', navigation_stack);
+    SAVE_STATE('navigation_stack', navigation_stack);
+  END ELSE BEGIN
+    current_route := navigation_stack[LENGTH(navigation_stack) - 1];
+    IF current_route != route THEN BEGIN
+      -- Check if the route already exists in the stack
+      route_exists := 0;
+      route_index := -1;
+      FOR i := 0 TO LENGTH(navigation_stack) - 1 DO BEGIN
+        IF navigation_stack[i] = route THEN BEGIN
+          route_exists := 1;
+          route_index := i;
+        END;
+      END;
+
+      -- If route exists, truncate stack to that point
+      IF route_exists = 1 THEN BEGIN
+        new_stack := [];
+        FOR i := 0 TO route_index DO
+          new_stack := new_stack + [navigation_stack[i]];
+        navigation_stack := new_stack;
+      END ELSE BEGIN
+        -- Otherwise just append the new route
+        navigation_stack := navigation_stack + [route];
+      END;
+
+      SET('navigation_stack', navigation_stack);
+      SAVE_STATE('navigation_stack', navigation_stack);
+    END;
+  END;
+  RETURN navigation_stack;
+END;
+
+POP_ROUTE() := BEGIN
+  len := LENGTH(navigation_stack);
+  IF len > 1 THEN BEGIN
+    -- Build new array without last element
+    new_stack := [];
+    FOR i := 0 TO len - 2 DO
+      new_stack := new_stack + [navigation_stack[i]];
+    navigation_stack := new_stack;
+    SET('navigation_stack', navigation_stack);
+    SAVE_STATE('navigation_stack', navigation_stack);
+    IF LENGTH(navigation_stack) > 0 THEN
+      RETURN navigation_stack[LENGTH(navigation_stack) - 1]
+    ELSE
+      RETURN 'main';
+  END ELSE BEGIN
+    RETURN 'main';
+  END;
+END;
+
+GO_BACK() := BEGIN
+  previous_route := POP_ROUTE();
+  NAVIGATE(previous_route);
+  RETURN previous_route;
+END;
+
+CAN_GO_BACK() := LENGTH(navigation_stack) > 1;
+
+GET_BREADCRUMB() := BEGIN
+  IF LENGTH(navigation_stack) = 0 THEN
+    RETURN 'main'
+  ELSE
+    RETURN STRING_JOIN(navigation_stack, ' > ')
+END;
+
+GET_CURRENT_ROUTE() := BEGIN
+  IF LENGTH(navigation_stack) > 0 THEN
+    RETURN navigation_stack[LENGTH(navigation_stack) - 1]
+  ELSE
+    RETURN 'main'
+END;
+
+-- ============================================
+-- Feature Flags System
+-- ============================================
+feature_new_ui := LOAD_STATE('feature_new_ui', FALSE);
+feature_dark_mode := LOAD_STATE('feature_dark_mode', TRUE);
+feature_logging := LOAD_STATE('feature_logging', TRUE);
+
+SET_FEATURE(feature_name, enabled) := BEGIN
+  SET(feature_name, enabled);
+  SAVE_STATE(feature_name, enabled);
+END;
+
+IS_FEATURE_ENABLED(feature_name) := LOAD_STATE(feature_name, FALSE);

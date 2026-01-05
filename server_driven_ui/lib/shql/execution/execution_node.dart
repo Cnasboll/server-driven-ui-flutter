@@ -1,6 +1,7 @@
 import 'package:server_driven_ui/shql/engine/cancellation_token.dart';
 import 'package:server_driven_ui/shql/execution/runtime/execution_context.dart';
 import 'package:server_driven_ui/shql/execution/runtime/runtime.dart';
+import 'package:server_driven_ui/shql/execution/runtime_error.dart';
 
 enum TickResult { completed, iterated, delegated }
 
@@ -26,7 +27,7 @@ abstract class ExecutionNode {
       if (completed) {}
       if (await thread.check(cancellationToken)) {
         result = thread.result;
-        error = thread.error;
+        error = thread.error as RuntimeError?;
         if (isLoop &&
             !await (breakTarget?.check(cancellationToken) ?? false) &&
             (breakTarget?.clearContinued() ?? false)) {
@@ -65,7 +66,7 @@ abstract class ExecutionNode {
     CancellationToken? cancellationToken,
   );
   bool completed = false;
-  String? error;
+  RuntimeError? error;
   dynamic result;
   dynamic getResult() {
     return result;

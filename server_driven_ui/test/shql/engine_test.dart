@@ -680,4 +680,105 @@ END;
       1000,
     );
   });
+
+  // Global variable tests
+  test("Global variable accessed in function", () async {
+    var constantsSet = Runtime.prepareConstantsSet();
+    var runtime = Runtime.prepareRuntime(constantsSet);
+    final code = """
+      my_global := 42;
+      GET_GLOBAL() := my_global;
+      GET_GLOBAL()
+    """;
+    expect(
+      await Engine.execute(code, runtime: runtime, constantsSet: constantsSet),
+      42,
+    );
+  });
+
+  test("Global variable modified in function", () async {
+    var constantsSet = Runtime.prepareConstantsSet();
+    var runtime = Runtime.prepareRuntime(constantsSet);
+    final code = """
+      my_global := 10;
+      ADD_TO_GLOBAL(x) := BEGIN
+        my_global := my_global + x;
+        RETURN my_global;
+      END;
+      ADD_TO_GLOBAL(5)
+    """;
+    expect(
+      await Engine.execute(code, runtime: runtime, constantsSet: constantsSet),
+      15,
+    );
+  });
+
+  test("Global array accessed in function", () async {
+    var (runtime, constantsSet) = await _loadStdLib();
+    final code = """
+      my_array := [1, 2, 3];
+      GET_LENGTH() := LENGTH(my_array);
+      GET_LENGTH()
+    """;
+    expect(
+      await Engine.execute(code, runtime: runtime, constantsSet: constantsSet),
+      3,
+    );
+  });
+
+  test("Global array modified in function", () async {
+    var (runtime, constantsSet) = await _loadStdLib();
+    final code = """
+      my_array := [1, 2, 3];
+      PUSH_TO_ARRAY(x) := BEGIN
+        my_array := my_array + [x];
+        RETURN my_array;
+      END;
+      PUSH_TO_ARRAY(4)
+    """;
+    final result = await Engine.execute(
+      code,
+      runtime: runtime,
+      constantsSet: constantsSet,
+    );
+    expect(result is List, true);
+    expect((result as List).length, 4);
+    expect(result[3], 4);
+  });
+
+  // Navigation stack pattern test
+  test("Navigation stack push/pop pattern", () async {
+    var (runtime, constantsSet) = await _loadStdLib();
+    final code = """
+      navigation_stack := ['main'];
+
+      PUSH_ROUTE(route) := BEGIN
+        IF LENGTH(navigation_stack) = 0 THEN BEGIN
+          navigation_stack := [route];
+        END ELSE BEGIN
+          IF navigation_stack[LENGTH(navigation_stack) - 1] != route THEN BEGIN
+            navigation_stack := navigation_stack + [route];
+          END;
+        END;
+        RETURN navigation_stack;
+      END;
+
+      POP_ROUTE() := BEGIN
+        IF LENGTH(navigation_stack) > 1 THEN BEGIN
+          RETURN navigation_stack[LENGTH(navigation_stack) - 1];
+        END ELSE BEGIN
+          RETURN 'main';
+        END;
+      END;
+
+      PUSH_ROUTE('screen1');
+      PUSH_ROUTE('screen2');
+      result := POP_ROUTE();
+      result
+    """;
+    expect(
+      await Engine.execute(code, runtime: runtime, constantsSet: constantsSet),
+      'screen2',
+    );
+  });
 }

@@ -5,6 +5,7 @@ import 'package:server_driven_ui/shql/execution/lambdas/nullary_function_executi
 import 'package:server_driven_ui/shql/execution/lazy_execution_node.dart';
 import 'package:server_driven_ui/shql/execution/runtime/execution_context.dart';
 import 'package:server_driven_ui/shql/execution/runtime/runtime.dart';
+import 'package:server_driven_ui/shql/execution/runtime_error.dart';
 
 class IdentifierExecutionNode extends LazyExecutionNode {
   IdentifierExecutionNode(
@@ -21,9 +22,13 @@ class IdentifierExecutionNode extends LazyExecutionNode {
     CancellationToken? cancellationToken,
   ) async {
     if (_childNode == null) {
-      var (childNode, value, error) = createChildNode(executionContext);
-      if (error != null) {
-        this.error = error;
+      var (childNode, value, errorMsg) = createChildNode(executionContext);
+      if (errorMsg != null) {
+        error = RuntimeError.fromParseTree(
+          errorMsg,
+          node,
+          sourceCode: executionContext.sourceCode,
+        );
         return TickResult.completed;
       }
       if (childNode == null) {

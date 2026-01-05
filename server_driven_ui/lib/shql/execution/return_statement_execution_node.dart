@@ -3,6 +3,7 @@ import 'package:server_driven_ui/shql/engine/engine.dart';
 import 'package:server_driven_ui/shql/execution/execution_node.dart';
 import 'package:server_driven_ui/shql/execution/lazy_execution_node.dart';
 import 'package:server_driven_ui/shql/execution/runtime/execution_context.dart';
+import 'package:server_driven_ui/shql/execution/runtime_error.dart';
 
 class ReturnStatementExecutionNode extends LazyExecutionNode {
   ReturnStatementExecutionNode(
@@ -18,12 +19,20 @@ class ReturnStatementExecutionNode extends LazyExecutionNode {
   ) async {
     var returnTarget = thread.currentReturnTarget;
     if (returnTarget == null) {
-      error = 'Return statement used outside of a function.';
+      error = RuntimeError.fromParseTree(
+        'Return statement used outside of a function.',
+        node,
+        sourceCode: executionContext.sourceCode,
+      );
       return TickResult.completed;
     }
     if (node.children.isNotEmpty && _returnValueNode == null) {
       if (node.children.length > 1) {
-        error = 'Return statement can have at most one child.';
+        error = RuntimeError.fromParseTree(
+          'Return statement can have at most one child.',
+          node,
+          sourceCode: executionContext.sourceCode,
+        );
         return TickResult.completed;
       }
 
@@ -33,7 +42,11 @@ class ReturnStatementExecutionNode extends LazyExecutionNode {
         scope,
       );
       if (_returnValueNode == null) {
-        error = 'Failed to create execution node for return value.';
+        error = RuntimeError.fromParseTree(
+          'Failed to create execution node for return value.',
+          node.children[0],
+          sourceCode: executionContext.sourceCode,
+        );
         return TickResult.completed;
       }
       return TickResult.delegated;

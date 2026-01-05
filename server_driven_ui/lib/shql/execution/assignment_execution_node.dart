@@ -3,6 +3,7 @@ import 'package:server_driven_ui/shql/engine/engine.dart';
 import 'package:server_driven_ui/shql/execution/index_to_execution_node.dart';
 import 'package:server_driven_ui/shql/execution/lambdas/call_execution_node.dart';
 import 'package:server_driven_ui/shql/execution/runtime/execution_context.dart';
+import 'package:server_driven_ui/shql/execution/runtime_error.dart';
 import 'package:server_driven_ui/shql/execution/set_variable_execution_node.dart';
 import 'package:server_driven_ui/shql/execution/execution_node.dart';
 import 'package:server_driven_ui/shql/execution/lazy_execution_node.dart';
@@ -58,7 +59,7 @@ class AssignmentExecutionNode extends LazyExecutionNode {
     return TickResult.completed;
   }
 
-  (ExecutionNode?, String?) createLhs(ExecutionContext execution) {
+  (ExecutionNode?, RuntimeError?) createLhs(ExecutionContext execution) {
     if (node.children[0].symbol == Symbols.identifier) {
       return (
         SetVariableExecutionNode(
@@ -73,12 +74,16 @@ class AssignmentExecutionNode extends LazyExecutionNode {
     return (Engine.createExecutionNode(node.children[0], thread, scope), null);
   }
 
-  (ExecutionNode?, String?) createRhs(ExecutionContext executionContext) {
+  (ExecutionNode?, RuntimeError?) createRhs(ExecutionContext executionContext) {
     // Verify that node has exactly two children
     if (node.children.length != 2) {
       return (
         null,
-        "Assignment operator requires exactly two operands, ${node.children.length} given.",
+        RuntimeError.fromParseTree(
+          "Assignment operator requires exactly two operands, ${node.children.length} given.",
+          node,
+          sourceCode: executionContext.sourceCode,
+        ),
       );
     }
 
@@ -94,7 +99,11 @@ class AssignmentExecutionNode extends LazyExecutionNode {
         if (identifierChild.symbol != Symbols.identifier) {
           return (
             null,
-            "Function definition assignment requires identifier as target.",
+            RuntimeError.fromParseTree(
+              "Function definition assignment requires identifier as target.",
+              node,
+              sourceCode: executionContext.sourceCode,
+            ),
           );
         }
         var identifier = identifierChild.qualifier!;
@@ -108,7 +117,14 @@ class AssignmentExecutionNode extends LazyExecutionNode {
         )) {
           return (null, null);
         } else {
-          return (null, "Cannot create user function for identifier $name.");
+          return (
+            null,
+            RuntimeError.fromParseTree(
+              "Cannot create user function for identifier $name.",
+              node,
+              sourceCode: executionContext.sourceCode,
+            ),
+          );
         }
       }
     }
@@ -126,11 +142,19 @@ class AssignmentExecutionNode extends LazyExecutionNode {
     List<int> argumentIdentifiers = [];
     for (var arg in arguments) {
       if (arg.symbol != Symbols.identifier) {
-        error = "All arguments in function definition must be identifiers.";
+        error = RuntimeError.fromParseTree(
+          "All arguments in function definition must be identifiers.",
+          node,
+          sourceCode: execution.sourceCode,
+        );
         return true;
       }
       if (arg.children.isNotEmpty) {
-        error = "Arguments in function definition cannot have children.";
+        error = RuntimeError.fromParseTree(
+          "Arguments in function definition cannot have children.",
+          node,
+          sourceCode: execution.sourceCode,
+        );
         return true;
       }
       argumentIdentifiers.add(arg.qualifier!);
@@ -157,11 +181,19 @@ class AssignmentExecutionNode extends LazyExecutionNode {
     List<int> argumentIdentifiers = [];
     for (var arg in indexes) {
       if (arg.symbol != Symbols.identifier) {
-        error = "All arguments in function definition must be identifiers.";
+        error = RuntimeError.fromParseTree(
+          "All arguments in function definition must be identifiers.",
+          node,
+          sourceCode: execution.sourceCode,
+        );
         return true;
       }
       if (arg.children.isNotEmpty) {
-        error = "Arguments in function definition cannot have children.";
+        error = RuntimeError.fromParseTree(
+          "Arguments in function definition cannot have children.",
+          node,
+          sourceCode: execution.sourceCode,
+        );
         return true;
       }
       argumentIdentifiers.add(arg.qualifier!);
