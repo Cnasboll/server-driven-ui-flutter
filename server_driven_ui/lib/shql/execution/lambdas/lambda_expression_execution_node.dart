@@ -16,7 +16,7 @@ class LambdaExpressionExecutionNode extends LazyExecutionNode {
   }) {
     var (userFunction, errorMsg) = createUserFunction();
     if (errorMsg != null) {
-      error = RuntimeError.fromParseTree(errorMsg, node, sourceCode: null);
+      error = RuntimeError.fromParseTree(errorMsg, node);
       return;
     }
     result = userFunction;
@@ -107,13 +107,45 @@ class LambdaExpressionExecutionNode extends LazyExecutionNode {
   }
 
   (List<int>?, String?) resolveArgumentIdentifiers() {
-    // Verify that first child is a tuple
-    if (node.children[0].symbol != Symbols.tuple) {
+    //  Check what the first child is:
+    // - If it's a tuple: direct parameters like () => body or (x, y) => body
+    // - If it's a colon: from OBJECT literal like getX: () => body
+    //   In this case, colon has [identifier, params] where params can be:
+    //   - tuple() for no params
+    //   - identifier for single param
+    //   - tuple(identifiers...) for multiple params
+    // - If it's an identifier: old format without parens
+    var firstChild = node.children[0];
+
+    if (firstChild.symbol == Symbols.tuple) {
+      // Direct tuple: () => body or (x, y) => body
+      return resolveArgumentsFromParseTreeList(firstChild.children);
+    } else if (firstChild.symbol == Symbols.colon) {
+      // From OBJECT literal: fieldName: (...params) => body
+      if (firstChild.children.length < 2) {
+        return (null, "Colon node in lambda must have 2 children.");
+      }
+
+      var paramsNode = firstChild.children[1];
+
+      if (paramsNode.symbol == Symbols.tuple) {
+        // No params or multiple params: () => body or (x, y) => body
+        return resolveArgumentsFromParseTreeList(paramsNode.children);
+      } else if (paramsNode.symbol == Symbols.identifier) {
+        // Single param without parens: (x) => body (parsed as single identifier)
+        return resolveArgumentsFromParseTreeList([paramsNode]);
+      } else {
+        return (
+          null,
+          "Expected tuple or identifier for lambda parameters in colon node.",
+        );
+      }
+    } else {
+      // Old format: multiple arguments without parens like x, y => body
       return resolveArgumentsFromParseTreeList(
         node.children.sublist(0, node.children.length - 1),
       );
     }
-    return resolveArgumentsFromParseTreeList(node.children[0].children);
   }
 
   (List<int>?, String?) resolveArgumentsFromParseTreeList(

@@ -1,10 +1,12 @@
 import 'package:server_driven_ui/shql/engine/cancellation_token.dart';
+import 'package:server_driven_ui/shql/engine/engine.dart';
 import 'package:server_driven_ui/shql/execution/execution_node.dart';
 import 'package:server_driven_ui/shql/execution/identifier_exeuction_node.dart';
 import 'package:server_driven_ui/shql/execution/lazy_execution_node.dart';
 import 'package:server_driven_ui/shql/execution/runtime/execution_context.dart';
 import 'package:server_driven_ui/shql/execution/runtime/runtime.dart';
 import 'package:server_driven_ui/shql/execution/runtime_error.dart';
+import 'package:server_driven_ui/shql/parser/constants_set.dart';
 import 'package:server_driven_ui/shql/tokenizer/token.dart';
 
 class MemberAccessExecutionNode extends LazyExecutionNode {
@@ -14,70 +16,108 @@ class MemberAccessExecutionNode extends LazyExecutionNode {
     required super.scope,
   });
 
-  IdentifierExecutionNode? _leftIdentifierNode;
-  IdentifierExecutionNode? _rightIdentifierNode;
+  ExecutionNode? _leftNode;
+  ExecutionNode? _rightNode;
+  ConstantsTable<String>? _identifiers;
 
   @override
   Future<TickResult> doTick(
     ExecutionContext executionContext,
     CancellationToken? cancellationToken,
   ) async {
+    // Store identifiers table for use in assign() method
+    _identifiers ??= executionContext.runtime.identifiers;
     if (node.children.length != 2) {
       error = RuntimeError.fromParseTree(
         'Member access must have exactly 2 children',
         node,
-        sourceCode: executionContext.sourceCode,
       );
       return TickResult.completed;
     }
 
-    if (_leftIdentifierNode == null) {
-      if (node.children[0].symbol != Symbols.identifier) {
+    if (_leftNode == null) {
+      // Left side can be any expression (identifier, member access, etc.)
+      _leftNode = Engine.createExecutionNode(node.children[0], thread, scope);
+      if (_leftNode == null) {
         error = RuntimeError.fromParseTree(
-          'Left side of member access must be an identifier',
+          'Failed to create execution node for left side of member access',
           node.children[0],
-          sourceCode: executionContext.sourceCode,
         );
         return TickResult.completed;
       }
-      _leftIdentifierNode = IdentifierExecutionNode(
-        node.children[0],
-        thread: thread,
-        scope: scope,
-      );
       return TickResult.delegated;
     }
 
-    var leftIdentifierResult = _leftIdentifierNode!.result;
-    if (leftIdentifierResult is! Scope) {
+    var leftResult = _leftNode!.result;
+
+    // Convert Object to Scope if needed
+    Scope rightScope;
+    if (leftResult is Scope) {
+      rightScope = leftResult;
+    } else if (leftResult is Object) {
+      // Wrap Object in a Scope to allow member lookup
+      rightScope = Scope(leftResult, constants: scope.constants);
+    } else {
       error = RuntimeError.fromParseTree(
-        'Left side of member access did not resolve to an scope',
+        'Left side of member access did not resolve to a Scope or Object',
         node.children[0],
-        sourceCode: executionContext.sourceCode,
       );
       return TickResult.completed;
     }
 
-    if (_rightIdentifierNode == null) {
-      if (node.children[1].symbol != Symbols.identifier) {
-        error = RuntimeError.fromParseTree(
-          'Right side of member access must be an identifier',
-          node.children[1],
-          sourceCode: executionContext.sourceCode,
-        );
-        return TickResult.completed;
-      }
+    if (_rightNode == null) {
+      var rightChild = node.children[1];
 
-      _rightIdentifierNode = IdentifierExecutionNode(
-        node.children[1],
-        thread: thread,
-        scope: leftIdentifierResult,
-      );
+      // Right side can be either an identifier or any other expression (like a call)
+      // For identifiers, we use the rightScope to look up the member
+      // For other expressions, we execute them in the rightScope
+      if (rightChild.symbol == Symbols.identifier) {
+        _rightNode = IdentifierExecutionNode(
+          rightChild,
+          thread: thread,
+          scope: rightScope,
+        );
+      } else {
+        // For non-identifier expressions (like method calls), create execution node with rightScope
+        _rightNode = Engine.createExecutionNode(rightChild, thread, rightScope);
+        if (_rightNode == null) {
+          error = RuntimeError.fromParseTree(
+            'Failed to create execution node for right side of member access',
+            rightChild,
+          );
+          return TickResult.completed;
+        }
+      }
       return TickResult.delegated;
     }
 
-    result = _rightIdentifierNode!.result;
-    error ??= _rightIdentifierNode!.error;
+    result = _rightNode!.result;
+    error ??= _rightNode!.error;
     return TickResult.completed;
+  }
+
+  void assign(dynamic value) {
+    // Get the Object from the left side
+    var leftResult = _leftNode!.result;
+    Object obj;
+
+    if (leftResult is Scope) {
+      obj = leftResult.members;
+    } else if (leftResult is Object) {
+      obj = leftResult;
+    } else {
+      throw RuntimeError.fromParseTree(
+        'Cannot assign to member of non-Object type',
+        node,
+      );
+    }
+
+    // Get the field identifier from the right side
+    var identifierNode = node.children[1];
+    String fieldName = identifierNode.tokens.first.lexeme.toUpperCase();
+    int fieldId = _identifiers!.include(fieldName);
+
+    // Set the field value
+    obj.setVariable(fieldId, value);
   }
 }

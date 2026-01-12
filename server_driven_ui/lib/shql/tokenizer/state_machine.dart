@@ -157,11 +157,18 @@ class StateMachine {
     } finally {
       if (updatePosition) {
         if (isNewline(charCode)) {
-          _lineNumber++;
-          _columnNumber = 1;
+          // Skip \n if it follows \r (treat \r\n as a single line break)
+          if (charCode == 0x0A /* \n */ && _previousChar == 0x0D /* \r */ ) {
+            // Don't increment line number, just reset column
+            _columnNumber = 1;
+          } else {
+            _lineNumber++;
+            _columnNumber = 1;
+          }
         } else {
           _columnNumber++;
         }
+        _previousChar = charCode;
       }
     }
   }
@@ -430,6 +437,7 @@ class StateMachine {
   int _columnNumber = 1;
   StringBuffer _buffer = StringBuffer();
   CodeLocation? _bufferStartLocation;
+  int? _previousChar;
 
   static final Map<String, ECharCodeClasses> _charCodeClassTable =
       createCharCodeClassTable();

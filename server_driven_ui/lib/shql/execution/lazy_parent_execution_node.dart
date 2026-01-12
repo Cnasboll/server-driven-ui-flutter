@@ -25,7 +25,6 @@ abstract class LazyParentExecutionNode extends LazyExecutionNode {
           error = RuntimeError.fromParseTree(
             'Failed to create execution node for child node.',
             node,
-            sourceCode: executionContext.sourceCode,
           );
           return TickResult.completed;
         }

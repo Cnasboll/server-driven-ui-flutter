@@ -9,12 +9,10 @@ class RuntimeError {
 
   RuntimeError(this.message, {this.sourceCode, this.codeSpan});
 
-  /// Creates a RuntimeError from a ParseTree, extracting token span for context
-  RuntimeError.fromParseTree(
-    this.message,
-    ParseTree parseTree, {
-    this.sourceCode,
-  }) : codeSpan = parseTree.tokenSpan;
+  /// Creates a RuntimeError from a ParseTree, extracting token span and source code for context
+  RuntimeError.fromParseTree(this.message, ParseTree parseTree)
+    : sourceCode = parseTree.sourceCode,
+      codeSpan = parseTree.tokenSpan;
 
   /// Formats the error message with source code context if available
   String get formattedMessage {

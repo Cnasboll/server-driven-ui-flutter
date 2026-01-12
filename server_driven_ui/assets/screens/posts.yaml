@@ -19,37 +19,13 @@ screen:
               props:
                 query: "_posts"
                 builder:
-                  type: "shql: if LENGTH(_POSTS) = 0 THEN 'Center' ELSE 'ListView'"
+                  type: "shql: IF LENGTH(_posts) = 0 THEN 'Center' ELSE 'ListView'"
                   props:
                     # Props for Center (loading state)
                     child:
                       type: CircularProgressIndicator
                     # Props for ListView (data loaded state)
-                    children: "shql: _posts"
-                    itemBuilder:
-                      type: Card
-                      props:
-                        margin: 8
-                        child:
-                          type: Padding
-                          props:
-                            padding: 16
-                            child:
-                              type: Column
-                              props:
-                                crossAxisAlignment: "start"
-                                children:
-                                  - type: Text
-                                    props:
-                                      data: "shql: item['title']"
-                                      style:
-                                        fontWeight: "bold"
-                                  - type: SizedBox
-                                    props:
-                                      height: 8
-                                  - type: Text
-                                    props:
-                                      data: "shql: item['body']"                                  
+                    children: "shql: GENERATE_POST_CARDS()"                                  
           - type: ElevatedButton
             props:
               onPressed: "shql: GO_BACK()"

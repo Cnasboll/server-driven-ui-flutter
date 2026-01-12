@@ -22,7 +22,6 @@ class ReturnStatementExecutionNode extends LazyExecutionNode {
       error = RuntimeError.fromParseTree(
         'Return statement used outside of a function.',
         node,
-        sourceCode: executionContext.sourceCode,
       );
       return TickResult.completed;
     }
@@ -31,7 +30,6 @@ class ReturnStatementExecutionNode extends LazyExecutionNode {
         error = RuntimeError.fromParseTree(
           'Return statement can have at most one child.',
           node,
-          sourceCode: executionContext.sourceCode,
         );
         return TickResult.completed;
       }
@@ -45,7 +43,6 @@ class ReturnStatementExecutionNode extends LazyExecutionNode {
         error = RuntimeError.fromParseTree(
           'Failed to create execution node for return value.',
           node.children[0],
-          sourceCode: executionContext.sourceCode,
         );
         return TickResult.completed;
       }

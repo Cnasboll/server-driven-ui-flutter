@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:server_driven_ui/shql/parser/constants_set.dart';
 import 'package:server_driven_ui/shql/parser/lookahead_iterator.dart';
 import 'package:server_driven_ui/shql/parser/parser.dart';
@@ -326,6 +328,46 @@ void main() {
     expect(strength.qualifier, constantsSet.identifiers.include('STRENGTH'));
   });
 
+  test('Parse OBJECT literal with bare identifiers', () {
+    var v = Tokenizer.tokenize('OBJECT{name: "Alice", age: 30}').toList();
+    var constantsSet = ConstantsSet();
+    var p = Parser.parseExpression(v.lookahead(), constantsSet);
+    expect(p.symbol, Symbols.objectLiteral);
+    expect(p.children.length, 2);
+
+    // First pair: name: "Alice"
+    var pair1 = p.children[0];
+    expect(pair1.symbol, Symbols.colon);
+    expect(pair1.children[0].symbol, Symbols.identifier);
+    expect(pair1.children[0].tokens.first.lexeme, 'name');
+    expect(pair1.children[1].symbol, Symbols.stringLiteral);
+
+    // Second pair: age: 30
+    var pair2 = p.children[1];
+    expect(pair2.symbol, Symbols.colon);
+    expect(pair2.children[0].symbol, Symbols.identifier);
+    expect(pair2.children[0].tokens.first.lexeme, 'age');
+    expect(pair2.children[1].symbol, Symbols.integerLiteral);
+  });
+
+  test('Parse OBJECT literal rejects non-identifier keys', () {
+    var v = Tokenizer.tokenize('OBJECT{42: "value"}').toList();
+    var constantsSet = ConstantsSet();
+    expect(
+      () => Parser.parseExpression(v.lookahead(), constantsSet),
+      throwsA(isA<ParseException>()),
+    );
+  });
+
+  test('Parse OBJECT literal rejects expression keys', () {
+    var v = Tokenizer.tokenize('OBJECT{x+1: "value"}').toList();
+    var constantsSet = ConstantsSet();
+    expect(
+      () => Parser.parseExpression(v.lookahead(), constantsSet),
+      throwsA(isA<ParseException>()),
+    );
+  });
+
   test('Parse large program with comments', () {
     var program = '''--
 -- calculator.shql
@@ -591,6 +633,100 @@ FOR i := 1 TO 10 DO sum := 5 ERROR''';
         expect(errorMessage, contains('sum := 5 ERROR'));
         expect(errorMessage, isNot(contains('x := 10')));
       }
+    });
+  });
+
+  group('Tokenizer CRLF line number tests', () {
+    test('Should correctly count lines in CRLF files', () {
+      final uiShql = File('assets/shql/ui.shql').readAsStringSync();
+      final constantsSet = ConstantsSet();
+
+      final parseTree = Parser.parse(uiShql, constantsSet, sourceCode: uiShql);
+
+      // Look for tokens on line 68 where title assignment should be
+      var foundTokens = <String>[];
+      for (var i = 0; i < parseTree.tokens.length; i++) {
+        final token = parseTree.tokens[i];
+        if (token.startLocation.lineNumber == 68) {
+          foundTokens.add(token.lexeme);
+        }
+      }
+
+      // Should find tokens on line 68
+      expect(
+        foundTokens.isNotEmpty,
+        true,
+        reason: 'Should find tokens on line 68',
+      );
+      expect(foundTokens, contains('title'));
+      expect(foundTokens, contains('_posts'));
+
+      // Verify actual content of line 68
+      final lines = uiShql.split('\n');
+      expect(lines[67], contains('title := _posts[i]'));
+    });
+
+    test('Should handle mixed line endings correctly', () {
+      // Test that \r\n is treated as a single line break
+      final code = 'x := 10;\r\ny := 20;';
+      final constantsSet = ConstantsSet();
+
+      final parseTree = Parser.parse(code, constantsSet, sourceCode: code);
+
+      // Find tokens on line 2
+      var line2Tokens = <String>[];
+      for (var token in parseTree.tokens) {
+        if (token.startLocation.lineNumber == 2) {
+          line2Tokens.add(token.lexeme);
+        }
+      }
+
+      expect(line2Tokens, contains('y'));
+      expect(line2Tokens, contains('20'));
+    });
+  });
+
+  group('ParseTree token tests', () {
+    test('Should preserve correct token positions in nested calls', () {
+      final code = '''
+      _posts := {};
+      test() := _posts[0]['title'];
+      ''';
+      final constantsSet = ConstantsSet();
+
+      final parseTree = Parser.parse(code, constantsSet, sourceCode: code);
+
+      // Find the tokens for the function body
+      var found = false;
+      void searchTokens(dynamic node) {
+        try {
+          final tokens = (node as dynamic).tokens as List?;
+          if (tokens != null) {
+            for (var token in tokens) {
+              if (token.lexeme.toLowerCase() == '_posts') {
+                // Verify token has correct line number (not doubled)
+                expect(
+                  token.startLocation.lineNumber,
+                  lessThanOrEqualTo(10),
+                  reason: 'Token line number should not be doubled due to CRLF',
+                );
+                found = true;
+              }
+            }
+          }
+          final children = (node as dynamic).children as List?;
+          if (children != null) {
+            for (var child in children) {
+              searchTokens(child);
+            }
+          }
+        } catch (e) {
+          // ignore
+        }
+      }
+
+      searchTokens(parseTree);
+      expect(found, true, reason: 'Should find _posts token');
     });
   });
 }

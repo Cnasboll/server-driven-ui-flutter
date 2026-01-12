@@ -26,6 +26,7 @@ import 'package:server_driven_ui/shql/execution/if_statement_execution_node.dart
 import 'package:server_driven_ui/shql/execution/lambdas/lambda_expression_execution_node.dart';
 import 'package:server_driven_ui/shql/execution/list_literal_node.dart';
 import 'package:server_driven_ui/shql/execution/map_literal_node.dart';
+import 'package:server_driven_ui/shql/execution/object_literal_node.dart';
 import 'package:server_driven_ui/shql/execution/operators/objects/colon_execution_node.dart';
 import 'package:server_driven_ui/shql/execution/operators/objects/member_access_execution_node.dart';
 import 'package:server_driven_ui/shql/execution/operators/pattern/in_execution_node.dart';
@@ -49,7 +50,6 @@ import 'package:server_driven_ui/shql/execution/runtime_error.dart';
 import 'package:server_driven_ui/shql/parser/parse_tree.dart';
 import 'package:server_driven_ui/shql/parser/parser.dart';
 import 'package:server_driven_ui/shql/tokenizer/token.dart';
-import 'package:server_driven_ui/shql/tokenizer/code_span.dart';
 
 class RuntimeException implements Exception {
   final RuntimeError error;
@@ -72,7 +72,7 @@ class Engine {
     constantsSet ??= Runtime.prepareConstantsSet();
     runtime ??= Runtime.prepareRuntime(constantsSet);
 
-    var program = Parser.parse(code, constantsSet);
+    var program = Parser.parse(code, constantsSet, sourceCode: code);
 
     return await _execute(
       program,
@@ -92,7 +92,11 @@ class Engine {
     constantsSet ??= Runtime.prepareConstantsSet();
     runtime ??= Runtime.prepareRuntime(constantsSet);
 
-    var program = Parser.parse(expression, constantsSet);
+    var program = Parser.parse(
+      expression,
+      constantsSet,
+      sourceCode: expression,
+    );
 
     var result = await _evaluate(program, runtime, null, expression);
 
@@ -105,7 +109,7 @@ class Engine {
   static Scope getScope(Runtime runtime, Map<String, dynamic>? boundValues) {
     var scope = runtime.globalScope;
     if (boundValues != null) {
-      scope = Scope(Object(), parent: scope);
+      scope = Scope(Object(), constants: scope.constants, parent: scope);
       for (var entry in boundValues.entries) {
         scope.members.setVariable(
           runtime.identifiers.include(entry.key.toUpperCase()),
@@ -123,10 +127,7 @@ class Engine {
     Map<String, dynamic>? boundValues,
     String? sourceCode,
   }) async {
-    var executionContext = ExecutionContext(
-      runtime: runtime,
-      sourceCode: sourceCode,
-    );
+    var executionContext = ExecutionContext(runtime: runtime);
     Scope scope = getScope(runtime, boundValues);
     var executionNode = createExecutionNode(
       parseTree,
@@ -155,10 +156,7 @@ class Engine {
     Map<String, dynamic>? boundValues,
     String? sourceCode,
   ]) async {
-    var executionContext = ExecutionContext(
-      runtime: runtime,
-      sourceCode: sourceCode,
-    );
+    var executionContext = ExecutionContext(runtime: runtime);
     Scope scope = getScope(runtime, boundValues);
     var executionNode = createExecutionNode(
       parseTree,
@@ -400,6 +398,8 @@ class Engine {
         return TupleLiteralNode(parseTree, thread: thread, scope: scope);
       case Symbols.map:
         return MapLiteralNode(parseTree, thread: thread, scope: scope);
+      case Symbols.objectLiteral:
+        return ObjectLiteralNode(parseTree, thread: thread, scope: scope);
       case Symbols.floatLiteral:
         return ConstantNode<double>(parseTree, thread: thread, scope: scope);
       case Symbols.integerLiteral:
