@@ -1,6 +1,6 @@
-import 'package:server_driven_ui/shql/execution/null_aware_binary_node.dart';
+import 'package:server_driven_ui/shql/execution/binary_operator_execution_node.dart';
 
-class NotEqualityExecutionNode extends NullAwareBinaryNode {
+class NotEqualityExecutionNode extends BinaryOperatorExecutionNode {
   NotEqualityExecutionNode(
     super.lhsTree,
     super.rhsTree, {
@@ -9,5 +9,5 @@ class NotEqualityExecutionNode extends NullAwareBinaryNode {
   });
 
   @override
-  bool applyNotNull() => lhsResult != rhsResult;
+  bool apply() => lhsResult != rhsResult;
 }

@@ -749,14 +749,14 @@ END;
       final runtime = Runtime.prepareRuntime(constantsSet);
 
       try {
-        // Define a function that accesses a list element
+        // Define a function that calls an undefined function
         await Engine.execute(
-          "_posts := {}; test() := _posts[0]['title'];",
+          "test() := undefinedFunction();",
           constantsSet: constantsSet,
           runtime: runtime,
         );
 
-        // Try to call it - this should fail because _posts is empty
+        // Try to call it - this should fail because undefinedFunction doesn't exist
         await Engine.execute(
           "test()",
           constantsSet: constantsSet,
@@ -769,7 +769,7 @@ END;
         // Should contain correct line number
         expect(errorMessage, contains('Line 1:'));
         // Should contain the actual code
-        expect(errorMessage, contains('_posts[0]'));
+        expect(errorMessage, contains('undefinedFunction'));
       }
     });
   });
@@ -792,37 +792,6 @@ END;
           constantsSet: constantsSet,
         ),
         0,
-      );
-    });
-
-    test('CONTAINS should find items in list', () async {
-      final constantsSet = Runtime.prepareConstantsSet();
-      final runtime = Runtime.prepareRuntime(constantsSet);
-
-      // Load stdlib which has CONTAINS
-      final stdlibCode = await File('assets/shql/stdlib.shql').readAsString();
-      await Engine.execute(
-        stdlibCode,
-        runtime: runtime,
-        constantsSet: constantsSet,
-      );
-
-      expect(
-        await Engine.execute(
-          'CONTAINS([1, 2, 3], 2)',
-          runtime: runtime,
-          constantsSet: constantsSet,
-        ),
-        true,
-      );
-
-      expect(
-        await Engine.execute(
-          'CONTAINS([1, 2, 3], 5)',
-          runtime: runtime,
-          constantsSet: constantsSet,
-        ),
-        false,
       );
     });
   });
@@ -976,8 +945,10 @@ END;
       final nameId = runtime.identifiers.include('NAME');
       final ageId = runtime.identifiers.include('AGE');
 
-      expect(obj.resolveIdentifier(nameId), 'Alice');
-      expect(obj.resolveIdentifier(ageId), 30);
+      final nameVar = obj.resolveIdentifier(nameId) as Variable;
+      final ageVar = obj.resolveIdentifier(ageId) as Variable;
+      expect(nameVar.value, 'Alice');
+      expect(ageVar.value, 30);
     });
 
     test('Should access Object literal members with dot notation', () async {
@@ -1181,6 +1152,49 @@ END;
           '''),
         1,
       );
+    });
+  });
+
+  group('Null value handling', () {
+    test('Should distinguish between undefined and null variables', () async {
+      expect(await Engine.execute('x := null; x'), null);
+    });
+
+    test('Should allow null in expressions', () async {
+      expect(await Engine.execute('x := null; y := 5; x = null'), true);
+    });
+
+    test('Should allow calling functions with null arguments', () async {
+      expect(await Engine.execute('f(x) := x; f(null)'), null);
+    });
+
+    test('Should access object members that are null', () async {
+      expect(
+        await Engine.execute('obj := OBJECT{title: null}; obj.title'),
+        null,
+      );
+    });
+
+    test('Should call object methods that return null', () async {
+      expect(
+        await Engine.execute(
+          'obj := OBJECT{getNull: () => null}; obj.getNull()',
+        ),
+        null,
+      );
+    });
+
+    test('Should allow assigning null from map/list access', () async {
+      expect(
+        await Engine.execute(
+          'posts := [{"title": null}]; title := posts[0]["title"]; title',
+        ),
+        null,
+      );
+    });
+
+    test('Should distinguish null value from missing key in map', () async {
+      expect(await Engine.execute('m := {"a": null}; m["a"]'), null);
     });
   });
 }

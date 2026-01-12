@@ -76,6 +76,10 @@ class IdentifierExecutionNode extends LazyExecutionNode {
     }
 
     if (resolved) {
+      // If identifier resolved to a Variable, unwrap it
+      if (value is Variable) {
+        value = value.value;
+      }
       // If identifier resolved to a value, return it
       return (null, value, null);
     }

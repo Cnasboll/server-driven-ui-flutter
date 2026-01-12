@@ -643,27 +643,27 @@ FOR i := 1 TO 10 DO sum := 5 ERROR''';
 
       final parseTree = Parser.parse(uiShql, constantsSet, sourceCode: uiShql);
 
-      // Look for tokens on line 68 where title assignment should be
+      // Look for tokens on line 69 where title assignment should be
       var foundTokens = <String>[];
       for (var i = 0; i < parseTree.tokens.length; i++) {
         final token = parseTree.tokens[i];
-        if (token.startLocation.lineNumber == 68) {
+        if (token.startLocation.lineNumber == 69) {
           foundTokens.add(token.lexeme);
         }
       }
 
-      // Should find tokens on line 68
+      // Should find tokens on line 69
       expect(
         foundTokens.isNotEmpty,
         true,
-        reason: 'Should find tokens on line 68',
+        reason: 'Should find tokens on line 69',
       );
       expect(foundTokens, contains('title'));
       expect(foundTokens, contains('_posts'));
 
-      // Verify actual content of line 68
+      // Verify actual content of line 69
       final lines = uiShql.split('\n');
-      expect(lines[67], contains('title := _posts[i]'));
+      expect(lines[68], contains('title := _posts[i]'));
     });
 
     test('Should handle mixed line endings correctly', () {
