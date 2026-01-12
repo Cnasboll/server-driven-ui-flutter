@@ -29,6 +29,30 @@ DIM(a,b) := _EXTERN("DIM", [a,b]);
 -- External ternary functions
 SUBSTRING(a, b, c) := _EXTERN("SUBSTRING", [a, b, c]);
 
+-- Check if a list contains an item
+CONTAINS(list, item) := BEGIN
+    FOR i := 0 TO LENGTH(list) - 1 DO
+        IF list[i] = item THEN
+            RETURN TRUE;
+    RETURN FALSE;
+END;
+
+-- Find the index of an item in a list (-1 if not found)
+INDEX_OF(list, item) := BEGIN
+    FOR i := 0 TO LENGTH(list) - 1 DO
+        IF list[i] = item THEN
+            RETURN i;
+    RETURN -1;
+END;
+
+-- Extract a slice of a list from start index to end index (inclusive)
+SLICE(list, start_idx, end_idx) := BEGIN
+    result := [];
+    FOR i := start_idx TO end_idx DO
+        result := result + [list[i]];
+    RETURN result;
+END;
+
 -- Join array elements into a string with a separator
 STRING_JOIN(arr, separator) := BEGIN
     len := LENGTH(arr);
@@ -46,13 +70,13 @@ END;
 PLOT(f, x1, x2) := BEGIN
     x_vector := [];
     y_vector := [];
-    range := DOUBLE(x2)-DOUBLE(x1)
+    range := DOUBLE(x2)-DOUBLE(x1);
     step := MAX(0.1, range / 100.0);
     start := DOUBLE(x1);
-    FOR x := start to X2 STEP step DO BEGIN
+    FOR x := start TO x2 STEP step DO BEGIN
         x_vector := x_vector + [x];
         y_vector := y_vector + [f(x)];
-        if x > start then
+        IF x > start THEN
             _DISPLAY_GRAPH(x_vector, y_vector);
     END;
     PRINT("Type HIDE_GRAPH to hide graph again");

@@ -8,9 +8,8 @@ class ExecutionContext {
   late final Thread mainThread;
   late final Map<int, Thread> threads;
   int nextThreadId = 1;
-  final String? sourceCode;
 
-  ExecutionContext({required this.runtime, this.sourceCode}) {
+  ExecutionContext({required this.runtime}) {
     mainThread = Thread(id: 0);
     threads = {0: mainThread};
   }

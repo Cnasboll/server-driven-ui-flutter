@@ -24,11 +24,7 @@ class IdentifierExecutionNode extends LazyExecutionNode {
     if (_childNode == null) {
       var (childNode, value, errorMsg) = createChildNode(executionContext);
       if (errorMsg != null) {
-        error = RuntimeError.fromParseTree(
-          errorMsg,
-          node,
-          sourceCode: executionContext.sourceCode,
-        );
+        error = RuntimeError.fromParseTree(errorMsg, node);
         return TickResult.completed;
       }
       if (childNode == null) {

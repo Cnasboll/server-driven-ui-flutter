@@ -122,7 +122,6 @@ class ForLoopExecutionNode extends LazyExecutionNode {
         RuntimeError.fromParseTree(
           'For loop initialization must be an assignment.',
           initializationParseTree,
-          sourceCode: executionContext.sourceCode,
         ),
       );
     }
@@ -138,7 +137,6 @@ class ForLoopExecutionNode extends LazyExecutionNode {
         RuntimeError.fromParseTree(
           'Could not create assignment execution node.',
           initializationParseTree,
-          sourceCode: executionContext.sourceCode,
         ),
       );
     }

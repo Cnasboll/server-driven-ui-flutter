@@ -23,7 +23,7 @@ class CompoundStatementExecutionNode extends LazyExecutionNode {
       error ??= _currentStatement!.error;
     }
     if (_statementIndex == -1) {
-      _localScope = Scope(Object(), parent: scope);
+      _localScope = Scope(Object(), constants: scope.constants, parent: scope);
       _statementIndex = 0;
     }
 
@@ -37,7 +37,6 @@ class CompoundStatementExecutionNode extends LazyExecutionNode {
         error = RuntimeError.fromParseTree(
           'Failed to create execution node for statement.',
           node,
-          sourceCode: executionContext.sourceCode,
         );
         return TickResult.completed;
       }

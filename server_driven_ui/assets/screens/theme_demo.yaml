@@ -11,35 +11,161 @@ screen:
           props:
             data: "Theme Demo: Pure SHQL"
     body:
-      type: Padding
+      type: SingleChildScrollView
       props:
-        padding:
-          all: 16
         child:
-          type: Column
+          type: Padding
           props:
-            crossAxisAlignment: start
-            children:
-              # Header
-              - type: Text
-                props:
-                  data: "SHQL State Persistence Demonstration"
-                  style:
-                    fontSize: 24
-                    fontWeight: bold
-
-              - type: SizedBox
-                props:
-                  height: 16
-
-              # Explanation Card
-              - type: Observer
-                props:
-                  query: "isDarkMode"
-                  builder:
-                    type: Card
+            padding:
+              all: 16
+            child:
+              type: Column
+              props:
+                crossAxisAlignment: start
+                children:
+                  # Header
+                  - type: Text
                     props:
-                      color: "shql: IF isDarkMode THEN '0xFF424242' ELSE '0xFFE3F2FD'"
+                      data: "SHQL State Persistence Demonstration"
+                      style:
+                        fontSize: 24
+                        fontWeight: bold
+
+                  - type: SizedBox
+                    props:
+                      height: 16
+
+                  # Explanation Card
+                  - type: Observer
+                    props:
+                      query: "isDarkMode"
+                      builder:
+                        type: Card
+                        props:
+                          color: "shql: IF isDarkMode THEN '0xFF424242' ELSE '0xFFE3F2FD'"
+                          child:
+                            type: Padding
+                            props:
+                              padding:
+                                all: 16
+                              child:
+                                type: Column
+                                props:
+                                  crossAxisAlignment: start
+                                  children:
+                                    - type: Text
+                                      props:
+                                        data: "Pure SHQL State Management"
+                                        style:
+                                          fontWeight: bold
+                                          fontSize: 18
+
+                                    - type: SizedBox
+                                      props:
+                                        height: 8
+
+                                    - type: Text
+                                      props:
+                                        data: "✓ SET('isDarkMode', value) - Sets variable"
+                                        style:
+                                          fontSize: 14
+
+                                    - type: Text
+                                      props:
+                                        data: "✓ SAVE_STATE('isDarkMode', value) - Persists it"
+                                        style:
+                                          fontSize: 14
+
+                                    - type: Text
+                                      props:
+                                        data: "✓ LOAD_STATE('isDarkMode', default) - Restores it"
+                                        style:
+                                          fontSize: 14
+
+                                    - type: Text
+                                      props:
+                                        data: "✓ Observer rebuilds when variable changes!"
+                                        style:
+                                          fontSize: 14
+
+                  - type: SizedBox
+                    props:
+                      height: 24
+
+                  # Current Theme Display
+                  - type: Observer
+                    props:
+                      query: "isDarkMode"
+                      builder:
+                        type: Text
+                        props:
+                          data: "shql: 'Current Theme: ' + IF isDarkMode THEN 'Dark 🌙' ELSE 'Light ☀️'"
+                          style:
+                            fontSize: 18
+
+                  - type: SizedBox
+                    props:
+                      height: 16
+
+                  # Toggle Button
+                  - type: ElevatedButton
+                    props:
+                      onPressed: "shql(targeted:true): BEGIN SET('isDarkMode', NOT isDarkMode); SAVE_STATE('isDarkMode', isDarkMode); END"
+                      child:
+                        type: Text
+                        props:
+                          data: "Toggle Theme (Pure SHQL)"
+
+                  - type: SizedBox
+                    props:
+                      height: 24
+
+                  # Dynamic UI based on theme
+                  - type: Observer
+                    props:
+                      query: "isDarkMode"
+                      builder:
+                        type: Container
+                        props:
+                          padding:
+                            all: 16
+                          color: "shql: IF isDarkMode THEN '0xFF1E1E1E' ELSE '0xFFFFFDE7'"
+                          child:
+                            type: Column
+                            props:
+                              crossAxisAlignment: start
+                              children:
+                                - type: Text
+                                  props:
+                                    data: "Dynamic UI Colors"
+                                    style:
+                                      fontWeight: bold
+
+                                - type: SizedBox
+                                  props:
+                                    height: 8
+
+                                - type: Text
+                                  props:
+                                    data: "shql: 'Background: ' + IF isDarkMode THEN 'Dark Gray' ELSE 'Light Yellow'"
+                                    style:
+                                      fontSize: 12
+
+                                - type: Text
+                                  props:
+                                    data: "shql: 'This updates instantly when isDarkMode variable changes!'"
+                                    style:
+                                      fontSize: 12
+                                      fontStyle: italic
+
+                  - type: SizedBox
+                    props:
+                      height: 24
+
+                  # The Flow
+                  - type: Card
+                    props:
+                      color: "0xFF4CAF50"
                       child:
                         type: Padding
                         props:
@@ -52,10 +178,11 @@ screen:
                               children:
                                 - type: Text
                                   props:
-                                    data: "Pure SHQL State Management"
+                                    data: "🎯 The Flow"
                                     style:
                                       fontWeight: bold
                                       fontSize: 18
+                                      color: "0xFFFFFFFF"
 
                                 - type: SizedBox
                                   props:
@@ -63,179 +190,55 @@ screen:
 
                                 - type: Text
                                   props:
-                                    data: "✓ SET('isDarkMode', value) - Sets variable"
+                                    data: "1. ui.shql init: isDarkMode := LOAD_STATE('isDarkMode', FALSE)"
                                     style:
                                       fontSize: 14
+                                      color: "0xFFFFFFFF"
 
                                 - type: Text
                                   props:
-                                    data: "✓ SAVE_STATE('isDarkMode', value) - Persists it"
+                                    data: "2. Observer listens to 'isDarkMode'"
                                     style:
                                       fontSize: 14
+                                      color: "0xFFFFFFFF"
 
                                 - type: Text
                                   props:
-                                    data: "✓ LOAD_STATE('isDarkMode', default) - Restores it"
+                                    data: "3. User clicks toggle button"
                                     style:
                                       fontSize: 14
+                                      color: "0xFFFFFFFF"
 
                                 - type: Text
                                   props:
-                                    data: "✓ Observer rebuilds when variable changes!"
+                                    data: "4. SET('isDarkMode', NOT isDarkMode) updates variable"
                                     style:
                                       fontSize: 14
+                                      color: "0xFFFFFFFF"
 
-              - type: SizedBox
-                props:
-                  height: 24
+                                - type: Text
+                                  props:
+                                    data: "5. SAVE_STATE('isDarkMode', isDarkMode) persists"
+                                    style:
+                                      fontSize: 14
+                                      color: "0xFFFFFFFF"
 
-              # Current Theme Display
-              - type: Observer
-                props:
-                  query: "isDarkMode"
-                  builder:
-                    type: Text
+                                - type: Text
+                                  props:
+                                    data: "6. Observer rebuilds UI instantly!"
+                                    style:
+                                      fontSize: 14
+                                      color: "0xFFFFFFFF"
+
+                  - type: SizedBox
                     props:
-                      data: "shql: 'Current Theme: ' + IF isDarkMode THEN 'Dark 🌙' ELSE 'Light ☀️'"
-                      style:
-                        fontSize: 18
+                      height: 24
 
-              - type: SizedBox
-                props:
-                  height: 16
-
-              # Toggle Button
-              - type: ElevatedButton
-                props:
-                  onPressed: "shql(targeted:true): BEGIN SET('isDarkMode', NOT isDarkMode); SAVE_STATE('isDarkMode', isDarkMode); END"
-                  child:
-                    type: Text
+                  # Back Button
+                  - type: ElevatedButton
                     props:
-                      data: "Toggle Theme (Pure SHQL)"
-
-              - type: SizedBox
-                props:
-                  height: 24
-
-              # Dynamic UI based on theme
-              - type: Observer
-                props:
-                  query: "isDarkMode"
-                  builder:
-                    type: Container
-                    props:
-                      padding:
-                        all: 16
-                      color: "shql: IF isDarkMode THEN '0xFF1E1E1E' ELSE '0xFFFFFDE7'"
+                      onPressed: "shql: GO_BACK()"
                       child:
-                        type: Column
+                        type: Text
                         props:
-                          crossAxisAlignment: start
-                          children:
-                            - type: Text
-                              props:
-                                data: "Dynamic UI Colors"
-                                style:
-                                  fontWeight: bold
-
-                            - type: SizedBox
-                              props:
-                                height: 8
-
-                            - type: Text
-                              props:
-                                data: "shql: 'Background: ' + IF isDarkMode THEN 'Dark Gray' ELSE 'Light Yellow'"
-                                style:
-                                  fontSize: 12
-
-                            - type: Text
-                              props:
-                                data: "shql: 'This updates instantly when isDarkMode variable changes!'"
-                                style:
-                                  fontSize: 12
-                                  fontStyle: italic
-
-              - type: SizedBox
-                props:
-                  height: 24
-
-              # The Flow
-              - type: Card
-                props:
-                  color: "0xFF4CAF50"
-                  child:
-                    type: Padding
-                    props:
-                      padding:
-                        all: 16
-                      child:
-                        type: Column
-                        props:
-                          crossAxisAlignment: start
-                          children:
-                            - type: Text
-                              props:
-                                data: "🎯 The Flow"
-                                style:
-                                  fontWeight: bold
-                                  fontSize: 18
-                                  color: "0xFFFFFFFF"
-
-                            - type: SizedBox
-                              props:
-                                height: 8
-
-                            - type: Text
-                              props:
-                                data: "1. onLoad: LOAD_STATE('isDarkMode', FALSE)"
-                                style:
-                                  fontSize: 14
-                                  color: "0xFFFFFFFF"
-
-                            - type: Text
-                              props:
-                                data: "2. SET('isDarkMode', loaded_value)"
-                                style:
-                                  fontSize: 14
-                                  color: "0xFFFFFFFF"
-
-                            - type: Text
-                              props:
-                                data: "3. Observer listens to 'isDarkMode'"
-                                style:
-                                  fontSize: 14
-                                  color: "0xFFFFFFFF"
-
-                            - type: Text
-                              props:
-                                data: "4. User clicks toggle button"
-                                style:
-                                  fontSize: 14
-                                  color: "0xFFFFFFFF"
-
-                            - type: Text
-                              props:
-                                data: "5. SET() updates + SAVE_STATE() persists"
-                                style:
-                                  fontSize: 14
-                                  color: "0xFFFFFFFF"
-
-                            - type: Text
-                              props:
-                                data: "6. Observer rebuilds UI instantly!"
-                                style:
-                                  fontSize: 14
-                                  color: "0xFFFFFFFF"
-
-              - type: SizedBox
-                props:
-                  height: 24
-
-              # Back Button
-              - type: ElevatedButton
-                props:
-                  onPressed: "shql: GO_BACK()"
-                  child:
-                    type: Text
-                    props:
-                      data: "← Back"
+                          data: "← Back"

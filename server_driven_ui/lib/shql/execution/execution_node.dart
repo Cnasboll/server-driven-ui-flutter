@@ -27,7 +27,7 @@ abstract class ExecutionNode {
       if (completed) {}
       if (await thread.check(cancellationToken)) {
         result = thread.result;
-        error = thread.error as RuntimeError?;
+        error = thread.error;
         if (isLoop &&
             !await (breakTarget?.check(cancellationToken) ?? false) &&
             (breakTarget?.clearContinued() ?? false)) {

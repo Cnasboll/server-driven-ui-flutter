@@ -2,6 +2,7 @@ import 'package:server_driven_ui/shql/engine/cancellation_token.dart';
 import 'package:server_driven_ui/shql/engine/engine.dart';
 import 'package:server_driven_ui/shql/execution/index_to_execution_node.dart';
 import 'package:server_driven_ui/shql/execution/lambdas/call_execution_node.dart';
+import 'package:server_driven_ui/shql/execution/operators/objects/member_access_execution_node.dart';
 import 'package:server_driven_ui/shql/execution/runtime/execution_context.dart';
 import 'package:server_driven_ui/shql/execution/runtime_error.dart';
 import 'package:server_driven_ui/shql/execution/set_variable_execution_node.dart';
@@ -52,6 +53,9 @@ class AssignmentExecutionNode extends LazyExecutionNode {
         // Check if lhs is a list member eg: arr[i] := 5 meaning Symbols.list
         callNode.assign(_rhs!.result);
       }
+    } else if (_lhs is MemberAccessExecutionNode) {
+      // Check if lhs is a member access eg: obj.field := 5
+      (_lhs as MemberAccessExecutionNode).assign(_rhs!.result);
     }
 
     error ??= _lhs!.error;
@@ -82,7 +86,6 @@ class AssignmentExecutionNode extends LazyExecutionNode {
         RuntimeError.fromParseTree(
           "Assignment operator requires exactly two operands, ${node.children.length} given.",
           node,
-          sourceCode: executionContext.sourceCode,
         ),
       );
     }
@@ -102,7 +105,6 @@ class AssignmentExecutionNode extends LazyExecutionNode {
             RuntimeError.fromParseTree(
               "Function definition assignment requires identifier as target.",
               node,
-              sourceCode: executionContext.sourceCode,
             ),
           );
         }
@@ -122,7 +124,6 @@ class AssignmentExecutionNode extends LazyExecutionNode {
             RuntimeError.fromParseTree(
               "Cannot create user function for identifier $name.",
               node,
-              sourceCode: executionContext.sourceCode,
             ),
           );
         }
@@ -145,7 +146,6 @@ class AssignmentExecutionNode extends LazyExecutionNode {
         error = RuntimeError.fromParseTree(
           "All arguments in function definition must be identifiers.",
           node,
-          sourceCode: execution.sourceCode,
         );
         return true;
       }
@@ -153,7 +153,6 @@ class AssignmentExecutionNode extends LazyExecutionNode {
         error = RuntimeError.fromParseTree(
           "Arguments in function definition cannot have children.",
           node,
-          sourceCode: execution.sourceCode,
         );
         return true;
       }
@@ -184,7 +183,6 @@ class AssignmentExecutionNode extends LazyExecutionNode {
         error = RuntimeError.fromParseTree(
           "All arguments in function definition must be identifiers.",
           node,
-          sourceCode: execution.sourceCode,
         );
         return true;
       }
@@ -192,7 +190,6 @@ class AssignmentExecutionNode extends LazyExecutionNode {
         error = RuntimeError.fromParseTree(
           "Arguments in function definition cannot have children.",
           node,
-          sourceCode: execution.sourceCode,
         );
         return true;
       }

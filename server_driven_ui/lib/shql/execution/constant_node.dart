@@ -27,7 +27,6 @@ class ConstantNode<T> extends LazyExecutionNode {
       error = RuntimeError.fromParseTree(
         "No constants table found in scope chain.",
         node,
-        sourceCode: executionContext.sourceCode,
       );
       return TickResult.completed;
     }

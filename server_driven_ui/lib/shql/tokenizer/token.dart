@@ -73,6 +73,7 @@ enum Symbols {
   list,
   tuple,
   map,
+  objectLiteral,
   integerLiteral,
   floatLiteral,
   stringLiteral,
@@ -150,6 +151,7 @@ enum Keywords {
   continueKeyword,
   returnKeyword,
   nullKeyword,
+  objectKeyword,
 }
 
 class Token {
@@ -341,6 +343,7 @@ class Token {
       "CONTINUE": Keywords.continueKeyword,
       "RETURN": Keywords.returnKeyword,
       "NULL": Keywords.nullKeyword,
+      "OBJECT": Keywords.objectKeyword,
     };
   }
 
@@ -452,6 +455,7 @@ class Token {
       Keywords.toKeyword: Symbols.toKeyword,
       Keywords.stepKeyword: Symbols.stepKeyword,
       Keywords.nullKeyword: Symbols.nullLiteral,
+      Keywords.objectKeyword: Symbols.objectLiteral,
     };
   }
 

@@ -57,10 +57,56 @@ END;
 
 _current_text := '';
 name := "";
-_telemetry_spam_enabled := FALSE;
-_terms_accepted := FALSE;
+_telemetry_spam_enabled := LOAD_STATE('telemetry_spam_enabled', FALSE);
+_terms_accepted := LOAD_STATE('terms_accepted', FALSE);
 _posts := {};
-isDarkMode := FALSE;
+isDarkMode := LOAD_STATE('isDarkMode', FALSE);
+
+GENERATE_POST_CARDS() := BEGIN
+    result := [];
+    FOR i := 0 TO LENGTH(_posts) - 1 DO BEGIN
+        title := _posts[i]['title'];
+        body := _posts[i]['body'];
+        result := result + [{
+            "type": "Card",
+            "props": {
+                "margin": 8,
+                "child": {
+                    "type": "Padding",
+                    "props": {
+                        "padding": 16,
+                        "child": {
+                            "type": "Column",
+                            "props": {
+                                "crossAxisAlignment": "start",
+                                "children": [
+                                    {
+                                        "type": "Text",
+                                        "props": {
+                                            "data": title,
+                                            "style": { "fontWeight": "bold" }
+                                        }
+                                    },
+                                    {
+                                        "type": "SizedBox",
+                                        "props": { "height": 8 }
+                                    },
+                                    {
+                                        "type": "Text",
+                                        "props": {
+                                            "data": body
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                }
+            }
+        }];
+    END;
+    RETURN result;
+END;
 
 -- ============================================
 -- Navigation History Tracking
@@ -70,58 +116,31 @@ navigation_stack := ['main'];
 
 PUSH_ROUTE(route) := BEGIN
   -- Only push if it's not already the current route
-  IF LENGTH(navigation_stack) = 0 THEN BEGIN
-    navigation_stack := [route];
-    SET('navigation_stack', navigation_stack);
-    SAVE_STATE('navigation_stack', navigation_stack);
-  END ELSE BEGIN
+  IF LENGTH(navigation_stack) = 0 THEN
+    navigation_stack := [route]
+  ELSE BEGIN
     current_route := navigation_stack[LENGTH(navigation_stack) - 1];
     IF current_route != route THEN BEGIN
-      -- Check if the route already exists in the stack
-      route_exists := 0;
-      route_index := -1;
-      FOR i := 0 TO LENGTH(navigation_stack) - 1 DO BEGIN
-        IF navigation_stack[i] = route THEN BEGIN
-          route_exists := 1;
-          route_index := i;
-        END;
-      END;
-
-      -- If route exists, truncate stack to that point
-      IF route_exists = 1 THEN BEGIN
-        new_stack := [];
-        FOR i := 0 TO route_index DO
-          new_stack := new_stack + [navigation_stack[i]];
-        navigation_stack := new_stack;
-      END ELSE BEGIN
-        -- Otherwise just append the new route
+      -- If route exists, truncate stack to that point; otherwise append
+      IF CONTAINS(navigation_stack, route) THEN
+        navigation_stack := SLICE(navigation_stack, 0, INDEX_OF(navigation_stack, route))
+      ELSE
         navigation_stack := navigation_stack + [route];
-      END;
-
-      SET('navigation_stack', navigation_stack);
-      SAVE_STATE('navigation_stack', navigation_stack);
     END;
   END;
+  SET('navigation_stack', navigation_stack);
+  SAVE_STATE('navigation_stack', navigation_stack);
   RETURN navigation_stack;
 END;
 
 POP_ROUTE() := BEGIN
-  len := LENGTH(navigation_stack);
-  IF len > 1 THEN BEGIN
-    -- Build new array without last element
-    new_stack := [];
-    FOR i := 0 TO len - 2 DO
-      new_stack := new_stack + [navigation_stack[i]];
-    navigation_stack := new_stack;
+  IF LENGTH(navigation_stack) > 1 THEN BEGIN
+    navigation_stack := SLICE(navigation_stack, 0, LENGTH(navigation_stack) - 2);
     SET('navigation_stack', navigation_stack);
     SAVE_STATE('navigation_stack', navigation_stack);
-    IF LENGTH(navigation_stack) > 0 THEN
-      RETURN navigation_stack[LENGTH(navigation_stack) - 1]
-    ELSE
-      RETURN 'main';
-  END ELSE BEGIN
+    RETURN navigation_stack[LENGTH(navigation_stack) - 1];
+  END ELSE
     RETURN 'main';
-  END;
 END;
 
 GO_BACK() := BEGIN

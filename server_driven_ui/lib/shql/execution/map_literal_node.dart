@@ -24,7 +24,6 @@ class MapLiteralNode extends LazyExecutionNode {
           error = RuntimeError.fromParseTree(
             'Map literal children must be name-value pairs.',
             child,
-            sourceCode: executionContext.sourceCode,
           );
           return TickResult.completed;
         }
@@ -34,7 +33,6 @@ class MapLiteralNode extends LazyExecutionNode {
           error = RuntimeError.fromParseTree(
             'Failed to create execution node for child node.',
             child,
-            sourceCode: executionContext.sourceCode,
           );
           return TickResult.completed;
         }

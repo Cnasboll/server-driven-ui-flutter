@@ -38,8 +38,7 @@ class CallExecutionNode extends LazyExecutionNode {
           _callableNode!.error ??
           RuntimeError.fromParseTree(
             "Callable entity resolved to null.",
-            node,
-            sourceCode: executionContext.sourceCode,
+            node.children[0],
           );
       return TickResult.completed;
     }
@@ -103,7 +102,6 @@ class CallExecutionNode extends LazyExecutionNode {
         RuntimeError.fromParseTree(
           "Expected tuple of arguments for function call, got ${_argumentsNode!.result.runtimeType}.",
           node.children[0],
-          sourceCode: executionContext.sourceCode,
         ),
       );
     }
@@ -130,7 +128,6 @@ class CallExecutionNode extends LazyExecutionNode {
             RuntimeError.fromParseTree(
               "Attempt to use nullary function with $argumentCount argument(s).",
               node.children[0],
-              sourceCode: executionContext.sourceCode,
             ),
           );
         }
@@ -152,7 +149,6 @@ class CallExecutionNode extends LazyExecutionNode {
             RuntimeError.fromParseTree(
               "Attempt to use unary function with $argumentCount argument(s).",
               node.children[0],
-              sourceCode: executionContext.sourceCode,
             ),
           );
         }
@@ -175,7 +171,6 @@ class CallExecutionNode extends LazyExecutionNode {
             RuntimeError.fromParseTree(
               "Attempt to use binary function with $argumentCount argument(s).",
               node.children[0],
-              sourceCode: executionContext.sourceCode,
             ),
           );
         }
@@ -213,7 +208,6 @@ class CallExecutionNode extends LazyExecutionNode {
         RuntimeError.fromParseTree(
           "Expected single argument for list index, got $argumentCount.",
           node.children[1],
-          sourceCode: executionContext.sourceCode,
         ),
       );
     }
@@ -226,7 +220,6 @@ class CallExecutionNode extends LazyExecutionNode {
         RuntimeError.fromParseTree(
           "${callableResult.runtimeType} used with an indexer.",
           node.children[1],
-          sourceCode: executionContext.sourceCode,
         ),
       );
     }

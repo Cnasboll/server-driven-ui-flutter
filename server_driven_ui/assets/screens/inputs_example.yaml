@@ -1,10 +1,6 @@
 onLoad: "shql(targeted:true): PUSH_ROUTE('inputs_example')"
 screen:
   type: Scaffold
-  onLoad: |
-    shql:
-      SET('_telemetry_spam_enabled', LOAD_STATE('telemetry_spam_enabled', false));
-      SET('_terms_accepted', LOAD_STATE('terms_accepted', false));
   props:
     appBar:
       type: AppBar

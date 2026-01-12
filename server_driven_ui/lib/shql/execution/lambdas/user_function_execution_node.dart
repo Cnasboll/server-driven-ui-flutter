@@ -22,7 +22,11 @@ class UserFunctionExecutionNode extends ExecutionNode {
     CancellationToken? cancellationToken,
   ) async {
     if (returnTarget == null) {
-      var childScope = Scope(Object(), parent: userFunction.scope);
+      var childScope = Scope(
+        Object(),
+        constants: userFunction.scope.constants,
+        parent: userFunction.scope,
+      );
       // Assign argument values to identifiers
       var argumentIdentifiers = userFunction.argumentIdentifiers;
       for (int i = 0; i < argumentIdentifiers.length; i++) {

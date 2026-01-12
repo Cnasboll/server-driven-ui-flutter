@@ -36,9 +36,11 @@ extension CodeSpanExtensions on CodeSpan {
       final endCol = end.columnNumber - 1;
 
       // Build the underline with tildes
-      final underline =
-          ' ' * startCol +
-          '~' * (endCol - startCol).clamp(1, line.length - startCol);
+      final tildeCount = (endCol - startCol).clamp(
+        1,
+        (line.length - startCol).clamp(1, line.length),
+      );
+      final underline = ' ' * startCol + '~' * tildeCount;
 
       return '''
 Line ${start.lineNumber}:

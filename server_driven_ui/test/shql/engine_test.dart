@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:server_driven_ui/shql/engine/engine.dart';
 import 'package:server_driven_ui/shql/execution/runtime/runtime.dart';
 import 'package:server_driven_ui/shql/parser/constants_set.dart';
@@ -10,55 +12,9 @@ import 'package:flutter_test/flutter_test.dart';
 Future<(Runtime, ConstantsSet)> _loadStdLib() async {
   var constantsSet = Runtime.prepareConstantsSet();
   var runtime = Runtime.prepareRuntime(constantsSet);
-  final stdlibCode = """
---- External unary fuctions
-CLONE(a) := _EXTERN("CLONE", [a]);
-MD5(a) := _EXTERN("MD5", [a]);
-SIN(a) := _EXTERN("SIN", [a]);
-COS(a) := _EXTERN("COS", [a]);
-TAN(a) := _EXTERN("TAN", [a]);
-ACOS(a) := _EXTERN("ACOS", [a]);
-ASIN(a) := _EXTERN("ASIN", [a]);
-ATAN(a) := _EXTERN("ATAN", [a]);
-SQRT(a) := _EXTERN("SQRT", [a]);
-EXP(a) := _EXTERN("EXP", [a]);
-LOG(a) := _EXTERN("LOG", [a]);
-LOWERCASE(a) := _EXTERN("LOWERCASE", [a]);
-UPPERCASE(a) := _EXTERN("UPPERCASE", [a]);
-INT(a) := _EXTERN("INT", [a]);
-DOUBLE(a) := _EXTERN("DOUBLE", [a]);
-STRING(a) := _EXTERN("STRING", [a]);
-ROUND(a) := _EXTERN("ROUND", [a]);
-LENGTH(a) := _EXTERN("LENGTH", [a]);
-MD5(a) := _EXTERN("MD5", [a]);
+  // Load stdlib
+  final stdlibCode = await File('assets/shql/stdlib.shql').readAsString();
 
--- External binary functions
-MIN(a,b) := _EXTERN("MIN", [a,b]);
-MAX(a,b) := _EXTERN("MAX", [a,b]);
-ATAN2(a,b) := _EXTERN("ATAN2", [a,b]);
-POW(a,b) := _EXTERN("POW", [a,b]);
-DIM(a,b) := _EXTERN("DIM", [a,b]);
-
--- External ternary functions
-SUBSTRING(a, b, c) := _EXTERN("SUBSTRING", [a, b, c]);
-
--- Plot a function
-PLOT(f, x1, x2) := BEGIN
-    x_vector := [];
-    y_vector := [];
-    range := DOUBLE(x2)-DOUBLE(x1)
-    step := MAX(0.1, range / 100.0);
-    start := DOUBLE(x1);
-    FOR x := start to X2 STEP step DO BEGIN
-        x_vector := x_vector + [x];
-        y_vector := y_vector + [f(x)];
-        if x > start then
-            _DISPLAY_GRAPH(x_vector, y_vector);    
-    END;
-    PRINT("Type HIDE_GRAPH to hide graph again");
-END;
-
-""";
   await Engine.execute(
     stdlibCode,
     runtime: runtime,
@@ -780,5 +736,451 @@ END;
       await Engine.execute(code, runtime: runtime, constantsSet: constantsSet),
       'screen2',
     );
+  });
+
+  test('User function can access constants like TRUE', () async {
+    // Minimal test: define function that returns TRUE, then call it
+    expect(await Engine.execute('test() := TRUE; test()'), true);
+  });
+
+  group('Error reporting tests', () {
+    test('Should show correct line numbers in error messages', () async {
+      final constantsSet = Runtime.prepareConstantsSet();
+      final runtime = Runtime.prepareRuntime(constantsSet);
+
+      try {
+        // Define a function that accesses a list element
+        await Engine.execute(
+          "_posts := {}; test() := _posts[0]['title'];",
+          constantsSet: constantsSet,
+          runtime: runtime,
+        );
+
+        // Try to call it - this should fail because _posts is empty
+        await Engine.execute(
+          "test()",
+          constantsSet: constantsSet,
+          runtime: runtime,
+        );
+
+        fail('Expected RuntimeException to be thrown');
+      } catch (e) {
+        final errorMessage = e.toString();
+        // Should contain correct line number
+        expect(errorMessage, contains('Line 1:'));
+        // Should contain the actual code
+        expect(errorMessage, contains('_posts[0]'));
+      }
+    });
+  });
+
+  group('List utility functions', () {
+    test('LENGTH should return list length', () async {
+      final (runtime, constantsSet) = await _loadStdLib();
+      expect(
+        await Engine.execute(
+          'LENGTH([1, 2, 3])',
+          runtime: runtime,
+          constantsSet: constantsSet,
+        ),
+        3,
+      );
+      expect(
+        await Engine.execute(
+          'LENGTH([])',
+          runtime: runtime,
+          constantsSet: constantsSet,
+        ),
+        0,
+      );
+    });
+
+    test('CONTAINS should find items in list', () async {
+      final constantsSet = Runtime.prepareConstantsSet();
+      final runtime = Runtime.prepareRuntime(constantsSet);
+
+      // Load stdlib which has CONTAINS
+      final stdlibCode = await File('assets/shql/stdlib.shql').readAsString();
+      await Engine.execute(
+        stdlibCode,
+        runtime: runtime,
+        constantsSet: constantsSet,
+      );
+
+      expect(
+        await Engine.execute(
+          'CONTAINS([1, 2, 3], 2)',
+          runtime: runtime,
+          constantsSet: constantsSet,
+        ),
+        true,
+      );
+
+      expect(
+        await Engine.execute(
+          'CONTAINS([1, 2, 3], 5)',
+          runtime: runtime,
+          constantsSet: constantsSet,
+        ),
+        false,
+      );
+    });
+  });
+
+  group('Object member access with dot operator', () {
+    test('Should access Object members using dot notation', () async {
+      final constantsSet = Runtime.prepareConstantsSet();
+      final runtime = Runtime.prepareRuntime(constantsSet);
+
+      // Create an Object explicitly and add members
+      final testObject = Object();
+      final nameId = runtime.identifiers.include('NAME');
+      final ageId = runtime.identifiers.include('AGE');
+      testObject.setVariable(nameId, 'Alice');
+      testObject.setVariable(ageId, 30);
+
+      // Add the object to the scope
+      final personId = runtime.identifiers.include('PERSON');
+      runtime.globalScope.setVariable(personId, testObject);
+
+      // Access member using dot notation
+      expect(
+        await Engine.execute(
+          'person.name',
+          runtime: runtime,
+          constantsSet: constantsSet,
+        ),
+        'Alice',
+      );
+
+      expect(
+        await Engine.execute(
+          'person.age',
+          runtime: runtime,
+          constantsSet: constantsSet,
+        ),
+        30,
+      );
+    });
+
+    test('Should wrap Object in Scope for member access', () async {
+      final constantsSet = Runtime.prepareConstantsSet();
+      final runtime = Runtime.prepareRuntime(constantsSet);
+
+      // Create an Object with members
+      final configObject = Object();
+      final hostId = runtime.identifiers.include('HOST');
+      final portId = runtime.identifiers.include('PORT');
+      configObject.setVariable(hostId, 'localhost');
+      configObject.setVariable(portId, 8080);
+
+      final configId = runtime.identifiers.include('CONFIG');
+      runtime.globalScope.setVariable(configId, configObject);
+
+      // Access members
+      expect(
+        await Engine.execute(
+          'config.host',
+          runtime: runtime,
+          constantsSet: constantsSet,
+        ),
+        'localhost',
+      );
+
+      expect(
+        await Engine.execute(
+          'config.port',
+          runtime: runtime,
+          constantsSet: constantsSet,
+        ),
+        8080,
+      );
+    });
+
+    test('Should support nested object access (a.b.c.d)', () async {
+      final constantsSet = Runtime.prepareConstantsSet();
+      final runtime = Runtime.prepareRuntime(constantsSet);
+
+      // Create nested object structure: app.server.database.host
+      final databaseObject = Object();
+      final hostId = runtime.identifiers.include('HOST');
+      final portId = runtime.identifiers.include('PORT');
+      databaseObject.setVariable(hostId, 'db.example.com');
+      databaseObject.setVariable(portId, 5432);
+
+      final serverObject = Object();
+      final databaseId = runtime.identifiers.include('DATABASE');
+      final nameId = runtime.identifiers.include('NAME');
+      serverObject.setVariable(databaseId, databaseObject);
+      serverObject.setVariable(nameId, 'prod-server');
+
+      final appObject = Object();
+      final serverId = runtime.identifiers.include('SERVER');
+      final versionId = runtime.identifiers.include('VERSION');
+      appObject.setVariable(serverId, serverObject);
+      appObject.setVariable(versionId, '1.0.0');
+
+      final appId = runtime.identifiers.include('APP');
+      runtime.globalScope.setVariable(appId, appObject);
+
+      // Test nested access: app.server.database.host
+      expect(
+        await Engine.execute(
+          'app.server.database.host',
+          runtime: runtime,
+          constantsSet: constantsSet,
+        ),
+        'db.example.com',
+      );
+
+      // Test nested access: app.server.database.port
+      expect(
+        await Engine.execute(
+          'app.server.database.port',
+          runtime: runtime,
+          constantsSet: constantsSet,
+        ),
+        5432,
+      );
+
+      // Test partial access: app.server.name
+      expect(
+        await Engine.execute(
+          'app.server.name',
+          runtime: runtime,
+          constantsSet: constantsSet,
+        ),
+        'prod-server',
+      );
+
+      // Test shallow access: app.version
+      expect(
+        await Engine.execute(
+          'app.version',
+          runtime: runtime,
+          constantsSet: constantsSet,
+        ),
+        '1.0.0',
+      );
+    });
+  });
+
+  group('Object literal with OBJECT keyword', () {
+    test('Should create Object with bare identifier keys', () async {
+      final result = await Engine.execute('OBJECT{name: "Alice", age: 30}');
+      expect(result, isA<Object>());
+
+      final obj = result as Object;
+      final constantsSet = Runtime.prepareConstantsSet();
+      final runtime = Runtime.prepareRuntime(constantsSet);
+      final nameId = runtime.identifiers.include('NAME');
+      final ageId = runtime.identifiers.include('AGE');
+
+      expect(obj.resolveIdentifier(nameId), 'Alice');
+      expect(obj.resolveIdentifier(ageId), 30);
+    });
+
+    test('Should access Object literal members with dot notation', () async {
+      expect(await Engine.execute('obj := OBJECT{x: 10, y: 20}; obj.x'), 10);
+
+      expect(await Engine.execute('obj := OBJECT{x: 10, y: 20}; obj.y'), 20);
+    });
+
+    test('Should create nested Objects', () async {
+      expect(
+        await Engine.execute(
+          'obj := OBJECT{person: OBJECT{name: "Bob", age: 25}}; obj.person.name',
+        ),
+        'Bob',
+      );
+
+      expect(
+        await Engine.execute(
+          'obj := OBJECT{person: OBJECT{name: "Bob", age: 25}}; obj.person.age',
+        ),
+        25,
+      );
+    });
+
+    test('Should distinguish Objects from Maps', () async {
+      // Object with bare identifier keys
+      final obj = await Engine.execute('OBJECT{name: "Alice"}');
+      expect(obj, isA<Object>());
+
+      // Map with evaluated expression keys
+      final map = await Engine.execute('x := "name"; {x: "Alice"}');
+      expect(map, isA<Map>());
+
+      // Map with literal number keys
+      final map2 = await Engine.execute('{42: "answer"}');
+      expect(map2, isA<Map>());
+    });
+
+    test('Should create Object with complex values', () async {
+      expect(
+        await Engine.execute(
+          'obj := OBJECT{list: [1, 2, 3], sum: 1 + 2}; list := obj.list; list[1]',
+        ),
+        2,
+      );
+
+      expect(
+        await Engine.execute(
+          'obj := OBJECT{list: [1, 2, 3], sum: 1 + 2}; obj.sum',
+        ),
+        3,
+      );
+    });
+
+    test('Should assign to Object members', () async {
+      expect(
+        await Engine.execute(
+          'obj := OBJECT{x: 10, y: 20}; obj.x := 100; obj.x',
+        ),
+        100,
+      );
+
+      expect(
+        await Engine.execute(
+          'obj := OBJECT{x: 10, y: 20}; obj.y := 200; obj.y',
+        ),
+        200,
+      );
+    });
+
+    test('Should assign to nested Object members', () async {
+      expect(
+        await Engine.execute(
+          'obj := OBJECT{inner: OBJECT{value: 5}}; obj.inner.value := 42; obj.inner.value',
+        ),
+        42,
+      );
+    });
+
+    test('Should modify Object member and read it back', () async {
+      expect(
+        await Engine.execute(
+          'obj := OBJECT{counter: 0}; obj.counter := obj.counter + 1; obj.counter',
+        ),
+        1,
+      );
+    });
+  });
+
+  group('Object methods with proper scope', () {
+    test('Should access object members from method', () async {
+      expect(
+        await Engine.execute('obj := OBJECT{x: 10, getX: () => x}; obj.getX()'),
+        10,
+      );
+    });
+
+    test('Should access multiple object members from method', () async {
+      expect(
+        await Engine.execute(
+          'obj := OBJECT{x: 10, y: 20, sum: () => x + y}; obj.sum()',
+        ),
+        30,
+      );
+    });
+
+    test('Should modify object members from method', () async {
+      expect(
+        await Engine.execute(
+          'obj := OBJECT{counter: 0, increment: () => counter := counter + 1}; obj.increment(); obj.counter',
+        ),
+        1,
+      );
+    });
+
+    test('Should call method multiple times and modify state', () async {
+      expect(
+        await Engine.execute(
+          'obj := OBJECT{counter: 0, increment: () => counter := counter + 1}; obj.increment(); obj.increment(); obj.increment(); obj.counter',
+        ),
+        3,
+      );
+    });
+
+    test('Should access method parameters and object members', () async {
+      expect(
+        await Engine.execute(
+          'obj := OBJECT{x: 10, add: (delta) => x + delta}; obj.add(5)',
+        ),
+        15,
+      );
+    });
+
+    test('Should modify object member with parameter', () async {
+      expect(
+        await Engine.execute(
+          'obj := OBJECT{x: 10, setX: (newX) => x := newX}; obj.setX(42); obj.x',
+        ),
+        42,
+      );
+    });
+
+    test('Should access nested object members from method', () async {
+      expect(
+        await Engine.execute(
+          'obj := OBJECT{inner: OBJECT{value: 5}, getInnerValue: () => inner.value}; obj.getInnerValue()',
+        ),
+        5,
+      );
+    });
+
+    test('Should modify nested object members from method', () async {
+      expect(
+        await Engine.execute(
+          'obj := OBJECT{inner: OBJECT{value: 5}, incrementInner: () => inner.value := inner.value + 1}; obj.incrementInner(); obj.inner.value',
+        ),
+        6,
+      );
+    });
+
+    test('Method should have access to closure variables', () async {
+      expect(
+        await Engine.execute(
+          'outerVar := 100; obj := OBJECT{x: 10, addOuter: () => x + outerVar}; obj.addOuter()',
+        ),
+        110,
+      );
+    });
+
+    test('Method parameters should shadow object members', () async {
+      expect(
+        await Engine.execute(
+          'obj := OBJECT{x: 10, useParam: (x) => x}; obj.useParam(42)',
+        ),
+        42,
+      );
+    });
+
+    test('Should support method calling another method', () async {
+      expect(
+        await Engine.execute(
+          'obj := OBJECT{x: 10, getX: () => x, doubleX: () => getX() * 2}; obj.doubleX()',
+        ),
+        20,
+      );
+    });
+
+    test('Should create object with counter and multiple methods', () async {
+      expect(
+        await Engine.execute('''
+          obj := OBJECT{
+            count: 0,
+            increment: () => count := count + 1,
+            decrement: () => count := count - 1,
+            getCount: () => count
+          };
+          obj.increment();
+          obj.increment();
+          obj.decrement();
+          obj.getCount()
+          '''),
+        1,
+      );
+    });
   });
 }

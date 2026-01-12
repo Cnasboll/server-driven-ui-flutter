@@ -15,24 +15,62 @@ This document catalogs all the "typical BLoC use cases" that were implemented in
 **Implementation:** `assets/shql/ui.shql`
 
 ```shql
-navigation_stack := LOAD_STATE('navigation_stack', ['main']);
+-- Initialize global variable - will be loaded from state by first PUSH_ROUTE call
+navigation_stack := ['main'];
 
 PUSH_ROUTE(route) := BEGIN
-  navigation_stack := navigation_stack + [route];
+  -- Only push if it's not already the current route
+  IF LENGTH(navigation_stack) = 0 THEN
+    navigation_stack := [route]
+  ELSE BEGIN
+    current_route := navigation_stack[LENGTH(navigation_stack) - 1];
+    IF current_route != route THEN BEGIN
+      -- If route exists, truncate stack to that point; otherwise append
+      IF CONTAINS(navigation_stack, route) THEN
+        navigation_stack := SLICE(navigation_stack, 0, INDEX_OF(navigation_stack, route))
+      ELSE
+        navigation_stack := navigation_stack + [route];
+    END;
+  END;
   SET('navigation_stack', navigation_stack);
   SAVE_STATE('navigation_stack', navigation_stack);
+  RETURN navigation_stack;
+END;
+
+POP_ROUTE() := BEGIN
+  IF LENGTH(navigation_stack) > 1 THEN BEGIN
+    navigation_stack := SLICE(navigation_stack, 0, LENGTH(navigation_stack) - 2);
+    SET('navigation_stack', navigation_stack);
+    SAVE_STATE('navigation_stack', navigation_stack);
+    RETURN navigation_stack[LENGTH(navigation_stack) - 1];
+  END ELSE
+    RETURN 'main';
+END;
+
+GO_BACK() := BEGIN
+  previous_route := POP_ROUTE();
+  NAVIGATE(previous_route);
+  RETURN previous_route;
 END;
 
 CAN_GO_BACK() := LENGTH(navigation_stack) > 1;
 
 GET_BREADCRUMB() := BEGIN
   IF LENGTH(navigation_stack) = 0 THEN
-    RETURN 'main';
+    RETURN 'main'
   ELSE
-    RETURN JOIN(navigation_stack, ' > ');
-  END;
+    RETURN STRING_JOIN(navigation_stack, ' > ')
+END;
+
+GET_CURRENT_ROUTE() := BEGIN
+  IF LENGTH(navigation_stack) > 0 THEN
+    RETURN navigation_stack[LENGTH(navigation_stack) - 1]
+  ELSE
+    RETURN 'main'
 END;
 ```
+
+**Uses stdlib functions:** `CONTAINS()`, `INDEX_OF()`, `SLICE()`, `STRING_JOIN()` - see `assets/shql/stdlib.shql`
 
 **YAML Usage:**
 ```yaml

@@ -7,18 +7,24 @@ class ParseTree {
     this._tokens, [
     this._children = const [],
     this._qualifier,
+    this.sourceCode,
   ]);
 
-  ParseTree.withSymbol(Symbols symbol, List<Token> tokens)
-    : this(symbol, tokens, const [], null);
+  ParseTree.withSymbol(Symbols symbol, List<Token> tokens, {String? sourceCode})
+    : this(symbol, tokens, const [], null, sourceCode);
   ParseTree.withChildren(
     Symbols symbol,
     List<ParseTree> children,
-    List<Token> tokens,
-  ) : this(symbol, tokens, children, null);
+    List<Token> tokens, {
+    String? sourceCode,
+  }) : this(symbol, tokens, children, null, sourceCode);
 
-  ParseTree.withQualifier(Symbols symbol, int? qualifier, List<Token> tokens)
-    : this(symbol, tokens, const [], qualifier);
+  ParseTree.withQualifier(
+    Symbols symbol,
+    int? qualifier,
+    List<Token> tokens, {
+    String? sourceCode,
+  }) : this(symbol, tokens, const [], qualifier, sourceCode);
 
   Symbols get symbol {
     return _symbol;
@@ -65,4 +71,5 @@ class ParseTree {
   final List<ParseTree> _children;
   final int? _qualifier;
   final List<Token> _tokens;
+  final String? sourceCode;
 }

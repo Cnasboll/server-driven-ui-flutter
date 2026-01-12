@@ -31,7 +31,6 @@ class ProgramExecutionNode extends LazyExecutionNode {
         error = RuntimeError.fromParseTree(
           'Failed to create execution node for statement.',
           node,
-          sourceCode: executionContext.sourceCode,
         );
         return TickResult.completed;
       }

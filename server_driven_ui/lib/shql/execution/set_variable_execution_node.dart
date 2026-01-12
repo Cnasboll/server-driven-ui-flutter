@@ -24,7 +24,6 @@ class SetVariableExecutionNode extends LazyExecutionNode {
       error = RuntimeError.fromParseTree(
         "Left-hand side of assignment must be an identifier.",
         node,
-        sourceCode: executionContext.sourceCode,
       );
       return TickResult.completed;
     }
@@ -36,11 +35,7 @@ class SetVariableExecutionNode extends LazyExecutionNode {
     );
 
     if (isConstant) {
-      error = RuntimeError.fromParseTree(
-        "Cannot assign to constant.",
-        node,
-        sourceCode: executionContext.sourceCode,
-      );
+      error = RuntimeError.fromParseTree("Cannot assign to constant.", node);
       return TickResult.completed;
     }
 
