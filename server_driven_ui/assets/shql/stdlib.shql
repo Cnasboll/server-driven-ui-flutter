@@ -29,14 +29,6 @@ DIM(a,b) := _EXTERN("DIM", [a,b]);
 -- External ternary functions
 SUBSTRING(a, b, c) := _EXTERN("SUBSTRING", [a, b, c]);
 
--- Check if a list contains an item
-CONTAINS(list, item) := BEGIN
-    FOR i := 0 TO LENGTH(list) - 1 DO
-        IF list[i] = item THEN
-            RETURN TRUE;
-    RETURN FALSE;
-END;
-
 -- Find the index of an item in a list (-1 if not found)
 INDEX_OF(list, item) := BEGIN
     FOR i := 0 TO LENGTH(list) - 1 DO

@@ -59,52 +59,53 @@ _current_text := '';
 name := "";
 _telemetry_spam_enabled := LOAD_STATE('telemetry_spam_enabled', FALSE);
 _terms_accepted := LOAD_STATE('terms_accepted', FALSE);
-_posts := {};
+_posts := [];
 isDarkMode := LOAD_STATE('isDarkMode', FALSE);
 
 GENERATE_POST_CARDS() := BEGIN
     result := [];
-    FOR i := 0 TO LENGTH(_posts) - 1 DO BEGIN
-        title := _posts[i]['title'];
-        body := _posts[i]['body'];
-        result := result + [{
-            "type": "Card",
-            "props": {
-                "margin": 8,
-                "child": {
-                    "type": "Padding",
-                    "props": {
-                        "padding": 16,
-                        "child": {
-                            "type": "Column",
-                            "props": {
-                                "crossAxisAlignment": "start",
-                                "children": [
-                                    {
-                                        "type": "Text",
-                                        "props": {
-                                            "data": title,
-                                            "style": { "fontWeight": "bold" }
+    IF LENGTH(_posts) > 0 THEN
+        FOR i := 0 TO LENGTH(_posts) - 1 DO BEGIN
+            title := _posts[i]['title'];
+            body := _posts[i]['body'];
+            result := result + [{
+                "type": "Card",
+                "props": {
+                    "margin": 8,
+                    "child": {
+                        "type": "Padding",
+                        "props": {
+                            "padding": 16,
+                            "child": {
+                                "type": "Column",
+                                "props": {
+                                    "crossAxisAlignment": "start",
+                                    "children": [
+                                        {
+                                            "type": "Text",
+                                            "props": {
+                                                "data": title,
+                                                "style": { "fontWeight": "bold" }
+                                            }
+                                        },
+                                        {
+                                            "type": "SizedBox",
+                                            "props": { "height": 8 }
+                                        },
+                                        {
+                                            "type": "Text",
+                                            "props": {
+                                                "data": body
+                                            }
                                         }
-                                    },
-                                    {
-                                        "type": "SizedBox",
-                                        "props": { "height": 8 }
-                                    },
-                                    {
-                                        "type": "Text",
-                                        "props": {
-                                            "data": body
-                                        }
-                                    }
-                                ]
+                                    ]
+                                }
                             }
                         }
                     }
                 }
-            }
-        }];
-    END;
+            }];
+        END;
     RETURN result;
 END;
 
@@ -122,7 +123,7 @@ PUSH_ROUTE(route) := BEGIN
     current_route := navigation_stack[LENGTH(navigation_stack) - 1];
     IF current_route != route THEN BEGIN
       -- If route exists, truncate stack to that point; otherwise append
-      IF CONTAINS(navigation_stack, route) THEN
+      IF route IN navigation_stack THEN
         navigation_stack := SLICE(navigation_stack, 0, INDEX_OF(navigation_stack, route))
       ELSE
         navigation_stack := navigation_stack + [route];

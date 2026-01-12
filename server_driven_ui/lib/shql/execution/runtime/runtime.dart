@@ -81,9 +81,16 @@ class Constant {
   Constant(this.value, this.identifier);
 }
 
+/// Wrapper class to distinguish between "variable not defined" and "variable is null"
+class Variable {
+  final dynamic value;
+
+  Variable(this.value);
+}
+
 class Object {
-  final Map<int, dynamic> members = {};
-  final Map<int, dynamic> variables = {};
+  final Map<int, dynamic> members = {}; // Contains Variable or UserFunction
+  final Map<int, Variable> variables = {};
   final Map<int, UserFunction> userFunctons = {};
 
   dynamic resolveIdentifier(int identifier) {
@@ -95,12 +102,15 @@ class Object {
   }
 
   void setVariable(int identifier, dynamic value) {
-    members[identifier] = variables[identifier] = value;
+    var variable = Variable(value);
+    members[identifier] = variable;
+    variables[identifier] = variable;
     userFunctons.remove(identifier);
   }
 
   UserFunction defineUserFunction(int identifier, UserFunction userFunction) {
-    members[identifier] = userFunctons[identifier] = userFunction;
+    members[identifier] = userFunction;
+    userFunctons[identifier] = userFunction;
     variables.remove(identifier);
     return userFunction;
   }
@@ -160,7 +170,7 @@ class Scope {
     var (existingValue, containingScope, isConstant) = resolveIdentifier(
       identifier,
     );
-    if (existingValue != null && isConstant) {
+    if (isConstant) {
       // Cannot modify constant
       return (containingScope!, RuntimeError("Cannot modify constant"));
     }
