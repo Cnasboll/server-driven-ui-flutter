@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:hero_common/amendable/field_base.dart';
 import 'package:hero_common/models/hero_model.dart';
 import 'package:hero_common/models/hero_shql_adapter.dart';
 import 'package:server_driven_ui/server_driven_ui.dart';
@@ -122,38 +123,50 @@ class FilterCompiler {
   // Predicate validation
   // ---------------------------------------------------------------------------
 
-  /// Canonical fully-populated hero for predicate validation.
-  static const _mockHeroJson = {
-    'response': 'success',
-    'id': '69',
-    'name': 'Batman',
-    'powerstats': {
-      'intelligence': '81', 'strength': '40', 'speed': '29',
-      'durability': '55', 'power': '63', 'combat': '90',
-    },
-    'biography': {
-      'full-name': 'Terry McGinnis', 'alter-egos': 'No alter egos found.',
-      'aliases': ['Batman II'], 'place-of-birth': 'Gotham City',
-      'first-appearance': 'Batman Beyond #1', 'publisher': 'DC Comics',
-      'alignment': 'good',
-    },
-    'appearance': {
-      'gender': 'Male', 'race': 'Human',
-      'height': ["5'10", '178 cm'], 'weight': ['170 lb', '77 kg'],
-      'eye-color': 'Blue', 'hair-color': 'Black',
-    },
-    'work': {'occupation': '-', 'base': 'Gotham City'},
-    'connections': {
-      'group-affiliation': 'Batman Family',
-      'relatives': 'Bruce Wayne (biological father)',
-    },
-    'image': {'url': 'https://www.superherodb.com/pictures2/portraits/10/100/10441.jpg'},
-  };
+  /// Build a fully-populated mock hero JSON from the Field tree.
+  /// Every key and nested structure is discovered from field metadata —
+  /// no hardcoded field names.
+  static Map<String, dynamic> _buildMockHeroJson() {
+    final json = <String, dynamic>{'response': 'success'};
+    _populateFromFields(json, HeroModel.staticFields);
+    return json;
+  }
+
+  static void _populateFromFields(
+    Map<String, dynamic> json,
+    List<FieldBase> fields,
+  ) {
+    for (final field in fields) {
+      final f = field as dynamic;
+      final jsonName = f.jsonName as String;
+      final children = f.children as List<FieldBase>;
+      final childrenForDbOnly = f.childrenForDbOnly as bool;
+      final description = f.description as String;
+      final primary = f.primary as bool;
+
+      if (children.isNotEmpty && !childrenForDbOnly) {
+        // Section with real children — recurse
+        final childJson = <String, dynamic>{};
+        _populateFromFields(childJson, children);
+        json[jsonName] = childJson;
+      } else if (children.isNotEmpty && childrenForDbOnly) {
+        // Value type (Height, Weight) — parseable single-value array
+        json[jsonName] = ['100'];
+      } else if (primary) {
+        json[jsonName] = '69';
+      } else if (description == '%') {
+        json[jsonName] = '50';
+      } else {
+        json[jsonName] = 'Test';
+      }
+    }
+  }
+
   static HeroModel? _mockHero;
 
   Future<HeroModel> _getMockHero() async {
     _mockHero ??= await HeroModel.fromJson(
-      _mockHeroJson, DateTime(2025, 1, 1),
+      _buildMockHeroJson(), DateTime(2025, 1, 1),
     );
     return _mockHero!;
   }

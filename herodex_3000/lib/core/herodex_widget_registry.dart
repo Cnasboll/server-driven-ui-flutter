@@ -14,22 +14,9 @@ WidgetRegistry createHeroDexWidgetRegistry() {
   final customFactories = <String, WidgetFactory>{
     'HeroCard':
         (context, props, buildChild, child, children, path, shql, key, engine) {
-          return HeroCard(
+          return HeroCard.fromMap(
+            props,
             key: key,
-            name: props['name'] as String? ?? 'Unknown',
-            imageUrl: props['url'] as String? ?? props['imageUrl'] as String?,
-            alignment: props['alignment'] as int? ?? 0,
-            strength: props['strength'] as int?,
-            intelligence: props['intelligence'] as int?,
-            speed: props['speed'] as int?,
-            durability: props['durability'] as int?,
-            power: props['power'] as int?,
-            combat: props['combat'] as int?,
-            totalPower: props['totalPower'] as int?,
-            publisher: props['publisher'] as String?,
-            race: props['race'] as String?,
-            fullName: props['fullName'] as String?,
-            locked: props['locked'] as bool? ?? false,
             onTap: props['onTap'] != null
                 ? () => WidgetRegistry.callShql(context, shql, props['onTap'] as String)
                 : null,

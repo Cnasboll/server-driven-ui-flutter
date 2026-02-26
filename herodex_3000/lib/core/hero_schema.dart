@@ -5,7 +5,7 @@ import 'package:hero_common/models/hero_shql_adapter.dart';
 /// Generates a SHQL™ schema script from the [HeroModel] Field tree.
 ///
 /// The generated script defines:
-/// 1. NVL accessor functions (BIOGRAPHY, POWERSTATS, etc.)
+/// 1. NVL accessor functions for each section with children
 /// 2. Value type helpers (HEIGHT_M, WEIGHT_KG)
 /// 3. `_detail_fields` metadata for GENERATE_HERO_DETAIL()
 /// 4. `_summary_fields` metadata for GENERATE_HERO_CARDS()
@@ -125,7 +125,6 @@ class HeroSchema {
 
         final section = tf.displayName as String;
         final parentShqlName = (tf.shqlName as String).toUpperCase();
-        final isStatSection = parentShqlName == 'POWERSTATS';
 
         for (var childIndex = 0; childIndex < topChildren.length; childIndex++) {
           final cf = topChildren[childIndex] as dynamic;
@@ -134,6 +133,7 @@ class HeroSchema {
           final childShqlName = (cf.shqlName as String).toUpperCase();
           final childShqlNameLower = cf.shqlName as String;
           final label = cf.name as String;
+          final childDescription = cf.description as String;
 
           if (!first) sb.write(',');
           first = false;
@@ -158,8 +158,8 @@ class HeroSchema {
               'accessor: (hero) => $parentShqlName(hero, x => x.$childShqlName, 0), '
               'display_type: \'enum_label\', enum_labels: $enumLabelsVar}',
             );
-          } else if (isStatSection) {
-            // Stat field — color from positional palette
+          } else if (childDescription == '%') {
+            // Percentage/stat field — the field declares itself as '%'
             final color = _statColorPalette[childIndex % _statColorPalette.length];
             sb.write(
               '    OBJECT{section: \'$section\', label: \'$label\', '
@@ -215,13 +215,18 @@ class HeroSchema {
         first = false;
         sb.writeln();
         sb.write(
-          '    OBJECT{prop_name: \'$propName\', accessor: (hero) => hero.$topShqlName}',
+          '    OBJECT{prop_name: \'$propName\', accessor: (hero) => hero.$topShqlName, is_stat: FALSE}',
         );
       } else {
         final childrenForDbOnly = tf.childrenForDbOnly as bool;
         if (childrenForDbOnly) continue;
 
-        for (final childField in topChildren) {
+        // Detect if all children in this section are percentage/stat fields
+        final allChildrenAreStats = topChildren.isNotEmpty &&
+            topChildren.every((c) => (c as dynamic).description == '%');
+
+        for (var childIndex = 0; childIndex < topChildren.length; childIndex++) {
+          final childField = topChildren[childIndex];
           final cf = childField as dynamic;
           final childShowInSummary = cf.showInSummary as bool;
           if (!childShowInSummary) continue;
@@ -229,6 +234,8 @@ class HeroSchema {
           final childShqlNameLower = cf.shqlName as String;
           final childShqlName = childShqlNameLower.toUpperCase();
           final propName = _snakeToCamelCase(childShqlNameLower);
+          final childDescription = cf.description as String;
+          final isStat = childDescription == '%';
 
           if (!first) sb.write(',');
           first = false;
@@ -236,16 +243,28 @@ class HeroSchema {
 
           // Default: 0 for enums/stats, '' for text
           final enumLabels = HeroShqlAdapter.enumLabelsFor(childShqlNameLower);
-          final isStatChild = topShqlName == 'POWERSTATS';
-          final defaultVal = (enumLabels != null || isStatChild) ? '0' : "''";
-          sb.write(
-            '    OBJECT{prop_name: \'$propName\', '
-            'accessor: (hero) => $topShqlName(hero, x => x.$childShqlName, $defaultVal)}',
-          );
+          final defaultVal = (enumLabels != null || isStat) ? '0' : "''";
+
+          if (isStat) {
+            // Percentage/stat field — the field declares itself as '%'
+            final label = (cf.name as String).substring(0, 3).toUpperCase();
+            final color = _statColorPalette[childIndex % _statColorPalette.length];
+            sb.write(
+              '    OBJECT{prop_name: \'$propName\', '
+              'accessor: (hero) => $topShqlName(hero, x => x.$childShqlName, $defaultVal), '
+              'is_stat: TRUE, label: \'$label\', color: \'$color\'}',
+            );
+          } else {
+            sb.write(
+              '    OBJECT{prop_name: \'$propName\', '
+              'accessor: (hero) => $topShqlName(hero, x => x.$childShqlName, $defaultVal), '
+              'is_stat: FALSE}',
+            );
+          }
         }
 
-        // Remember PowerStats for totalPower generation
-        if (topShqlName == 'POWERSTATS') {
+        // Remember stat sections for totalPower generation
+        if (allChildrenAreStats) {
           statsAccessor = topShqlName;
           statsChildren = topChildren;
         }
@@ -261,7 +280,7 @@ class HeroSchema {
       sb.write(',');
       sb.writeln();
       sb.write(
-        '    OBJECT{prop_name: \'totalPower\', accessor: (hero) => $sumParts}',
+        '    OBJECT{prop_name: \'totalPower\', accessor: (hero) => $sumParts, is_stat: FALSE}',
       );
     }
 
