@@ -12,7 +12,6 @@ import 'package:server_driven_ui/server_driven_ui.dart';
 import 'core/herodex_widget_registry.dart';
 import 'core/hero_coordinator.dart';
 import 'core/services/hero_search_service.dart';
-import 'core/yaml_screen.dart';
 import 'core/services/connectivity_service.dart';
 import 'core/services/firebase_auth_service.dart';
 import 'core/services/firebase_service.dart';
@@ -22,7 +21,6 @@ import 'core/services/weather_service.dart';
 import 'core/theme/app_theme.dart';
 import 'core/theme/theme_cubit.dart';
 import 'widgets/login_screen.dart';
-import 'widgets/splash_screen.dart';
 import 'widgets/conflict_resolver_dialog.dart' show ReviewAction;
 import 'widgets/dialogs.dart' as dialogs;
 import 'package:hero_common/callbacks.dart';
@@ -85,6 +83,15 @@ class _HeroDexAppState extends State<HeroDexApp> {
     'InfoCard': 'assets/widgets/info_card.yaml',
     'ApiField': 'assets/widgets/api_field.yaml',
     'DetailAppBar': 'assets/widgets/detail_app_bar.yaml',
+    'OverlayActionButton': 'assets/widgets/overlay_action_button.yaml',
+    'YesNoDialog': 'assets/widgets/yes_no_dialog.yaml',
+    'ReconcileDialog': 'assets/widgets/reconcile_dialog.yaml',
+    'PromptDialog': 'assets/widgets/prompt_dialog.yaml',
+    'ConflictDialog': 'assets/widgets/conflict_dialog.yaml',
+    'BadgeRow': 'assets/widgets/badge_row.yaml',
+    'HeroCardBody': 'assets/widgets/hero_card_body.yaml',
+    'DismissibleCard': 'assets/widgets/dismissible_card.yaml',
+    'HeroPlaceholder': 'assets/widgets/hero_placeholder.yaml',
   };
 
   @override
@@ -233,12 +240,20 @@ class _HeroDexAppState extends State<HeroDexApp> {
     await _shqlBindings.eval(HeroSchema.generateSchemaScript());
     await _shqlBindings.loadProgram(herodexCode);
 
-    _yamlEngine = YamlUiEngine(_shqlBindings, createHeroDexWidgetRegistry());
+    final heroDexRegistry = createHeroDexWidgetRegistry();
+    _yamlEngine = YamlUiEngine(_shqlBindings, heroDexRegistry);
 
-    // Load YAML-defined widget templates into the registry
+    // Register custom Dart factories on the static registry so that
+    // imperative Dart screens (HeroCard, etc.) can use buildStatic too.
+    registerStaticFactories(heroDexRegistry);
+
+    // Load YAML-defined widget templates into both the engine registry
+    // (for SHQL™-driven screens) and the static registry (for imperative
+    // Dart screens like login, splash, and dialogs).
     for (final entry in _widgetTemplates.entries) {
       final yaml = await rootBundle.loadString(entry.value);
       _yamlEngine.loadWidgetTemplate(entry.key, yaml);
+      WidgetRegistry.loadStaticTemplate(entry.key, yaml);
     }
 
     // Filter orchestration listeners
@@ -491,14 +506,58 @@ class _HeroDexAppState extends State<HeroDexApp> {
     }
 
     if (!_initialized) {
+      final hasProgress = _loadingTotal > 0;
+      final progressChildren = <dynamic>[
+        if (hasProgress) ...[
+          {'type': 'Padding', 'props': {
+            'padding': {'left': 48, 'right': 48},
+            'child': {'type': 'LinearProgressIndicator', 'props': {
+              'value': _loadingProgress / _loadingTotal,
+              'backgroundColor': '0x3DFFFFFF',
+              'valueColor': '0xFFFFFFFF',
+              'minHeight': 6,
+              'borderRadius': 3,
+            }},
+          }},
+          {'type': 'SizedBox', 'props': {'height': 16}},
+          {'type': 'Text', 'props': {
+            'data': _loadingHeroName.isNotEmpty
+                ? '$_loadingHeroName ($_loadingProgress/$_loadingTotal)'
+                : '$_loadingProgress / $_loadingTotal',
+            'style': {'fontSize': 14, 'color': '0xB3FFFFFF', 'fontFamily': 'Orbitron'},
+          }},
+        ] else ...[
+          {'type': 'CircularProgressIndicator', 'props': {'valueColor': '0xFFFFFFFF'}},
+          if (_loadingStatus.isNotEmpty) ...[
+            {'type': 'SizedBox', 'props': {'height': 16}},
+            {'type': 'Text', 'props': {
+              'data': _loadingStatus,
+              'style': {'fontSize': 14, 'color': '0xB3FFFFFF', 'fontFamily': 'Orbitron'},
+            }},
+          ],
+        ],
+      ];
+
       return MaterialApp(
         debugShowCheckedModeBanner: false,
-        home: SplashScreen(
-          status: _loadingStatus,
-          progress: _loadingProgress,
-          total: _loadingTotal,
-          heroName: _loadingHeroName,
-        ),
+        home: WidgetRegistry.buildStatic(context, {'type': 'Scaffold', 'props': {
+          'backgroundColor': '0xFF1A237E',
+          'body': {'type': 'Center', 'child': {
+            'type': 'Column', 'props': {
+              'mainAxisAlignment': 'center',
+              'children': [
+                {'type': 'Icon', 'props': {'icon': 'shield', 'size': 100, 'color': '0xFFFFFFFF'}},
+                {'type': 'SizedBox', 'props': {'height': 24}},
+                {'type': 'Text', 'props': {
+                  'data': 'HeroDex 3000',
+                  'style': {'fontSize': 32, 'fontWeight': 'bold', 'color': '0xFFFFFFFF', 'fontFamily': 'Orbitron'},
+                }},
+                {'type': 'SizedBox', 'props': {'height': 48}},
+                ...progressChildren,
+              ],
+            },
+          }},
+        }}, 'splash'),
       );
     }
 

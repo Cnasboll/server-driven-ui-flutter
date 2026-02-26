@@ -206,7 +206,7 @@ screen:
                               subtitle: "Help improve HeroDex"
                               query: "_analytics_enabled"
                               valueExpr: "shql: _analytics_enabled"
-                              onChanged: "shql: SET_ANALYTICS_CONSENT(value)"
+                              onChanged: "SET_ANALYTICS_CONSENT(value)"
 
                       - type: SizedBox
                         props:
@@ -224,7 +224,7 @@ screen:
                               subtitle: "Send crash reports automatically"
                               query: "_crashlytics_enabled"
                               valueExpr: "shql: _crashlytics_enabled"
-                              onChanged: "shql: SET_CRASHLYTICS_CONSENT(value)"
+                              onChanged: "SET_CRASHLYTICS_CONSENT(value)"
 
                       - type: SizedBox
                         props:
@@ -242,7 +242,7 @@ screen:
                               subtitle: "Track hero encounters on map"
                               query: "_location_enabled"
                               valueExpr: "shql: _location_enabled"
-                              onChanged: "shql: SET_LOCATION_CONSENT(value)"
+                              onChanged: "SET_LOCATION_CONSENT(value)"
 
                       - type: SizedBox
                         props:

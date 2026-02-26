@@ -60,8 +60,8 @@ screen:
                   query: "_api_key"
                   initialValue: "shql: _api_key"
                   hintText: "Enter your superheroapi.com API key"
-                  onChanged: "shql: SET_API_KEY(value)"
-                  onSubmitted: "shql: SET_API_KEY(value)"
+                  onChanged: "SET_API_KEY(value)"
+                  onSubmitted: "SET_API_KEY(value)"
 
               - type: Padding
                 props:
@@ -83,8 +83,8 @@ screen:
                   query: "_api_host"
                   initialValue: "shql: _api_host"
                   hintText: "www.superheroapi.com"
-                  onChanged: "shql: SET_API_HOST(value)"
-                  onSubmitted: "shql: SET_API_HOST(value)"
+                  onChanged: "SET_API_HOST(value)"
+                  onSubmitted: "SET_API_HOST(value)"
 
               - type: Divider
 
@@ -101,7 +101,7 @@ screen:
                   subtitle: "Help improve HeroDex with usage data"
                   query: "_analytics_enabled"
                   valueExpr: "shql: _analytics_enabled"
-                  onChanged: "shql: SET_ANALYTICS_CONSENT(value)"
+                  onChanged: "SET_ANALYTICS_CONSENT(value)"
 
               - type: ConsentToggle
                 props:
@@ -110,7 +110,7 @@ screen:
                   subtitle: "Automatically send crash reports"
                   query: "_crashlytics_enabled"
                   valueExpr: "shql: _crashlytics_enabled"
-                  onChanged: "shql: SET_CRASHLYTICS_CONSENT(value)"
+                  onChanged: "SET_CRASHLYTICS_CONSENT(value)"
 
               - type: ConsentToggle
                 props:
@@ -119,7 +119,7 @@ screen:
                   subtitle: "Show heroes on map"
                   query: "_location_enabled"
                   valueExpr: "shql: _location_enabled"
-                  onChanged: "shql: SET_LOCATION_CONSENT(value)"
+                  onChanged: "SET_LOCATION_CONSENT(value)"
 
               - type: Observer
                 props:
@@ -287,4 +287,4 @@ screen:
       type: BottomNav
       props:
         currentIndex: 3
-        onTap: "shql: TAB_NAV(3, value)"
+        onTap: "TAB_NAV(3, value)"

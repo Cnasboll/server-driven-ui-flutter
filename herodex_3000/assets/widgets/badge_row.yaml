@@ -1,0 +1,20 @@
+widget:
+  type: Row
+  props:
+    mainAxisSize: "min"
+    children:
+      - type: Icon
+        props:
+          icon: "prop:icon"
+          color: "0xFFFFFFFF"
+          size: 14
+      - type: SizedBox
+        props:
+          width: 4
+      - type: Text
+        props:
+          data: "prop:label"
+          style:
+            color: "0xFFFFFFFF"
+            fontSize: 10
+            fontWeight: "bold"

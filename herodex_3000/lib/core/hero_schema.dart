@@ -249,10 +249,11 @@ class HeroSchema {
             // Percentage/stat field — the field declares itself as '%'
             final label = (cf.name as String).substring(0, 3).toUpperCase();
             final color = _statColorPalette[childIndex % _statColorPalette.length];
+            final bgColor = '0x1A${color.substring(4)}'; // 10% alpha
             sb.write(
               '    OBJECT{prop_name: \'$propName\', '
               'accessor: (hero) => $topShqlName(hero, x => x.$childShqlName, $defaultVal), '
-              'is_stat: TRUE, label: \'$label\', color: \'$color\'}',
+              'is_stat: TRUE, label: \'$label\', color: \'$color\', bg_color: \'$bgColor\'}',
             );
           } else {
             sb.write(

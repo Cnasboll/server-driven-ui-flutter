@@ -74,6 +74,14 @@ class ShqlBindings {
         );
       }
     }
+
+    // Framework directive: CLOSE_DIALOG(value) — returns a sentinel map
+    // that callShql intercepts to call Navigator.of(context).pop(value).
+    _runtime.setUnaryFunction(
+      'CLOSE_DIALOG',
+      (executionContext, caller, value) =>
+          <String, dynamic>{'__close_dialog__': true, 'value': value},
+    );
   }
 
   final VoidCallback onMutated;

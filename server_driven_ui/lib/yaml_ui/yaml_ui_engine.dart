@@ -54,6 +54,7 @@ class YamlUiEngine {
   }
 
   Widget _buildWidget(dynamic node, BuildContext context, String path) {
+    if (node is Widget) return node;
     if (node is Map && node.containsKey('type')) {
       final type = node['type'] as String;
       final props = (node['props'] as Map?) ?? {};

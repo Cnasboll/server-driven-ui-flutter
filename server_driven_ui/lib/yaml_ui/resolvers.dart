@@ -186,6 +186,14 @@ class Resolvers {
       case 'play_arrow': return Icons.play_arrow;
       case 'save': return Icons.save;
       case 'volume_up': return Icons.volume_up;
+      case 'help_outline': return Icons.help_outline;
+      case 'balance': return Icons.balance;
+      case 'verified_user': return Icons.verified_user;
+      case 'thumb_up': return Icons.thumb_up;
+      case 'warning_amber': return Icons.warning_amber;
+      case 'whatshot': return Icons.whatshot;
+      case 'mood_bad': return Icons.mood_bad;
+      case 'local_fire_department': return Icons.local_fire_department;
       default: return Icons.help_outline;
     }
   }

@@ -1,0 +1,6 @@
+widget:
+  type: Icon
+  props:
+    icon: "person"
+    size: 64
+    color: "prop:color"

@@ -1,0 +1,45 @@
+# Prompt dialog: asks user for text input.
+# Props: prompt (String), defaultValue (String)
+# The caller must SET('_DIALOG_TEXT', defaultValue) before showing this dialog.
+# The TextField updates _DIALOG_TEXT via onChanged.
+# OK returns _DIALOG_TEXT; Cancel returns NULL (caller falls back to default).
+widget:
+  type: AlertDialog
+  props:
+    title:
+      type: Text
+      props:
+        data: "Configuration Required"
+    content:
+      type: Column
+      props:
+        mainAxisSize: "min"
+        crossAxisAlignment: "start"
+        children:
+          - type: Text
+            props:
+              data: "prop:prompt"
+          - type: SizedBox
+            props:
+              height: 12
+          - type: TextField
+            props:
+              initialValue: "prop:defaultValue"
+              autofocus: true
+              onChanged: "shql: SET('_DIALOG_TEXT', value)"
+              onSubmitted: "shql: CLOSE_DIALOG(_DIALOG_TEXT)"
+    actions:
+      - type: TextButton
+        props:
+          onPressed: "shql: CLOSE_DIALOG(NULL)"
+          child:
+            type: Text
+            props:
+              data: "Cancel"
+      - type: TextButton
+        props:
+          onPressed: "shql: CLOSE_DIALOG(_DIALOG_TEXT)"
+          child:
+            type: Text
+            props:
+              data: "OK"

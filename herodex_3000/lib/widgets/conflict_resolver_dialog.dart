@@ -3,12 +3,20 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:hero_common/value_types/conflict_resolver.dart';
 import 'package:hero_common/value_types/value_type.dart';
+import 'package:server_driven_ui/server_driven_ui.dart';
 
 /// Actions for the one-by-one hero review dialog.
 enum ReviewAction { save, skip, saveAll, cancel }
 
+Widget _b(BuildContext c, Map<String, dynamic> node, String p) =>
+    WidgetRegistry.buildStatic(c, node, 'conflict.$p');
+
 /// Shows a height/weight conflict resolution dialog.
 /// Returns the chosen system of units and whether to apply to all, or null if cancelled.
+///
+/// Uses SHQL™ variables for dialog state:
+///   _CONFLICT_VALUE1_ID, _CONFLICT_VALUE2_ID — unit identifiers returned by CLOSE_DIALOG
+///   _APPLY_TO_ALL — checkbox state, toggled by SET() in the YAML template
 Future<({SystemOfUnits? choice, bool applyToAll})?> showConflictDialog<T extends ValueType<T>>(
   GlobalKey<NavigatorState> navigatorKey,
   String valueTypeName,
@@ -24,62 +32,37 @@ Future<({SystemOfUnits? choice, bool applyToAll})?> showConflictDialog<T extends
       return;
     }
 
-    bool applyToAll = false;
+    // Initialize SHQL™ variables for the ConflictDialog template
+    final shql = WidgetRegistry.staticShql;
+    shql.setVariable('_CONFLICT_VALUE1_ID', value.systemOfUnits.name);
+    shql.setVariable('_CONFLICT_VALUE2_ID', conflictingValue.systemOfUnits.name);
+    shql.setVariable('_APPLY_TO_ALL', false);
 
     try {
-      final result = await showDialog<SystemOfUnits?>(
+      final result = await showDialog<dynamic>(
         context: overlayContext,
         barrierDismissible: false,
-        builder: (ctx) => StatefulBuilder(
-          builder: (ctx, setDialogState) => AlertDialog(
-            title: Text('${valueTypeName[0].toUpperCase()}${valueTypeName.substring(1)} Conflict'),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text('The data has conflicting values:'),
-                const SizedBox(height: 16),
-                Text(
-                  '${value.systemOfUnits.name[0].toUpperCase()}${value.systemOfUnits.name.substring(1)}: $value',
-                  style: const TextStyle(fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  '${conflictingValue.systemOfUnits.name[0].toUpperCase()}${conflictingValue.systemOfUnits.name.substring(1)}: $conflictingValue',
-                  style: const TextStyle(fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 16),
-                CheckboxListTile(
-                  contentPadding: EdgeInsets.zero,
-                  title: const Text('Apply to all remaining conflicts'),
-                  value: applyToAll,
-                  onChanged: (v) => setDialogState(() => applyToAll = v ?? false),
-                ),
-              ],
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(ctx).pop(null),
-                child: const Text('Cancel'),
-              ),
-              FilledButton(
-                onPressed: () => Navigator.of(ctx).pop(value.systemOfUnits),
-                child: Text('Use ${value.systemOfUnits.name}'),
-              ),
-              FilledButton(
-                onPressed: () => Navigator.of(ctx).pop(conflictingValue.systemOfUnits),
-                child: Text('Use ${conflictingValue.systemOfUnits.name}'),
-              ),
-            ],
-          ),
-        ),
+        builder: (ctx) => _b(ctx, {'type': 'ConflictDialog', 'props': {
+          'title': '${valueTypeName[0].toUpperCase()}${valueTypeName.substring(1)} Conflict',
+          'value1Text': '${value.systemOfUnits.name[0].toUpperCase()}${value.systemOfUnits.name.substring(1)}: $value',
+          'value2Text': '${conflictingValue.systemOfUnits.name[0].toUpperCase()}${conflictingValue.systemOfUnits.name.substring(1)}: $conflictingValue',
+          'useValue1Label': 'Use ${value.systemOfUnits.name}',
+          'useValue2Label': 'Use ${conflictingValue.systemOfUnits.name}',
+        }}, 'dialog') as AlertDialog,
       );
 
-      if (result == null) {
-        completer.complete(null);
-      } else {
-        completer.complete((choice: result, applyToAll: applyToAll));
+      // CLOSE_DIALOG returns OBJECT{choice, applyToAll} or NULL
+      if (result is Map) {
+        final choiceName = result['choice'] as String?;
+        // SHQL objectToMap() lowercases all keys: applyToAll → applytoall
+        final applyToAll = result['applytoall'] == true;
+        final choice = SystemOfUnits.values.where((s) => s.name == choiceName).firstOrNull;
+        if (choice != null) {
+          completer.complete((choice: choice, applyToAll: applyToAll));
+          return;
+        }
       }
+      completer.complete(null);
     } catch (e) {
       debugPrint('Conflict dialog error: $e');
       completer.complete(null);

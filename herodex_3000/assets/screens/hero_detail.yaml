@@ -66,4 +66,4 @@ screen:
       type: BottomNav
       props:
         currentIndex: 0
-        onTap: "shql: TAB_NAV(-1, value)"
+        onTap: "TAB_NAV(-1, value)"

@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:server_driven_ui/server_driven_ui.dart';
 
 import '../core/services/firebase_auth_service.dart';
 
 /// Firebase Auth login/register screen.
 /// Shown before the app is accessible.
+///
+/// Uses only basic registry types (no YAML templates) because this screen
+/// renders before `_initServices()` has loaded any templates.
 class LoginScreen extends StatefulWidget {
   const LoginScreen({
     super.key,
@@ -24,6 +28,9 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _isRegistering = false;
   bool _isLoading = false;
   String? _error;
+
+  Widget _b(Map<String, dynamic> node, String p) =>
+      WidgetRegistry.buildStatic(context, node, 'login.$p');
 
   @override
   void dispose() {
@@ -64,105 +71,85 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFF1A237E),
-      body: Center(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(32),
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 400),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Icon(Icons.shield, size: 80, color: Colors.white),
-                const SizedBox(height: 16),
-                const Text(
-                  'HeroDex 3000',
-                  style: TextStyle(
-                    fontSize: 28,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                    fontFamily: 'Orbitron',
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  _isRegistering ? 'Create Account' : 'Sign In',
-                  style: const TextStyle(fontSize: 16, color: Colors.white70),
-                ),
-                const SizedBox(height: 32),
-                Card(
-                  child: Padding(
-                    padding: const EdgeInsets.all(24),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        TextField(
-                          controller: _emailController,
-                          keyboardType: TextInputType.emailAddress,
-                          textInputAction: TextInputAction.next,
-                          decoration: const InputDecoration(
-                            labelText: 'Email',
-                            prefixIcon: Icon(Icons.email),
-                            border: OutlineInputBorder(),
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                        TextField(
-                          controller: _passwordController,
-                          obscureText: true,
-                          textInputAction: TextInputAction.done,
-                          onSubmitted: (_) => _submit(),
-                          decoration: const InputDecoration(
-                            labelText: 'Password',
-                            prefixIcon: Icon(Icons.lock),
-                            border: OutlineInputBorder(),
-                          ),
-                        ),
-                        if (_error != null) ...[
-                          const SizedBox(height: 12),
-                          Text(
-                            _error!,
-                            style: TextStyle(color: Colors.red[700], fontSize: 13),
-                          ),
-                        ],
-                        const SizedBox(height: 24),
-                        FilledButton(
-                          onPressed: _isLoading ? null : _submit,
-                          child: _isLoading
-                              ? const SizedBox(
-                                  height: 20,
-                                  width: 20,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                    color: Colors.white,
-                                  ),
-                                )
-                              : Text(_isRegistering ? 'Register' : 'Sign In'),
-                        ),
-                        const SizedBox(height: 12),
-                        TextButton(
-                          onPressed: _isLoading
-                              ? null
-                              : () => setState(() {
-                                    _isRegistering = !_isRegistering;
-                                    _error = null;
-                                  }),
-                          child: Text(
-                            _isRegistering
-                                ? 'Already have an account? Sign in'
-                                : "Don't have an account? Register",
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
+    final formChildren = <dynamic>[
+      {'type': 'TextField', 'props': {
+        'controller': _emailController,
+        'keyboardType': 'emailAddress',
+        'textInputAction': 'next',
+        'decoration': {'labelText': 'Email', 'prefixIcon': 'email', 'border': 'outline'},
+      }},
+      {'type': 'SizedBox', 'props': {'height': 16}},
+      {'type': 'TextField', 'props': {
+        'controller': _passwordController,
+        'obscureText': true,
+        'textInputAction': 'done',
+        'dartOnSubmitted': (String _) => _submit(),
+        'decoration': {'labelText': 'Password', 'prefixIcon': 'lock', 'border': 'outline'},
+      }},
+      if (_error != null) ...[
+        {'type': 'SizedBox', 'props': {'height': 12}},
+        {'type': 'Text', 'props': {'data': _error!, 'style': {'color': '0xFFD32F2F', 'fontSize': 13}}},
+      ],
+      {'type': 'SizedBox', 'props': {'height': 24}},
+      {'type': 'FilledButton', 'props': {
+        'onPressed': _isLoading ? null : _submit,
+        'child': _isLoading
+            ? {'type': 'SizedBox', 'props': {
+                'height': 20, 'width': 20,
+                'child': {'type': 'CircularProgressIndicator', 'props': {'strokeWidth': 2}},
+              }}
+            : {'type': 'Text', 'props': {'data': _isRegistering ? 'Register' : 'Sign In'}},
+      }},
+      {'type': 'SizedBox', 'props': {'height': 12}},
+      {'type': 'TextButton', 'props': {
+        'onPressed': _isLoading ? null : () => setState(() {
+          _isRegistering = !_isRegistering;
+          _error = null;
+        }),
+        'child': {'type': 'Text', 'props': {
+          'data': _isRegistering
+              ? 'Already have an account? Sign in'
+              : "Don't have an account? Register",
+        }},
+      }},
+    ];
+
+    return _b({'type': 'Scaffold', 'props': {
+      'backgroundColor': '0xFF1A237E',
+      'body': {'type': 'Center', 'child': {
+        'type': 'SingleChildScrollView', 'props': {
+          'padding': 32,
+          'child': {'type': 'ConstrainedBox', 'props': {
+            'maxWidth': 400,
+            'child': {'type': 'Column', 'props': {
+              'mainAxisAlignment': 'center',
+              'children': [
+                {'type': 'Icon', 'props': {'icon': 'shield', 'size': 80, 'color': '0xFFFFFFFF'}},
+                {'type': 'SizedBox', 'props': {'height': 16}},
+                {'type': 'Text', 'props': {
+                  'data': 'HeroDex 3000',
+                  'style': {'fontSize': 28, 'fontWeight': 'bold', 'color': '0xFFFFFFFF', 'fontFamily': 'Orbitron'},
+                }},
+                {'type': 'SizedBox', 'props': {'height': 8}},
+                {'type': 'Text', 'props': {
+                  'data': _isRegistering ? 'Create Account' : 'Sign In',
+                  'style': {'fontSize': 16, 'color': '0xB3FFFFFF'},
+                }},
+                {'type': 'SizedBox', 'props': {'height': 32}},
+                {'type': 'Card', 'child': {
+                  'type': 'Padding', 'props': {
+                    'padding': 24,
+                    'child': {'type': 'Column', 'props': {
+                      'crossAxisAlignment': 'stretch',
+                      'children': formChildren,
+                    }},
+                  },
+                }},
               ],
-            ),
-          ),
-        ),
-      ),
-    );
+            }},
+          }},
+        },
+      }},
+    }}, 'screen');
   }
 }

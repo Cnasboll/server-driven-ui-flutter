@@ -172,12 +172,14 @@ screen:
                                             style:
                                               fontSize: 16
                                               fontWeight: "bold"
-                                - type: BattleMap
+                                - type: ClipRRect
                                   props:
-                                    latitude: "shql: _user_latitude"
-                                    longitude: "shql: _user_longitude"
-                                    zoom: 10
-                                    markers: "shql: GENERATE_BATTLE_LOCATIONS()"
+                                    borderRadius: 12
+                                    child:
+                                      type: SizedBox
+                                      props:
+                                        height: 250
+                                        child: "shql: GENERATE_BATTLE_MAP()"
 
               - type: SizedBox
                 props:
@@ -218,4 +220,4 @@ screen:
       type: BottomNav
       props:
         currentIndex: 0
-        onTap: "shql: TAB_NAV(0, value)"
+        onTap: "TAB_NAV(0, value)"

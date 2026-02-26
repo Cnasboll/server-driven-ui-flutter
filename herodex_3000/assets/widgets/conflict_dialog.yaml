@@ -1,0 +1,72 @@
+# Conflict dialog: resolves height/weight value conflicts.
+# Props: title (String), value1Text (String), value2Text (String),
+#        useValue1Label (String), useValue2Label (String)
+# The caller must set these SHQL™ variables before showing:
+#   _CONFLICT_VALUE1_ID, _CONFLICT_VALUE2_ID, _APPLY_TO_ALL (= FALSE)
+# Cancel returns NULL; Use buttons return OBJECT{choice, applyToAll}.
+widget:
+  type: AlertDialog
+  props:
+    title:
+      type: Text
+      props:
+        data: "prop:title"
+    content:
+      type: Column
+      props:
+        mainAxisSize: "min"
+        crossAxisAlignment: "start"
+        children:
+          - type: Text
+            props:
+              data: "The data has conflicting values:"
+          - type: SizedBox
+            props:
+              height: 16
+          - type: Text
+            props:
+              data: "prop:value1Text"
+              style:
+                fontWeight: "bold"
+          - type: SizedBox
+            props:
+              height: 4
+          - type: Text
+            props:
+              data: "prop:value2Text"
+              style:
+                fontWeight: "bold"
+          - type: SizedBox
+            props:
+              height: 16
+          - type: CheckboxListTile
+            props:
+              contentPadding: 0
+              title:
+                type: Text
+                props:
+                  data: "Apply to all remaining conflicts"
+              value: "shql: _APPLY_TO_ALL"
+              onChanged: "shql: SET('_APPLY_TO_ALL', value)"
+    actions:
+      - type: TextButton
+        props:
+          onPressed: "shql: CLOSE_DIALOG(NULL)"
+          child:
+            type: Text
+            props:
+              data: "Cancel"
+      - type: FilledButton
+        props:
+          onPressed: "shql: CLOSE_DIALOG(OBJECT{choice: _CONFLICT_VALUE1_ID, applyToAll: _APPLY_TO_ALL})"
+          child:
+            type: Text
+            props:
+              data: "prop:useValue1Label"
+      - type: FilledButton
+        props:
+          onPressed: "shql: CLOSE_DIALOG(OBJECT{choice: _CONFLICT_VALUE2_ID, applyToAll: _APPLY_TO_ALL})"
+          child:
+            type: Text
+            props:
+              data: "prop:useValue2Label"

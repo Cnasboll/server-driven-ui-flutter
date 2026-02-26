@@ -67,6 +67,15 @@ class WidgetRegistry {
     'ListTile': _buildListTile,
     'BottomNavigationBar': _buildBottomNavigationBar,
     'AnimatedNumber': _buildAnimatedNumber,
+    'FilledButton': _buildFilledButton,
+    'AlertDialog': _buildAlertDialog,
+    'CheckboxListTile': _buildCheckboxListTile,
+    'ConstrainedBox': _buildConstrainedBox,
+    'InkWell': _buildInkWell,
+    'Material': _buildMaterial,
+    'Dismissible': _buildDismissible,
+    'Semantics': _buildSemantics,
+    'Tooltip': _buildTooltip,
   });
 
   WidgetFactory? get(String type) => _factories[type];
@@ -84,12 +93,27 @@ class WidgetRegistry {
   }
 
   /// Deep-walks [node], replacing `"prop:xyz"` strings with `props['xyz']`.
+  ///
+  /// When an `on*` key (callback) resolves to a raw string without a `shql:`
+  /// prefix, it is automatically wrapped as `"shql: <expr>"` so the framework
+  /// recognises it as a SHQL™ callback. Callbacks are always SHQL — no other
+  /// abstraction is supported.
   static dynamic substituteProps(dynamic node, Map<String, dynamic> props) {
     if (node is String && node.startsWith('prop:')) {
       return props[node.substring(5)];
     }
     if (node is Map) {
-      return node.map((k, v) => MapEntry(k, substituteProps(v, props)));
+      return node.map((k, v) {
+        final resolved = substituteProps(v, props);
+        // on* keys are always SHQL callbacks — auto-prefix if needed.
+        if (resolved is String &&
+            !isShqlRef(resolved) &&
+            k is String &&
+            k.length > 2 && k.startsWith('on') && k[2] == k[2].toUpperCase()) {
+          return MapEntry(k, 'shql: $resolved');
+        }
+        return MapEntry(k, resolved);
+      });
     }
     if (node is List) {
       return node.map((item) => substituteProps(item, props)).toList();
@@ -127,8 +151,71 @@ class WidgetRegistry {
     );
   }
 
-  /// Calls a SHQL expression from a user-interaction callback (button press, tap, etc.).
+  /// A shared basic registry + lightweight SHQL™ bindings for static widget construction.
+  static final WidgetRegistry _basicInstance = WidgetRegistry.basic();
+  static final ShqlBindings _staticShql = ShqlBindings(onMutated: () {});
+  static final YamlUiEngine _staticEngine = YamlUiEngine(_staticShql, _basicInstance);
+
+  /// Public access to the static SHQL™ bindings — for setting dialog variables
+  /// (e.g. `_DIALOG_TEXT`, `_APPLY_TO_ALL`) before showing YAML-driven dialogs.
+  static ShqlBindings get staticShql => _staticShql;
+
+  /// Register a custom Dart [WidgetFactory] on the static registry so it is
+  /// available to [buildStatic] (imperative screens, dialogs, etc.).
+  static void registerStaticFactory(String name, WidgetFactory factory) {
+    _basicInstance._factories[name] = factory;
+  }
+
+  /// Register a YAML-defined widget template on the static registry so it is
+  /// available to [buildStatic] (imperative screens, dialogs, etc.).
+  static void registerStaticTemplate(String name, dynamic template) {
+    _basicInstance.registerTemplate(name, template);
+  }
+
+  /// Load and register a YAML template string on the static registry.
+  static void loadStaticTemplate(String name, String yaml) {
+    _staticEngine.loadWidgetTemplate(name, yaml);
+  }
+
+  /// Build a widget from a YAML-like node spec without requiring a running
+  /// SHQL™ engine. Useful for imperative screens (login, splash, dialogs)
+  /// that still want registry-driven leaf construction.
+  ///
+  /// The [node] is a map like `{'type': 'Text', 'props': {'data': 'Hello'}}`.
+  /// Nested children are resolved recursively through the same registry.
+  static Widget buildStatic(BuildContext context, dynamic node, [String path = 'static']) {
+    // Pass through pre-built Widget objects unchanged
+    if (node is Widget) return node;
+    if (node is! Map) {
+      return const SizedBox.shrink();
+    }
+    final type = node['type'] as String?;
+    if (type == null) return const SizedBox.shrink();
+    final props = (node['props'] as Map?)?.cast<String, dynamic>() ?? <String, dynamic>{};
+    final child = node['child'] ?? props['child'];
+    final children = node['children'] ?? props['children'];
+    return _basicInstance.build(
+      type: type,
+      context: context,
+      props: props,
+      buildChild: (childNode, childPath) => buildStatic(context, childNode, childPath),
+      child: child,
+      children: children,
+      path: path,
+      shql: _staticShql,
+      engine: _staticEngine,
+    );
+  }
+
+  /// Calls a SHQL™ expression from a user-interaction callback (button press, tap, etc.).
   /// Catches any exception and shows it in a SnackBar rather than crashing the app.
+  ///
+  /// Handles the `CLOSE_DIALOG(value)` framework directive: SHQL™ evaluates the
+  /// expression normally, CLOSE_DIALOG (a registered Dart function) returns a
+  /// sentinel map, and this method intercepts it to call
+  /// `Navigator.of(context).pop(value)`.  This is a native Dart callback that
+  /// SHQL™ invokes for closing dialogs — the same pattern as file I/O or
+  /// network calls.
   static void callShql(
     BuildContext context,
     ShqlBindings shql,
@@ -138,7 +225,18 @@ class WidgetRegistry {
   }) {
     shql
         .call(code, targeted: targeted, boundValues: boundValues)
-        .catchError((Object e) {
+        .then((result) {
+      if (result is Map &&
+          result['__close_dialog__'] == true &&
+          context.mounted) {
+        var value = result['value'];
+        // Convert SHQL Objects to Dart Maps so callers can use map syntax
+        if (shql.isShqlObject(value)) {
+          value = shql.objectToMap(value);
+        }
+        Navigator.of(context).pop(value);
+      }
+    }).catchError((Object e) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -175,6 +273,73 @@ class WidgetRegistry {
   }
 }
 
+/// A 3-tier widget registry for apps: custom factories → basic widgets → YAML templates.
+///
+/// Apps create an instance with their domain-specific widget factories.
+/// The lookup order is: custom → basic (framework) → YAML templates.
+class AppWidgetRegistry extends WidgetRegistry {
+  final WidgetRegistry _basicRegistry;
+  final Map<String, WidgetFactory> _customFactories;
+
+  AppWidgetRegistry(this._basicRegistry, this._customFactories)
+    : super({});
+
+  /// Exposes custom factories for static registry registration.
+  Map<String, WidgetFactory> get customFactories => _customFactories;
+
+  @override
+  WidgetFactory? get(String type) {
+    if (_customFactories.containsKey(type)) {
+      return _customFactories[type];
+    }
+    return _basicRegistry.get(type) ?? super.get(type);
+  }
+
+  @override
+  Widget build({
+    required String type,
+    required BuildContext context,
+    required Map<String, dynamic> props,
+    required ChildBuilder buildChild,
+    required dynamic child,
+    required dynamic children,
+    required String path,
+    required ShqlBindings shql,
+    required YamlUiEngine engine,
+  }) {
+    if (_customFactories.containsKey(type)) {
+      final key = ValueKey<String>(path);
+      return _customFactories[type]!(
+        context, props, buildChild, child, children, path, shql, key, engine,
+      );
+    }
+    if (_basicRegistry.get(type) != null) {
+      return _basicRegistry.build(
+        type: type,
+        context: context,
+        props: props,
+        buildChild: buildChild,
+        child: child,
+        children: children,
+        path: path,
+        shql: shql,
+        engine: engine,
+      );
+    }
+    return super.build(
+      type: type,
+      context: context,
+      props: props,
+      buildChild: buildChild,
+      child: child,
+      children: children,
+      path: path,
+      shql: shql,
+      engine: engine,
+    );
+  }
+}
+
 Widget _buildScaffold(
   BuildContext context,
   Map<String, dynamic> props,
@@ -189,8 +354,10 @@ Widget _buildScaffold(
   final appBarNode = props['appBar'];
   final bodyNode = props['body'];
   final bottomNavNode = props['bottomNavigationBar'];
+  final bgColor = props['backgroundColor'];
   return Scaffold(
     key: key,
+    backgroundColor: bgColor != null ? Resolvers.color(bgColor) : null,
     appBar: appBarNode != null
         ? b(appBarNode, '$path.props.appBar') as PreferredSizeWidget
         : null,
@@ -358,6 +525,40 @@ Widget _buildContainer(
     );
   }
 
+  // Gradient: {type: 'linear', colors: ['0xFF...', '0xFF...']}
+  Gradient? gradient;
+  final gradientMap = decorationMap?['gradient'] as Map?;
+  if (gradientMap != null) {
+    final rawColors = gradientMap['colors'] as List?;
+    if (rawColors != null) {
+      final colors = rawColors
+          .map((c) => Resolvers.color(c) ?? Colors.transparent)
+          .toList();
+      gradient = LinearGradient(colors: colors);
+    }
+  }
+
+  // BoxShadow: [{blurRadius: 4, color: '0x42000000'}]
+  List<BoxShadow>? boxShadow;
+  final rawShadows = decorationMap?['boxShadow'] as List?;
+  if (rawShadows != null) {
+    boxShadow = rawShadows
+        .whereType<Map>()
+        .map((s) => BoxShadow(
+              blurRadius: (s['blurRadius'] as num?)?.toDouble() ?? 0,
+              color: Resolvers.color(s['color']) ?? Colors.black26,
+              offset: Offset(
+                (s['offsetX'] as num?)?.toDouble() ?? 0,
+                (s['offsetY'] as num?)?.toDouble() ?? 0,
+              ),
+            ))
+        .toList();
+  }
+
+  // Shape: 'circle' for BoxShape.circle
+  final shapeStr = decorationMap?['shape']?.toString();
+  final shape = shapeStr == 'circle' ? BoxShape.circle : BoxShape.rectangle;
+
   return Container(
     key: key,
     width: (props['width'] as num?)?.toDouble(),
@@ -367,8 +568,11 @@ Widget _buildContainer(
     alignment: Resolvers.alignment(props['alignment'] as String?),
     decoration: BoxDecoration(
       color: Resolvers.color(props['color'] ?? decorationMap?['color']),
-      borderRadius: Resolvers.borderRadius(decorationMap?['borderRadius']),
+      borderRadius: shape == BoxShape.circle ? null : Resolvers.borderRadius(decorationMap?['borderRadius']),
       border: border,
+      gradient: gradient,
+      boxShadow: boxShadow,
+      shape: shape,
     ),
     child: child != null ? b(child, '$path.child') : null,
   );
@@ -467,15 +671,7 @@ Widget _buildElevatedButton(
   YamlUiEngine engine,
 ) {
   final childNode = props['child'] ?? child;
-  final onPressed = props['onPressed'];
-
-  VoidCallback? cb;
-  if (isShqlRef(onPressed)) {
-    final (:code, :targeted) = parseShql(onPressed as String);
-    cb = () {
-      WidgetRegistry.callShql(context, shql, code, targeted: targeted);
-    };
-  }
+  final cb = _resolveOnPressed(props['onPressed'], context, shql);
 
   return ElevatedButton(
     key: key,
@@ -528,10 +724,34 @@ Widget _buildCard(
     };
   }
 
+  // Shape: borderRadius and optional side (border color/width)
+  ShapeBorder? shape;
+  final borderRadius = (props['borderRadius'] as num?)?.toDouble();
+  final borderColor = props['borderColor'];
+  final borderWidth = (props['borderWidth'] as num?)?.toDouble();
+  if (borderRadius != null || borderColor != null) {
+    shape = RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(borderRadius ?? 0),
+      side: borderColor != null
+          ? BorderSide(
+              color: Resolvers.color(borderColor) ?? Colors.transparent,
+              width: borderWidth ?? 1.0,
+            )
+          : BorderSide.none,
+    );
+  }
+
+  final clipStr = props['clipBehavior']?.toString();
+  Clip? clip;
+  if (clipStr == 'antiAlias') clip = Clip.antiAlias;
+  if (clipStr == 'hardEdge') clip = Clip.hardEdge;
+
   Widget card = Card(
     key: key,
     color: Resolvers.color(props['color']),
     elevation: (props['elevation'] as num?)?.toDouble(),
+    shape: shape,
+    clipBehavior: clip ?? Clip.none,
     child: childNode != null ? b(childNode, '$path.child') : null,
   );
 
@@ -606,8 +826,16 @@ class _StatefulTextField extends StatefulWidget {
     required this.shql,
     this.onChanged,
     this.onSubmitted,
+    this.dartOnSubmitted,
     this.initialValue,
     this.decoration,
+    this.externalController,
+    this.obscureText = false,
+    this.autofocus = false,
+    this.textInputAction,
+    this.keyboardType,
+    this.buildChild,
+    this.path = '',
     required this.engine,
     super.key,
   });
@@ -615,8 +843,16 @@ class _StatefulTextField extends StatefulWidget {
   final ShqlBindings shql;
   final String? onChanged;
   final String? onSubmitted;
+  final ValueChanged<String>? dartOnSubmitted;
   final String? initialValue;
   final Map<String, dynamic>? decoration;
+  final TextEditingController? externalController;
+  final bool obscureText;
+  final bool autofocus;
+  final TextInputAction? textInputAction;
+  final TextInputType? keyboardType;
+  final ChildBuilder? buildChild;
+  final String path;
   final YamlUiEngine engine;
 
   @override
@@ -624,24 +860,27 @@ class _StatefulTextField extends StatefulWidget {
 }
 
 class _StatefulTextFieldState extends State<_StatefulTextField> {
-  late final TextEditingController _controller;
+  TextEditingController? _ownController;
   late final Debouncer _debouncer;
+
+  TextEditingController get _controller =>
+      widget.externalController ?? (_ownController ??= TextEditingController(text: widget.initialValue));
 
   @override
   void initState() {
     super.initState();
-    _controller = TextEditingController(text: widget.initialValue);
+    if (widget.externalController == null) {
+      _ownController = TextEditingController(text: widget.initialValue);
+    }
     _debouncer = Debouncer(milliseconds: 500);
   }
 
   @override
   void didUpdateWidget(covariant _StatefulTextField oldWidget) {
     super.didUpdateWidget(oldWidget);
-    // If the initial value from the YAML changes, update the controller,
-    // but only if the text is not the same as the user is currently editing.
-    if (widget.initialValue != oldWidget.initialValue &&
+    if (widget.externalController == null &&
+        widget.initialValue != oldWidget.initialValue &&
         widget.initialValue != _controller.text) {
-      // Using a post-frame callback to avoid conflicts with widget builds.
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) {
           _controller.text = widget.initialValue ?? '';
@@ -652,7 +891,7 @@ class _StatefulTextFieldState extends State<_StatefulTextField> {
 
   @override
   void dispose() {
-    _controller.dispose();
+    _ownController?.dispose();
     _debouncer.dispose();
     super.dispose();
   }
@@ -661,14 +900,52 @@ class _StatefulTextFieldState extends State<_StatefulTextField> {
   Widget build(BuildContext context) {
     final onChanged = widget.onChanged;
     final decoration = widget.decoration ?? {};
-
     final onSubmitted = widget.onSubmitted;
+    final b = widget.buildChild;
+
+    // Build prefixIcon via registry if specified as a string icon name
+    Widget? prefixIcon;
+    final prefixIconValue = decoration['prefixIcon'];
+    if (prefixIconValue is String && b != null) {
+      prefixIcon = b(
+        {'type': 'Icon', 'props': {'icon': prefixIconValue}},
+        '${widget.path}.prefixIcon',
+      );
+    } else if (prefixIconValue is Widget) {
+      prefixIcon = prefixIconValue;
+    }
+
+    // Build suffixIcon via registry if specified
+    Widget? suffixIcon;
+    final suffixIconValue = decoration['suffixIcon'];
+    if (suffixIconValue is String && b != null) {
+      suffixIcon = b(
+        {'type': 'Icon', 'props': {'icon': suffixIconValue}},
+        '${widget.path}.suffixIcon',
+      );
+    } else if (suffixIconValue is Widget) {
+      suffixIcon = suffixIconValue;
+    }
+
+    final inputDecoration = InputDecoration(
+      hintText: decoration['hintText']?.toString(),
+      labelText: decoration['labelText']?.toString(),
+      prefixIcon: prefixIcon,
+      suffixIcon: suffixIcon,
+      border: decoration['border'] == 'outline' ? const OutlineInputBorder() : null,
+    );
+
+    // Determine textInputAction
+    final tia = widget.textInputAction ??
+        (onSubmitted != null ? TextInputAction.done : null);
 
     return TextField(
       controller: _controller,
-      textInputAction: onSubmitted != null ? TextInputAction.done : null,
+      obscureText: widget.obscureText,
+      autofocus: widget.autofocus,
+      textInputAction: tia,
+      keyboardType: widget.keyboardType,
       onChanged: (value) {
-        // When the user types, we use the debouncer to delay the shql call.
         if (isShqlRef(onChanged)) {
           _debouncer.run(() {
             var boundValues = {'value': value};
@@ -682,7 +959,9 @@ class _StatefulTextFieldState extends State<_StatefulTextField> {
         }
       },
       onSubmitted: (value) {
-        if (isShqlRef(onSubmitted)) {
+        if (widget.dartOnSubmitted != null) {
+          widget.dartOnSubmitted!(value);
+        } else if (isShqlRef(onSubmitted)) {
           final (:code, :targeted) = parseShql(onSubmitted as String);
           widget.shql
               .call(code, targeted: targeted, boundValues: {'value': value})
@@ -691,11 +970,33 @@ class _StatefulTextFieldState extends State<_StatefulTextField> {
               });
         }
       },
-      decoration: InputDecoration(
-        hintText: decoration['hintText']?.toString(),
-        border: const OutlineInputBorder(),
-      ),
+      decoration: inputDecoration,
     );
+  }
+}
+
+TextInputType? _resolveKeyboardType(dynamic v) {
+  if (v is TextInputType) return v;
+  switch (v?.toString()) {
+    case 'emailAddress': return TextInputType.emailAddress;
+    case 'number': return TextInputType.number;
+    case 'phone': return TextInputType.phone;
+    case 'url': return TextInputType.url;
+    case 'multiline': return TextInputType.multiline;
+    case 'text': return TextInputType.text;
+    default: return null;
+  }
+}
+
+TextInputAction? _resolveTextInputAction(dynamic v) {
+  if (v is TextInputAction) return v;
+  switch (v?.toString()) {
+    case 'done': return TextInputAction.done;
+    case 'next': return TextInputAction.next;
+    case 'search': return TextInputAction.search;
+    case 'send': return TextInputAction.send;
+    case 'go': return TextInputAction.go;
+    default: return null;
   }
 }
 
@@ -715,8 +1016,16 @@ Widget _buildTextField(
     shql: shql,
     onChanged: props['onChanged'] as String?,
     onSubmitted: props['onSubmitted'] as String?,
+    dartOnSubmitted: props['dartOnSubmitted'] as ValueChanged<String>?,
     initialValue: (props['value'] ?? props['initialValue'])?.toString(),
     decoration: props['decoration'] as Map<String, dynamic>?,
+    externalController: props['controller'] as TextEditingController?,
+    obscureText: props['obscureText'] == true,
+    autofocus: props['autofocus'] == true,
+    textInputAction: _resolveTextInputAction(props['textInputAction']),
+    keyboardType: _resolveKeyboardType(props['keyboardType']),
+    buildChild: b,
+    path: path,
     engine: engine,
   );
 }
@@ -771,7 +1080,12 @@ Widget _buildSingleChildScrollView(
     );
   }
 
-  return SingleChildScrollView(key: key, child: b(child, '$path.child'));
+  final padding = props['padding'];
+  return SingleChildScrollView(
+    key: key,
+    padding: padding != null ? Resolvers.edgeInsets(padding) : null,
+    child: b(child, '$path.child'),
+  );
 }
 
 Widget _buildObserver(
@@ -990,8 +1304,14 @@ Widget _buildStack(
 
   final childrenList = (children as List?) ?? [];
 
+  final fitStr = props['fit']?.toString();
+  final fit = fitStr == 'expand' ? StackFit.expand
+      : fitStr == 'passthrough' ? StackFit.passthrough
+      : StackFit.loose;
+
   return Stack(
     key: key,
+    fit: fit,
     alignment:
         Resolvers.alignment(props['alignment'] as String?) ??
         AlignmentDirectional.topStart,
@@ -1038,12 +1358,16 @@ Widget _buildCircularProgressIndicator(
   Key key,
   YamlUiEngine engine,
 ) {
+  final valueColor = props['valueColor'];
   return CircularProgressIndicator(
     key: key,
     value: (props['value'] as num?)?.toDouble(),
     backgroundColor: Resolvers.color(props['backgroundColor']),
     color: Resolvers.color(props['color']),
     strokeWidth: (props['strokeWidth'] as num?)?.toDouble() ?? 4.0,
+    valueColor: valueColor != null
+        ? AlwaysStoppedAnimation<Color>(Resolvers.color(valueColor)!)
+        : null,
   );
 }
 
@@ -1358,11 +1682,21 @@ Widget _buildLinearProgressIndicator(
   Key key,
   YamlUiEngine engine,
 ) {
+  final valueColor = props['valueColor'];
+  final minHeight = (props['minHeight'] as num?)?.toDouble();
+  final borderRadius = (props['borderRadius'] as num?)?.toDouble();
   return LinearProgressIndicator(
     key: key,
     value: (props['value'] as num?)?.toDouble(),
     backgroundColor: Resolvers.color(props['backgroundColor']),
     color: Resolvers.color(props['color']),
+    valueColor: valueColor != null
+        ? AlwaysStoppedAnimation<Color>(Resolvers.color(valueColor)!)
+        : null,
+    minHeight: minHeight,
+    borderRadius: borderRadius != null
+        ? BorderRadius.circular(borderRadius)
+        : null,
   );
 }
 
@@ -1448,13 +1782,7 @@ Widget _buildTextButton(
   YamlUiEngine engine,
 ) {
   final childNode = props['child'] ?? child;
-  final onPressed = props['onPressed'];
-
-  VoidCallback? cb;
-  if (isShqlRef(onPressed)) {
-    final (:code, :targeted) = parseShql(onPressed as String);
-    cb = () => WidgetRegistry.callShql(context, shql, code, targeted: targeted);
-  }
+  final cb = _resolveOnPressed(props['onPressed'], context, shql);
 
   return TextButton(
     key: key,
@@ -1477,13 +1805,7 @@ Widget _buildOutlinedButton(
   YamlUiEngine engine,
 ) {
   final childNode = props['child'] ?? child;
-  final onPressed = props['onPressed'];
-
-  VoidCallback? cb;
-  if (isShqlRef(onPressed)) {
-    final (:code, :targeted) = parseShql(onPressed as String);
-    cb = () => WidgetRegistry.callShql(context, shql, code, targeted: targeted);
-  }
+  final cb = _resolveOnPressed(props['onPressed'], context, shql);
 
   return OutlinedButton(
     key: key,
@@ -1540,13 +1862,22 @@ Widget _buildFilterEditor(
 ) {
   final mode = props['mode']?.toString() ?? 'manage';
   final onSelect = props['onSelect']?.toString();
-  return _FilterEditor(key: key, shql: shql, mode: mode, onSelect: onSelect);
+  return _FilterEditor(
+    key: key,
+    shql: shql,
+    mode: mode,
+    onSelect: onSelect,
+    buildChild: b,
+    path: path,
+  );
 }
 
 class _FilterEditor extends StatefulWidget {
   const _FilterEditor({
     required this.shql,
     required this.mode,
+    required this.buildChild,
+    required this.path,
     this.onSelect,
     super.key,
   });
@@ -1554,6 +1885,8 @@ class _FilterEditor extends StatefulWidget {
   final ShqlBindings shql;
   final String mode; // 'manage' or 'apply'
   final String? onSelect; // SHQL™ expression to run after selecting a filter
+  final ChildBuilder buildChild;
+  final String path;
 
   @override
   State<_FilterEditor> createState() => _FilterEditorState();
@@ -1567,6 +1900,10 @@ class _FilterEditorState extends State<_FilterEditor> {
   int _totalHeroes = 0;
   bool _compiling = false;
   bool _filtering = false;
+
+  /// Shorthand for widget.buildChild — builds a leaf widget via the registry.
+  Widget _b(Map<String, dynamic> node, String subpath) =>
+      widget.buildChild(node, '${widget.path}.$subpath');
 
   late final TextEditingController _queryController;
   late final TextEditingController _nameController;
@@ -1786,29 +2123,31 @@ class _FilterEditorState extends State<_FilterEditor> {
               if (_isApplyMode)
                 ListTile(
                   dense: true,
-                  leading: const Icon(Icons.select_all, size: 20),
-                  title: const Text('All'),
-                  trailing: Text(
-                    '$_totalHeroes',
-                    style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold),
-                  ),
+                  leading: _b({'type': 'Icon', 'props': {'icon': 'select_all', 'size': 20}}, 'allIcon'),
+                  title: _b({'type': 'Text', 'props': {'data': 'All'}}, 'allLabel'),
+                  trailing: _b({'type': 'Text', 'props': {
+                    'data': '$_totalHeroes',
+                    'style': {'fontWeight': 'bold'},
+                  }}, 'allCount'),
                   selected: _activeFilterIndex == -1 && _editingIndex == -1,
                   onTap: () => _selectAll(),
                 ),
               for (int i = 0; i < _filters.length; i++)
                 ListTile(
                   dense: true,
-                  leading: Icon(
-                    _isApplyMode && _activeFilterIndex == i
-                        ? Icons.check_circle
-                        : Icons.filter_list,
-                    size: 20,
-                  ),
-                  title: Text(_filters[i]['name']?.toString() ?? 'Unnamed'),
-                  trailing: Text(
-                    i < _filterCounts.length ? '${_filterCounts[i]}' : '',
-                    style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold),
-                  ),
+                  leading: _b({'type': 'Icon', 'props': {
+                    'icon': _isApplyMode && _activeFilterIndex == i
+                        ? 'check_circle'
+                        : 'filter_list',
+                    'size': 20,
+                  }}, 'filterIcon[$i]'),
+                  title: _b({'type': 'Text', 'props': {
+                    'data': _filters[i]['name']?.toString() ?? 'Unnamed',
+                  }}, 'filterName[$i]'),
+                  trailing: _b({'type': 'Text', 'props': {
+                    'data': i < _filterCounts.length ? '${_filterCounts[i]}' : '',
+                    'style': {'fontWeight': 'bold'},
+                  }}, 'filterCount[$i]'),
                   selected: _isApplyMode
                       ? _activeFilterIndex == i
                       : _editingIndex == i,
@@ -1839,7 +2178,7 @@ class _FilterEditorState extends State<_FilterEditor> {
               ),
             ),
           ),
-          const SizedBox(height: 4),
+          _b({'type': 'SizedBox', 'props': {'height': 4}}, 'nameGap'),
           _buildQueryField(),
         ] else if (_isApplyMode) ...[
           // No filter selected — free-form query
@@ -1854,19 +2193,19 @@ class _FilterEditorState extends State<_FilterEditor> {
             runSpacing: 4,
             children: [
               OutlinedButton.icon(
-                icon: const Icon(Icons.add, size: 18),
-                label: const Text('Add Filter'),
+                icon: _b({'type': 'Icon', 'props': {'icon': 'add', 'size': 18}}, 'addIcon'),
+                label: _b({'type': 'Text', 'props': {'data': 'Add Filter'}}, 'addLabel'),
                 onPressed: _addFilter,
               ),
               if (_editingIndex >= 0)
                 OutlinedButton.icon(
-                  icon: const Icon(Icons.delete, size: 18),
-                  label: const Text('Delete'),
+                  icon: _b({'type': 'Icon', 'props': {'icon': 'delete', 'size': 18}}, 'deleteIcon'),
+                  label: _b({'type': 'Text', 'props': {'data': 'Delete'}}, 'deleteLabel'),
                   onPressed: _deleteFilter,
                 ),
               OutlinedButton.icon(
-                icon: const Icon(Icons.restore, size: 18),
-                label: const Text('Reset Defaults'),
+                icon: _b({'type': 'Icon', 'props': {'icon': 'restore', 'size': 18}}, 'resetIcon'),
+                label: _b({'type': 'Text', 'props': {'data': 'Reset Defaults'}}, 'resetLabel'),
                 onPressed: _compiling || _filtering ? null : _resetFilters,
               ),
             ],
@@ -1878,12 +2217,11 @@ class _FilterEditorState extends State<_FilterEditor> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const LinearProgressIndicator(),
-                const SizedBox(height: 4),
-                Text(
-                  _compiling ? 'Compiling filters...' : 'Applying filter...',
-                  style: Theme.of(context).textTheme.bodySmall,
-                ),
+                _b({'type': 'LinearProgressIndicator', 'props': {}}, 'progress'),
+                _b({'type': 'SizedBox', 'props': {'height': 4}}, 'progressGap'),
+                _b({'type': 'Text', 'props': {
+                  'data': _compiling ? 'Compiling filters...' : 'Applying filter...',
+                }}, 'progressLabel'),
               ],
             ),
           ),
@@ -1903,7 +2241,9 @@ class _FilterEditorState extends State<_FilterEditor> {
               : 'SHQL™ predicate expression',
           border: const OutlineInputBorder(),
           suffixIcon: IconButton(
-            icon: Icon(_isApplyMode ? Icons.play_arrow : Icons.save),
+            icon: _b({'type': 'Icon', 'props': {
+              'icon': _isApplyMode ? 'play_arrow' : 'save',
+            }}, 'queryIcon'),
             tooltip: _isApplyMode ? 'Apply query' : 'Save filter',
             onPressed: () => _onQuerySubmitted(_queryController.text),
           ),
@@ -2150,10 +2490,12 @@ Widget _buildIconButton(
   YamlUiEngine engine,
 ) {
   final iconName = props['icon'] as String?;
-  final onPressed = props['onPressed'] as String?;
+  final onPressed = props['onPressed'];
 
   VoidCallback? cb;
-  if (onPressed != null && isShqlRef('shql: $onPressed')) {
+  if (onPressed is VoidCallback) {
+    cb = onPressed;
+  } else if (onPressed is String && isShqlRef('shql: $onPressed')) {
     cb = () => WidgetRegistry.callShql(context, shql, onPressed);
   }
 
@@ -2303,5 +2645,383 @@ Widget _buildAnimatedNumber(
       fontWeight: fontWeight == 'bold' ? FontWeight.bold : null,
       color: color != null ? Resolvers.color(color) : null,
     ),
+  );
+}
+
+/// Resolves an onPressed prop that may be a SHQL™ expression string,
+/// a Dart VoidCallback, or null.
+VoidCallback? _resolveOnPressed(
+  dynamic onPressed,
+  BuildContext context,
+  ShqlBindings shql,
+) {
+  if (onPressed is VoidCallback) return onPressed;
+  if (isShqlRef(onPressed)) {
+    final (:code, :targeted) = parseShql(onPressed as String);
+    return () => WidgetRegistry.callShql(context, shql, code, targeted: targeted);
+  }
+  return null;
+}
+
+Widget _buildFilledButton(
+  BuildContext context,
+  Map<String, dynamic> props,
+  ChildBuilder b,
+  dynamic child,
+  dynamic children,
+  String path,
+  ShqlBindings shql,
+  Key key,
+  YamlUiEngine engine,
+) {
+  final childNode = props['child'] ?? child;
+  final cb = _resolveOnPressed(props['onPressed'], context, shql);
+
+  return FilledButton(
+    key: key,
+    onPressed: cb,
+    child: childNode != null
+        ? b(childNode, '$path.child')
+        : b({'type': 'Text', 'props': {'data': 'Button'}}, '$path.child'),
+  );
+}
+
+Widget _buildAlertDialog(
+  BuildContext context,
+  Map<String, dynamic> props,
+  ChildBuilder b,
+  dynamic child,
+  dynamic children,
+  String path,
+  ShqlBindings shql,
+  Key key,
+  YamlUiEngine engine,
+) {
+  final titleNode = props['title'];
+  final contentNode = props['content'] ?? child;
+  final actionsRaw = props['actions'] ?? children;
+
+  final List<Widget> actions = [];
+  if (actionsRaw is List) {
+    for (var i = 0; i < actionsRaw.length; i++) {
+      actions.add(b(actionsRaw[i], '$path.actions[$i]'));
+    }
+  }
+
+  final actionsAlignment = props['actionsAlignment']?.toString();
+  MainAxisAlignment? alignment;
+  if (actionsAlignment == 'spaceEvenly') {
+    alignment = MainAxisAlignment.spaceEvenly;
+  } else if (actionsAlignment == 'center') {
+    alignment = MainAxisAlignment.center;
+  } else if (actionsAlignment == 'end') {
+    alignment = MainAxisAlignment.end;
+  }
+
+  return AlertDialog(
+    key: key,
+    title: titleNode != null ? b(titleNode, '$path.title') : null,
+    content: contentNode != null ? b(contentNode, '$path.content') : null,
+    actions: actions.isEmpty ? null : actions,
+    actionsAlignment: alignment,
+  );
+}
+
+Widget _buildCheckboxListTile(
+  BuildContext context,
+  Map<String, dynamic> props,
+  ChildBuilder b,
+  dynamic child,
+  dynamic children,
+  String path,
+  ShqlBindings shql,
+  Key key,
+  YamlUiEngine engine,
+) {
+  final titleNode = props['title'];
+  final contentPadding = props['contentPadding'];
+
+  return _StatefulCheckboxListTile(
+    key: key,
+    shql: shql,
+    onChanged: props['onChanged'] as String?,
+    value: props['value'],
+    title: titleNode != null ? b(titleNode, '$path.title') : null,
+    contentPadding: contentPadding != null ? Resolvers.edgeInsets(contentPadding) : null,
+    engine: engine,
+  );
+}
+
+class _StatefulCheckboxListTile extends StatefulWidget {
+  const _StatefulCheckboxListTile({
+    required this.shql,
+    this.onChanged,
+    this.value,
+    this.title,
+    this.contentPadding,
+    required this.engine,
+    super.key,
+  });
+
+  final ShqlBindings shql;
+  final String? onChanged;
+  final dynamic value;
+  final Widget? title;
+  final EdgeInsetsGeometry? contentPadding;
+  final YamlUiEngine engine;
+
+  @override
+  State<_StatefulCheckboxListTile> createState() =>
+      _StatefulCheckboxListTileState();
+}
+
+class _StatefulCheckboxListTileState
+    extends State<_StatefulCheckboxListTile> {
+  bool _currentValue = false;
+  String? _valueBinding;
+
+  @override
+  void initState() {
+    super.initState();
+    _initializeValue();
+  }
+
+  void _initializeValue() {
+    if (widget.value is String && isShqlRef(widget.value as String)) {
+      final (:code, targeted: _) = parseShql(widget.value as String);
+      _valueBinding = code;
+      widget.shql.addListener(_valueBinding!, _onDataChanged);
+      _resolveValue();
+    } else if (widget.value is bool) {
+      _currentValue = widget.value;
+    }
+  }
+
+  Future<void> _resolveValue() async {
+    if (_valueBinding == null) return;
+    try {
+      final result = await widget.shql.eval(_valueBinding!);
+      if (mounted && result is bool) {
+        setState(() {
+          _currentValue = result;
+        });
+      }
+    } catch (e) {
+      debugPrint('Error resolving CheckboxListTile value: $e');
+    }
+  }
+
+  void _onDataChanged() {
+    if (mounted) {
+      _resolveValue();
+    }
+  }
+
+  @override
+  void didUpdateWidget(covariant _StatefulCheckboxListTile oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.value != oldWidget.value) {
+      if (_valueBinding != null) {
+        widget.shql.removeListener(_valueBinding!, _onDataChanged);
+      }
+      _initializeValue();
+    }
+  }
+
+  @override
+  void dispose() {
+    if (_valueBinding != null) {
+      widget.shql.removeListener(_valueBinding!, _onDataChanged);
+    }
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final onChanged = widget.onChanged;
+    return CheckboxListTile(
+      value: _currentValue,
+      title: widget.title,
+      contentPadding: widget.contentPadding,
+      onChanged: (newValue) {
+        if (newValue == null) return;
+        setState(() {
+          _currentValue = newValue;
+        });
+        if (isShqlRef(onChanged)) {
+          var boundValues = {'value': newValue};
+          final (:code, :targeted) = parseShql(onChanged as String);
+          widget.shql
+              .call(code, targeted: targeted, boundValues: boundValues)
+              .catchError((e) {
+                debugPrint('Error in CheckboxListTile onChanged: $e');
+              });
+        }
+      },
+    );
+  }
+}
+
+Widget _buildConstrainedBox(
+  BuildContext context,
+  Map<String, dynamic> props,
+  ChildBuilder b,
+  dynamic child,
+  dynamic children,
+  String path,
+  ShqlBindings shql,
+  Key key,
+  YamlUiEngine engine,
+) {
+  final childNode = props['child'] ?? child;
+  final maxWidth = (props['maxWidth'] as num?)?.toDouble() ?? double.infinity;
+  final maxHeight = (props['maxHeight'] as num?)?.toDouble() ?? double.infinity;
+  final minWidth = (props['minWidth'] as num?)?.toDouble() ?? 0.0;
+  final minHeight = (props['minHeight'] as num?)?.toDouble() ?? 0.0;
+
+  return ConstrainedBox(
+    key: key,
+    constraints: BoxConstraints(
+      maxWidth: maxWidth,
+      maxHeight: maxHeight,
+      minWidth: minWidth,
+      minHeight: minHeight,
+    ),
+    child: childNode != null ? b(childNode, '$path.child') : null,
+  );
+}
+
+Widget _buildInkWell(
+  BuildContext context,
+  Map<String, dynamic> props,
+  ChildBuilder b,
+  dynamic child,
+  dynamic children,
+  String path,
+  ShqlBindings shql,
+  Key key,
+  YamlUiEngine engine,
+) {
+  final childNode = props['child'] ?? child;
+  final cb = _resolveOnPressed(props['onTap'], context, shql);
+  final borderRadiusVal = (props['borderRadius'] as num?)?.toDouble();
+
+  return InkWell(
+    key: key,
+    onTap: cb,
+    borderRadius: borderRadiusVal != null
+        ? BorderRadius.circular(borderRadiusVal)
+        : null,
+    child: childNode != null ? b(childNode, '$path.child') : null,
+  );
+}
+
+Widget _buildMaterial(
+  BuildContext context,
+  Map<String, dynamic> props,
+  ChildBuilder b,
+  dynamic child,
+  dynamic children,
+  String path,
+  ShqlBindings shql,
+  Key key,
+  YamlUiEngine engine,
+) {
+  final childNode = props['child'] ?? child;
+  final color = props['color'];
+  final borderRadiusVal = (props['borderRadius'] as num?)?.toDouble();
+
+  return Material(
+    key: key,
+    color: color != null ? Resolvers.color(color) : null,
+    borderRadius: borderRadiusVal != null
+        ? BorderRadius.circular(borderRadiusVal)
+        : null,
+    child: childNode != null ? b(childNode, '$path.child') : null,
+  );
+}
+
+Widget _buildDismissible(
+  BuildContext context,
+  Map<String, dynamic> props,
+  ChildBuilder b,
+  dynamic child,
+  dynamic children,
+  String path,
+  ShqlBindings shql,
+  Key key,
+  YamlUiEngine engine,
+) {
+  final childNode = props['child'] ?? child;
+  final backgroundNode = props['background'];
+  final onDismissed = props['onDismissed'];
+
+  DismissDirectionCallback? cb;
+  if (onDismissed is DismissDirectionCallback) {
+    cb = onDismissed;
+  } else if (onDismissed is VoidCallback) {
+    cb = (_) => onDismissed();
+  } else if (isShqlRef(onDismissed)) {
+    final (:code, :targeted) = parseShql(onDismissed as String);
+    cb = (_) => WidgetRegistry.callShql(context, shql, code, targeted: targeted);
+  }
+
+  final directionStr = props['direction']?.toString();
+  DismissDirection direction = DismissDirection.endToStart;
+  if (directionStr == 'startToEnd') direction = DismissDirection.startToEnd;
+  if (directionStr == 'horizontal') direction = DismissDirection.horizontal;
+
+  return Dismissible(
+    key: key,
+    direction: direction,
+    background: backgroundNode != null ? b(backgroundNode, '$path.background') : null,
+    onDismissed: cb,
+    child: childNode != null
+        ? b(childNode, '$path.child')
+        : const SizedBox.shrink(),
+  );
+}
+
+Widget _buildSemantics(
+  BuildContext context,
+  Map<String, dynamic> props,
+  ChildBuilder b,
+  dynamic child,
+  dynamic children,
+  String path,
+  ShqlBindings shql,
+  Key key,
+  YamlUiEngine engine,
+) {
+  final childNode = props['child'] ?? child;
+  final label = props['label']?.toString();
+  final button = props['button'] == true;
+
+  return Semantics(
+    key: key,
+    label: label,
+    button: button,
+    child: childNode != null ? b(childNode, '$path.child') : null,
+  );
+}
+
+Widget _buildTooltip(
+  BuildContext context,
+  Map<String, dynamic> props,
+  ChildBuilder b,
+  dynamic child,
+  dynamic children,
+  String path,
+  ShqlBindings shql,
+  Key key,
+  YamlUiEngine engine,
+) {
+  final childNode = props['child'] ?? child;
+  final message = props['message']?.toString() ?? '';
+
+  return Tooltip(
+    key: key,
+    message: message,
+    child: childNode != null ? b(childNode, '$path.child') : null,
   );
 }

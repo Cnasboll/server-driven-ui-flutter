@@ -1,0 +1,21 @@
+widget:
+  type: Dismissible
+  props:
+    direction: "endToStart"
+    background:
+      type: Container
+      props:
+        alignment: "centerRight"
+        padding:
+          right: 20
+        color: "0xFFF44336"
+        decoration:
+          borderRadius: 12
+        child:
+          type: Icon
+          props:
+            icon: "delete"
+            color: "0xFFFFFFFF"
+            size: 32
+    onDismissed: "prop:onDismissed"
+    child: "prop:child"
