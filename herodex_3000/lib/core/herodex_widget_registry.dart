@@ -1,10 +1,20 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:server_driven_ui/server_driven_ui.dart';
-import 'package:server_driven_ui/yaml_ui/resolvers.dart';
 
 import '../widgets/hero_card.dart';
 import '../widgets/battle_map_widget.dart';
-import '../widgets/animated_number_widget.dart';
+
+/// Compute a 10% alpha background hex string from a foreground color hex.
+String _statBgColor(dynamic raw) {
+  if (raw is String && raw.startsWith('0x') && raw.length >= 10) {
+    // Parse the hex, set alpha to ~10% (0x1A = 26/255 ≈ 10%)
+    final hex = raw.substring(4); // strip '0xFF' prefix
+    return '0x1A$hex';
+  }
+  return '0x1A9E9E9E';
+}
 
 /// Creates a [WidgetRegistry] with HeroDex-specific custom widgets
 /// layered on top of the basic SDUI widgets.
@@ -14,9 +24,81 @@ WidgetRegistry createHeroDexWidgetRegistry() {
   final customFactories = <String, WidgetFactory>{
     'HeroCard':
         (context, props, buildChild, child, children, path, shql, key, engine) {
-          return HeroCard.fromMap(
-            props,
+          // Build stat chip rows via the registry (StatChip is YAML-defined)
+          final rawStats = props['stats'];
+          final stats = <Map<String, dynamic>>[];
+          if (rawStats is List) {
+            for (final s in rawStats) {
+              if (s is Map<String, dynamic>) {
+                stats.add(s);
+              } else if (s is Map) {
+                stats.add(Map<String, dynamic>.from(s));
+              }
+            }
+          }
+
+          const perRow = 3;
+          final statRows = <Widget>[];
+          for (var rowStart = 0; rowStart < stats.length; rowStart += perRow) {
+            if (rowStart > 0) {
+              statRows.add(buildChild(
+                {'type': 'SizedBox', 'props': {'height': 4}},
+                '$path.statGap[$rowStart]',
+              ));
+            }
+            final rowEnd = min(rowStart + perRow, stats.length);
+            final rowChildren = <dynamic>[];
+            for (var i = rowStart; i < rowEnd; i++) {
+              if (i > rowStart) {
+                rowChildren.add({'type': 'SizedBox', 'props': {'width': 4}});
+              }
+              rowChildren.add({
+                'type': 'StatChip',
+                'props': {
+                  'label': stats[i]['label'] as String? ?? '?',
+                  'valueText': (stats[i]['value']?.toString()) ?? '-',
+                  'color': stats[i]['color'] as String? ?? '0xFF9E9E9E',
+                  'bgColor': _statBgColor(stats[i]['color']),
+                },
+              });
+            }
+            statRows.add(buildChild(
+              {'type': 'Row', 'children': rowChildren},
+              '$path.statRow[$rowStart]',
+            ));
+          }
+
+          // Build power bar via the registry (PowerBar is YAML-defined)
+          final totalPower = props['totalPower'] as int?;
+          final theme = Theme.of(context);
+          final isDark = theme.brightness == Brightness.dark;
+          final alignment = props['alignment'] as int? ?? 0;
+          final alignmentColor = HeroCard.alignmentColorFor(alignment);
+          Widget? powerBarWidget;
+          if (totalPower != null) {
+            powerBarWidget = buildChild({
+              'type': 'PowerBar',
+              'props': {
+                'label': 'Total Power: $totalPower',
+                'progress': (totalPower / 600).clamp(0.0, 1.0),
+                'color': '0x${alignmentColor.toARGB32().toRadixString(16).padLeft(8, '0').toUpperCase()}',
+                'bgColor': isDark ? '0xFF616161' : '0xFFE0E0E0',
+              },
+            }, '$path.powerBar');
+          }
+
+          return HeroCard(
             key: key,
+            name: props['name'] as String? ?? 'Unknown',
+            imageUrl: props['url'] as String? ?? props['imageUrl'] as String?,
+            alignment: alignment,
+            stats: stats,
+            statRows: statRows,
+            powerBar: powerBarWidget,
+            publisher: props['publisher'] as String?,
+            race: props['race'] as String?,
+            fullName: props['fullName'] as String?,
+            locked: props['locked'] as bool? ?? false,
             onTap: props['onTap'] != null
                 ? () => WidgetRegistry.callShql(context, shql, props['onTap'] as String)
                 : null,
@@ -26,94 +108,6 @@ WidgetRegistry createHeroDexWidgetRegistry() {
             onToggleLock: props['onToggleLock'] != null
                 ? () => WidgetRegistry.callShql(context, shql, props['onToggleLock'] as String)
                 : null,
-          );
-        },
-    'IconButton':
-        (context, props, buildChild, child, children, path, shql, key, engine) {
-          final iconName = props['icon'] as String?;
-          final onPressed = props['onPressed'] as String?;
-
-          IconData iconData = Icons.help_outline;
-          if (iconName != null) {
-            iconData = getIconData(iconName);
-          }
-
-          VoidCallback? onPressedCallback;
-          if (onPressed != null && isShqlRef('shql: $onPressed')) {
-            onPressedCallback = () => WidgetRegistry.callShql(context, shql, onPressed);
-          }
-
-          return IconButton(
-            key: key,
-            icon: Icon(iconData),
-            onPressed: onPressedCallback,
-          );
-        },
-    'Icon':
-        (context, props, buildChild, child, children, path, shql, key, engine) {
-          final iconName = props['icon'] as String? ?? 'help_outline';
-          final size = (props['size'] as num?)?.toDouble();
-          final colorValue = props['color'];
-
-          Color? color;
-          if (colorValue is String && colorValue.startsWith('0x')) {
-            color = Color(int.parse(colorValue));
-          }
-
-          return Icon(getIconData(iconName), key: key, size: size, color: color);
-        },
-    'BottomNavigationBar':
-        (context, props, buildChild, child, children, path, shql, key, engine) {
-          final items = props['items'] as List? ?? [];
-          final currentIndex = props['currentIndex'] as int? ?? 0;
-          final onTap = props['onTap'] as String?;
-
-          return BottomNavigationBar(
-            key: key,
-            currentIndex: currentIndex,
-            onTap: onTap != null ? (index) {
-              WidgetRegistry.callShql(context, shql, onTap.replaceAll('value', '$index'));
-            } : null,
-            items: items.map<BottomNavigationBarItem>((item) {
-              final map = item as Map;
-              return BottomNavigationBarItem(
-                icon: Icon(getIconData(map['icon'] as String? ?? 'help')),
-                label: map['label'] as String? ?? '',
-              );
-            }).toList(),
-          );
-        },
-    'SafeArea':
-        (context, props, buildChild, child, children, path, shql, key, engine) {
-          final childNode = props['child'] ?? child;
-          return SafeArea(
-            key: key,
-            child: childNode != null
-                ? buildChild(childNode, '$path.child')
-                : const SizedBox.shrink(),
-          );
-        },
-    'ListTile':
-        (context, props, buildChild, child, children, path, shql, key, engine) {
-          final leadingNode = props['leading'];
-          final titleNode = props['title'];
-          final subtitleNode = props['subtitle'];
-          final trailingNode = props['trailing'];
-          final onTap = props['onTap'] as String?;
-
-          VoidCallback? onTapCallback;
-          if (onTap != null && isShqlRef(onTap)) {
-            final (:code, :targeted) = parseShql(onTap);
-            onTapCallback = () => WidgetRegistry.callShql(context, shql, code, targeted: targeted);
-          }
-
-          return ListTile(
-            key: key,
-            leading: leadingNode != null ? buildChild(leadingNode, '$path.leading') : null,
-            title: titleNode != null ? buildChild(titleNode, '$path.title') : null,
-            subtitle: subtitleNode != null ? buildChild(subtitleNode, '$path.subtitle') : null,
-            trailing: trailingNode != null ? buildChild(trailingNode, '$path.trailing') : null,
-            onTap: onTapCallback,
           );
         },
     'BattleMap':
@@ -140,83 +134,9 @@ WidgetRegistry createHeroDexWidgetRegistry() {
             markers: markers,
           );
         },
-    'AnimatedNumber':
-        (context, props, buildChild, child, children, path, shql, key, engine) {
-          final rawValue = props['value'];
-          final value = rawValue is num
-              ? rawValue
-              : num.tryParse(rawValue?.toString() ?? '') ?? 0;
-          final duration = (props['duration'] as int?) ?? 800;
-          final fontSize = (props['fontSize'] as num?)?.toDouble();
-          final fontWeight = props['fontWeight']?.toString();
-          final color = props['color'];
-          return AnimatedNumber(
-            key: key,
-            value: value,
-            duration: Duration(milliseconds: duration),
-            style: TextStyle(
-              fontSize: fontSize,
-              fontWeight: fontWeight == 'bold' ? FontWeight.bold : null,
-              color: color != null ? Resolvers.color(color) : null,
-            ),
-          );
-        },
   };
 
   return HeroDexWidgetRegistry(basicRegistry, customFactories);
-}
-
-/// Maps icon name strings to Material [IconData].
-IconData getIconData(String name) {
-  switch (name) {
-    case 'home': return Icons.home;
-    case 'search': return Icons.search;
-    case 'bookmark': return Icons.bookmark;
-    case 'bookmark_border': return Icons.bookmark_border;
-    case 'bookmark_add': return Icons.bookmark_add;
-    case 'settings': return Icons.settings;
-    case 'person': return Icons.person;
-    case 'shield': return Icons.shield;
-    case 'star': return Icons.star;
-    case 'favorite': return Icons.favorite;
-    case 'favorite_border': return Icons.favorite_border;
-    case 'delete': return Icons.delete;
-    case 'delete_forever': return Icons.delete_forever;
-    case 'arrow_back': return Icons.arrow_back;
-    case 'analytics': return Icons.analytics;
-    case 'bug_report': return Icons.bug_report;
-    case 'location_on': return Icons.location_on;
-    case 'map': return Icons.map;
-    case 'dark_mode': return Icons.dark_mode;
-    case 'light_mode': return Icons.light_mode;
-    case 'info': return Icons.info;
-    case 'error': return Icons.error;
-    case 'warning': return Icons.warning;
-    case 'check_circle': return Icons.check_circle;
-    case 'close': return Icons.close;
-    case 'add': return Icons.add;
-    case 'remove': return Icons.remove;
-    case 'edit': return Icons.edit;
-    case 'lock': return Icons.lock;
-    case 'lock_open': return Icons.lock_open;
-    case 'vpn_key': return Icons.vpn_key;
-    case 'sync': return Icons.sync;
-    case 'logout': return Icons.logout;
-    case 'code': return Icons.code;
-    case 'calendar_today': return Icons.calendar_today;
-    case 'military_tech': return Icons.military_tech;
-    case 'flash_on': return Icons.flash_on;
-    case 'dangerous': return Icons.dangerous;
-    case 'label': return Icons.label;
-    case 'wb_sunny': return Icons.wb_sunny;
-    case 'cloud': return Icons.cloud;
-    case 'foggy': return Icons.foggy;
-    case 'water_drop': return Icons.water_drop;
-    case 'ac_unit': return Icons.ac_unit;
-    case 'thermostat': return Icons.thermostat;
-    case 'air': return Icons.air;
-    default: return Icons.help_outline;
-  }
 }
 
 /// Extended WidgetRegistry that adds HeroDex custom widgets on top of basic ones.
@@ -232,7 +152,7 @@ class HeroDexWidgetRegistry extends WidgetRegistry {
     if (_customFactories.containsKey(type)) {
       return _customFactories[type];
     }
-    return _basicRegistry.get(type);
+    return _basicRegistry.get(type) ?? super.get(type);
   }
 
   @override
@@ -253,7 +173,22 @@ class HeroDexWidgetRegistry extends WidgetRegistry {
         context, props, buildChild, child, children, path, shql, key, engine,
       );
     }
-    return _basicRegistry.build(
+    if (_basicRegistry.get(type) != null) {
+      return _basicRegistry.build(
+        type: type,
+        context: context,
+        props: props,
+        buildChild: buildChild,
+        child: child,
+        children: children,
+        path: path,
+        shql: shql,
+        engine: engine,
+      );
+    }
+    // Fall through to base class — handles YAML-defined widget templates
+    // registered via registerTemplate().
+    return super.build(
       type: type,
       context: context,
       props: props,

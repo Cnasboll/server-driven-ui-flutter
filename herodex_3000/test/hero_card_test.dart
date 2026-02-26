@@ -3,6 +3,47 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:herodex_3000/widgets/hero_card.dart';
 
 void main() {
+  /// Build simple stat chip stand-ins for testing (mirrors the YAML StatChip
+  /// template structure without requiring the full SDUI registry).
+  List<Widget> buildStatRows(List<Map<String, dynamic>> stats) {
+    const perRow = 3;
+    final rows = <Widget>[];
+    for (var rowStart = 0; rowStart < stats.length; rowStart += perRow) {
+      if (rowStart > 0) rows.add(const SizedBox(height: 4));
+      final rowEnd = rowStart + perRow > stats.length
+          ? stats.length
+          : rowStart + perRow;
+      rows.add(Row(
+        children: [
+          for (var i = rowStart; i < rowEnd; i++) ...[
+            if (i > rowStart) const SizedBox(width: 4),
+            Expanded(
+              child: Column(
+                children: [
+                  Text(stats[i]['label'] as String? ?? '?',
+                      style: const TextStyle(fontSize: 10)),
+                  Text(stats[i]['value']?.toString() ?? '-',
+                      style: const TextStyle(fontSize: 12)),
+                ],
+              ),
+            ),
+          ],
+        ],
+      ));
+    }
+    return rows;
+  }
+
+  Widget buildPowerBar(int totalPower) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('Total Power: $totalPower'),
+        LinearProgressIndicator(value: (totalPower / 600).clamp(0.0, 1.0)),
+      ],
+    );
+  }
+
   Widget buildTestCard({
     String name = 'Batman',
     String? imageUrl,
@@ -24,7 +65,8 @@ void main() {
             imageUrl: imageUrl,
             alignment: alignment,
             stats: stats,
-            totalPower: totalPower,
+            statRows: buildStatRows(stats),
+            powerBar: totalPower != null ? buildPowerBar(totalPower) : null,
             locked: locked,
             onTap: onTap,
             onDelete: onDelete,
@@ -150,6 +192,13 @@ void main() {
       expect(card.name, 'Wonder Woman');
       expect(card.stats.length, 2);
       expect(card.stats[0]['value'], 90);
+    });
+
+    test('alignmentColorFor returns correct color', () {
+      final good = HeroCard.alignmentColorFor(3);
+      expect(good, const Color(0xFF42A5F5));
+      final unknown = HeroCard.alignmentColorFor(99);
+      expect(unknown, const Color(0xFF9E9E9E));
     });
   });
 }

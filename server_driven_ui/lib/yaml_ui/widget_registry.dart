@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'package:server_driven_ui/yaml_ui/animated_number.dart';
 import 'package:server_driven_ui/yaml_ui/debouncer.dart';
 import 'package:server_driven_ui/yaml_ui/yaml_ui_engine.dart';
 import 'resolvers.dart';
@@ -60,9 +61,41 @@ class WidgetRegistry {
     'FilterChip': _buildFilterChip,
     'FilterEditor': _buildFilterEditor,
     'DropdownButton': _buildDropdownButton,
+    'Icon': _buildIcon,
+    'IconButton': _buildIconButton,
+    'SafeArea': _buildSafeArea,
+    'ListTile': _buildListTile,
+    'BottomNavigationBar': _buildBottomNavigationBar,
+    'AnimatedNumber': _buildAnimatedNumber,
   });
 
   WidgetFactory? get(String type) => _factories[type];
+
+  /// Register a YAML-defined widget template under [name].
+  ///
+  /// The [template] is a parsed YAML map (e.g. `{type: Column, props: ...}`).
+  /// Any string value starting with `"prop:"` is substituted with the caller's
+  /// props at build time. For example, `"prop:label"` becomes `props['label']`.
+  void registerTemplate(String name, dynamic template) {
+    _factories[name] = (context, props, buildChild, child, children, path, shql, key, engine) {
+      final resolved = substituteProps(template, props);
+      return buildChild(resolved, '$path.$name');
+    };
+  }
+
+  /// Deep-walks [node], replacing `"prop:xyz"` strings with `props['xyz']`.
+  static dynamic substituteProps(dynamic node, Map<String, dynamic> props) {
+    if (node is String && node.startsWith('prop:')) {
+      return props[node.substring(5)];
+    }
+    if (node is Map) {
+      return node.map((k, v) => MapEntry(k, substituteProps(v, props)));
+    }
+    if (node is List) {
+      return node.map((item) => substituteProps(item, props)).toList();
+    }
+    return node;
+  }
 
   Widget build({
     required String type,
@@ -449,7 +482,7 @@ Widget _buildElevatedButton(
     onPressed: cb,
     child: childNode != null
         ? b(childNode, '$path.child')
-        : const Text('Button'),
+        : b({'type': 'Text', 'props': {'data': 'Button'}}, '$path.child'),
   );
 }
 
@@ -469,7 +502,7 @@ Widget _buildExpanded(
     key: key,
     child: childNode != null
         ? b(childNode, '$path.child')
-        : const SizedBox.shrink(),
+        : b({'type': 'SizedBox', 'props': {}}, '$path.child'),
   );
 }
 
@@ -542,7 +575,7 @@ Widget _buildImage(
 ) {
   final source = (props['source'] ?? props['src']) as String?;
   if (source == null) {
-    return const SizedBox.shrink();
+    return b({'type': 'SizedBox', 'props': {}}, '$path.fallback');
   }
 
   final width = (props['width'] as num?)?.toDouble();
@@ -919,11 +952,17 @@ class _ObserverState extends State<_Observer> {
       // Initial loading state: show a small constrained spinner.
       // SizedBox bounds it so it never expands into unbounded space (e.g.,
       // when Observer is used as a trailing widget in ListTile/AppBar actions).
-      return const SizedBox(
-        width: 20,
-        height: 20,
-        child: CircularProgressIndicator(strokeWidth: 2),
-      );
+      return widget.buildChild({
+        'type': 'SizedBox',
+        'props': {
+          'width': 20,
+          'height': 20,
+          'child': {
+            'type': 'CircularProgressIndicator',
+            'props': {'strokeWidth': 2},
+          },
+        },
+      }, '${widget.path}.loading');
     }
     // The state change will naturally cause this to rebuild with new data.
     return widget.buildChild(_resolvedBuilder, '${widget.path}.builder');
@@ -984,7 +1023,7 @@ Widget _buildPositioned(
     left: (props['left'] as num?)?.toDouble(),
     child: childNode != null
         ? b(childNode, '$path.child')
-        : const SizedBox.shrink(),
+        : b({'type': 'SizedBox', 'props': {}}, '$path.child'),
   );
 }
 
@@ -1392,7 +1431,7 @@ Widget _buildActionChip(
 
   return ActionChip(
     key: key,
-    label: Text(label),
+    label: b({'type': 'Text', 'props': {'data': label}}, '$path.label'),
     onPressed: cb,
   );
 }
@@ -1422,7 +1461,7 @@ Widget _buildTextButton(
     onPressed: cb,
     child: childNode != null
         ? b(childNode, '$path.child')
-        : const Text('Button'),
+        : b({'type': 'Text', 'props': {'data': 'Button'}}, '$path.child'),
   );
 }
 
@@ -1451,7 +1490,7 @@ Widget _buildOutlinedButton(
     onPressed: cb,
     child: childNode != null
         ? b(childNode, '$path.child')
-        : const Text('Button'),
+        : b({'type': 'Text', 'props': {'data': 'Button'}}, '$path.child'),
   );
 }
 
@@ -1478,7 +1517,7 @@ Widget _buildFilterChip(
 
   return FilterChip(
     key: key,
-    label: Text(label),
+    label: b({'type': 'Text', 'props': {'data': label}}, '$path.label'),
     selected: selected,
     onSelected: cb,
   );
@@ -2072,4 +2111,197 @@ class _StatefulDropdownState extends State<_StatefulDropdown> {
       },
     );
   }
+}
+
+// ---------------------------------------------------------------------------
+// Icon
+// ---------------------------------------------------------------------------
+
+Widget _buildIcon(
+  BuildContext context,
+  Map<String, dynamic> props,
+  ChildBuilder b,
+  dynamic child,
+  dynamic children,
+  String path,
+  ShqlBindings shql,
+  Key key,
+  YamlUiEngine engine,
+) {
+  final iconName = props['icon'] as String? ?? 'help_outline';
+  final size = (props['size'] as num?)?.toDouble();
+  final color = Resolvers.color(props['color']);
+  return Icon(Resolvers.iconData(iconName), key: key, size: size, color: color);
+}
+
+// ---------------------------------------------------------------------------
+// IconButton
+// ---------------------------------------------------------------------------
+
+Widget _buildIconButton(
+  BuildContext context,
+  Map<String, dynamic> props,
+  ChildBuilder b,
+  dynamic child,
+  dynamic children,
+  String path,
+  ShqlBindings shql,
+  Key key,
+  YamlUiEngine engine,
+) {
+  final iconName = props['icon'] as String?;
+  final onPressed = props['onPressed'] as String?;
+
+  VoidCallback? cb;
+  if (onPressed != null && isShqlRef('shql: $onPressed')) {
+    cb = () => WidgetRegistry.callShql(context, shql, onPressed);
+  }
+
+  return IconButton(
+    key: key,
+    icon: b(
+      {'type': 'Icon', 'props': {'icon': iconName ?? 'help_outline'}},
+      '$path.icon',
+    ),
+    onPressed: cb,
+  );
+}
+
+// ---------------------------------------------------------------------------
+// SafeArea
+// ---------------------------------------------------------------------------
+
+Widget _buildSafeArea(
+  BuildContext context,
+  Map<String, dynamic> props,
+  ChildBuilder b,
+  dynamic child,
+  dynamic children,
+  String path,
+  ShqlBindings shql,
+  Key key,
+  YamlUiEngine engine,
+) {
+  final childNode = props['child'] ?? child;
+  return SafeArea(
+    key: key,
+    child: childNode != null
+        ? b(childNode, '$path.child')
+        : b({'type': 'SizedBox', 'props': {}}, '$path.child'),
+  );
+}
+
+// ---------------------------------------------------------------------------
+// ListTile
+// ---------------------------------------------------------------------------
+
+Widget _buildListTile(
+  BuildContext context,
+  Map<String, dynamic> props,
+  ChildBuilder b,
+  dynamic child,
+  dynamic children,
+  String path,
+  ShqlBindings shql,
+  Key key,
+  YamlUiEngine engine,
+) {
+  final leadingNode = props['leading'];
+  final titleNode = props['title'];
+  final subtitleNode = props['subtitle'];
+  final trailingNode = props['trailing'];
+  final onTap = props['onTap'] as String?;
+
+  VoidCallback? cb;
+  if (onTap != null && isShqlRef(onTap)) {
+    final (:code, :targeted) = parseShql(onTap);
+    cb = () => WidgetRegistry.callShql(context, shql, code, targeted: targeted);
+  }
+
+  return ListTile(
+    key: key,
+    dense: props['dense'] as bool? ?? false,
+    leading: leadingNode != null ? b(leadingNode, '$path.leading') : null,
+    title: titleNode != null ? b(titleNode, '$path.title') : null,
+    subtitle: subtitleNode != null ? b(subtitleNode, '$path.subtitle') : null,
+    trailing: trailingNode != null ? b(trailingNode, '$path.trailing') : null,
+    onTap: cb,
+  );
+}
+
+// ---------------------------------------------------------------------------
+// BottomNavigationBar
+// ---------------------------------------------------------------------------
+
+Widget _buildBottomNavigationBar(
+  BuildContext context,
+  Map<String, dynamic> props,
+  ChildBuilder b,
+  dynamic child,
+  dynamic children,
+  String path,
+  ShqlBindings shql,
+  Key key,
+  YamlUiEngine engine,
+) {
+  final items = props['items'] as List? ?? [];
+  final currentIndex = props['currentIndex'] as int? ?? 0;
+  final onTap = props['onTap'] as String?;
+
+  return BottomNavigationBar(
+    key: key,
+    currentIndex: currentIndex,
+    onTap: onTap != null
+        ? (index) {
+            WidgetRegistry.callShql(
+              context, shql, onTap.replaceAll('value', '$index'),
+            );
+          }
+        : null,
+    items: items.asMap().entries.map<BottomNavigationBarItem>((entry) {
+      final map = entry.value as Map;
+      return BottomNavigationBarItem(
+        icon: b(
+          {'type': 'Icon', 'props': {'icon': map['icon'] as String? ?? 'help'}},
+          '$path.items[${entry.key}].icon',
+        ),
+        label: map['label'] as String? ?? '',
+      );
+    }).toList(),
+  );
+}
+
+// ---------------------------------------------------------------------------
+// AnimatedNumber
+// ---------------------------------------------------------------------------
+
+Widget _buildAnimatedNumber(
+  BuildContext context,
+  Map<String, dynamic> props,
+  ChildBuilder b,
+  dynamic child,
+  dynamic children,
+  String path,
+  ShqlBindings shql,
+  Key key,
+  YamlUiEngine engine,
+) {
+  final rawValue = props['value'];
+  final value = rawValue is num
+      ? rawValue
+      : num.tryParse(rawValue?.toString() ?? '') ?? 0;
+  final duration = (props['duration'] as int?) ?? 800;
+  final fontSize = (props['fontSize'] as num?)?.toDouble();
+  final fontWeight = props['fontWeight']?.toString();
+  final color = props['color'];
+  return AnimatedNumber(
+    key: key,
+    value: value,
+    duration: Duration(milliseconds: duration),
+    style: TextStyle(
+      fontSize: fontSize,
+      fontWeight: fontWeight == 'bold' ? FontWeight.bold : null,
+      color: color != null ? Resolvers.color(color) : null,
+    ),
+  );
 }

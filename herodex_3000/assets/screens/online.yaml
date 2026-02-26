@@ -230,16 +230,7 @@ screen:
                                 color: "0xFF9E9E9E"
 
     bottomNavigationBar:
-      type: BottomNavigationBar
+      type: BottomNav
       props:
         currentIndex: 1
-        items:
-          - icon: "home"
-            label: "Home"
-          - icon: "cloud"
-            label: "Online"
-          - icon: "bookmark"
-            label: "Saved"
-          - icon: "settings"
-            label: "Settings"
         onTap: "shql: TAB_NAV(1, value)"

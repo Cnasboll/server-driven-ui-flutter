@@ -1,19 +1,19 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
 /// A reusable card widget for displaying hero/villain information.
 ///
-/// Stats are passed as a list of `{value, label, color}` maps — the card
-/// has no knowledge of which specific fields exist. That metadata is
-/// generated from the Field tree by `HeroSchema` and assembled by SHQL.
+/// Stat chips and power bar are built externally (via the widget registry)
+/// and passed in as pre-built widgets. The card itself has no knowledge of
+/// which specific fields exist — that metadata is generated from the Field
+/// tree by `HeroSchema` and assembled by SHQL.
 class HeroCard extends StatelessWidget {
   final String name;
   final String? imageUrl;
   final int alignment;
   final List<Map<String, dynamic>> stats;
-  final int? totalPower;
+  final List<Widget> statRows;
+  final Widget? powerBar;
   final String? publisher;
   final String? race;
   final String? fullName;
@@ -28,7 +28,8 @@ class HeroCard extends StatelessWidget {
     this.imageUrl,
     this.alignment = 0,
     this.stats = const [],
-    this.totalPower,
+    this.statRows = const [],
+    this.powerBar,
     this.publisher,
     this.race,
     this.fullName,
@@ -38,7 +39,8 @@ class HeroCard extends StatelessWidget {
     this.onToggleLock,
   });
 
-  /// Create from a props Map (for SDUI integration).
+  /// Create from a props Map (for SDUI integration / tests).
+  /// Note: statRows and powerBar must be built externally (via the registry).
   factory HeroCard.fromMap(
     Map<String, dynamic> data, {
     Key? key,
@@ -64,7 +66,6 @@ class HeroCard extends StatelessWidget {
       imageUrl: data['url'] as String? ?? data['imageUrl'] as String?,
       alignment: data['alignment'] as int? ?? 0,
       stats: stats,
-      totalPower: data['totalPower'] as int?,
       publisher: data['publisher'] as String?,
       race: data['race'] as String?,
       fullName: data['fullName'] as String?,
@@ -94,6 +95,12 @@ class HeroCard extends StatelessWidget {
           ? _alignmentStyles[alignment]
           : _alignmentStyles[0];
 
+  /// Returns the primary alignment colour for a given alignment ordinal.
+  static Color alignmentColorFor(int alignment) =>
+      (alignment >= 0 && alignment < _alignmentStyles.length)
+          ? _alignmentStyles[alignment].gradient.first
+          : _alignmentStyles[0].gradient.first;
+
   Color get _alignmentColor => _alignmentStyle.gradient.first;
   IconData get _alignmentIcon => _alignmentStyle.icon;
   List<Color> get _alignmentGradient => _alignmentStyle.gradient;
@@ -115,35 +122,6 @@ class HeroCard extends StatelessWidget {
       }
     }
     return sb.toString();
-  }
-
-  List<Widget> _buildStatRows() {
-    const perRow = 3;
-    final rows = <Widget>[];
-    for (var rowStart = 0; rowStart < stats.length; rowStart += perRow) {
-      if (rowStart > 0) rows.add(const SizedBox(height: 4));
-      final rowEnd = min(rowStart + perRow, stats.length);
-      rows.add(Row(
-        children: [
-          for (var i = rowStart; i < rowEnd; i++) ...[
-            if (i > rowStart) const SizedBox(width: 4),
-            _StatChip(
-              label: stats[i]['label'] as String? ?? '?',
-              value: stats[i]['value'] as int?,
-              color: _parseColor(stats[i]['color']),
-            ),
-          ],
-        ],
-      ));
-    }
-    return rows;
-  }
-
-  static Color _parseColor(dynamic raw) {
-    if (raw is String && raw.startsWith('0x')) {
-      return Color(int.parse(raw));
-    }
-    return Colors.grey;
   }
 
   @override
@@ -213,18 +191,14 @@ class HeroCard extends StatelessWidget {
                     ),
                   ],
 
-                  if (stats.isNotEmpty) ...[
+                  if (statRows.isNotEmpty) ...[
                     const SizedBox(height: 8),
-                    ..._buildStatRows(),
+                    ...statRows,
                   ],
 
-                  if (totalPower != null) ...[
+                  if (powerBar != null) ...[
                     const SizedBox(height: 8),
-                    _PowerBar(
-                      totalPower: totalPower!,
-                      isDark: isDark,
-                      color: _alignmentColor,
-                    ),
+                    powerBar!,
                   ],
                 ],
               ),
@@ -255,52 +229,6 @@ class HeroCard extends StatelessWidget {
     }
 
     return card;
-  }
-}
-
-class _StatChip extends StatelessWidget {
-  const _StatChip({
-    required this.label,
-    required this.value,
-    required this.color,
-  });
-
-  final String label;
-  final int? value;
-  final Color color;
-
-  @override
-  Widget build(BuildContext context) {
-    return Expanded(
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 4),
-        decoration: BoxDecoration(
-          color: color.withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(4),
-        ),
-        child: Column(
-          children: [
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 10,
-                fontWeight: FontWeight.w600,
-                color: color,
-              ),
-            ),
-            const SizedBox(height: 2),
-            Text(
-              value?.toString() ?? '-',
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.bold,
-                color: color,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
   }
 }
 
@@ -452,36 +380,3 @@ class _HeroCardImage extends StatelessWidget {
   }
 }
 
-class _PowerBar extends StatelessWidget {
-  const _PowerBar({
-    required this.totalPower,
-    required this.isDark,
-    required this.color,
-  });
-
-  final int totalPower;
-  final bool isDark;
-  final Color color;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Total Power: $totalPower',
-          style: theme.textTheme.bodySmall?.copyWith(
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-        const SizedBox(height: 4),
-        LinearProgressIndicator(
-          value: (totalPower / 600).clamp(0.0, 1.0),
-          backgroundColor: isDark ? Colors.grey[700] : Colors.grey[300],
-          valueColor: AlwaysStoppedAnimation(color),
-        ),
-      ],
-    );
-  }
-}

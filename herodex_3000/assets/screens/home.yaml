@@ -28,48 +28,26 @@ screen:
             crossAxisAlignment: "stretch"
             children:
               # War Status Banner
-              - type: Card
+              - type: InfoCard
                 props:
-                  color: "0xFF1A237E"
-                  child:
-                    type: Padding
+                  icon: "military_tech"
+                  iconColor: "0xFFFFD700"
+                  iconSize: 32
+                  title: "INVASION STATUS"
+                  titleSize: 18
+                  titleColor: "0xFFFFFFFF"
+                  cardColor: "0xFF1A237E"
+                  content:
+                    type: Observer
                     props:
-                      padding: 16
-                      child:
-                        type: Column
+                      query: "_total_heroes"
+                      builder:
+                        type: Text
                         props:
-                          crossAxisAlignment: "start"
-                          children:
-                            - type: Row
-                              children:
-                                - type: Icon
-                                  props:
-                                    icon: "military_tech"
-                                    color: "0xFFFFD700"
-                                    size: 32
-                                - type: SizedBox
-                                  props:
-                                    width: 12
-                                - type: Text
-                                  props:
-                                    data: "INVASION STATUS"
-                                    style:
-                                      color: "0xFFFFFFFF"
-                                      fontWeight: "bold"
-                                      fontSize: 18
-                            - type: SizedBox
-                              props:
-                                height: 8
-                            - type: Observer
-                              props:
-                                query: "_total_heroes"
-                                builder:
-                                  type: Text
-                                  props:
-                                    data: "shql: GET_WAR_STATUS()"
-                                    style:
-                                      color: "0xFFB3E5FC"
-                                      fontSize: 14
+                          data: "shql: GET_WAR_STATUS()"
+                          style:
+                            color: "0xFFB3E5FC"
+                            fontSize: 14
 
               - type: SizedBox
                 props:
@@ -135,46 +113,24 @@ screen:
                   height: 12
 
               # Total Fighting Power Card (animated)
-              - type: Card
+              - type: InfoCard
                 props:
-                  child:
-                    type: Padding
+                  icon: "flash_on"
+                  iconColor: "0xFFFF9800"
+                  iconSize: 28
+                  title: "Total Fighting Power"
+                  titleSize: 16
+                  content:
+                    type: Observer
                     props:
-                      padding: 16
-                      child:
-                        type: Column
+                      query: "_total_fighting_power"
+                      builder:
+                        type: AnimatedNumber
                         props:
-                          crossAxisAlignment: "start"
-                          children:
-                            - type: Row
-                              children:
-                                - type: Icon
-                                  props:
-                                    icon: "flash_on"
-                                    color: "0xFFFF9800"
-                                    size: 28
-                                - type: SizedBox
-                                  props:
-                                    width: 8
-                                - type: Text
-                                  props:
-                                    data: "Total Fighting Power"
-                                    style:
-                                      fontSize: 16
-                                      fontWeight: "bold"
-                            - type: SizedBox
-                              props:
-                                height: 12
-                            - type: Observer
-                              props:
-                                query: "_total_fighting_power"
-                                builder:
-                                  type: AnimatedNumber
-                                  props:
-                                    value: "shql: _total_fighting_power"
-                                    fontSize: 36
-                                    fontWeight: "bold"
-                                    color: "0xFFFF9800"
+                          value: "shql: _total_fighting_power"
+                          fontSize: 36
+                          fontWeight: "bold"
+                          color: "0xFFFF9800"
 
               - type: SizedBox
                 props:
@@ -259,16 +215,7 @@ screen:
                                       color: "0xFF757575"
 
     bottomNavigationBar:
-      type: BottomNavigationBar
+      type: BottomNav
       props:
         currentIndex: 0
-        items:
-          - icon: "home"
-            label: "Home"
-          - icon: "cloud"
-            label: "Online"
-          - icon: "bookmark"
-            label: "Saved"
-          - icon: "settings"
-            label: "Settings"
         onTap: "shql: TAB_NAV(0, value)"

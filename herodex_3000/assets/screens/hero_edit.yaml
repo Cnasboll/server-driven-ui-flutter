@@ -3,13 +3,8 @@ screen:
   type: Scaffold
   props:
     appBar:
-      type: AppBar
+      type: DetailAppBar
       props:
-        leading:
-          type: IconButton
-          props:
-            icon: "arrow_back"
-            onPressed: "shql: GO_BACK()"
         title:
           type: Text
           props:

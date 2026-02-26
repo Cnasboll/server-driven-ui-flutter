@@ -21,20 +21,10 @@ screen:
             crossAxisAlignment: "stretch"
             children:
               # Theme Section
-              - type: Padding
+              - type: SectionHeader
                 props:
-                  padding:
-                    left: 16
-                    top: 16
-                    bottom: 8
-                  child:
-                    type: Text
-                    props:
-                      data: "Appearance"
-                      style:
-                        fontSize: 14
-                        fontWeight: "bold"
-                        color: "0xFF1976D2"
+                  title: "Appearance"
+                  color: "0xFF1976D2"
 
               - type: ListTile
                 props:
@@ -59,186 +49,77 @@ screen:
               - type: Divider
 
               # API Configuration Section
+              - type: SectionHeader
+                props:
+                  title: "API Configuration"
+                  color: "0xFF1976D2"
+
+              - type: ApiField
+                props:
+                  label: "Superhero API Key"
+                  query: "_api_key"
+                  initialValue: "shql: _api_key"
+                  hintText: "Enter your superheroapi.com API key"
+                  onChanged: "shql: SET_API_KEY(value)"
+                  onSubmitted: "shql: SET_API_KEY(value)"
+
               - type: Padding
                 props:
                   padding:
                     left: 16
-                    top: 16
+                    right: 16
                     bottom: 8
                   child:
                     type: Text
                     props:
-                      data: "API Configuration"
+                      data: "Get a free key at superheroapi.com"
                       style:
-                        fontSize: 14
-                        fontWeight: "bold"
-                        color: "0xFF1976D2"
+                        fontSize: 12
+                        color: "0xFF757575"
 
-              - type: Padding
+              - type: ApiField
                 props:
-                  padding:
-                    left: 16
-                    right: 16
-                    bottom: 8
-                  child:
-                    type: Column
-                    props:
-                      crossAxisAlignment: "start"
-                      children:
-                        - type: Text
-                          props:
-                            data: "Superhero API Key"
-                            style:
-                              fontWeight: "bold"
-                              fontSize: 14
-                        - type: SizedBox
-                          props:
-                            height: 4
-                        - type: Observer
-                          props:
-                            query: "_api_key"
-                            builder:
-                              type: TextField
-                              props:
-                                initialValue: "shql: _api_key"
-                                decoration:
-                                  hintText: "Enter your superheroapi.com API key"
-                                  border: "outline"
-                                  prefixIcon: "vpn_key"
-                                onChanged: "shql: SET_API_KEY(value)"
-                                onSubmitted: "shql: SET_API_KEY(value)"
-                        - type: SizedBox
-                          props:
-                            height: 4
-                        - type: Text
-                          props:
-                            data: "Get a free key at superheroapi.com"
-                            style:
-                              fontSize: 12
-                              color: "0xFF757575"
-
-              - type: Padding
-                props:
-                  padding:
-                    left: 16
-                    right: 16
-                    bottom: 8
-                  child:
-                    type: Column
-                    props:
-                      crossAxisAlignment: "start"
-                      children:
-                        - type: Text
-                          props:
-                            data: "API Host"
-                            style:
-                              fontWeight: "bold"
-                              fontSize: 14
-                        - type: SizedBox
-                          props:
-                            height: 4
-                        - type: Observer
-                          props:
-                            query: "_api_host"
-                            builder:
-                              type: TextField
-                              props:
-                                initialValue: "shql: _api_host"
-                                decoration:
-                                  hintText: "www.superheroapi.com"
-                                  border: "outline"
-                                onChanged: "shql: SET_API_HOST(value)"
-                                onSubmitted: "shql: SET_API_HOST(value)"
+                  label: "API Host"
+                  query: "_api_host"
+                  initialValue: "shql: _api_host"
+                  hintText: "www.superheroapi.com"
+                  onChanged: "shql: SET_API_HOST(value)"
+                  onSubmitted: "shql: SET_API_HOST(value)"
 
               - type: Divider
 
               # Privacy Section
-              - type: Padding
+              - type: SectionHeader
                 props:
-                  padding:
-                    left: 16
-                    top: 16
-                    bottom: 8
-                  child:
-                    type: Text
-                    props:
-                      data: "Privacy & Consent"
-                      style:
-                        fontSize: 14
-                        fontWeight: "bold"
-                        color: "0xFF1976D2"
+                  title: "Privacy & Consent"
+                  color: "0xFF1976D2"
 
-              - type: ListTile
+              - type: ConsentToggle
                 props:
-                  leading:
-                    type: Icon
-                    props:
-                      icon: "analytics"
-                  title:
-                    type: Text
-                    props:
-                      data: "Analytics"
-                  subtitle:
-                    type: Text
-                    props:
-                      data: "Help improve HeroDex with usage data"
-                  trailing:
-                    type: Observer
-                    props:
-                      query: "_analytics_enabled"
-                      builder:
-                        type: Switch
-                        props:
-                          value: "shql: _analytics_enabled"
-                          onChanged: "shql: SET_ANALYTICS_CONSENT(value)"
+                  icon: "analytics"
+                  title: "Analytics"
+                  subtitle: "Help improve HeroDex with usage data"
+                  query: "_analytics_enabled"
+                  valueExpr: "shql: _analytics_enabled"
+                  onChanged: "shql: SET_ANALYTICS_CONSENT(value)"
 
-              - type: ListTile
+              - type: ConsentToggle
                 props:
-                  leading:
-                    type: Icon
-                    props:
-                      icon: "bug_report"
-                  title:
-                    type: Text
-                    props:
-                      data: "Crash Reports"
-                  subtitle:
-                    type: Text
-                    props:
-                      data: "Automatically send crash reports"
-                  trailing:
-                    type: Observer
-                    props:
-                      query: "_crashlytics_enabled"
-                      builder:
-                        type: Switch
-                        props:
-                          value: "shql: _crashlytics_enabled"
-                          onChanged: "shql: SET_CRASHLYTICS_CONSENT(value)"
+                  icon: "bug_report"
+                  title: "Crash Reports"
+                  subtitle: "Automatically send crash reports"
+                  query: "_crashlytics_enabled"
+                  valueExpr: "shql: _crashlytics_enabled"
+                  onChanged: "shql: SET_CRASHLYTICS_CONSENT(value)"
 
-              - type: ListTile
+              - type: ConsentToggle
                 props:
-                  leading:
-                    type: Icon
-                    props:
-                      icon: "location_on"
-                  title:
-                    type: Text
-                    props:
-                      data: "Location Access"
-                  subtitle:
-                    type: Text
-                    props:
-                      data: "Show heroes on map"
-                  trailing:
-                    type: Observer
-                    props:
-                      query: "_location_enabled"
-                      builder:
-                        type: Switch
-                        props:
-                          value: "shql: _location_enabled"
-                          onChanged: "shql: SET_LOCATION_CONSENT(value)"
+                  icon: "location_on"
+                  title: "Location Access"
+                  subtitle: "Show heroes on map"
+                  query: "_location_enabled"
+                  valueExpr: "shql: _location_enabled"
+                  onChanged: "shql: SET_LOCATION_CONSENT(value)"
 
               - type: Observer
                 props:
@@ -261,20 +142,10 @@ screen:
               - type: Divider
 
               # Named Filter Predicates Section
-              - type: Padding
+              - type: SectionHeader
                 props:
-                  padding:
-                    left: 16
-                    top: 16
-                    bottom: 8
-                  child:
-                    type: Text
-                    props:
-                      data: "Filter Predicates"
-                      style:
-                        fontSize: 14
-                        fontWeight: "bold"
-                        color: "0xFF1976D2"
+                  title: "Filter Predicates"
+                  color: "0xFF1976D2"
 
               - type: Padding
                 props:
@@ -297,20 +168,10 @@ screen:
               - type: Divider
 
               # About Section
-              - type: Padding
+              - type: SectionHeader
                 props:
-                  padding:
-                    left: 16
-                    top: 16
-                    bottom: 8
-                  child:
-                    type: Text
-                    props:
-                      data: "About"
-                      style:
-                        fontSize: 14
-                        fontWeight: "bold"
-                        color: "0xFF1976D2"
+                  title: "About"
+                  color: "0xFF1976D2"
 
               - type: ListTile
                 props:
@@ -360,20 +221,10 @@ screen:
               - type: Divider
 
               # Danger Zone
-              - type: Padding
+              - type: SectionHeader
                 props:
-                  padding:
-                    left: 16
-                    top: 16
-                    bottom: 8
-                  child:
-                    type: Text
-                    props:
-                      data: "Danger Zone"
-                      style:
-                        fontSize: 14
-                        fontWeight: "bold"
-                        color: "0xFFF44336"
+                  title: "Danger Zone"
+                  color: "0xFFF44336"
 
               - type: ListTile
                 props:
@@ -433,16 +284,7 @@ screen:
                   onTap: "shql: SIGN_OUT()"
 
     bottomNavigationBar:
-      type: BottomNavigationBar
+      type: BottomNav
       props:
         currentIndex: 3
-        items:
-          - icon: "home"
-            label: "Home"
-          - icon: "cloud"
-            label: "Online"
-          - icon: "bookmark"
-            label: "Saved"
-          - icon: "settings"
-            label: "Settings"
         onTap: "shql: TAB_NAV(3, value)"

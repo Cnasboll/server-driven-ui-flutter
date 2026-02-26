@@ -1,0 +1,17 @@
+# A section header label used in settings/onboarding.
+# Props: title (String), color (hex, optional — defaults to blue via substituteProps)
+widget:
+  type: Padding
+  props:
+    padding:
+      left: 16
+      top: 16
+      bottom: 8
+    child:
+      type: Text
+      props:
+        data: "prop:title"
+        style:
+          fontSize: 14
+          fontWeight: "bold"
+          color: "prop:color"

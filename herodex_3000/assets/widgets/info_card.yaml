@@ -1,0 +1,38 @@
+# An info card with an icon+title header row and content below.
+# Props: icon (String), iconColor (hex), iconSize (num, default 28),
+#        title (String), titleSize (num, default 16),
+#        cardColor (hex, optional), content (widget node)
+widget:
+  type: Card
+  props:
+    color: "prop:cardColor"
+    child:
+      type: Padding
+      props:
+        padding: 16
+        child:
+          type: Column
+          props:
+            crossAxisAlignment: "start"
+            children:
+              - type: Row
+                children:
+                  - type: Icon
+                    props:
+                      icon: "prop:icon"
+                      color: "prop:iconColor"
+                      size: "prop:iconSize"
+                  - type: SizedBox
+                    props:
+                      width: 8
+                  - type: Text
+                    props:
+                      data: "prop:title"
+                      style:
+                        fontSize: "prop:titleSize"
+                        fontWeight: "bold"
+                        color: "prop:titleColor"
+              - type: SizedBox
+                props:
+                  height: 8
+              - "prop:content"

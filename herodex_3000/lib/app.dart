@@ -75,6 +75,18 @@ class _HeroDexAppState extends State<HeroDexApp> {
     'hero_edit': 'assets/screens/hero_edit.yaml',
   };
 
+  // Widget name → YAML asset path (registered in the widget registry)
+  static const _widgetTemplates = {
+    'StatChip': 'assets/widgets/stat_chip.yaml',
+    'PowerBar': 'assets/widgets/power_bar.yaml',
+    'BottomNav': 'assets/widgets/bottom_nav.yaml',
+    'ConsentToggle': 'assets/widgets/consent_toggle.yaml',
+    'SectionHeader': 'assets/widgets/section_header.yaml',
+    'InfoCard': 'assets/widgets/info_card.yaml',
+    'ApiField': 'assets/widgets/api_field.yaml',
+    'DetailAppBar': 'assets/widgets/detail_app_bar.yaml',
+  };
+
   @override
   void initState() {
     super.initState();
@@ -222,6 +234,12 @@ class _HeroDexAppState extends State<HeroDexApp> {
     await _shqlBindings.loadProgram(herodexCode);
 
     _yamlEngine = YamlUiEngine(_shqlBindings, createHeroDexWidgetRegistry());
+
+    // Load YAML-defined widget templates into the registry
+    for (final entry in _widgetTemplates.entries) {
+      final yaml = await rootBundle.loadString(entry.value);
+      _yamlEngine.loadWidgetTemplate(entry.key, yaml);
+    }
 
     // Filter orchestration listeners
     _shqlBindings.addListener('_filters', () {

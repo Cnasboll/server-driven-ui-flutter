@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 /// Animates a numeric value from its previous to its current state.
-/// Used for Total Fighting Power, hero counts, etc.
 class AnimatedNumber extends StatelessWidget {
   final num value;
   final TextStyle? style;

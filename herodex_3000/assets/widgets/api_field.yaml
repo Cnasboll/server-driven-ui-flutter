@@ -1,0 +1,36 @@
+# An API configuration field: label + TextField with Observer binding.
+# Props: label (String), query (String), initialValue (shql expr),
+#        hintText (String), onChanged (shql, optional), onSubmitted (shql)
+widget:
+  type: Padding
+  props:
+    padding:
+      left: 16
+      right: 16
+      bottom: 8
+    child:
+      type: Column
+      props:
+        crossAxisAlignment: "start"
+        children:
+          - type: Text
+            props:
+              data: "prop:label"
+              style:
+                fontWeight: "bold"
+                fontSize: 14
+          - type: SizedBox
+            props:
+              height: 4
+          - type: Observer
+            props:
+              query: "prop:query"
+              builder:
+                type: TextField
+                props:
+                  initialValue: "prop:initialValue"
+                  decoration:
+                    hintText: "prop:hintText"
+                    border: "outline"
+                  onChanged: "prop:onChanged"
+                  onSubmitted: "prop:onSubmitted"

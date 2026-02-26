@@ -7,6 +7,8 @@ export 'yaml_ui/yaml_ui_engine.dart';
 export 'yaml_ui/widget_registry.dart';
 export 'yaml_ui/shql_bindings.dart';
 export 'yaml_ui/debouncer.dart';
+export 'yaml_ui/resolvers.dart';
+export 'yaml_ui/animated_number.dart';
 
 // SHQL™ Engine (re-exported from shql package)
 export 'package:shql/engine/engine.dart';

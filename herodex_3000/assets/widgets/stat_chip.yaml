@@ -1,0 +1,35 @@
+# A single stat chip showing a label and numeric value in a coloured pill.
+# Props: label (String), valueText (String), color (hex), bgColor (hex)
+widget:
+  type: Expanded
+  child:
+    type: Container
+    props:
+      padding:
+        vertical: 4
+      decoration:
+        color: "prop:bgColor"
+        borderRadius: 4
+      child:
+        type: Column
+        props:
+          children:
+            - type: Text
+              props:
+                data: "prop:label"
+                style:
+                  textAlign: "center"
+                  fontSize: 10
+                  fontWeight: w600
+                  color: "prop:color"
+            - type: SizedBox
+              props:
+                height: 2
+            - type: Text
+              props:
+                data: "prop:valueText"
+                style:
+                  textAlign: "center"
+                  fontSize: 12
+                  fontWeight: bold
+                  color: "prop:color"

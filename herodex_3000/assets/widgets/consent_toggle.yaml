@@ -1,0 +1,28 @@
+# A consent toggle: icon + title + subtitle + Observer-driven Switch.
+# Props: icon (String), color (hex), title (String), subtitle (String),
+#        query (String), valueExpr (shql), onChanged (shql)
+widget:
+  type: ListTile
+  props:
+    leading:
+      type: Icon
+      props:
+        icon: "prop:icon"
+        color: "prop:color"
+    title:
+      type: Text
+      props:
+        data: "prop:title"
+    subtitle:
+      type: Text
+      props:
+        data: "prop:subtitle"
+    trailing:
+      type: Observer
+      props:
+        query: "prop:query"
+        builder:
+          type: Switch
+          props:
+            value: "prop:valueExpr"
+            onChanged: "prop:onChanged"

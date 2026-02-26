@@ -46,7 +46,7 @@ class Resolvers {
   }
 
   static EdgeInsets edgeInsets(dynamic v) {
-    // supports: 16, [l,t,r,b], {l:16,t:8,r:16,b:8}
+    // supports: 16, [l,t,r,b], {left:16,top:8,...} or {l:16,t:8,...}
     if (v is num) return EdgeInsets.all(v.toDouble());
     if (v is List && v.length == 4) {
       return EdgeInsets.fromLTRB(
@@ -57,8 +57,14 @@ class Resolvers {
       );
     }
     if (v is Map) {
-      double g(String k) => ((v[k] ?? 0) as num).toDouble();
-      return EdgeInsets.fromLTRB(g('l'), g('t'), g('r'), g('b'));
+      double g(String k1, String k2) =>
+          ((v[k1] ?? v[k2] ?? 0) as num).toDouble();
+      return EdgeInsets.fromLTRB(
+        g('left', 'l'),
+        g('top', 't'),
+        g('right', 'r'),
+        g('bottom', 'b'),
+      );
     }
     return EdgeInsets.zero;
   }
@@ -124,25 +130,85 @@ class Resolvers {
     }
   }
 
+  /// Maps icon name strings to Material [IconData].
+  static IconData iconData(String name) {
+    switch (name) {
+      case 'home': return Icons.home;
+      case 'search': return Icons.search;
+      case 'bookmark': return Icons.bookmark;
+      case 'bookmark_border': return Icons.bookmark_border;
+      case 'bookmark_add': return Icons.bookmark_add;
+      case 'settings': return Icons.settings;
+      case 'person': return Icons.person;
+      case 'person_search': return Icons.person_search;
+      case 'shield': return Icons.shield;
+      case 'star': return Icons.star;
+      case 'favorite': return Icons.favorite;
+      case 'favorite_border': return Icons.favorite_border;
+      case 'delete': return Icons.delete;
+      case 'delete_forever': return Icons.delete_forever;
+      case 'arrow_back': return Icons.arrow_back;
+      case 'analytics': return Icons.analytics;
+      case 'bug_report': return Icons.bug_report;
+      case 'location_on': return Icons.location_on;
+      case 'map': return Icons.map;
+      case 'dark_mode': return Icons.dark_mode;
+      case 'light_mode': return Icons.light_mode;
+      case 'info': return Icons.info;
+      case 'error': return Icons.error;
+      case 'warning': return Icons.warning;
+      case 'check_circle': return Icons.check_circle;
+      case 'close': return Icons.close;
+      case 'add': return Icons.add;
+      case 'remove': return Icons.remove;
+      case 'edit': return Icons.edit;
+      case 'lock': return Icons.lock;
+      case 'lock_open': return Icons.lock_open;
+      case 'vpn_key': return Icons.vpn_key;
+      case 'sync': return Icons.sync;
+      case 'logout': return Icons.logout;
+      case 'code': return Icons.code;
+      case 'calendar_today': return Icons.calendar_today;
+      case 'military_tech': return Icons.military_tech;
+      case 'flash_on': return Icons.flash_on;
+      case 'dangerous': return Icons.dangerous;
+      case 'label': return Icons.label;
+      case 'wb_sunny': return Icons.wb_sunny;
+      case 'cloud': return Icons.cloud;
+      case 'foggy': return Icons.foggy;
+      case 'water_drop': return Icons.water_drop;
+      case 'ac_unit': return Icons.ac_unit;
+      case 'thermostat': return Icons.thermostat;
+      case 'air': return Icons.air;
+      case 'select_all': return Icons.select_all;
+      case 'filter_list': return Icons.filter_list;
+      case 'restore': return Icons.restore;
+      case 'play_arrow': return Icons.play_arrow;
+      case 'save': return Icons.save;
+      case 'volume_up': return Icons.volume_up;
+      default: return Icons.help_outline;
+    }
+  }
+
   static Alignment? alignment(String? v) {
     switch (v?.toLowerCase()) {
-      case 'topLeft':
+      case 'topleft':
         return Alignment.topLeft;
-      case 'topCenter':
+      case 'topcenter':
         return Alignment.topCenter;
-      case 'topRight':
+      case 'topright':
         return Alignment.topRight;
-      case 'centerLeft':
+      case 'centerleft':
         return Alignment.centerLeft;
       case 'center':
         return Alignment.center;
-      case 'centerRight':
+      case 'centerright':
         return Alignment.centerRight;
-      case 'bottomLeft':
+      case 'bottomleft':
         return Alignment.bottomLeft;
-      case 'bottomCenter':
+      case 'bottomcenter':
         return Alignment.bottomCenter;
-      case 'bottomRight':
+      case 'bottomright':
         return Alignment.bottomRight;
       default:
         return null;
