@@ -7,9 +7,7 @@ void main() {
     String name = 'Batman',
     String? imageUrl,
     int alignment = 3,  // Alignment.good
-    int? strength = 80,
-    int? intelligence = 100,
-    int? speed = 60,
+    List<Map<String, dynamic>> stats = const [],
     int? totalPower = 450,
     bool locked = false,
     VoidCallback? onTap,
@@ -25,9 +23,7 @@ void main() {
             name: name,
             imageUrl: imageUrl,
             alignment: alignment,
-            strength: strength,
-            intelligence: intelligence,
-            speed: speed,
+            stats: stats,
             totalPower: totalPower,
             locked: locked,
             onTap: onTap,
@@ -52,16 +48,21 @@ void main() {
       expect(find.text('Good'), findsOneWidget);
     });
 
-    testWidgets('displays stat chips', (tester) async {
+    testWidgets('displays stat chips from stats list', (tester) async {
       await tester.pumpWidget(buildTestCard(
-        strength: 80,
-        intelligence: 100,
-        speed: 60,
+        stats: [
+          {'label': 'STR', 'value': 80, 'color': '0xFFF44336'},
+          {'label': 'INT', 'value': 100, 'color': '0xFF2196F3'},
+          {'label': 'SPD', 'value': 60, 'color': '0xFFFF9800'},
+        ],
       ));
       await tester.pumpAndSettle();
       expect(find.text('80'), findsOneWidget);
       expect(find.text('100'), findsOneWidget);
       expect(find.text('60'), findsOneWidget);
+      expect(find.text('STR'), findsOneWidget);
+      expect(find.text('INT'), findsOneWidget);
+      expect(find.text('SPD'), findsOneWidget);
     });
 
     testWidgets('hides delete button when onDelete is null', (tester) async {
@@ -96,10 +97,11 @@ void main() {
       await tester.pumpWidget(buildTestCard(
         name: 'Batman',
         alignment: 3,
-        strength: 80,
+        stats: [
+          {'label': 'STR', 'value': 80, 'color': '0xFFF44336'},
+        ],
       ));
       await tester.pumpAndSettle();
-      // Verify Semantics widget exists with the hero name
       expect(find.bySemanticsLabel(RegExp('Batman')), findsAtLeast(1));
     });
 
@@ -139,13 +141,15 @@ void main() {
       final card = HeroCard.fromMap({
         'name': 'Wonder Woman',
         'alignment': 3,
-        'strength': 90,
-        'intelligence': 95,
-        'speed': 70,
+        'stats': [
+          {'label': 'STR', 'value': 90, 'color': '0xFFF44336'},
+          {'label': 'INT', 'value': 95, 'color': '0xFF2196F3'},
+        ],
         'totalPower': 500,
       });
       expect(card.name, 'Wonder Woman');
-      expect(card.strength, 90);
+      expect(card.stats.length, 2);
+      expect(card.stats[0]['value'], 90);
     });
   });
 }

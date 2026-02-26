@@ -1,19 +1,18 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
-/// A reusable card widget for displaying hero/villain information
-/// This widget is designed to work both as a native Flutter widget
-/// and to be registered with the SDUI system
+/// A reusable card widget for displaying hero/villain information.
+///
+/// Stats are passed as a list of `{value, label, color}` maps — the card
+/// has no knowledge of which specific fields exist. That metadata is
+/// generated from the Field tree by `HeroSchema` and assembled by SHQL.
 class HeroCard extends StatelessWidget {
   final String name;
   final String? imageUrl;
   final int alignment;
-  final int? strength;
-  final int? intelligence;
-  final int? speed;
-  final int? durability;
-  final int? power;
-  final int? combat;
+  final List<Map<String, dynamic>> stats;
   final int? totalPower;
   final String? publisher;
   final String? race;
@@ -28,12 +27,7 @@ class HeroCard extends StatelessWidget {
     required this.name,
     this.imageUrl,
     this.alignment = 0,
-    this.strength,
-    this.intelligence,
-    this.speed,
-    this.durability,
-    this.power,
-    this.combat,
+    this.stats = const [],
     this.totalPower,
     this.publisher,
     this.race,
@@ -44,29 +38,32 @@ class HeroCard extends StatelessWidget {
     this.onToggleLock,
   });
 
-  /// Create from a Map (for SDUI integration)
+  /// Create from a props Map (for SDUI integration).
   factory HeroCard.fromMap(
     Map<String, dynamic> data, {
+    Key? key,
     VoidCallback? onTap,
     VoidCallback? onDelete,
+    VoidCallback? onToggleLock,
   }) {
+    final rawStats = data['stats'];
+    final stats = <Map<String, dynamic>>[];
+    if (rawStats is List) {
+      for (final s in rawStats) {
+        if (s is Map<String, dynamic>) {
+          stats.add(s);
+        } else if (s is Map) {
+          stats.add(Map<String, dynamic>.from(s));
+        }
+      }
+    }
+
     return HeroCard(
+      key: key,
       name: data['name'] as String? ?? 'Unknown',
-      imageUrl: data['url'] as String? ?? data['imageUrl'] as String? ?? data['image']?['url'] as String?,
-      alignment: data['alignment'] as int? ??
-          data['biography']?['alignment'] as int? ?? 0,
-      strength:
-          data['powerStats']?['strength'] as int? ?? data['strength'] as int?,
-      intelligence:
-          data['powerStats']?['intelligence'] as int? ??
-          data['intelligence'] as int?,
-      speed: data['powerStats']?['speed'] as int? ?? data['speed'] as int?,
-      durability:
-          data['powerStats']?['durability'] as int? ?? data['durability'] as int?,
-      power:
-          data['powerStats']?['power'] as int? ?? data['power'] as int?,
-      combat:
-          data['powerStats']?['combat'] as int? ?? data['combat'] as int?,
+      imageUrl: data['url'] as String? ?? data['imageUrl'] as String?,
+      alignment: data['alignment'] as int? ?? 0,
+      stats: stats,
       totalPower: data['totalPower'] as int?,
       publisher: data['publisher'] as String?,
       race: data['race'] as String?,
@@ -74,6 +71,7 @@ class HeroCard extends StatelessWidget {
       locked: data['locked'] as bool? ?? false,
       onTap: onTap,
       onDelete: onDelete,
+      onToggleLock: onToggleLock,
     );
   }
 
@@ -107,16 +105,54 @@ class HeroCard extends StatelessWidget {
     return parts.join(' \u2022 ');
   }
 
+  String get _semanticsLabel {
+    final sb = StringBuffer('$name, ${_alignmentStyle.label} alignment');
+    for (final stat in stats) {
+      final label = stat['label'] as String?;
+      final value = stat['value'];
+      if (label != null && value != null) {
+        sb.write(', $label $value');
+      }
+    }
+    return sb.toString();
+  }
+
+  List<Widget> _buildStatRows() {
+    const perRow = 3;
+    final rows = <Widget>[];
+    for (var rowStart = 0; rowStart < stats.length; rowStart += perRow) {
+      if (rowStart > 0) rows.add(const SizedBox(height: 4));
+      final rowEnd = min(rowStart + perRow, stats.length);
+      rows.add(Row(
+        children: [
+          for (var i = rowStart; i < rowEnd; i++) ...[
+            if (i > rowStart) const SizedBox(width: 4),
+            _StatChip(
+              label: stats[i]['label'] as String? ?? '?',
+              value: stats[i]['value'] as int?,
+              color: _parseColor(stats[i]['color']),
+            ),
+          ],
+        ],
+      ));
+    }
+    return rows;
+  }
+
+  static Color _parseColor(dynamic raw) {
+    if (raw is String && raw.startsWith('0x')) {
+      return Color(int.parse(raw));
+    }
+    return Colors.grey;
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
     Widget card = Semantics(
-      label: '$name, ${_alignmentStyle.label} alignment'
-          '${strength != null ? ", strength $strength" : ""}'
-          '${intelligence != null ? ", intelligence $intelligence" : ""}'
-          '${speed != null ? ", speed $speed" : ""}',
+      label: _semanticsLabel,
       button: onTap != null,
       child: Card(
       clipBehavior: Clip.antiAlias,
@@ -133,7 +169,7 @@ class HeroCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // Image section – fill remaining space after the info section
+            // Image section
             Expanded(
               child: _HeroCardImage(
                 imageUrl: imageUrl,
@@ -177,31 +213,10 @@ class HeroCard extends StatelessWidget {
                     ),
                   ],
 
-                  const SizedBox(height: 8),
-
-                  // Stats row 1: STR / INT / SPD
-                  Row(
-                    children: [
-                      _StatChip(icon: Icons.fitness_center, value: strength, color: Colors.red),
-                      const SizedBox(width: 4),
-                      _StatChip(icon: Icons.psychology, value: intelligence, color: Colors.blue),
-                      const SizedBox(width: 4),
-                      _StatChip(icon: Icons.flash_on, value: speed, color: Colors.amber),
-                    ],
-                  ),
-
-                  const SizedBox(height: 4),
-
-                  // Stats row 2: DUR / POW / CMB
-                  Row(
-                    children: [
-                      _StatChip(icon: Icons.shield, value: durability, color: Colors.green),
-                      const SizedBox(width: 4),
-                      _StatChip(icon: Icons.bolt, value: power, color: Colors.purple),
-                      const SizedBox(width: 4),
-                      _StatChip(icon: Icons.sports_mma, value: combat, color: Colors.brown),
-                    ],
-                  ),
+                  if (stats.isNotEmpty) ...[
+                    const SizedBox(height: 8),
+                    ..._buildStatRows(),
+                  ],
 
                   if (totalPower != null) ...[
                     const SizedBox(height: 8),
@@ -245,12 +260,12 @@ class HeroCard extends StatelessWidget {
 
 class _StatChip extends StatelessWidget {
   const _StatChip({
-    required this.icon,
+    required this.label,
     required this.value,
     required this.color,
   });
 
-  final IconData icon;
+  final String label;
   final int? value;
   final Color color;
 
@@ -265,7 +280,14 @@ class _StatChip extends StatelessWidget {
         ),
         child: Column(
           children: [
-            Icon(icon, size: 14, color: color),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 10,
+                fontWeight: FontWeight.w600,
+                color: color,
+              ),
+            ),
             const SizedBox(height: 2),
             Text(
               value?.toString() ?? '-',

@@ -57,19 +57,19 @@ _detail_fields := [
 
 -- Summary fields metadata (for HeroCard)
 _summary_fields := [
-    OBJECT{prop_name: 'name', accessor: (hero) => hero.NAME},
-    OBJECT{prop_name: 'intelligence', accessor: (hero) => POWERSTATS(hero, x => x.INTELLIGENCE, 0)},
-    OBJECT{prop_name: 'strength', accessor: (hero) => POWERSTATS(hero, x => x.STRENGTH, 0)},
-    OBJECT{prop_name: 'speed', accessor: (hero) => POWERSTATS(hero, x => x.SPEED, 0)},
-    OBJECT{prop_name: 'durability', accessor: (hero) => POWERSTATS(hero, x => x.DURABILITY, 0)},
-    OBJECT{prop_name: 'power', accessor: (hero) => POWERSTATS(hero, x => x.POWER, 0)},
-    OBJECT{prop_name: 'combat', accessor: (hero) => POWERSTATS(hero, x => x.COMBAT, 0)},
-    OBJECT{prop_name: 'fullName', accessor: (hero) => BIOGRAPHY(hero, x => x.FULL_NAME, '')},
-    OBJECT{prop_name: 'publisher', accessor: (hero) => BIOGRAPHY(hero, x => x.PUBLISHER, '')},
-    OBJECT{prop_name: 'alignment', accessor: (hero) => BIOGRAPHY(hero, x => x.ALIGNMENT, 0)},
-    OBJECT{prop_name: 'race', accessor: (hero) => APPEARANCE(hero, x => x.RACE, '')},
-    OBJECT{prop_name: 'url', accessor: (hero) => IMAGE(hero, x => x.URL, '')},
-    OBJECT{prop_name: 'totalPower', accessor: (hero) => POWERSTATS(hero, p => p.INTELLIGENCE, 0) + POWERSTATS(hero, p => p.STRENGTH, 0) + POWERSTATS(hero, p => p.SPEED, 0) + POWERSTATS(hero, p => p.DURABILITY, 0) + POWERSTATS(hero, p => p.POWER, 0) + POWERSTATS(hero, p => p.COMBAT, 0)}
+    OBJECT{prop_name: 'name', accessor: (hero) => hero.NAME, is_stat: FALSE},
+    OBJECT{prop_name: 'intelligence', accessor: (hero) => POWERSTATS(hero, x => x.INTELLIGENCE, 0), is_stat: TRUE, label: 'INT', color: '0xFF2196F3'},
+    OBJECT{prop_name: 'strength', accessor: (hero) => POWERSTATS(hero, x => x.STRENGTH, 0), is_stat: TRUE, label: 'STR', color: '0xFFF44336'},
+    OBJECT{prop_name: 'speed', accessor: (hero) => POWERSTATS(hero, x => x.SPEED, 0), is_stat: TRUE, label: 'SPE', color: '0xFFFF9800'},
+    OBJECT{prop_name: 'durability', accessor: (hero) => POWERSTATS(hero, x => x.DURABILITY, 0), is_stat: TRUE, label: 'DUR', color: '0xFF4CAF50'},
+    OBJECT{prop_name: 'power', accessor: (hero) => POWERSTATS(hero, x => x.POWER, 0), is_stat: TRUE, label: 'POW', color: '0xFF9C27B0'},
+    OBJECT{prop_name: 'combat', accessor: (hero) => POWERSTATS(hero, x => x.COMBAT, 0), is_stat: TRUE, label: 'COM', color: '0xFF795548'},
+    OBJECT{prop_name: 'fullName', accessor: (hero) => BIOGRAPHY(hero, x => x.FULL_NAME, ''), is_stat: FALSE},
+    OBJECT{prop_name: 'publisher', accessor: (hero) => BIOGRAPHY(hero, x => x.PUBLISHER, ''), is_stat: FALSE},
+    OBJECT{prop_name: 'alignment', accessor: (hero) => BIOGRAPHY(hero, x => x.ALIGNMENT, 0), is_stat: FALSE},
+    OBJECT{prop_name: 'race', accessor: (hero) => APPEARANCE(hero, x => x.RACE, ''), is_stat: FALSE},
+    OBJECT{prop_name: 'url', accessor: (hero) => IMAGE(hero, x => x.URL, ''), is_stat: FALSE},
+    OBJECT{prop_name: 'totalPower', accessor: (hero) => POWERSTATS(hero, p => p.INTELLIGENCE, 0) + POWERSTATS(hero, p => p.STRENGTH, 0) + POWERSTATS(hero, p => p.SPEED, 0) + POWERSTATS(hero, p => p.DURABILITY, 0) + POWERSTATS(hero, p => p.POWER, 0) + POWERSTATS(hero, p => p.COMBAT, 0), is_stat: FALSE}
 ];
 ''');
   });

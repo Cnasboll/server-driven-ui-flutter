@@ -720,9 +720,13 @@ GENERATE_HERO_CARDS(heroes, source, deletable) := BEGIN
     FOR i := 0 TO LENGTH(heroes) - 1 DO BEGIN
         hero := heroes[i];
         props := {};
+        props["stats"] := [];
         FOR __j := 0 TO LENGTH(_summary_fields) - 1 DO BEGIN
             __sf := _summary_fields[__j];
-            props[__sf.PROP_NAME] := __sf.ACCESSOR(hero);
+            IF __sf.IS_STAT THEN
+                props["stats"] := props["stats"] + [OBJECT{value: __sf.ACCESSOR(hero), label: __sf.LABEL, color: __sf.COLOR}]
+            ELSE
+                props[__sf.PROP_NAME] := __sf.ACCESSOR(hero);
         END;
         props["onTap"] := "shql: SELECT_HERO(" + source + "[" + STRING(i) + "])";
         IF deletable THEN
@@ -799,9 +803,13 @@ END;
 -- Uses ID-based lookup from _heroes so no display index is needed.
 GENERATE_SINGLE_HERO_CARD(__hero) := BEGIN
     props := {};
+    props["stats"] := [];
     FOR __j := 0 TO LENGTH(_summary_fields) - 1 DO BEGIN
         __sf := _summary_fields[__j];
-        props[__sf.PROP_NAME] := __sf.ACCESSOR(__hero);
+        IF __sf.IS_STAT THEN
+            props["stats"] := props["stats"] + [OBJECT{value: __sf.ACCESSOR(__hero), label: __sf.LABEL, color: __sf.COLOR}]
+        ELSE
+            props[__sf.PROP_NAME] := __sf.ACCESSOR(__hero);
     END;
     props["onTap"] := "shql: SELECT_HERO(_heroes['" + __hero.ID + "'])";
     props["onDelete"] := "shql: DELETE_HERO('" + __hero.ID + "')";
