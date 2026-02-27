@@ -1,5 +1,4 @@
-import 'dart:io' show Platform;
-
+import 'package:flutter/foundation.dart' show kIsWeb, defaultTargetPlatform, TargetPlatform;
 import 'package:sqflite/sqflite.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart' as ffi;
 import 'package:path/path.dart' show join;
@@ -8,8 +7,14 @@ import 'package:hero_common/persistence/database_adapter.dart';
 class SqfliteDriver implements DatabaseDriver {
   @override
   Future<DatabaseAdapter> open(String dbName) async {
+    if (kIsWeb) {
+      throw UnsupportedError('SqfliteDriver does not support web.');
+    }
     // On desktop (Windows/Linux/macOS), use FFI; on mobile, use native sqflite.
-    if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
+    final platform = defaultTargetPlatform;
+    if (platform == TargetPlatform.windows ||
+        platform == TargetPlatform.linux ||
+        platform == TargetPlatform.macOS) {
       ffi.sqfliteFfiInit();
       databaseFactory = ffi.databaseFactoryFfi;
     }
