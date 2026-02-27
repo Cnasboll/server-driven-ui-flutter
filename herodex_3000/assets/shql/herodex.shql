@@ -348,14 +348,14 @@ _current_query := '';
 -- Apply a predicate to a hero list, returning a map of matching heroes keyed by ID.
 -- Single place for predicate-based filtering — used by REBUILD_ALL_FILTERS,
 -- ON_HERO_ADDED, and FILTER_DISPLAYED.
--- Calls predicate lambdas directly in SHQL™ (no Dart roundtrip).
--- Falls back to text-match via MATCH() when pred is null.
+-- Uses _EVAL_PREDICATE (Dart ternary with try-catch) so a lambda that throws
+-- on a hero with null fields falls back to text-match instead of aborting the loop.
 APPLY_PREDICATE(__hero_list, __pred, __predText) := BEGIN
     __result := {};
     IF LENGTH(__hero_list) > 0 THEN
         FOR __j := 0 TO LENGTH(__hero_list) - 1 DO BEGIN
             __hero := __hero_list[__j];
-            __match := IF __pred <> null THEN __pred(__hero) ELSE MATCH(__hero, __predText);
+            __match := _EVAL_PREDICATE(__hero, __pred, __predText);
             IF __match THEN
                 __result[__hero.ID] := __hero;
         END;
@@ -565,7 +565,7 @@ ON_HERO_ADDED(__hero) := BEGIN
                 _filtered_heroes[__i][__hero.ID] := __hero
             ELSE BEGIN
                 __pred := _filter_lambdas[__fname];
-                __match := IF __pred <> null THEN __pred(__hero) ELSE MATCH(__hero, __predText);
+                __match := _EVAL_PREDICATE(__hero, __pred, __predText);
                 IF __match THEN
                     _filtered_heroes[__i][__hero.ID] := __hero;
             END;
