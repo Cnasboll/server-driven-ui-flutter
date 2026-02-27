@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:server_driven_ui/server_driven_ui.dart';
 import 'package:herodex_3000/core/herodex_widget_registry.dart';
-import 'package:herodex_3000/widgets/hero_card.dart';
+import 'hero_card_test_utils.dart';
 
 /// YAML templates used by the hero card tree.
 const _requiredTemplates = [

@@ -1,22 +1,47 @@
 # HeroDex 3000
 
-A Flutter application for tracking superheroes and villains, built as a showcase for **SHQL™** (a general-purpose, imperative scripting language) and **Server-Driven UI** (SDUI) architecture. The entire UI is defined in YAML files and rendered at runtime, with business logic written in SHQL™ scripts.
+A Flutter application for tracking superheroes and villains, built as a showcase for **SHQL™** (a general-purpose, imperative scripting language) and **Server-Driven UI** (SDUI) architecture. The entire UI — screens, reusable widget templates, dialogs, and the login flow — is defined in YAML files and rendered at runtime, with business logic written in SHQL™ scripts. Dart is only used for the framework interpreter and genuine third-party library boundaries (e.g. `CachedNetworkImage`, `FlutterMap`).
 
 ## Architecture
 
 ### Server-Driven UI (SDUI)
 
-All screens are defined as YAML files in `assets/screens/`. At runtime the `YamlUiEngine` resolves SHQL™ expressions in the YAML, and the `WidgetRegistry` maps type names to Flutter widgets. This means the UI can be updated without recompiling the app.
+All UI is defined in YAML — both full screens and reusable widget templates. At runtime the `YamlUiEngine` resolves SHQL™ expressions in the YAML, and the `WidgetRegistry` maps type names to Flutter widgets. Widget templates are composable: a screen YAML references a template by type name and passes props that are substituted at build time. This means the UI can be updated without recompiling the app.
 
+**Screens** (`assets/screens/`):
 ```
-assets/screens/home.yaml       -> Home dashboard
-assets/screens/online.yaml     -> Online hero search
-assets/screens/heroes.yaml     -> Saved heroes database
-assets/screens/settings.yaml   -> Settings & preferences
-assets/screens/onboarding.yaml -> First-run setup
-assets/screens/hero_detail.yaml -> Hero detail view
-assets/screens/hero_edit.yaml   -> Hero amendment editor
+home.yaml        -> Home dashboard (battle map, hero cards)
+online.yaml      -> Online hero search
+heroes.yaml      -> Saved heroes database
+settings.yaml    -> Settings & preferences
+onboarding.yaml  -> First-run setup
+hero_detail.yaml -> Hero detail view
+hero_edit.yaml   -> Hero amendment editor
 ```
+
+**Widget templates** (`assets/widgets/`):
+```
+login_screen.yaml      -> Login/register screen (pre-auth, static registry)
+bottom_nav.yaml        -> Bottom navigation bar (shared across 5 screens)
+hero_card_body.yaml    -> Card with border, InkWell, and column children
+dismissible_card.yaml  -> Swipe-to-delete wrapper
+hero_placeholder.yaml  -> Placeholder for missing hero images
+stat_chip.yaml         -> Stat label + value chip
+power_bar.yaml         -> Animated power stat bar
+badge_row.yaml         -> Alignment badge row
+overlay_action_button.yaml -> Positioned icon button overlay
+consent_toggle.yaml    -> Icon + switch consent list tile
+section_header.yaml    -> Blue section header text
+info_card.yaml         -> Informational card with icon
+api_field.yaml         -> Label + Observer-bound text field
+detail_app_bar.yaml    -> AppBar with back button + Orbitron title
+conflict_dialog.yaml   -> Height/weight conflict resolver dialog
+yes_no_dialog.yaml     -> Yes/No confirmation dialog
+reconcile_dialog.yaml  -> Hero reconciliation review dialog
+prompt_dialog.yaml     -> Text input prompt dialog
+```
+
+SHQL™ also generates complete widget trees dynamically at runtime (e.g. `_MAKE_HERO_CARD_TREE` builds the full hero card including image, badge, overlays, stats; `GENERATE_BATTLE_MAP()` builds the FlutterMap with tile and marker layers).
 
 ### SHQL™ (Small, Handy, Quintessential Language™)
 
@@ -33,11 +58,16 @@ Key SHQL™ patterns:
 - `shql: FUNCTION(args)` — Call an SHQL™ function (e.g. `SEARCH_HEROES(query)`)
 - `Observer` widget — Subscribes to SHQL™ variables and rebuilds on change
 - `boundValues` — Pass Dart values to SHQL™ without string escaping
+- Dynamic widget trees — SHQL™ functions return complete widget tree maps (e.g. `_MAKE_HERO_CARD_TREE` returns a `DismissibleCard > HeroCardBody > [CachedImage, StatChips, ...]` tree; `GENERATE_BATTLE_MAP()` returns a `FlutterMap > [TileLayer, MarkerLayer]` tree)
+- `prop:` substitution — YAML widget templates use `"prop:name"` placeholders that are resolved to caller-provided values at build time; `on*` callback props are automatically treated as SHQL™ expressions
 
 ### Mono-repo structure
 
 ```
 herodex_3000/     — Flutter mobile app (this package)
+  assets/screens/ — YAML screen definitions (7 screens)
+  assets/widgets/ — YAML widget templates (17 templates)
+  assets/shql/    — SHQL™ business logic + widget tree generation
 server_driven_ui/ — SDUI framework (YamlUiEngine, WidgetRegistry, ShqlBindings)
 shql/             — SHQL™ language engine (parser, runtime, execution)
 hero_common/      — Shared models, persistence, services (no platform dependencies)
@@ -100,11 +130,11 @@ You can also set the API key later in **Settings > API Configuration**.
 | **Dark mode** | Toggle via `ThemeCubit`, persisted in SharedPreferences + Firestore |
 | **Onboarding** | First-run screen with API config, filter setup, privacy consent |
 | **Search with debounce** | Debounced text input in FilterEditor (apply mode) and TextField widget |
-| **Swipe to delete** | `Dismissible` wrapper on HeroCard for saved heroes |
+| **Swipe to delete** | `DismissibleCard` YAML template wrapping hero cards |
 | **Dynamic scaling** | `LayoutBuilder`-based responsive GridView (2-6 columns based on width) |
 | **Connectivity indicator** | `ConnectivityService` shows SnackBar on network changes |
 | **Localization** | `flutter_localizations` with `intl` support (`l10n/`) |
-| **Accessibility** | `Semantics` labels on HeroCard, interactive elements |
+| **Accessibility** | `Semantics` labels on hero cards and interactive elements (all in YAML) |
 | **README** | This document |
 
 ### Additional Requirements
@@ -119,9 +149,9 @@ You can also set the API key later in **Settings > API Configuration**.
 | **Hero amendments** | Edit hero stats/biography, locks from reconciliation |
 | **Reconciliation** | Sync saved heroes with online API, diff-based updates |
 | **Search history** | Persisted search history with ActionChip replay |
-| **Filter editor** | Reusable `FilterEditor` widget with manage/apply modes |
+| **Filter editor** | Reusable filter editor with manage/apply modes (SHQL™ + YAML) |
 | **Ad-hoc queries** | Type SHQL™ queries to filter heroes without saving a predicate |
-| **Image caching** | `cached_network_image` for hero images |
+| **Image caching** | `CachedImage` Dart factory (thin wrapper around `cached_network_image`) |
 
 ## Testing
 
@@ -133,8 +163,8 @@ flutter test
 Tests cover:
 - Database operations (`db_test.dart`)
 - Connectivity service (`connectivity_service_test.dart`)
-- HeroCard widget (`hero_card_test.dart`)
-- Theme cubit (`theme_cubit_test.dart`)
+- SHQL™-generated hero card widget trees (`hero_card_test.dart`)
+- Splash screen rendering (`widget_test.dart`)
 
 The shared `hero_common` package has 245+ tests covering models, predicates, JSON parsing, sorting, and the SHQL™ engine.
 
@@ -143,7 +173,8 @@ The shared `hero_common` package has 245+ tests covering models, predicates, JSO
 | File | Purpose |
 |---|---|
 | `lib/main.dart` | App entry point (bootstraps Firebase, SharedPreferences, runs app) |
-| `lib/app.dart` | `HeroDexApp` widget — auth gate, SHQL™ wiring, widget registry |
+| `lib/app.dart` | `HeroDexApp` widget — auth gate, SHQL™ wiring, widget/template registry |
+| `lib/core/herodex_widget_registry.dart` | Dart factories for third-party widgets (CachedImage, FlutterMap, TileLayer, MarkerLayer) |
 | `lib/core/services/firebase_auth_service.dart` | Firebase Auth via REST |
 | `lib/core/services/firebase_service.dart` | Firebase Analytics/Crashlytics |
 | `lib/core/services/firestore_preferences_service.dart` | Firestore cloud sync |
@@ -151,10 +182,10 @@ The shared `hero_common` package has 245+ tests covering models, predicates, JSO
 | `lib/core/services/location_service.dart` | GPS location |
 | `lib/core/services/hero_search_service.dart` | Online hero search + save flow |
 | `lib/core/theme/theme_cubit.dart` | Dark/light theme BLoC |
-| `lib/widgets/hero_card.dart` | Hero card widget with swipe-to-delete |
-| `lib/persistence/sqflite_database_adapter.dart` | SQLite driver |
-| `assets/shql/herodex.shql` | All SHQL™ business logic |
-| `assets/screens/*.yaml` | SDUI screen definitions |
+| `lib/persistence/sqflite_database_adapter.dart` | SQLite driver (FFI on desktop, native on mobile) |
+| `assets/shql/herodex.shql` | All SHQL™ business logic + dynamic widget tree generation |
+| `assets/screens/*.yaml` | SDUI screen definitions (7 screens) |
+| `assets/widgets/*.yaml` | Reusable YAML widget templates (17 templates including login, dialogs, cards) |
 
 ## API
 

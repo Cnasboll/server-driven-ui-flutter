@@ -1,6 +1,6 @@
 # server_driven_ui
 
-UI expressions are evaluated in a restricted, non-iterative sandbox to ensure determinism and safety during widget rebuilds. All side effects and control flow are confined to explicit execution contexts triggered by user event.
+The framework renders both full screens and reusable widget templates from YAML definitions. UI expressions are evaluated in a restricted, non-iterative sandbox to ensure determinism and safety during widget rebuilds. All side effects and control flow are confined to explicit execution contexts triggered by user events. Widget templates are composable — a screen YAML can reference a widget template by type name, passing props that are substituted at build time.
 
 Program logic is defined entirely in SHQL™ (Small, Handy, Quintessential Language™) which is a general-purpose, imperative scripting language. Each word actually describes the language well — it's small (lightweight), handy (practical, embedded in YAML for UI), and quintessential (it captures the essence of what you need for expression evaluation and state management). It has lambdas, loops, object literals, and drives an entire server-driven UI framework. Plus "Quintessential" is just a great word that nobody uses enough.
 

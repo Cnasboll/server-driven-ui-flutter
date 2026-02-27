@@ -1,0 +1,123 @@
+# Login / Register screen.
+# Uses static SHQL™ variables:
+#   _LOGIN_IS_REGISTERING (bool), _LOGIN_IS_LOADING (bool), _LOGIN_ERROR (String)
+# Dart functions registered on static bindings:
+#   _LOGIN_SUBMIT(), _LOGIN_TOGGLE_MODE(), _LOGIN_SET_EMAIL(value), _LOGIN_SET_PASSWORD(value)
+widget:
+  type: Scaffold
+  props:
+    backgroundColor: "0xFF1A237E"
+    body:
+      type: Center
+      props:
+        child:
+          type: SingleChildScrollView
+          props:
+            padding: 32
+            child:
+              type: ConstrainedBox
+              props:
+                maxWidth: 400
+                child:
+                  type: Column
+                  props:
+                    mainAxisAlignment: "center"
+                    children:
+                      - type: Icon
+                        props:
+                          icon: "shield"
+                          size: 80
+                          color: "0xFFFFFFFF"
+                      - type: SizedBox
+                        props:
+                          height: 16
+                      - type: Text
+                        props:
+                          data: "HeroDex 3000"
+                          style:
+                            fontSize: 28
+                            fontWeight: "bold"
+                            color: "0xFFFFFFFF"
+                            fontFamily: "Orbitron"
+                      - type: SizedBox
+                        props:
+                          height: 8
+                      - type: Observer
+                        props:
+                          query: "_LOGIN_IS_REGISTERING"
+                          builder:
+                            type: Text
+                            props:
+                              data: "shql: IF _LOGIN_IS_REGISTERING THEN 'Create Account' ELSE 'Sign In'"
+                              style:
+                                fontSize: 16
+                                color: "0xB3FFFFFF"
+                      - type: SizedBox
+                        props:
+                          height: 32
+                      - type: Card
+                        props:
+                          child:
+                            type: Padding
+                            props:
+                              padding: 24
+                              child:
+                                type: Column
+                                props:
+                                  crossAxisAlignment: "stretch"
+                                  children:
+                                    - type: TextField
+                                      props:
+                                        keyboardType: "emailAddress"
+                                        textInputAction: "next"
+                                        onChanged: "shql: _LOGIN_SET_EMAIL(value)"
+                                        decoration:
+                                          labelText: "Email"
+                                          prefixIcon: "email"
+                                          border: "outline"
+                                    - type: SizedBox
+                                      props:
+                                        height: 16
+                                    - type: TextField
+                                      props:
+                                        obscureText: true
+                                        textInputAction: "done"
+                                        onSubmitted: "shql: _LOGIN_SUBMIT()"
+                                        onChanged: "shql: _LOGIN_SET_PASSWORD(value)"
+                                        decoration:
+                                          labelText: "Password"
+                                          prefixIcon: "lock"
+                                          border: "outline"
+                                    - type: Observer
+                                      props:
+                                        query: "_LOGIN_ERROR"
+                                        builder:
+                                          type: Column
+                                          props:
+                                            crossAxisAlignment: "start"
+                                            children: "shql: IF _LOGIN_ERROR <> '' THEN [{'type': 'SizedBox', 'props': {'height': 12}}, {'type': 'Text', 'props': {'data': _LOGIN_ERROR, 'style': {'color': '0xFFD32F2F', 'fontSize': 13}}}] ELSE []"
+                                    - type: SizedBox
+                                      props:
+                                        height: 24
+                                    - type: Observer
+                                      props:
+                                        query: "_LOGIN_IS_LOADING,_LOGIN_IS_REGISTERING"
+                                        builder:
+                                          type: FilledButton
+                                          props:
+                                            onPressed: "shql: IF NOT _LOGIN_IS_LOADING THEN _LOGIN_SUBMIT()"
+                                            child: "shql: IF _LOGIN_IS_LOADING THEN {'type': 'SizedBox', 'props': {'height': 20, 'width': 20, 'child': {'type': 'CircularProgressIndicator', 'props': {'strokeWidth': 2}}}} ELSE {'type': 'Text', 'props': {'data': IF _LOGIN_IS_REGISTERING THEN 'Register' ELSE 'Sign In'}}"
+                                    - type: SizedBox
+                                      props:
+                                        height: 12
+                                    - type: Observer
+                                      props:
+                                        query: "_LOGIN_IS_LOADING,_LOGIN_IS_REGISTERING"
+                                        builder:
+                                          type: TextButton
+                                          props:
+                                            onPressed: "shql: IF NOT _LOGIN_IS_LOADING THEN _LOGIN_TOGGLE_MODE()"
+                                            child:
+                                              type: Text
+                                              props:
+                                                data: "shql: IF _LOGIN_IS_REGISTERING THEN 'Already have an account? Sign in' ELSE \"Don't have an account? Register\""

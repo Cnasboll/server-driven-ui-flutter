@@ -237,8 +237,9 @@ class WidgetRegistry {
         Navigator.of(context).pop(value);
       }
     }).catchError((Object e) {
+      debugPrint('SHQL error: $e');
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
+        ScaffoldMessenger.maybeOf(context)?.showSnackBar(
           SnackBar(
             content: Text(e.toString()),
             backgroundColor: Colors.red,
@@ -1018,7 +1019,7 @@ Widget _buildTextField(
     onSubmitted: props['onSubmitted'] as String?,
     dartOnSubmitted: props['dartOnSubmitted'] as ValueChanged<String>?,
     initialValue: (props['value'] ?? props['initialValue'])?.toString(),
-    decoration: props['decoration'] as Map<String, dynamic>?,
+    decoration: (props['decoration'] as Map?)?.cast<String, dynamic>(),
     externalController: props['controller'] as TextEditingController?,
     obscureText: props['obscureText'] == true,
     autofocus: props['autofocus'] == true,

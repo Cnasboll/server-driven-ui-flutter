@@ -20,7 +20,6 @@ import 'core/services/location_service.dart';
 import 'core/services/weather_service.dart';
 import 'core/theme/app_theme.dart';
 import 'core/theme/theme_cubit.dart';
-import 'widgets/login_screen.dart';
 import 'widgets/conflict_resolver_dialog.dart' show ReviewAction;
 import 'widgets/dialogs.dart' as dialogs;
 import 'package:hero_common/callbacks.dart';
@@ -56,11 +55,14 @@ class _HeroDexAppState extends State<HeroDexApp> {
 
   bool _initialized = false;
   bool _authenticated = false;
+  bool _loginReady = false;
   ParseTree? _predCallTree;
   String _loadingStatus = '';
   int _loadingProgress = 0;
   int _loadingTotal = 0;
   String _loadingHeroName = '';
+  String _loginEmail = '';
+  String _loginPassword = '';
 
   // Route name → YAML asset path
   static const _screens = {
@@ -100,7 +102,84 @@ class _HeroDexAppState extends State<HeroDexApp> {
     if (widget.authService.isSignedIn) {
       _authenticated = true;
       _initServices();
+    } else {
+      _initLogin();
     }
+  }
+
+  Future<void> _initLogin() async {
+    final shql = WidgetRegistry.staticShql;
+
+    // Initialize login state variables
+    shql.setVariable('_LOGIN_IS_REGISTERING', false);
+    shql.setVariable('_LOGIN_IS_LOADING', false);
+    shql.setVariable('_LOGIN_ERROR', '');
+
+    // Register login callbacks as native SHQL™ functions (double-underscore
+    // prefix; SHQL wrappers below expose them with FOO() call syntax).
+    shql.runtime.setNullaryFunction('__LOGIN_SUBMIT', (ec, caller) async {
+      final email = _loginEmail.trim();
+      final password = _loginPassword;
+
+      if (email.isEmpty || password.isEmpty) {
+        shql.setVariable('_LOGIN_ERROR', 'Please enter email and password.');
+        shql.notifyListeners('_LOGIN_ERROR');
+        return null;
+      }
+
+      shql.setVariable('_LOGIN_IS_LOADING', true);
+      shql.setVariable('_LOGIN_ERROR', '');
+      shql.notifyListeners('_LOGIN_IS_LOADING');
+      shql.notifyListeners('_LOGIN_ERROR');
+
+      final isRegistering = shql.getVariable('_LOGIN_IS_REGISTERING') == true;
+      final errorMsg = isRegistering
+          ? await widget.authService.signUp(email, password)
+          : await widget.authService.signIn(email, password);
+
+      if (!mounted) return null;
+
+      if (errorMsg == null) {
+        _onAuthenticated();
+      } else {
+        shql.setVariable('_LOGIN_IS_LOADING', false);
+        shql.setVariable('_LOGIN_ERROR', errorMsg);
+        shql.notifyListeners('_LOGIN_IS_LOADING');
+        shql.notifyListeners('_LOGIN_ERROR');
+      }
+      return null;
+    });
+
+    shql.runtime.setNullaryFunction('__LOGIN_TOGGLE_MODE', (ec, caller) {
+      final current = shql.getVariable('_LOGIN_IS_REGISTERING') == true;
+      shql.setVariable('_LOGIN_IS_REGISTERING', !current);
+      shql.setVariable('_LOGIN_ERROR', '');
+      shql.notifyListeners('_LOGIN_IS_REGISTERING');
+      shql.notifyListeners('_LOGIN_ERROR');
+      return null;
+    });
+
+    shql.runtime.setUnaryFunction('_LOGIN_SET_EMAIL', (ec, caller, value) {
+      _loginEmail = (value is String) ? value : '';
+      return null;
+    });
+
+    shql.runtime.setUnaryFunction('_LOGIN_SET_PASSWORD', (ec, caller, value) {
+      _loginPassword = (value is String) ? value : '';
+      return null;
+    });
+
+    // Wrap native nullary functions so SHQL™ can call them with FOO() syntax.
+    // (IdentifierExecutionNode auto-invokes nullary functions without parens,
+    // but the parser creates call(identifier, tuple) for FOO().)
+    await shql.eval('_LOGIN_SUBMIT() := __LOGIN_SUBMIT');
+    await shql.eval('_LOGIN_TOGGLE_MODE() := __LOGIN_TOGGLE_MODE');
+
+    // Load login template on the static registry
+    final yaml = await rootBundle.loadString('assets/widgets/login_screen.yaml');
+    WidgetRegistry.loadStaticTemplate('LoginScreen', yaml);
+
+    if (mounted) setState(() => _loginReady = true);
   }
 
   Future<void> _initServices() async {
@@ -479,6 +558,7 @@ class _HeroDexAppState extends State<HeroDexApp> {
       _authenticated = false;
       _initialized = false;
     });
+    _initLogin();
   }
 
   // ---------------------------------------------------------------------------
@@ -496,10 +576,9 @@ class _HeroDexAppState extends State<HeroDexApp> {
             theme: AppTheme.lightTheme,
             darkTheme: AppTheme.darkTheme,
             themeMode: themeMode,
-            home: LoginScreen(
-              authService: widget.authService,
-              onAuthenticated: _onAuthenticated,
-            ),
+            home: _loginReady
+                ? WidgetRegistry.buildStatic(context, {'type': 'LoginScreen', 'props': {}}, 'login')
+                : const SizedBox.shrink(),
           );
         },
       );
@@ -538,26 +617,33 @@ class _HeroDexAppState extends State<HeroDexApp> {
         ],
       ];
 
-      return MaterialApp(
-        debugShowCheckedModeBanner: false,
-        home: WidgetRegistry.buildStatic(context, {'type': 'Scaffold', 'props': {
-          'backgroundColor': '0xFF1A237E',
-          'body': {'type': 'Center', 'child': {
-            'type': 'Column', 'props': {
-              'mainAxisAlignment': 'center',
-              'children': [
-                {'type': 'Icon', 'props': {'icon': 'shield', 'size': 100, 'color': '0xFFFFFFFF'}},
-                {'type': 'SizedBox', 'props': {'height': 24}},
-                {'type': 'Text', 'props': {
-                  'data': 'HeroDex 3000',
-                  'style': {'fontSize': 32, 'fontWeight': 'bold', 'color': '0xFFFFFFFF', 'fontFamily': 'Orbitron'},
-                }},
-                {'type': 'SizedBox', 'props': {'height': 48}},
-                ...progressChildren,
-              ],
-            },
-          }},
-        }}, 'splash'),
+      return BlocBuilder<ThemeCubit, ThemeMode>(
+        builder: (context, themeMode) {
+          return MaterialApp(
+            debugShowCheckedModeBanner: false,
+            theme: AppTheme.lightTheme,
+            darkTheme: AppTheme.darkTheme,
+            themeMode: themeMode,
+            home: WidgetRegistry.buildStatic(context, {'type': 'Scaffold', 'props': {
+              'backgroundColor': '0xFF1A237E',
+              'body': {'type': 'Center', 'child': {
+                'type': 'Column', 'props': {
+                  'mainAxisAlignment': 'center',
+                  'children': [
+                    {'type': 'Icon', 'props': {'icon': 'shield', 'size': 100, 'color': '0xFFFFFFFF'}},
+                    {'type': 'SizedBox', 'props': {'height': 24}},
+                    {'type': 'Text', 'props': {
+                      'data': 'HeroDex 3000',
+                      'style': {'fontSize': 32, 'fontWeight': 'bold', 'color': '0xFFFFFFFF', 'fontFamily': 'Orbitron'},
+                    }},
+                    {'type': 'SizedBox', 'props': {'height': 48}},
+                    ...progressChildren,
+                  ],
+                },
+              }},
+            }}, 'splash'),
+          );
+        },
       );
     }
 

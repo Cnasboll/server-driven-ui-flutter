@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 
-/// Static utility methods for hero card alignment styles.
+/// Test-only utility: alignment style lookups and string formatters.
 ///
-/// The actual card widget tree is built entirely by the `HeroCard` factory
-/// in `herodex_widget_registry.dart` using `buildChild` — SHQL™ expression
-/// strings flow through the registry to leaf widgets (InkWell, etc.) where
-/// `_resolveOnPressed` evaluates them against the real SHQL™ runtime.
+/// At runtime, all of this lives in SHQL™ (`herodex.shql`). This Dart copy
+/// exists solely so that unit tests can verify expected colours, labels, and
+/// semantics strings without booting the full SHQL™ engine.
 class HeroCard {
   HeroCard._();
 
@@ -23,31 +22,26 @@ class HeroCard {
     /* 9 */ (label: 'Using Mobile Speaker on Public Transport', icon: 'volume_up', gradient: [Color(0xFF0D0000), Color(0xFF000000)]),
   ];
 
-  /// Returns the primary alignment colour for a given alignment ordinal.
   static Color alignmentColorFor(int alignment) =>
       (alignment >= 0 && alignment < _alignmentStyles.length)
           ? _alignmentStyles[alignment].gradient.first
           : _alignmentStyles[0].gradient.first;
 
-  /// Returns the alignment gradient for a given alignment ordinal.
   static List<Color> alignmentGradientFor(int alignment) =>
       (alignment >= 0 && alignment < _alignmentStyles.length)
           ? _alignmentStyles[alignment].gradient
           : _alignmentStyles[0].gradient;
 
-  /// Returns the alignment icon name for a given alignment ordinal.
   static String alignmentIconFor(int alignment) =>
       (alignment >= 0 && alignment < _alignmentStyles.length)
           ? _alignmentStyles[alignment].icon
           : _alignmentStyles[0].icon;
 
-  /// Returns the alignment label for a given alignment ordinal.
   static String alignmentLabelFor(int alignment) =>
       (alignment >= 0 && alignment < _alignmentStyles.length)
           ? _alignmentStyles[alignment].label
           : _alignmentStyles[0].label;
 
-  /// Compute the semantics label for a hero card.
   static String semanticsLabel(String name, int alignment, List<Map<String, dynamic>> stats) {
     final label = alignmentLabelFor(alignment);
     final sb = StringBuffer('$name, $label alignment');
@@ -59,7 +53,6 @@ class HeroCard {
     return sb.toString();
   }
 
-  /// Compute publisher/race subtitle.
   static String subtitle(String? publisher, String? race) {
     final parts = <String>[];
     if (publisher != null && publisher.isNotEmpty) parts.add(publisher);
