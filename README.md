@@ -25,6 +25,7 @@ Features:
 - Swedish operator aliases (`OCH`, `ELLER`, `INTE`, `FINNS_I`)
 - State persistence (`SAVE_STATE`, `LOAD_STATE`)
 - Navigation (`GO_TO`, `GO_BACK`, `PUSH_ROUTE`)
+- HTTP requests (`FETCH(url)` — GET + JSON parse, used for weather, APIs)
 - Dynamic widget tree generation — SHQL™ functions return complete widget tree maps that the framework renders
 
 The language is tokenized, parsed into an AST, and executed by an async runtime with interned identifiers (`ConstantsSet`). SHQL™ needs native Dart callbacks only for platform operations — displaying a dialog, writing to a file, calling the network. These are registered as functions on the runtime, then wrapped in SHQL™ so the application layer never touches Dart.
@@ -35,7 +36,7 @@ Dart is the *interpreter*, not the application. It exists in three places:
 
 1. **The SHQL™ engine** (`shql/`) — tokenizer, parser, runtime
 2. **The SDUI framework** (`server_driven_ui/`) — YAML resolver, widget registry, Observer
-3. **Platform boundaries** — SQLite adapters, Firebase auth, network fetch, geolocation
+3. **Platform boundaries** — SQLite adapters, Firebase auth, geolocation, native dialogs
 
 Everything above this line — UI structure, business logic, state management, navigation — is YAML + SHQL™.
 

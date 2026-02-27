@@ -17,7 +17,6 @@ import 'core/services/firebase_auth_service.dart';
 import 'core/services/firebase_service.dart';
 import 'core/services/firestore_preferences_service.dart';
 import 'core/services/location_service.dart';
-import 'core/services/weather_service.dart';
 import 'core/theme/app_theme.dart';
 import 'core/theme/theme_cubit.dart';
 import 'widgets/conflict_resolver_dialog.dart' show ReviewAction;
@@ -222,7 +221,6 @@ class _HeroDexAppState extends State<HeroDexApp> {
         '_CLEAR_ALL_DATA': () async => await _coordinator.clearData(),
         '_RECONCILE_HEROES': () async => await _coordinator.reconcile(),
         '_SIGN_OUT': () async => await _handleSignOut(),
-        '_FETCH_WEATHER': () async => await _coordinator.fetchWeather(),
         '_PREPARE_EDIT': () => _coordinator.prepareEdit(),
       },
       unaryFunctions: {
@@ -294,7 +292,6 @@ class _HeroDexAppState extends State<HeroDexApp> {
       shqlBindings: _shqlBindings,
       heroDataManager: _heroDataManager,
       filterCompiler: filterCompiler,
-      weatherService: WeatherService(),
       showPromptDialog: _showPromptDialog,
       showReconcileDialog: _showReconcileDialog,
       showSnackBar: _showSnackBar,
@@ -372,9 +369,6 @@ class _HeroDexAppState extends State<HeroDexApp> {
         }
       },
     );
-
-    // Fetch weather in the background (fire-and-forget)
-    _coordinator.fetchWeather();
 
     // Determine initial route
     final onboardingCompleted = _shqlBindings.getVariable('_onboarding_completed');

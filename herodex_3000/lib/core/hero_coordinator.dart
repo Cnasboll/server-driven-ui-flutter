@@ -14,7 +14,6 @@ import 'package:server_driven_ui/server_driven_ui.dart';
 import '../widgets/conflict_resolver_dialog.dart' show ReviewAction;
 import '../persistence/filter_compiler.dart';
 import '../persistence/shql_hero_data_manager.dart';
-import '../core/services/weather_service.dart';
 
 /// Callback typedefs for UI interactions that the coordinator delegates to.
 typedef PromptCallback = Future<String> Function(String prompt, [String defaultValue]);
@@ -32,7 +31,6 @@ class HeroCoordinator {
     required ShqlBindings shqlBindings,
     required ShqlHeroDataManager heroDataManager,
     required FilterCompiler filterCompiler,
-    required WeatherService weatherService,
     required PromptCallback showPromptDialog,
     required ReconcilePromptCallback showReconcileDialog,
     required SnackBarCallback showSnackBar,
@@ -40,7 +38,6 @@ class HeroCoordinator {
   })  : _shqlBindings = shqlBindings,
         _heroDataManager = heroDataManager,
         _filterCompiler = filterCompiler,
-        _weatherService = weatherService,
         _showPromptDialog = showPromptDialog,
         _showReconcileDialog = showReconcileDialog,
         _showSnackBar = showSnackBar,
@@ -49,7 +46,6 @@ class HeroCoordinator {
   final ShqlBindings _shqlBindings;
   final ShqlHeroDataManager _heroDataManager;
   final FilterCompiler _filterCompiler;
-  final WeatherService _weatherService;
   final PromptCallback _showPromptDialog;
   final ReconcilePromptCallback _showReconcileDialog;
   final SnackBarCallback _showSnackBar;
@@ -633,7 +629,7 @@ class HeroCoordinator {
   }
 
   // ---------------------------------------------------------------------------
-  // Hero service + weather
+  // Hero service
   // ---------------------------------------------------------------------------
 
   Future<HeroService?> getHeroService() async {
@@ -657,22 +653,6 @@ class HeroCoordinator {
     }
 
     return HeroService(Env.create(apiKey: apiKey.toString(), apiHost: apiHost.toString()));
-  }
-
-  Future<void> fetchWeather() async {
-    try {
-      final lat = _shqlBindings.getVariable('_user_latitude');
-      final lon = _shqlBindings.getVariable('_user_longitude');
-      final dLat = (lat is num) ? lat.toDouble() : 56.28;
-      final dLon = (lon is num) ? lon.toDouble() : 13.28;
-      final weather = await _weatherService.fetchWeather(dLat, dLon);
-      _setAndNotify('_weather_temp', weather['temp']);
-      _setAndNotify('_weather_description', weather['description']);
-      _setAndNotify('_weather_icon', weather['icon']);
-      _setAndNotify('_weather_wind', weather['windSpeed']);
-    } catch (e) {
-      debugPrint('Weather fetch error: $e');
-    }
   }
 
   /// Look up a HeroModel from an SHQL™ hero object and text-match against it.
