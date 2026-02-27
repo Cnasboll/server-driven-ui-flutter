@@ -96,7 +96,7 @@ class WidgetRegistry {
   ///
   /// When an `on*` key (callback) resolves to a raw string without a `shql:`
   /// prefix, it is automatically wrapped as `"shql: <expr>"` so the framework
-  /// recognises it as a SHQL™ callback. Callbacks are always SHQL — no other
+  /// recognises it as a SHQL™ callback. Callbacks are always SHQL™ — no other
   /// abstraction is supported.
   static dynamic substituteProps(dynamic node, Map<String, dynamic> props) {
     if (node is String && node.startsWith('prop:')) {
@@ -105,7 +105,7 @@ class WidgetRegistry {
     if (node is Map) {
       return node.map((k, v) {
         final resolved = substituteProps(v, props);
-        // on* keys are always SHQL callbacks — auto-prefix if needed.
+        // on* keys are always SHQL™ callbacks — auto-prefix if needed.
         if (resolved is String &&
             !isShqlRef(resolved) &&
             k is String &&
@@ -153,12 +153,61 @@ class WidgetRegistry {
 
   /// A shared basic registry + lightweight SHQL™ bindings for static widget construction.
   static final WidgetRegistry _basicInstance = WidgetRegistry.basic();
-  static final ShqlBindings _staticShql = ShqlBindings(onMutated: () {});
-  static final YamlUiEngine _staticEngine = YamlUiEngine(_staticShql, _basicInstance);
+  static late ShqlBindings _staticShql;
+  static late YamlUiEngine _staticEngine;
+  static bool _staticInitialized = false;
+
+  /// Initialize the static SHQL™ bindings with platform boundaries.
+  /// Must be called once at startup before [buildStatic] or [staticShql] are used.
+  /// All parameters are forwarded to the [ShqlBindings] constructor.
+  static void initStaticBindings({
+    VoidCallback? onMutated,
+    Function(dynamic value)? printLine,
+    Future<String?> Function()? readline,
+    Future<String?> Function(String prompt)? prompt,
+    Future<void> Function(String routeName)? navigate,
+    Future<dynamic> Function(String url)? fetch,
+    Future<dynamic> Function(String url, dynamic body)? post,
+    Future<dynamic> Function(String url, dynamic body)? patch,
+    Future<dynamic> Function(String url, String token)? fetchAuth,
+    Future<dynamic> Function(String url, dynamic body, String token)? patchAuth,
+    Future<void> Function(String key, dynamic value)? saveState,
+    Future<dynamic> Function(String key, dynamic defaultValue)? loadState,
+    Function(String message)? debugLog,
+    Map<String, Function()>? nullaryFunctions,
+    Map<String, Function(dynamic)>? unaryFunctions,
+    Map<String, Function(dynamic, dynamic)>? binaryFunctions,
+    Map<String, Function(dynamic, dynamic, dynamic)>? ternaryFunctions,
+  }) {
+    _staticShql = ShqlBindings(
+      onMutated: onMutated ?? () {},
+      printLine: printLine,
+      readline: readline,
+      prompt: prompt,
+      navigate: navigate,
+      fetch: fetch,
+      post: post,
+      patch: patch,
+      fetchAuth: fetchAuth,
+      patchAuth: patchAuth,
+      saveState: saveState,
+      loadState: loadState,
+      debugLog: debugLog,
+      nullaryFunctions: nullaryFunctions,
+      unaryFunctions: unaryFunctions,
+      binaryFunctions: binaryFunctions,
+      ternaryFunctions: ternaryFunctions,
+    );
+    _staticEngine = YamlUiEngine(_staticShql, _basicInstance);
+    _staticInitialized = true;
+  }
 
   /// Public access to the static SHQL™ bindings — for setting dialog variables
   /// (e.g. `_DIALOG_TEXT`, `_APPLY_TO_ALL`) before showing YAML-driven dialogs.
-  static ShqlBindings get staticShql => _staticShql;
+  static ShqlBindings get staticShql {
+    assert(_staticInitialized, 'Call WidgetRegistry.initStaticBindings() before accessing staticShql.');
+    return _staticShql;
+  }
 
   /// Register a custom Dart [WidgetFactory] on the static registry so it is
   /// available to [buildStatic] (imperative screens, dialogs, etc.).
@@ -230,7 +279,7 @@ class WidgetRegistry {
           result['__close_dialog__'] == true &&
           context.mounted) {
         var value = result['value'];
-        // Convert SHQL Objects to Dart Maps so callers can use map syntax
+        // Convert SHQL™ Objects to Dart Maps so callers can use map syntax
         if (shql.isShqlObject(value)) {
           value = shql.objectToMap(value);
         }
@@ -960,6 +1009,9 @@ class _StatefulTextFieldState extends State<_StatefulTextField> {
         }
       },
       onSubmitted: (value) {
+        // Flush any pending debounced onChanged so the SHQL™ variable
+        // is up-to-date before the submit handler reads it.
+        _debouncer.flush();
         if (widget.dartOnSubmitted != null) {
           widget.dartOnSubmitted!(value);
         } else if (isShqlRef(onSubmitted)) {

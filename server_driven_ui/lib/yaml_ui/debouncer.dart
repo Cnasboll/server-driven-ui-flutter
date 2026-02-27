@@ -7,9 +7,23 @@ class Debouncer {
 
   Debouncer({required this.milliseconds});
 
+  VoidCallback? _pendingAction;
+
   void run(VoidCallback action) {
     _timer?.cancel();
-    _timer = Timer(Duration(milliseconds: milliseconds), action);
+    _pendingAction = action;
+    _timer = Timer(Duration(milliseconds: milliseconds), () {
+      _pendingAction = null;
+      action();
+    });
+  }
+
+  /// Execute the pending callback immediately (if any) and cancel the timer.
+  void flush() {
+    final action = _pendingAction;
+    _timer?.cancel();
+    _pendingAction = null;
+    action?.call();
   }
 
   void dispose() {

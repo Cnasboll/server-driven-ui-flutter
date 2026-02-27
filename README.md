@@ -25,7 +25,7 @@ Features:
 - Swedish operator aliases (`OCH`, `ELLER`, `INTE`, `FINNS_I`)
 - State persistence (`SAVE_STATE`, `LOAD_STATE`)
 - Navigation (`GO_TO`, `GO_BACK`, `PUSH_ROUTE`)
-- HTTP requests (`FETCH(url)` — GET + JSON parse, used for weather, APIs)
+- HTTP requests (`FETCH(url)` GET, `POST(url, body)`, `PATCH(url, body)` — used for weather, Firebase Auth, Firestore sync)
 - Dynamic widget tree generation — SHQL™ functions return complete widget tree maps that the framework renders
 
 The language is tokenized, parsed into an AST, and executed by an async runtime with interned identifiers (`ConstantsSet`). SHQL™ needs native Dart callbacks only for platform operations — displaying a dialog, writing to a file, calling the network. These are registered as functions on the runtime, then wrapped in SHQL™ so the application layer never touches Dart.
@@ -36,9 +36,25 @@ Dart is the *interpreter*, not the application. It exists in three places:
 
 1. **The SHQL™ engine** (`shql/`) — tokenizer, parser, runtime
 2. **The SDUI framework** (`server_driven_ui/`) — YAML resolver, widget registry, Observer
-3. **Platform boundaries** — SQLite adapters, Firebase auth, geolocation, native dialogs
+3. **Platform boundaries** — SQLite adapters, HTTP client, geolocation, native dialogs
 
 Everything above this line — UI structure, business logic, state management, navigation — is YAML + SHQL™.
+
+### SHQL™ and BLoC
+
+SHQL™ already provides the primitives that BLoC/Cubit gives Flutter apps:
+
+| Capability | SHQL™ | BLoC/Cubit |
+|-----------|-------|------------|
+| Set state + notify listeners | `SET('var', value)` | `emit(newState)` |
+| Reactive UI rebuild | `Observer` widget | `BlocBuilder` |
+| Persistence | Built-in `SAVE_STATE` / `LOAD_STATE` | Manual (SharedPreferences, Hive, etc.) |
+| Global state | Global-scope variables | `BlocProvider` at app root |
+| Server-driven updates | Yes (update logic without recompilation) | No |
+
+BLoC's advantage is compile-time type safety: sealed state classes, exhaustive `switch`, IDE autocomplete. SHQL™ trades that for runtime flexibility — variables are dynamically typed and can be created, renamed, or rewired without recompiling.
+
+In HeroDex 3000, a single `ThemeCubit` (10 lines) exists to satisfy a course requirement. All actual state management — dark mode toggle, preference sync, navigation, search, filtering — is SHQL™. The Cubit acts as a one-way relay from a SHQL™ variable to `MaterialApp`'s `themeMode`, because `MaterialApp` lives above the YAML widget tree where `Observer` cannot reach. Without the course requirement it could be replaced by a `setState` callback.
 
 ## Mono-repo layout
 
@@ -58,8 +74,9 @@ hero_common/          — Shared Dart package (no platform dependencies)
 herodex_3000/         — Flutter mobile app (SDUI showcase)
   assets/screens/       7 YAML screen definitions
   assets/widgets/       17 YAML widget templates (login, cards, dialogs, nav, etc.)
-  assets/shql/          SHQL™ business logic + dynamic widget tree generation
-  lib/                  App shell, auth, services, 4 thin Dart widget factories
+  assets/shql/          auth.shql (Firebase Auth via POST), herodex.shql (business
+                        logic, Firestore sync via PATCH, dynamic widget trees)
+  lib/                  App shell, startup auth check, 4 thin Dart widget factories
                         for third-party libraries (CachedNetworkImage, FlutterMap)
 
 v04/                  — Console app (same hero_common backend, terminal UI)
@@ -79,7 +96,7 @@ awesome_calculator/   — Calculator app (SHQL™ shell without YAML/SDUI)
 | **shql** | The SHQL™ engine: tokenizer, parser, AST, async runtime. No Flutter dependency. |
 | **server_driven_ui** | SDUI framework: `YamlUiEngine` resolves SHQL™ in YAML, `WidgetRegistry` maps types to widgets, `ShqlBindings` bridges SHQL™ variables to Flutter state, `Observer` widget rebuilds on variable changes. |
 | **hero_common** | Shared models (`HeroModel`, `PowerStatsModel`, etc.), `Field<T,V>` metadata system, `HeroRepository` (SQL, caching, job queue), `ConflictResolver` for height/weight unit conflicts, value types. No platform dependencies — used by both herodex_3000 and v04. |
-| **herodex_3000** | Flutter app showcasing the full SDUI stack. All UI in YAML + SHQL™. Only 4 Dart widget factories for third-party library boundaries (`CachedImage`, `FlutterMap`, `TileLayer`, `MarkerLayer`). Firebase Auth, Firestore sync, location services, connectivity monitoring. |
+| **herodex_3000** | Flutter app showcasing the full SDUI stack. All UI in YAML + SHQL™. Only 4 Dart widget factories for third-party library boundaries (`CachedImage`, `FlutterMap`, `TileLayer`, `MarkerLayer`). Firebase Auth and Firestore sync are pure SHQL™ (`auth.shql` POSTs to Identity Toolkit, `herodex.shql` PATCHes Firestore REST). Location services, connectivity monitoring. |
 | **v04** | Console (terminal) app using the same `hero_common` backend. SHQL™ predicates for searching/filtering heroes. Menu-driven CRUD, online search, reconciliation, amendments. |
 | **awesome_calculator** | Standalone SHQL™ shell — no YAML, no SDUI. Calculator with PLOT(), program LOAD/SAVE, math functions. Demonstrates that SHQL™ is a general-purpose language independent of the UI framework. |
 

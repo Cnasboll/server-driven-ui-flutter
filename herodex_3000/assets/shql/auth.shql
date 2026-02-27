@@ -1,0 +1,117 @@
+-- ============================================
+-- Firebase Auth (pure SHQL™ — no Dart service)
+-- ============================================
+
+_FIREBASE_API_KEY := 'AIzaSyAi3vFRB12aGVJjTiqIBOpRazJr43kvSkA';
+_FIREBASE_PROJECT_ID := 'server-driven-ui-flutter';
+_FIREBASE_AUTH_BASE := 'https://identitytoolkit.googleapis.com/v1/accounts';
+
+-- Map Firebase error codes to user-friendly messages
+__FIREBASE_ERROR_MSG(code) := BEGIN
+    IF code = 'EMAIL_NOT_FOUND' THEN RETURN 'No account found with this email.';
+    IF code = 'INVALID_PASSWORD' THEN RETURN 'Incorrect password.';
+    IF code = 'USER_DISABLED' THEN RETURN 'This account has been disabled.';
+    IF code = 'EMAIL_EXISTS' THEN RETURN 'An account already exists with this email.';
+    IF code = 'INVALID_EMAIL' THEN RETURN 'Please enter a valid email address.';
+    IF code = 'INVALID_LOGIN_CREDENTIALS' THEN RETURN 'Invalid email or password.';
+    IF code ~ 'WEAK_PASSWORD' THEN RETURN 'Password must be at least 6 characters.';
+    RETURN code;
+END;
+
+-- Extract error message from Firebase REST response body
+__FIREBASE_EXTRACT_ERROR(body) := BEGIN
+    IF body = null THEN RETURN 'Unknown error';
+    __err := body["error"];
+    IF __err = null THEN RETURN 'Unknown error';
+    __msg := __err["message"];
+    IF __msg = null THEN RETURN 'Unknown error';
+    RETURN __FIREBASE_ERROR_MSG(__msg);
+END;
+
+-- Persist auth session from successful response
+__FIREBASE_PERSIST_SESSION(body) := BEGIN
+    __token := body["idToken"];
+    __email := body["email"];
+    __uid := body["localId"];
+    IF __token <> null THEN SAVE_STATE('_auth_id_token', __token);
+    IF __email <> null THEN SAVE_STATE('_auth_email', __email);
+    IF __uid <> null THEN SAVE_STATE('_auth_uid', __uid);
+END;
+
+-- Sign in with email + password.
+-- Returns null on success, error string on failure.
+FIREBASE_SIGN_IN(email, password) := BEGIN
+    __url := _FIREBASE_AUTH_BASE + ':signInWithPassword?key=' + _FIREBASE_API_KEY;
+    __body := {};
+    __body["email"] := email;
+    __body["password"] := password;
+    __body["returnSecureToken"] := TRUE;
+    __response := POST(__url, __body);
+    IF __response["status"] = 200 THEN BEGIN
+        __FIREBASE_PERSIST_SESSION(__response["body"]);
+        RETURN null;
+    END;
+    RETURN __FIREBASE_EXTRACT_ERROR(__response["body"]);
+END;
+
+-- Sign up with email + password.
+-- Returns null on success, error string on failure.
+FIREBASE_SIGN_UP(email, password) := BEGIN
+    __url := _FIREBASE_AUTH_BASE + ':signUp?key=' + _FIREBASE_API_KEY;
+    __body := {};
+    __body["email"] := email;
+    __body["password"] := password;
+    __body["returnSecureToken"] := TRUE;
+    __response := POST(__url, __body);
+    IF __response["status"] = 200 THEN BEGIN
+        __FIREBASE_PERSIST_SESSION(__response["body"]);
+        RETURN null;
+    END;
+    RETURN __FIREBASE_EXTRACT_ERROR(__response["body"]);
+END;
+
+-- Sign out: clear stored session tokens
+FIREBASE_SIGN_OUT() := BEGIN
+    SAVE_STATE('_auth_id_token', null);
+    SAVE_STATE('_auth_email', null);
+    SAVE_STATE('_auth_uid', null);
+END;
+
+-- ============================================
+-- Login screen state & logic
+-- ============================================
+
+_LOGIN_IS_REGISTERING := FALSE;
+_LOGIN_IS_LOADING := FALSE;
+_LOGIN_ERROR := '';
+_LOGIN_EMAIL := '';
+_LOGIN_PASSWORD := '';
+
+-- Submit login/register form.
+-- __ON_AUTHENTICATED is a native Dart callback registered by app.dart.
+_LOGIN_SUBMIT() := BEGIN
+    __email := TRIM(_LOGIN_EMAIL);
+    __password := _LOGIN_PASSWORD;
+    IF __email = '' OR __password = '' THEN BEGIN
+        SET('_LOGIN_ERROR', 'Please enter email and password.');
+        RETURN null;
+    END;
+    SET('_LOGIN_IS_LOADING', TRUE);
+    SET('_LOGIN_ERROR', '');
+    __result := IF _LOGIN_IS_REGISTERING THEN
+        FIREBASE_SIGN_UP(__email, __password)
+    ELSE
+        FIREBASE_SIGN_IN(__email, __password);
+    IF __result = null THEN BEGIN
+        __ON_AUTHENTICATED;
+    END ELSE BEGIN
+        SET('_LOGIN_IS_LOADING', FALSE);
+        SET('_LOGIN_ERROR', __result);
+    END;
+END;
+
+-- Toggle between sign-in and register mode.
+_LOGIN_TOGGLE_MODE() := BEGIN
+    SET('_LOGIN_IS_REGISTERING', NOT _LOGIN_IS_REGISTERING);
+    SET('_LOGIN_ERROR', '');
+END;

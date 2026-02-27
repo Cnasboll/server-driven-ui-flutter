@@ -12,10 +12,10 @@ import 'package:server_driven_ui/server_driven_ui.dart';
 import 'core/herodex_widget_registry.dart';
 import 'core/hero_coordinator.dart';
 import 'core/services/hero_search_service.dart';
+import 'core/services/http_client.dart' as http_client;
 import 'core/services/connectivity_service.dart';
 import 'core/services/firebase_auth_service.dart';
 import 'core/services/firebase_service.dart';
-import 'core/services/firestore_preferences_service.dart';
 import 'core/services/location_service.dart';
 import 'core/theme/app_theme.dart';
 import 'core/theme/theme_cubit.dart';
@@ -48,7 +48,6 @@ class _HeroDexAppState extends State<HeroDexApp> {
   late HeroSearchService _searchService;
   late GoRouter _router;
   ConnectivityService? _connectivityService;
-  FirestorePreferencesService? _firestorePrefs;
   final _scaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();
   final _navigatorKey = GlobalKey<NavigatorState>();
 
@@ -60,8 +59,6 @@ class _HeroDexAppState extends State<HeroDexApp> {
   int _loadingProgress = 0;
   int _loadingTotal = 0;
   String _loadingHeroName = '';
-  String _loginEmail = '';
-  String _loginPassword = '';
 
   // Route name → YAML asset path
   static const _screens = {
@@ -107,72 +104,29 @@ class _HeroDexAppState extends State<HeroDexApp> {
   }
 
   Future<void> _initLogin() async {
+    // Construct static bindings fully with all platform boundaries needed
+    // for auth.shql (POST to Firebase, SAVE_STATE/LOAD_STATE for tokens).
+    WidgetRegistry.initStaticBindings(
+      post: http_client.httpPost,
+      saveState: _handleSaveState,
+      loadState: _handleLoadState,
+      nullaryFunctions: {
+        // Single Dart boundary: after successful auth, init DB/GoRouter/etc.
+        '__ON_AUTHENTICATED': () {
+          _onAuthenticated();
+          return null;
+        },
+      },
+    );
+
     final shql = WidgetRegistry.staticShql;
 
-    // Initialize login state variables
-    shql.setVariable('_LOGIN_IS_REGISTERING', false);
-    shql.setVariable('_LOGIN_IS_LOADING', false);
-    shql.setVariable('_LOGIN_ERROR', '');
-
-    // Register login callbacks as native SHQL™ functions (double-underscore
-    // prefix; SHQL wrappers below expose them with FOO() call syntax).
-    shql.runtime.setNullaryFunction('__LOGIN_SUBMIT', (ec, caller) async {
-      final email = _loginEmail.trim();
-      final password = _loginPassword;
-
-      if (email.isEmpty || password.isEmpty) {
-        shql.setVariable('_LOGIN_ERROR', 'Please enter email and password.');
-        shql.notifyListeners('_LOGIN_ERROR');
-        return null;
-      }
-
-      shql.setVariable('_LOGIN_IS_LOADING', true);
-      shql.setVariable('_LOGIN_ERROR', '');
-      shql.notifyListeners('_LOGIN_IS_LOADING');
-      shql.notifyListeners('_LOGIN_ERROR');
-
-      final isRegistering = shql.getVariable('_LOGIN_IS_REGISTERING') == true;
-      final errorMsg = isRegistering
-          ? await widget.authService.signUp(email, password)
-          : await widget.authService.signIn(email, password);
-
-      if (!mounted) return null;
-
-      if (errorMsg == null) {
-        _onAuthenticated();
-      } else {
-        shql.setVariable('_LOGIN_IS_LOADING', false);
-        shql.setVariable('_LOGIN_ERROR', errorMsg);
-        shql.notifyListeners('_LOGIN_IS_LOADING');
-        shql.notifyListeners('_LOGIN_ERROR');
-      }
-      return null;
-    });
-
-    shql.runtime.setNullaryFunction('__LOGIN_TOGGLE_MODE', (ec, caller) {
-      final current = shql.getVariable('_LOGIN_IS_REGISTERING') == true;
-      shql.setVariable('_LOGIN_IS_REGISTERING', !current);
-      shql.setVariable('_LOGIN_ERROR', '');
-      shql.notifyListeners('_LOGIN_IS_REGISTERING');
-      shql.notifyListeners('_LOGIN_ERROR');
-      return null;
-    });
-
-    shql.runtime.setUnaryFunction('_LOGIN_SET_EMAIL', (ec, caller, value) {
-      _loginEmail = (value is String) ? value : '';
-      return null;
-    });
-
-    shql.runtime.setUnaryFunction('_LOGIN_SET_PASSWORD', (ec, caller, value) {
-      _loginPassword = (value is String) ? value : '';
-      return null;
-    });
-
-    // Wrap native nullary functions so SHQL™ can call them with FOO() syntax.
-    // (IdentifierExecutionNode auto-invokes nullary functions without parens,
-    // but the parser creates call(identifier, tuple) for FOO().)
-    await shql.eval('_LOGIN_SUBMIT() := __LOGIN_SUBMIT');
-    await shql.eval('_LOGIN_TOGGLE_MODE() := __LOGIN_TOGGLE_MODE');
+    // Load stdlib + auth.shql (contains all login state, logic, and
+    // Firebase Auth functions — _LOGIN_SUBMIT, _LOGIN_TOGGLE_MODE, etc.)
+    final stdlibCode = await rootBundle.loadString('packages/shql/assets/stdlib.shql');
+    await shql.loadProgram(stdlibCode);
+    final authCode = await rootBundle.loadString('assets/shql/auth.shql');
+    await shql.loadProgram(authCode);
 
     // Load login template on the static registry
     final yaml = await rootBundle.loadString('assets/widgets/login_screen.yaml');
@@ -182,6 +136,9 @@ class _HeroDexAppState extends State<HeroDexApp> {
   }
 
   Future<void> _initServices() async {
+    // Initialize static bindings for dialogs (CLOSE_DIALOG, variable access).
+    WidgetRegistry.initStaticBindings();
+
     // Wire hero_common's injectable callbacks to Flutter dialogs
     Callbacks.configure(
       promptFor: _showPromptDialog,
@@ -190,17 +147,60 @@ class _HeroDexAppState extends State<HeroDexApp> {
       println: (msg) => debugPrint(msg),
     );
 
-    _firestorePrefs = await FirestorePreferencesService.create(widget.prefs);
+    // Restore per-user preferences: first from local archive ({uid}_{key}),
+    // then fill gaps from Firestore cloud. Runs before SHQL™ boots.
+    final authUid = widget.prefs.getString('_auth_uid');
+    final authToken = widget.prefs.getString('_auth_id_token');
 
-    // Seed local prefs from Firestore (cloud wins on first install)
-    final cloudPrefs = await _firestorePrefs!.loadAll();
-    for (final entry in cloudPrefs.entries) {
-      if (widget.prefs.get(entry.key) == null) {
-        if (entry.value is bool) {
-          await widget.prefs.setBool(entry.key, entry.value);
-        } else if (entry.value is String) {
-          await widget.prefs.setString(entry.key, entry.value);
+    // 1. Restore from local archive (saved on sign-out)
+    debugPrint('[Restore] authUid=$authUid');
+    if (authUid != null && authUid.isNotEmpty) {
+      for (final key in _syncedKeys) {
+        if (widget.prefs.get(key) != null) {
+          debugPrint('[Restore] $key already set: ${widget.prefs.get(key)}');
+          continue;
         }
+        final archiveKey = '${authUid}_$key';
+        final archived = widget.prefs.get(archiveKey);
+        debugPrint('[Restore] $archiveKey = $archived (${archived.runtimeType})');
+        if (archived != null) {
+          if (archived is bool) {
+            await widget.prefs.setBool(key, archived);
+          } else if (archived is int) {
+            await widget.prefs.setInt(key, archived);
+          } else if (archived is double) {
+            await widget.prefs.setDouble(key, archived);
+          } else if (archived is String) {
+            await widget.prefs.setString(key, archived);
+          } else if (archived is List<String>) {
+            await widget.prefs.setStringList(key, archived);
+          }
+        }
+      }
+    }
+
+    // 2. Fill remaining gaps from Firestore cloud (for cross-device sync)
+    if (authUid != null && authToken != null) {
+      try {
+        final cloudData = await http_client.httpFetchAuth(
+          'https://firestore.googleapis.com/v1/projects/server-driven-ui-flutter'
+          '/databases/(default)/documents/preferences/$authUid',
+          authToken,
+        );
+        final fields = (cloudData is Map) ? cloudData['fields'] as Map<String, dynamic>? : null;
+        if (fields != null) {
+          for (final entry in fields.entries) {
+            if (widget.prefs.get(entry.key) != null) continue;
+            final fv = entry.value as Map<String, dynamic>;
+            if (fv.containsKey('booleanValue')) {
+              await widget.prefs.setBool(entry.key, fv['booleanValue'] as bool);
+            } else if (fv.containsKey('stringValue')) {
+              await widget.prefs.setString(entry.key, fv['stringValue'] as String);
+            }
+          }
+        }
+      } catch (e) {
+        debugPrint('Cloud prefs seed failed: $e');
       }
     }
 
@@ -210,7 +210,11 @@ class _HeroDexAppState extends State<HeroDexApp> {
     _shqlBindings = ShqlBindings(
       constantsSet: constantsSet,
       onMutated: () => setState(() {}),
-      fetch: HeroSearchService.httpFetch,
+      fetch: http_client.httpFetch,
+      post: http_client.httpPost,
+      patch: http_client.httpPatch,
+      fetchAuth: http_client.httpFetchAuth,
+      patchAuth: http_client.httpPatchAuth,
       saveState: _handleSaveState,
       loadState: _handleLoadState,
       navigate: (routeName) async {
@@ -310,10 +314,12 @@ class _HeroDexAppState extends State<HeroDexApp> {
     final stdlibCode = await rootBundle.loadString(
       'packages/shql/assets/stdlib.shql',
     );
+    final authCode = await rootBundle.loadString('assets/shql/auth.shql');
     final herodexCode = await rootBundle.loadString('assets/shql/herodex.shql');
 
     await _shqlBindings.loadProgram(stdlibCode);
     await _shqlBindings.eval(HeroSchema.generateSchemaScript());
+    await _shqlBindings.loadProgram(authCode);
     await _shqlBindings.loadProgram(herodexCode);
 
     final heroDexRegistry = createHeroDexWidgetRegistry();
@@ -336,7 +342,7 @@ class _HeroDexAppState extends State<HeroDexApp> {
     _shqlBindings.addListener('_filters', () {
       _coordinator.onFiltersChanged();
     });
-    // Note: _active_filter_index changes are handled by APPLY_FILTER() in SHQL,
+    // Note: _active_filter_index changes are handled by APPLY_FILTER() in SHQL™,
     // which calls UPDATE_DISPLAYED_HEROES() → SET('_displayed_heroes'). The
     // listener below then rebuilds _hero_cards from the Dart cache.
     _shqlBindings.addListener('_displayed_heroes', () {
@@ -397,6 +403,12 @@ class _HeroDexAppState extends State<HeroDexApp> {
         cubit.set(value ? ThemeMode.dark : ThemeMode.light);
       }
     });
+
+    // Apply initial dark mode from restored preferences
+    final initialDarkMode = _shqlBindings.getVariable('_is_dark_mode');
+    if (initialDarkMode is bool && mounted) {
+      context.read<ThemeCubit>().set(initialDarkMode ? ThemeMode.dark : ThemeMode.light);
+    }
 
     // Apply initial Firebase consent and listen for changes
     final analyticsEnabled = _shqlBindings.getVariable('_analytics_enabled');
@@ -512,7 +524,7 @@ class _HeroDexAppState extends State<HeroDexApp> {
     } else {
       await widget.prefs.setString(key, value.toString());
     }
-    _firestorePrefs?.save(key, value);
+    // Firestore sync is now handled by SAVE_PREF() in SHQL™
   }
 
   Future<dynamic> _handleLoadState(String key, dynamic defaultValue) async {
@@ -546,8 +558,40 @@ class _HeroDexAppState extends State<HeroDexApp> {
     _initServices();
   }
 
+  static const _syncedKeys = [
+    'is_dark_mode', 'api_key', 'api_host', 'onboarding_completed',
+    'analytics_enabled', 'crashlytics_enabled', 'location_enabled', 'filters',
+  ];
+
   Future<void> _handleSignOut() async {
-    await widget.authService.signOut();
+    // FIREBASE_SIGN_OUT() already cleared _auth_uid from SharedPreferences
+    // (via SAVE_STATE(…, null)), so read the UID from the SHQL™ runtime
+    // where it still holds the old value.
+    final uid = _shqlBindings.getVariable('_auth_uid') as String?;
+    debugPrint('[SignOut] uid from runtime: $uid');
+
+    // Archive per-user preferences under {uid}_ prefix so they can be
+    // restored when this user signs back in, then clear bare keys.
+    for (final key in _syncedKeys) {
+      final value = widget.prefs.get(key);
+      debugPrint('[SignOut] $key = $value (${value.runtimeType})');
+      if (uid != null && uid.isNotEmpty && value != null) {
+        final archiveKey = '${uid}_$key';
+        debugPrint('[SignOut] archiving $key → $archiveKey');
+        if (value is bool) {
+          await widget.prefs.setBool(archiveKey, value);
+        } else if (value is int) {
+          await widget.prefs.setInt(archiveKey, value);
+        } else if (value is double) {
+          await widget.prefs.setDouble(archiveKey, value);
+        } else if (value is String) {
+          await widget.prefs.setString(archiveKey, value);
+        } else if (value is List<String>) {
+          await widget.prefs.setStringList(archiveKey, value);
+        }
+      }
+      await widget.prefs.remove(key);
+    }
     setState(() {
       _authenticated = false;
       _initialized = false;

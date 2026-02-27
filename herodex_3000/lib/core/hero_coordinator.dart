@@ -56,7 +56,7 @@ class HeroCoordinator {
 
   // Per-ID cache of pre-built hero card widget descriptions.
   // Only regenerated when a hero's data changes (persist/amend/unlock/reconcile).
-  // Filter and query changes just reindex from the cache — no SHQL eval needed.
+  // Filter and query changes just reindex from the cache — no SHQL™ eval needed.
   final Map<String, dynamic> _heroCardCache = {};
 
   // ---------------------------------------------------------------------------
@@ -95,7 +95,7 @@ class HeroCoordinator {
     }
 
     // Immediately remove from cache and displayed list so the card disappears
-    // at once, before the slower SHQL cleanup (ON_HERO_REMOVED iterates all filter maps).
+    // at once, before the slower SHQL™ cleanup (ON_HERO_REMOVED iterates all filter maps).
     _removeHeroFromCache(heroId);
     final currentDisplayed = _shqlBindings.getVariable('_displayed_heroes');
     if (currentDisplayed is List) {
@@ -240,7 +240,7 @@ class HeroCoordinator {
     final newObj = _heroDataManager.getHeroObject(toggled.id)!;
 
     // Lock toggle only flips a boolean — no filter/stats changes needed.
-    // Update the SHQL _heroes map in-place and re-cache the card.
+    // Update the SHQL™ _heroes map in-place and re-cache the card.
     await _shqlBindings.eval(
       "_heroes['${toggled.id}'].LOCKED := ${toggled.locked ? 'TRUE' : 'FALSE'}",
     );
@@ -674,8 +674,8 @@ class HeroCoordinator {
     _shqlBindings.notifyListeners(name);
   }
 
-  /// Updates `_displayed_heroes` via SHQL, then rebuilds `_hero_cards` from
-  /// the per-ID cache. No SHQL eval for card generation — O(displayed) map lookups.
+  /// Updates `_displayed_heroes` via SHQL™, then rebuilds `_hero_cards` from
+  /// the per-ID cache. No SHQL™ eval for card generation — O(displayed) map lookups.
   Future<void> _updateDisplayedHeroes() async {
     await _shqlBindings.eval('UPDATE_DISPLAYED_HEROES()');
     _rebuildHeroCards();
@@ -699,7 +699,7 @@ class HeroCoordinator {
     _rebuildHeroCards();
   }
 
-  /// Calls SHQL GENERATE_SINGLE_HERO_CARD for one hero and stores the result.
+  /// Calls SHQL™ GENERATE_SINGLE_HERO_CARD for one hero and stores the result.
   Future<void> _cacheHeroCard(String heroId, Object heroObj) async {
     final card = await _shqlBindings.eval(
       'GENERATE_SINGLE_HERO_CARD(__hero)',
@@ -712,11 +712,11 @@ class HeroCoordinator {
 
   void _removeHeroFromCache(String heroId) => _heroCardCache.remove(heroId);
 
-  /// Called when `_displayed_heroes` changes (from any source — Dart or SHQL).
+  /// Called when `_displayed_heroes` changes (from any source — Dart or SHQL™).
   void onDisplayedHeroesChanged() => _rebuildHeroCards();
 
   /// Rebuilds `_hero_cards` from `_heroCardCache` + `_displayed_heroes`.
-  /// Synchronous — no SHQL eval. Handles three states:
+  /// Synchronous — no SHQL™ eval. Handles three states:
   ///   • Cache empty → [] (YAML shows the "no heroes saved" empty state)
   ///   • Cache non-empty but displayed empty → single "no match" widget
   ///   • Otherwise → cards for each displayed hero, in display order

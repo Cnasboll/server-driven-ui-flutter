@@ -54,7 +54,7 @@ Future<({SystemOfUnits? choice, bool applyToAll})?> showConflictDialog<T extends
       // CLOSE_DIALOG returns OBJECT{choice, applyToAll} or NULL
       if (result is Map) {
         final choiceName = result['choice'] as String?;
-        // SHQL objectToMap() lowercases all keys: applyToAll → applytoall
+        // SHQL™ objectToMap() lowercases all keys: applyToAll → applytoall
         final applyToAll = result['applytoall'] == true;
         final choice = SystemOfUnits.values.where((s) => s.name == choiceName).firstOrNull;
         if (choice != null) {

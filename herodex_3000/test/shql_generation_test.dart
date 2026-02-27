@@ -5,7 +5,7 @@ import 'package:shql/parser/constants_set.dart';
 import 'package:herodex_3000/core/hero_schema.dart';
 
 void main() {
-  test('generate SHQL schema script', () {
+  test('generate SHQL™ schema script', () {
     // HeroShqlAdapter must register enums first so enumLabelsFor() works.
     final cs = ConstantsSet();
     HeroShqlAdapter.registerHeroSchema(cs);

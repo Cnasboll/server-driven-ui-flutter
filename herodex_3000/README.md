@@ -49,12 +49,13 @@ SHQL™ also generates complete widget trees dynamically at runtime (e.g. `_MAKE
 
 SHQL™ is a general-purpose, Turing-complete scripting language — the *only* language application logic is written in. Variables, functions, loops, conditionals, object literals with dot-notation access, lambdas, closures: everything you need to drive a full application without writing Dart.
 
-SHQL™ needs native Dart callbacks only for platform operations (displaying a dialog, writing to a file, geolocation). Network requests are handled by the built-in `FETCH(url)` function — for example, the weather feature fetches live data from Open-Meteo entirely in SHQL™, with no Dart service class at all. Other native operations are registered on the runtime with a double-underscore prefix and wrapped in SHQL™ user functions — the application layer never touches Dart directly.
+SHQL™ needs native Dart callbacks only for platform operations (displaying a dialog, writing to a file, geolocation). Network requests are handled by built-in HTTP functions — `FETCH(url)` for GET, `POST(url, body)` and `PATCH(url, body)` for mutations. Firebase Auth sign-in/sign-up is pure SHQL™ (`auth.shql` POSTs to the Identity Toolkit REST API). Firestore preference sync is pure SHQL™ (`herodex.shql` PATCHes the Firestore REST API). Weather fetches live data from Open-Meteo entirely in SHQL™. No Dart service classes for any of these — only the HTTP client boundary exists in Dart.
 
 It runs inside a `Runtime` with a `ConstantsSet` (interned identifiers).
 
 - **`shql/`** — The language engine: parser, tokenizer, execution nodes, runtime
-- **`assets/shql/herodex.shql`** — All app business logic: navigation, filters, search, statistics
+- **`assets/shql/auth.shql`** — Firebase Auth in pure SHQL™ (sign-in, sign-up, sign-out, error mapping, session persistence via POST to Identity Toolkit REST API)
+- **`assets/shql/herodex.shql`** — All app business logic: navigation, filters, search, statistics, Firestore preference sync (PATCH to Firestore REST API)
 - **`shql/assets/stdlib.shql`** — Standard library (SET, LOAD_STATE, SAVE_STATE, etc.)
 
 Key SHQL™ patterns:
@@ -63,7 +64,8 @@ Key SHQL™ patterns:
 - `Observer` widget — Subscribes to SHQL™ variables and rebuilds on change
 - `boundValues` — Pass Dart values to SHQL™ without string escaping
 - Dynamic widget trees — SHQL™ functions return complete widget tree maps (e.g. `_MAKE_HERO_CARD_TREE` returns a `DismissibleCard > HeroCardBody > [CachedImage, StatChips, ...]` tree; `GENERATE_BATTLE_MAP()` returns a `FlutterMap > [TileLayer, MarkerLayer]` tree)
-- `FETCH(url)` — Built-in HTTP GET + JSON parse (e.g. `REFRESH_WEATHER()` calls Open-Meteo API, parses WMO codes, sets reactive variables — zero Dart)
+- `FETCH(url)` — Built-in HTTP GET + JSON parse (e.g. `REFRESH_WEATHER()` calls Open-Meteo API — zero Dart)
+- `POST(url, body)` / `PATCH(url, body)` — HTTP mutations (e.g. `FIREBASE_SIGN_IN()` POSTs to Identity Toolkit, `FIRESTORE_SAVE()` PATCHes Firestore REST — zero Dart)
 - `prop:` substitution — YAML widget templates use `"prop:name"` placeholders that are resolved to caller-provided values at build time; `on*` callback props are automatically treated as SHQL™ expressions
 
 ### Mono-repo structure
@@ -90,10 +92,29 @@ v04/              — Console app (same backend, terminal UI)
 
 ### State Management
 
-- **BLoC** (`flutter_bloc`) for theme management (`ThemeCubit`)
-- **SHQL™ runtime variables** for all app state (reactive via `Observer` and `ShqlBindings.addListener`)
-- **SharedPreferences** for local persistence
-- **Firestore REST API** for cloud sync of preferences
+All application state lives in **SHQL™ runtime variables**. The `Observer` widget subscribes to variables and rebuilds when they change (via `SET()`). Persistence goes through `SAVE_STATE` / `LOAD_STATE` (SharedPreferences) and `SAVE_PREF` / `FIRESTORE_LOAD_ALL` (Firestore REST cloud sync — pure SHQL™).
+
+#### BLoC — ThemeCubit
+
+The one place `flutter_bloc` appears is `ThemeCubit` — a 10-line Cubit that holds the current `ThemeMode`. It exists because the course requires demonstrating the BLoC pattern.
+
+Dark mode state is owned by SHQL™ (`_is_dark_mode`), toggled by SHQL™ (`TOGGLE_DARK_MODE()`), persisted by SHQL™ (`SAVE_PREF`), and the settings UI rebuilds via a SHQL™ `Observer`. The Cubit is needed only because `MaterialApp` lives *above* the YAML widget tree — `Observer` cannot reach it. A one-line Dart listener forwards the SHQL™ variable change to the Cubit:
+
+```dart
+_shqlBindings.addListener('_is_dark_mode', () {
+  context.read<ThemeCubit>().set(value ? ThemeMode.dark : ThemeMode.light);
+});
+```
+
+Without the course requirement, a plain `setState` callback from the same listener would do the same job — no `flutter_bloc` dependency needed. The Cubit adds no logic of its own; it is a one-way relay from SHQL™ to `MaterialApp`.
+
+| Concern | Owner |
+|---------|-------|
+| Dark mode state | SHQL™ (`_is_dark_mode`) |
+| Persistence | SHQL™ (`SAVE_PREF` / `LOAD_STATE`) |
+| Toggle logic | SHQL™ (`TOGGLE_DARK_MODE()`) |
+| Settings UI rebuild | SHQL™ `Observer` widget |
+| MaterialApp theme rebuild | `ThemeCubit` (course requirement) |
 
 ## Prerequisites
 
@@ -127,7 +148,7 @@ You can also set the API key later in **Settings > API Configuration**.
 
 | Feature | Implementation |
 |---|---|
-| **Firebase Auth** | REST-based sign-in/register gate (`FirebaseAuthService`). Without login, no app to use. |
+| **Firebase Auth** | Pure SHQL™ sign-in/register gate (`auth.shql` POSTs to Identity Toolkit REST API). Dart only checks `isSignedIn` at startup. |
 | **API integration** | SuperheroAPI search with dialog-based save flow (Save/Skip/Save All/Cancel) |
 | **Local database** | SQLite via sqflite with `HeroRepository` (CRUD, caching, job queue) |
 | **State management** | BLoC for theme, SHQL™ runtime for all app state |
@@ -147,7 +168,7 @@ You can also set the API key later in **Settings > API Configuration**.
 
 | Feature | Implementation |
 |---|---|
-| **Firestore cloud sync** | `FirestorePreferencesService` syncs preferences via REST API |
+| **Firestore cloud sync** | Pure SHQL™ — `SAVE_PREF()` wraps `SAVE_STATE` + `FIRESTORE_SAVE()` (PATCHes Firestore REST). `FIRESTORE_LOAD_ALL()` FETCHes cloud prefs at startup. |
 | **API response caching** | Same-day dedup: identical search queries return cached results |
 | **Location services** | `LocationService` with `geolocator` + `permission_handler` |
 | **Filter predicates** | User-defined SHQL™ predicates (Heroes, Villains, Giants + custom) |
@@ -181,15 +202,15 @@ The shared `hero_common` package has 245+ tests covering models, predicates, JSO
 | `lib/main.dart` | App entry point (bootstraps Firebase, SharedPreferences, runs app) |
 | `lib/app.dart` | `HeroDexApp` widget — auth gate, SHQL™ wiring, widget/template registry |
 | `lib/core/herodex_widget_registry.dart` | Dart factories for third-party widgets (CachedImage, FlutterMap, TileLayer, MarkerLayer) |
-| `lib/core/services/firebase_auth_service.dart` | Firebase Auth via REST |
+| `lib/core/services/firebase_auth_service.dart` | Startup `isSignedIn` check (auth logic is in `auth.shql`) |
 | `lib/core/services/firebase_service.dart` | Firebase Analytics/Crashlytics |
-| `lib/core/services/firestore_preferences_service.dart` | Firestore cloud sync |
 | `lib/core/services/connectivity_service.dart` | Network monitoring |
 | `lib/core/services/location_service.dart` | GPS location |
 | `lib/core/services/hero_search_service.dart` | Online hero search + save flow + HTTP fetch for SHQL™ |
 | `lib/core/theme/theme_cubit.dart` | Dark/light theme BLoC |
 | `lib/persistence/sqflite_database_adapter.dart` | SQLite driver (FFI on desktop, native on mobile) |
-| `assets/shql/herodex.shql` | All SHQL™ business logic + dynamic widget tree generation |
+| `assets/shql/auth.shql` | Firebase Auth in pure SHQL™ (sign-in, sign-up, sign-out, error mapping) |
+| `assets/shql/herodex.shql` | All SHQL™ business logic + dynamic widget tree generation + Firestore sync |
 | `assets/screens/*.yaml` | SDUI screen definitions (7 screens) |
 | `assets/widgets/*.yaml` | Reusable YAML widget templates (17 templates including login, dialogs, cards) |
 

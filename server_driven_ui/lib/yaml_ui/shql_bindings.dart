@@ -22,6 +22,10 @@ class ShqlBindings {
     Future<String?> Function(String prompt)? prompt,
     Future<void> Function(String routeName)? navigate,
     Future<dynamic> Function(String url)? fetch,
+    Future<dynamic> Function(String url, dynamic body)? post,
+    Future<dynamic> Function(String url, dynamic body)? patch,
+    Future<dynamic> Function(String url, String token)? fetchAuth,
+    Future<dynamic> Function(String url, dynamic body, String token)? patchAuth,
     Future<void> Function(String key, dynamic value)? saveState,
     Future<dynamic> Function(String key, dynamic defaultValue)? loadState,
     Function(String message)? debugLog,
@@ -37,6 +41,10 @@ class ShqlBindings {
     _runtime.promptFunction = prompt;
     _runtime.navigateFunction = navigate;
     _runtime.fetchFunction = fetch;
+    _runtime.postFunction = post;
+    _runtime.patchFunction = patch;
+    _runtime.fetchAuthFunction = fetchAuth;
+    _runtime.patchAuthFunction = patchAuth;
     _runtime.saveStateFunction = saveState;
     _runtime.loadStateFunction = loadState;
     _runtime.debugLogFunction = debugLog;

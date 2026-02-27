@@ -31,7 +31,7 @@ class HeroShqlAdapter {
     _declareFields(HeroModel.staticFields, constantsSet);
   }
 
-  // Maps shqlName → SHQL label list variable name for enum fields.
+  // Maps shqlName → SHQL™ label list variable name for enum fields.
   static final _enumLabelVars = <String, String>{};
 
   /// Returns the SHQL™ label list variable name for an enum field, or null.

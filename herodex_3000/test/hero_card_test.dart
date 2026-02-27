@@ -27,6 +27,9 @@ String _camelToSnake(String input) {
 
 void main() {
   setUpAll(() {
+    // Initialize static bindings (no platform boundaries needed for tests)
+    WidgetRegistry.initStaticBindings();
+
     // Register YAML templates on the static registry
     for (final name in _requiredTemplates) {
       final file = File('assets/widgets/${_camelToSnake(name)}.yaml');
