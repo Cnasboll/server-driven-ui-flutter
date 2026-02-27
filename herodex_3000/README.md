@@ -1,12 +1,14 @@
 # HeroDex 3000
 
-A Flutter application for tracking superheroes and villains, built as a showcase for **SHQL™** (a general-purpose, imperative scripting language) and **Server-Driven UI** (SDUI) architecture. The entire UI — screens, reusable widget templates, dialogs, and the login flow — is defined in YAML files and rendered at runtime, with business logic written in SHQL™ scripts. Dart is only used for the framework interpreter and genuine third-party library boundaries (e.g. `CachedNetworkImage`, `FlutterMap`).
+A superhero tracking app written entirely in **YAML** and **SHQL™** — not Dart.
+
+Every screen, every dialog, every reusable widget is a YAML template. All business logic — filtering, searching, statistics, dynamic widget tree generation — is SHQL™. Flutter is the rendering engine underneath, but the application itself is written in a language layer above it. Dart appears only in the framework interpreter (`server_driven_ui/`, `shql/`) and at the boundary with third-party native libraries (`CachedNetworkImage`, `FlutterMap`).
 
 ## Architecture
 
-### Server-Driven UI (SDUI)
+### YAML + SHQL™
 
-All UI is defined in YAML — both full screens and reusable widget templates. At runtime the `YamlUiEngine` resolves SHQL™ expressions in the YAML, and the `WidgetRegistry` maps type names to Flutter widgets. Widget templates are composable: a screen YAML references a template by type name and passes props that are substituted at build time. This means the UI can be updated without recompiling the app.
+The UI is defined in YAML — both full screens and reusable widget templates. Business logic is defined in SHQL™ scripts. At runtime the `YamlUiEngine` resolves `shql:` expressions embedded in the YAML, and the `WidgetRegistry` maps type names to Flutter widgets. Widget templates are composable: a screen YAML references a template by type name and passes props that are substituted at build time. This means the UI can be updated without recompiling the app.
 
 **Screens** (`assets/screens/`):
 ```
@@ -45,7 +47,9 @@ SHQL™ also generates complete widget trees dynamically at runtime (e.g. `_MAKE
 
 ### SHQL™ (Small, Handy, Quintessential Language™)
 
-SHQL™ is a general-purpose scripting language with variables, functions, loops, conditionals, and object access via dot notation. Each word actually describes the language well — it's small (lightweight), handy (practical, embedded in YAML for UI), and quintessential (it captures the essence of what you need for expression evaluation and state management). It has lambdas, loops, object literals, and drives an entire server-driven UI framework. Plus "Quintessential" is just a great word that nobody uses enough.
+SHQL™ is a general-purpose, Turing-complete scripting language — the *only* language application logic is written in. Variables, functions, loops, conditionals, object literals with dot-notation access, lambdas, closures: everything you need to drive a full application without writing Dart.
+
+SHQL™ needs native Dart callbacks only for platform operations (displaying a dialog, writing to a file, calling the network). These are registered on the runtime with a double-underscore prefix and wrapped in SHQL™ user functions — the application layer never touches Dart directly.
 
 It runs inside a `Runtime` with a `ConstantsSet` (interned identifiers).
 

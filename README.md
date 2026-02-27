@@ -1,10 +1,20 @@
 # server-driven-ui-flutter
 
-A mono-repo demonstrating **SHQL™** and **YAML-driven Server-Driven UI** for Flutter. Screens, reusable widget templates, dialogs, and the login flow are all defined in YAML with business logic in SHQL™ — Dart is only used for the framework interpreter and genuine third-party library boundaries.
+An abstraction layer on top of Flutter where applications are written in **YAML** and **SHQL™**, not Dart.
 
-## SHQL™ — Small, Handy, Quintessential Language™
+YAML defines what the UI *looks like* — structure, layout, styling, composition. SHQL™ defines what the UI *does* — state, logic, data flow, navigation. Dart and Flutter serve as the runtime substrate: they render widgets, talk to SQLite, call Firebase, and handle platform I/O. You don't program *in* Flutter — Flutter is the engine underneath.
 
-SHQL™ is a general-purpose, imperative scripting language with an async Algol-family VM. Each word actually describes the language well — it's small (lightweight), handy (practical, embedded in YAML for UI), and quintessential (it captures the essence of what you need for expression evaluation and state management). Plus "Quintessential" is just a great word that nobody uses enough.
+The flagship app, **HeroDex 3000**, has zero Dart widget code. Every screen, every dialog, every reusable component is a YAML template. All business logic — filtering, searching, statistics, dynamic widget tree generation — is SHQL™. Dart appears only in the framework interpreter and at genuine third-party library boundaries (e.g. `CachedNetworkImage`, `FlutterMap`).
+
+## The two layers
+
+### YAML — declarative UI
+
+YAML files define screens and reusable widget templates. The framework resolves `shql:` expressions in the YAML at runtime, and a `WidgetRegistry` maps type names to Flutter widgets. Templates are composable: a screen references a widget template by type name and passes props via `"prop:name"` placeholders, substituted at build time. Callback props (`on*` keys) are automatically treated as SHQL™ expressions.
+
+### SHQL™ — imperative logic
+
+SHQL™ (Small, Handy, Quintessential Language™) is a general-purpose, Turing-complete scripting language with an async Algol-family VM. It is the *only* language application authors write logic in.
 
 Features:
 - Variables, first-class functions, lambdas, closures
@@ -17,15 +27,17 @@ Features:
 - Navigation (`GO_TO`, `GO_BACK`, `PUSH_ROUTE`)
 - Dynamic widget tree generation — SHQL™ functions return complete widget tree maps that the framework renders
 
-The language is tokenized, parsed into an AST, and executed by an async runtime with interned identifiers (`ConstantsSet`). UI expressions are evaluated in a restricted sandbox during widget rebuilds; side effects and control flow are confined to explicit execution contexts triggered by user events.
+The language is tokenized, parsed into an AST, and executed by an async runtime with interned identifiers (`ConstantsSet`). SHQL™ needs native Dart callbacks only for platform operations — displaying a dialog, writing to a file, calling the network. These are registered as functions on the runtime, then wrapped in SHQL™ so the application layer never touches Dart.
 
-## Server-Driven UI
+### Where does Dart fit?
 
-The SDUI framework renders both full screens and reusable widget templates from YAML definitions. The `YamlUiEngine` resolves `shql:` expressions embedded in YAML, and the `WidgetRegistry` maps type names to Flutter widgets.
+Dart is the *interpreter*, not the application. It exists in three places:
 
-Widget templates are composable — a screen YAML references a template by type name and passes props via `"prop:name"` placeholders that are substituted at build time. Callback props (`on*` keys) are automatically treated as SHQL™ expressions.
+1. **The SHQL™ engine** (`shql/`) — tokenizer, parser, runtime
+2. **The SDUI framework** (`server_driven_ui/`) — YAML resolver, widget registry, Observer
+3. **Platform boundaries** — SQLite adapters, Firebase auth, network fetch, geolocation
 
-SHQL™ also generates complete widget trees dynamically at runtime (e.g. hero cards with images, badges, overlays, and stat chips; or a full map with tile and marker layers) — the framework renders whatever tree structure SHQL™ returns.
+Everything above this line — UI structure, business logic, state management, navigation — is YAML + SHQL™.
 
 ## Mono-repo layout
 
