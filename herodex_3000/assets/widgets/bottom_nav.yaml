@@ -1,0 +1,16 @@
+# Shared bottom navigation bar used by all tabbed screens.
+# Props: currentIndex (int), onTap (shql expression)
+widget:
+  type: BottomNavigationBar
+  props:
+    currentIndex: "prop:currentIndex"
+    items:
+      - icon: "home"
+        label: "Home"
+      - icon: "cloud"
+        label: "Online"
+      - icon: "bookmark"
+        label: "Saved"
+      - icon: "settings"
+        label: "Settings"
+    onTap: "prop:onTap"

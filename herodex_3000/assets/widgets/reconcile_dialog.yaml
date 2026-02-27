@@ -1,0 +1,41 @@
+widget:
+  type: AlertDialog
+  props:
+    title:
+      type: Text
+      props:
+        data: "Reconcile"
+    content:
+      type: Text
+      props:
+        data: "prop:prompt"
+    actionsAlignment: "spaceEvenly"
+    actions:
+      - type: TextButton
+        props:
+          onPressed: "shql: CLOSE_DIALOG('cancel')"
+          child:
+            type: Text
+            props:
+              data: "Abort"
+      - type: TextButton
+        props:
+          onPressed: "shql: CLOSE_DIALOG('skip')"
+          child:
+            type: Text
+            props:
+              data: "Skip"
+      - type: TextButton
+        props:
+          onPressed: "shql: CLOSE_DIALOG('saveAll')"
+          child:
+            type: Text
+            props:
+              data: "Accept All"
+      - type: FilledButton
+        props:
+          onPressed: "shql: CLOSE_DIALOG('save')"
+          child:
+            type: Text
+            props:
+              data: "Accept"

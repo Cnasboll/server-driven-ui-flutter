@@ -1,268 +1,123 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:latlong2/latlong.dart';
 import 'package:server_driven_ui/server_driven_ui.dart';
-import 'package:server_driven_ui/yaml_ui/resolvers.dart';
-
-import '../widgets/hero_card.dart';
-import '../widgets/battle_map_widget.dart';
-import '../widgets/animated_number_widget.dart';
 
 /// Creates a [WidgetRegistry] with HeroDex-specific custom widgets
 /// layered on top of the basic SDUI widgets.
-WidgetRegistry createHeroDexWidgetRegistry() {
+///
+/// Only widgets that genuinely need Dart (3rd-party libs, platform APIs)
+/// live here. All JSON-like widget tree generation is in SHQL™.
+HeroDexWidgetRegistry createHeroDexWidgetRegistry() {
   final basicRegistry = WidgetRegistry.basic();
 
   final customFactories = <String, WidgetFactory>{
-    'HeroCard':
+    // -----------------------------------------------------------------------
+    // CachedImage — CachedNetworkImage (3rd-party).
+    // The ONLY Dart boundary here: CachedNetworkImage has builder callbacks
+    // (placeholder, errorWidget) that require Dart closures.
+    // Everything else (Stack, badge, overlays) is SHQL™-generated.
+    // -----------------------------------------------------------------------
+    'CachedImage':
         (context, props, buildChild, child, children, path, shql, key, engine) {
-          return HeroCard.fromMap(
-            props,
-            key: key,
-            onTap: props['onTap'] != null
-                ? () => WidgetRegistry.callShql(context, shql, props['onTap'] as String)
-                : null,
-            onDelete: props['onDelete'] != null
-                ? () => WidgetRegistry.callShql(context, shql, props['onDelete'] as String)
-                : null,
-            onToggleLock: props['onToggleLock'] != null
-                ? () => WidgetRegistry.callShql(context, shql, props['onToggleLock'] as String)
-                : null,
-          );
-        },
-    'IconButton':
-        (context, props, buildChild, child, children, path, shql, key, engine) {
-          final iconName = props['icon'] as String?;
-          final onPressed = props['onPressed'] as String?;
+          final imageUrl = props['imageUrl'] as String?;
+          final placeholderNode = props['placeholder'];
+          final spinnerNode = props['spinner'];
 
-          IconData iconData = Icons.help_outline;
-          if (iconName != null) {
-            iconData = getIconData(iconName);
+          if (imageUrl == null || imageUrl.isEmpty) {
+            return buildChild(placeholderNode, '$path.placeholder');
           }
 
-          VoidCallback? onPressedCallback;
-          if (onPressed != null && isShqlRef('shql: $onPressed')) {
-            onPressedCallback = () => WidgetRegistry.callShql(context, shql, onPressed);
-          }
-
-          return IconButton(
+          return CachedNetworkImage(
             key: key,
-            icon: Icon(iconData),
-            onPressed: onPressedCallback,
+            imageUrl: imageUrl,
+            fit: BoxFit.cover,
+            placeholder: (ctx, url) =>
+                buildChild(spinnerNode, '$path.spinner'),
+            errorWidget: (ctx, url, error) =>
+                buildChild(placeholderNode, '$path.placeholder'),
           );
         },
-    'Icon':
-        (context, props, buildChild, child, children, path, shql, key, engine) {
-          final iconName = props['icon'] as String? ?? 'help_outline';
-          final size = (props['size'] as num?)?.toDouble();
-          final colorValue = props['color'];
 
-          Color? color;
-          if (colorValue is String && colorValue.startsWith('0x')) {
-            color = Color(int.parse(colorValue));
-          }
-
-          return Icon(getIconData(iconName), key: key, size: size, color: color);
-        },
-    'BottomNavigationBar':
+    // -----------------------------------------------------------------------
+    // flutter_map types — registered individually so SHQL™ can generate
+    // the full widget tree as JSON. Only Dart because they are 3rd-party.
+    // -----------------------------------------------------------------------
+    'FlutterMap':
         (context, props, buildChild, child, children, path, shql, key, engine) {
-          final items = props['items'] as List? ?? [];
-          final currentIndex = props['currentIndex'] as int? ?? 0;
-          final onTap = props['onTap'] as String?;
-
-          return BottomNavigationBar(
-            key: key,
-            currentIndex: currentIndex,
-            onTap: onTap != null ? (index) {
-              WidgetRegistry.callShql(context, shql, onTap.replaceAll('value', '$index'));
-            } : null,
-            items: items.map<BottomNavigationBarItem>((item) {
-              final map = item as Map;
-              return BottomNavigationBarItem(
-                icon: Icon(getIconData(map['icon'] as String? ?? 'help')),
-                label: map['label'] as String? ?? '',
-              );
-            }).toList(),
-          );
-        },
-    'SafeArea':
-        (context, props, buildChild, child, children, path, shql, key, engine) {
-          final childNode = props['child'] ?? child;
-          return SafeArea(
-            key: key,
-            child: childNode != null
-                ? buildChild(childNode, '$path.child')
-                : const SizedBox.shrink(),
-          );
-        },
-    'ListTile':
-        (context, props, buildChild, child, children, path, shql, key, engine) {
-          final leadingNode = props['leading'];
-          final titleNode = props['title'];
-          final subtitleNode = props['subtitle'];
-          final trailingNode = props['trailing'];
-          final onTap = props['onTap'] as String?;
-
-          VoidCallback? onTapCallback;
-          if (onTap != null && isShqlRef(onTap)) {
-            final (:code, :targeted) = parseShql(onTap);
-            onTapCallback = () => WidgetRegistry.callShql(context, shql, code, targeted: targeted);
-          }
-
-          return ListTile(
-            key: key,
-            leading: leadingNode != null ? buildChild(leadingNode, '$path.leading') : null,
-            title: titleNode != null ? buildChild(titleNode, '$path.title') : null,
-            subtitle: subtitleNode != null ? buildChild(subtitleNode, '$path.subtitle') : null,
-            trailing: trailingNode != null ? buildChild(trailingNode, '$path.trailing') : null,
-            onTap: onTapCallback,
-          );
-        },
-    'BattleMap':
-        (context, props, buildChild, child, children, path, shql, key, engine) {
-          final lat = (props['latitude'] as num?)?.toDouble() ?? 56.28;
-          final lon = (props['longitude'] as num?)?.toDouble() ?? 13.28;
+          final lat = (props['latitude'] as num?)?.toDouble() ?? 0;
+          final lon = (props['longitude'] as num?)?.toDouble() ?? 0;
           final zoom = (props['zoom'] as num?)?.toDouble() ?? 10;
+          final childList = (children is List) ? children : <dynamic>[];
+
+          return FlutterMap(
+            key: key,
+            options: MapOptions(
+              initialCenter: LatLng(lat, lon),
+              initialZoom: zoom,
+              interactionOptions: const InteractionOptions(
+                flags: InteractiveFlag.all & ~InteractiveFlag.rotate,
+              ),
+            ),
+            children: childList
+                .asMap()
+                .entries
+                .map((e) => buildChild(e.value, '$path.children[${e.key}]'))
+                .toList(),
+          );
+        },
+
+    'TileLayer':
+        (context, props, buildChild, child, children, path, shql, key, engine) {
+          return TileLayer(
+            key: key,
+            urlTemplate: props['urlTemplate'] as String? ??
+                'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+            userAgentPackageName: props['userAgent'] as String? ??
+                'com.herodex3000.app',
+          );
+        },
+
+    'MarkerLayer':
+        (context, props, buildChild, child, children, path, shql, key, engine) {
           final rawMarkers = props['markers'];
-          final markers = <Map<String, dynamic>>[];
+          final markers = <Marker>[];
           if (rawMarkers is List) {
-            for (final m in rawMarkers) {
-              if (m is Map<String, dynamic>) {
-                markers.add(m);
-              } else {
-                markers.add(shql.objectToMap(m));
-              }
+            for (var i = 0; i < rawMarkers.length; i++) {
+              var m = rawMarkers[i];
+              if (m is! Map<String, dynamic>) m = shql.objectToMap(m);
+              final data = m;
+              markers.add(Marker(
+                point: LatLng(
+                  (data['lat'] as num?)?.toDouble() ?? 0,
+                  (data['lon'] as num?)?.toDouble() ?? 0,
+                ),
+                width: (data['width'] as num?)?.toDouble() ?? 36,
+                height: (data['height'] as num?)?.toDouble() ?? 36,
+                child: buildChild(data['child'], '$path.marker[$i]'),
+              ));
             }
           }
-          return BattleMapWidget(
-            key: key,
-            latitude: lat,
-            longitude: lon,
-            zoom: zoom,
-            markers: markers,
-          );
-        },
-    'AnimatedNumber':
-        (context, props, buildChild, child, children, path, shql, key, engine) {
-          final rawValue = props['value'];
-          final value = rawValue is num
-              ? rawValue
-              : num.tryParse(rawValue?.toString() ?? '') ?? 0;
-          final duration = (props['duration'] as int?) ?? 800;
-          final fontSize = (props['fontSize'] as num?)?.toDouble();
-          final fontWeight = props['fontWeight']?.toString();
-          final color = props['color'];
-          return AnimatedNumber(
-            key: key,
-            value: value,
-            duration: Duration(milliseconds: duration),
-            style: TextStyle(
-              fontSize: fontSize,
-              fontWeight: fontWeight == 'bold' ? FontWeight.bold : null,
-              color: color != null ? Resolvers.color(color) : null,
-            ),
-          );
+          return MarkerLayer(key: key, markers: markers);
         },
   };
 
   return HeroDexWidgetRegistry(basicRegistry, customFactories);
 }
 
-/// Maps icon name strings to Material [IconData].
-IconData getIconData(String name) {
-  switch (name) {
-    case 'home': return Icons.home;
-    case 'search': return Icons.search;
-    case 'bookmark': return Icons.bookmark;
-    case 'bookmark_border': return Icons.bookmark_border;
-    case 'bookmark_add': return Icons.bookmark_add;
-    case 'settings': return Icons.settings;
-    case 'person': return Icons.person;
-    case 'shield': return Icons.shield;
-    case 'star': return Icons.star;
-    case 'favorite': return Icons.favorite;
-    case 'favorite_border': return Icons.favorite_border;
-    case 'delete': return Icons.delete;
-    case 'delete_forever': return Icons.delete_forever;
-    case 'arrow_back': return Icons.arrow_back;
-    case 'analytics': return Icons.analytics;
-    case 'bug_report': return Icons.bug_report;
-    case 'location_on': return Icons.location_on;
-    case 'map': return Icons.map;
-    case 'dark_mode': return Icons.dark_mode;
-    case 'light_mode': return Icons.light_mode;
-    case 'info': return Icons.info;
-    case 'error': return Icons.error;
-    case 'warning': return Icons.warning;
-    case 'check_circle': return Icons.check_circle;
-    case 'close': return Icons.close;
-    case 'add': return Icons.add;
-    case 'remove': return Icons.remove;
-    case 'edit': return Icons.edit;
-    case 'lock': return Icons.lock;
-    case 'lock_open': return Icons.lock_open;
-    case 'vpn_key': return Icons.vpn_key;
-    case 'sync': return Icons.sync;
-    case 'logout': return Icons.logout;
-    case 'code': return Icons.code;
-    case 'calendar_today': return Icons.calendar_today;
-    case 'military_tech': return Icons.military_tech;
-    case 'flash_on': return Icons.flash_on;
-    case 'dangerous': return Icons.dangerous;
-    case 'label': return Icons.label;
-    case 'wb_sunny': return Icons.wb_sunny;
-    case 'cloud': return Icons.cloud;
-    case 'foggy': return Icons.foggy;
-    case 'water_drop': return Icons.water_drop;
-    case 'ac_unit': return Icons.ac_unit;
-    case 'thermostat': return Icons.thermostat;
-    case 'air': return Icons.air;
-    default: return Icons.help_outline;
+/// Registers HeroDex custom factories on the static registry so that
+/// imperative Dart widgets using [WidgetRegistry.buildStatic] can resolve
+/// custom types like `HeroCardImage`.
+void registerStaticFactories(AppWidgetRegistry registry) {
+  for (final entry in registry.customFactories.entries) {
+    WidgetRegistry.registerStaticFactory(entry.key, entry.value);
   }
 }
 
-/// Extended WidgetRegistry that adds HeroDex custom widgets on top of basic ones.
-class HeroDexWidgetRegistry extends WidgetRegistry {
-  final WidgetRegistry _basicRegistry;
-  final Map<String, WidgetFactory> _customFactories;
-
-  HeroDexWidgetRegistry(this._basicRegistry, this._customFactories)
-    : super({});
-
-  @override
-  WidgetFactory? get(String type) {
-    if (_customFactories.containsKey(type)) {
-      return _customFactories[type];
-    }
-    return _basicRegistry.get(type);
-  }
-
-  @override
-  Widget build({
-    required String type,
-    required BuildContext context,
-    required Map<String, dynamic> props,
-    required ChildBuilder buildChild,
-    required dynamic child,
-    required dynamic children,
-    required String path,
-    required ShqlBindings shql,
-    required YamlUiEngine engine,
-  }) {
-    if (_customFactories.containsKey(type)) {
-      final key = ValueKey<String>(path);
-      return _customFactories[type]!(
-        context, props, buildChild, child, children, path, shql, key, engine,
-      );
-    }
-    return _basicRegistry.build(
-      type: type,
-      context: context,
-      props: props,
-      buildChild: buildChild,
-      child: child,
-      children: children,
-      path: path,
-      shql: shql,
-      engine: engine,
-    );
-  }
+/// Extended registry that adds HeroDex custom widgets on top of the basic
+/// framework registry. Uses the generic [AppWidgetRegistry] 3-tier lookup:
+/// custom factories → basic (framework) registry → YAML templates.
+class HeroDexWidgetRegistry extends AppWidgetRegistry {
+  HeroDexWidgetRegistry(super.basicRegistry, super.customFactories);
 }

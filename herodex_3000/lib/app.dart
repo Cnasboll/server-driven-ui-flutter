@@ -12,7 +12,6 @@ import 'package:server_driven_ui/server_driven_ui.dart';
 import 'core/herodex_widget_registry.dart';
 import 'core/hero_coordinator.dart';
 import 'core/services/hero_search_service.dart';
-import 'core/yaml_screen.dart';
 import 'core/services/connectivity_service.dart';
 import 'core/services/firebase_auth_service.dart';
 import 'core/services/firebase_service.dart';
@@ -21,8 +20,6 @@ import 'core/services/location_service.dart';
 import 'core/services/weather_service.dart';
 import 'core/theme/app_theme.dart';
 import 'core/theme/theme_cubit.dart';
-import 'widgets/login_screen.dart';
-import 'widgets/splash_screen.dart';
 import 'widgets/conflict_resolver_dialog.dart' show ReviewAction;
 import 'widgets/dialogs.dart' as dialogs;
 import 'package:hero_common/callbacks.dart';
@@ -58,11 +55,14 @@ class _HeroDexAppState extends State<HeroDexApp> {
 
   bool _initialized = false;
   bool _authenticated = false;
+  bool _loginReady = false;
   ParseTree? _predCallTree;
   String _loadingStatus = '';
   int _loadingProgress = 0;
   int _loadingTotal = 0;
   String _loadingHeroName = '';
+  String _loginEmail = '';
+  String _loginPassword = '';
 
   // Route name → YAML asset path
   static const _screens = {
@@ -75,13 +75,111 @@ class _HeroDexAppState extends State<HeroDexApp> {
     'hero_edit': 'assets/screens/hero_edit.yaml',
   };
 
+  // Widget name → YAML asset path (registered in the widget registry)
+  static const _widgetTemplates = {
+    'StatChip': 'assets/widgets/stat_chip.yaml',
+    'PowerBar': 'assets/widgets/power_bar.yaml',
+    'BottomNav': 'assets/widgets/bottom_nav.yaml',
+    'ConsentToggle': 'assets/widgets/consent_toggle.yaml',
+    'SectionHeader': 'assets/widgets/section_header.yaml',
+    'InfoCard': 'assets/widgets/info_card.yaml',
+    'ApiField': 'assets/widgets/api_field.yaml',
+    'DetailAppBar': 'assets/widgets/detail_app_bar.yaml',
+    'OverlayActionButton': 'assets/widgets/overlay_action_button.yaml',
+    'YesNoDialog': 'assets/widgets/yes_no_dialog.yaml',
+    'ReconcileDialog': 'assets/widgets/reconcile_dialog.yaml',
+    'PromptDialog': 'assets/widgets/prompt_dialog.yaml',
+    'ConflictDialog': 'assets/widgets/conflict_dialog.yaml',
+    'BadgeRow': 'assets/widgets/badge_row.yaml',
+    'HeroCardBody': 'assets/widgets/hero_card_body.yaml',
+    'DismissibleCard': 'assets/widgets/dismissible_card.yaml',
+    'HeroPlaceholder': 'assets/widgets/hero_placeholder.yaml',
+  };
+
   @override
   void initState() {
     super.initState();
     if (widget.authService.isSignedIn) {
       _authenticated = true;
       _initServices();
+    } else {
+      _initLogin();
     }
+  }
+
+  Future<void> _initLogin() async {
+    final shql = WidgetRegistry.staticShql;
+
+    // Initialize login state variables
+    shql.setVariable('_LOGIN_IS_REGISTERING', false);
+    shql.setVariable('_LOGIN_IS_LOADING', false);
+    shql.setVariable('_LOGIN_ERROR', '');
+
+    // Register login callbacks as native SHQL™ functions (double-underscore
+    // prefix; SHQL wrappers below expose them with FOO() call syntax).
+    shql.runtime.setNullaryFunction('__LOGIN_SUBMIT', (ec, caller) async {
+      final email = _loginEmail.trim();
+      final password = _loginPassword;
+
+      if (email.isEmpty || password.isEmpty) {
+        shql.setVariable('_LOGIN_ERROR', 'Please enter email and password.');
+        shql.notifyListeners('_LOGIN_ERROR');
+        return null;
+      }
+
+      shql.setVariable('_LOGIN_IS_LOADING', true);
+      shql.setVariable('_LOGIN_ERROR', '');
+      shql.notifyListeners('_LOGIN_IS_LOADING');
+      shql.notifyListeners('_LOGIN_ERROR');
+
+      final isRegistering = shql.getVariable('_LOGIN_IS_REGISTERING') == true;
+      final errorMsg = isRegistering
+          ? await widget.authService.signUp(email, password)
+          : await widget.authService.signIn(email, password);
+
+      if (!mounted) return null;
+
+      if (errorMsg == null) {
+        _onAuthenticated();
+      } else {
+        shql.setVariable('_LOGIN_IS_LOADING', false);
+        shql.setVariable('_LOGIN_ERROR', errorMsg);
+        shql.notifyListeners('_LOGIN_IS_LOADING');
+        shql.notifyListeners('_LOGIN_ERROR');
+      }
+      return null;
+    });
+
+    shql.runtime.setNullaryFunction('__LOGIN_TOGGLE_MODE', (ec, caller) {
+      final current = shql.getVariable('_LOGIN_IS_REGISTERING') == true;
+      shql.setVariable('_LOGIN_IS_REGISTERING', !current);
+      shql.setVariable('_LOGIN_ERROR', '');
+      shql.notifyListeners('_LOGIN_IS_REGISTERING');
+      shql.notifyListeners('_LOGIN_ERROR');
+      return null;
+    });
+
+    shql.runtime.setUnaryFunction('_LOGIN_SET_EMAIL', (ec, caller, value) {
+      _loginEmail = (value is String) ? value : '';
+      return null;
+    });
+
+    shql.runtime.setUnaryFunction('_LOGIN_SET_PASSWORD', (ec, caller, value) {
+      _loginPassword = (value is String) ? value : '';
+      return null;
+    });
+
+    // Wrap native nullary functions so SHQL™ can call them with FOO() syntax.
+    // (IdentifierExecutionNode auto-invokes nullary functions without parens,
+    // but the parser creates call(identifier, tuple) for FOO().)
+    await shql.eval('_LOGIN_SUBMIT() := __LOGIN_SUBMIT');
+    await shql.eval('_LOGIN_TOGGLE_MODE() := __LOGIN_TOGGLE_MODE');
+
+    // Load login template on the static registry
+    final yaml = await rootBundle.loadString('assets/widgets/login_screen.yaml');
+    WidgetRegistry.loadStaticTemplate('LoginScreen', yaml);
+
+    if (mounted) setState(() => _loginReady = true);
   }
 
   Future<void> _initServices() async {
@@ -221,7 +319,21 @@ class _HeroDexAppState extends State<HeroDexApp> {
     await _shqlBindings.eval(HeroSchema.generateSchemaScript());
     await _shqlBindings.loadProgram(herodexCode);
 
-    _yamlEngine = YamlUiEngine(_shqlBindings, createHeroDexWidgetRegistry());
+    final heroDexRegistry = createHeroDexWidgetRegistry();
+    _yamlEngine = YamlUiEngine(_shqlBindings, heroDexRegistry);
+
+    // Register custom Dart factories on the static registry so that
+    // imperative Dart screens (HeroCard, etc.) can use buildStatic too.
+    registerStaticFactories(heroDexRegistry);
+
+    // Load YAML-defined widget templates into both the engine registry
+    // (for SHQL™-driven screens) and the static registry (for imperative
+    // Dart screens like login, splash, and dialogs).
+    for (final entry in _widgetTemplates.entries) {
+      final yaml = await rootBundle.loadString(entry.value);
+      _yamlEngine.loadWidgetTemplate(entry.key, yaml);
+      WidgetRegistry.loadStaticTemplate(entry.key, yaml);
+    }
 
     // Filter orchestration listeners
     _shqlBindings.addListener('_filters', () {
@@ -446,6 +558,7 @@ class _HeroDexAppState extends State<HeroDexApp> {
       _authenticated = false;
       _initialized = false;
     });
+    _initLogin();
   }
 
   // ---------------------------------------------------------------------------
@@ -463,24 +576,74 @@ class _HeroDexAppState extends State<HeroDexApp> {
             theme: AppTheme.lightTheme,
             darkTheme: AppTheme.darkTheme,
             themeMode: themeMode,
-            home: LoginScreen(
-              authService: widget.authService,
-              onAuthenticated: _onAuthenticated,
-            ),
+            home: _loginReady
+                ? WidgetRegistry.buildStatic(context, {'type': 'LoginScreen', 'props': {}}, 'login')
+                : const SizedBox.shrink(),
           );
         },
       );
     }
 
     if (!_initialized) {
-      return MaterialApp(
-        debugShowCheckedModeBanner: false,
-        home: SplashScreen(
-          status: _loadingStatus,
-          progress: _loadingProgress,
-          total: _loadingTotal,
-          heroName: _loadingHeroName,
-        ),
+      final hasProgress = _loadingTotal > 0;
+      final progressChildren = <dynamic>[
+        if (hasProgress) ...[
+          {'type': 'Padding', 'props': {
+            'padding': {'left': 48, 'right': 48},
+            'child': {'type': 'LinearProgressIndicator', 'props': {
+              'value': _loadingProgress / _loadingTotal,
+              'backgroundColor': '0x3DFFFFFF',
+              'valueColor': '0xFFFFFFFF',
+              'minHeight': 6,
+              'borderRadius': 3,
+            }},
+          }},
+          {'type': 'SizedBox', 'props': {'height': 16}},
+          {'type': 'Text', 'props': {
+            'data': _loadingHeroName.isNotEmpty
+                ? '$_loadingHeroName ($_loadingProgress/$_loadingTotal)'
+                : '$_loadingProgress / $_loadingTotal',
+            'style': {'fontSize': 14, 'color': '0xB3FFFFFF', 'fontFamily': 'Orbitron'},
+          }},
+        ] else ...[
+          {'type': 'CircularProgressIndicator', 'props': {'valueColor': '0xFFFFFFFF'}},
+          if (_loadingStatus.isNotEmpty) ...[
+            {'type': 'SizedBox', 'props': {'height': 16}},
+            {'type': 'Text', 'props': {
+              'data': _loadingStatus,
+              'style': {'fontSize': 14, 'color': '0xB3FFFFFF', 'fontFamily': 'Orbitron'},
+            }},
+          ],
+        ],
+      ];
+
+      return BlocBuilder<ThemeCubit, ThemeMode>(
+        builder: (context, themeMode) {
+          return MaterialApp(
+            debugShowCheckedModeBanner: false,
+            theme: AppTheme.lightTheme,
+            darkTheme: AppTheme.darkTheme,
+            themeMode: themeMode,
+            home: WidgetRegistry.buildStatic(context, {'type': 'Scaffold', 'props': {
+              'backgroundColor': '0xFF1A237E',
+              'body': {'type': 'Center', 'child': {
+                'type': 'Column', 'props': {
+                  'mainAxisAlignment': 'center',
+                  'children': [
+                    {'type': 'Icon', 'props': {'icon': 'shield', 'size': 100, 'color': '0xFFFFFFFF'}},
+                    {'type': 'SizedBox', 'props': {'height': 24}},
+                    {'type': 'Text', 'props': {
+                      'data': 'HeroDex 3000',
+                      'style': {'fontSize': 32, 'fontWeight': 'bold', 'color': '0xFFFFFFFF', 'fontFamily': 'Orbitron'},
+                    }},
+                    {'type': 'SizedBox', 'props': {'height': 48}},
+                    ...progressChildren,
+                  ],
+                },
+              }},
+            }}, 'splash'),
+          );
+        },
       );
     }
 

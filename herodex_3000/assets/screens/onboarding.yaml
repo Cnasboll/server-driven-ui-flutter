@@ -198,30 +198,15 @@ screen:
                       - type: Card
                         props:
                           child:
-                            type: ListTile
+                            type: ConsentToggle
                             props:
-                              leading:
-                                type: Icon
-                                props:
-                                  icon: "analytics"
-                                  color: "0xFF1976D2"
-                              title:
-                                type: Text
-                                props:
-                                  data: "Analytics"
-                              subtitle:
-                                type: Text
-                                props:
-                                  data: "Help improve HeroDex"
-                              trailing:
-                                type: Observer
-                                props:
-                                  query: "_analytics_enabled"
-                                  builder:
-                                    type: Switch
-                                    props:
-                                      value: "shql: _analytics_enabled"
-                                      onChanged: "shql: SET_ANALYTICS_CONSENT(value)"
+                              icon: "analytics"
+                              color: "0xFF1976D2"
+                              title: "Analytics"
+                              subtitle: "Help improve HeroDex"
+                              query: "_analytics_enabled"
+                              valueExpr: "shql: _analytics_enabled"
+                              onChanged: "SET_ANALYTICS_CONSENT(value)"
 
                       - type: SizedBox
                         props:
@@ -231,30 +216,15 @@ screen:
                       - type: Card
                         props:
                           child:
-                            type: ListTile
+                            type: ConsentToggle
                             props:
-                              leading:
-                                type: Icon
-                                props:
-                                  icon: "bug_report"
-                                  color: "0xFFFF9800"
-                              title:
-                                type: Text
-                                props:
-                                  data: "Crash Reports"
-                              subtitle:
-                                type: Text
-                                props:
-                                  data: "Send crash reports automatically"
-                              trailing:
-                                type: Observer
-                                props:
-                                  query: "_crashlytics_enabled"
-                                  builder:
-                                    type: Switch
-                                    props:
-                                      value: "shql: _crashlytics_enabled"
-                                      onChanged: "shql: SET_CRASHLYTICS_CONSENT(value)"
+                              icon: "bug_report"
+                              color: "0xFFFF9800"
+                              title: "Crash Reports"
+                              subtitle: "Send crash reports automatically"
+                              query: "_crashlytics_enabled"
+                              valueExpr: "shql: _crashlytics_enabled"
+                              onChanged: "SET_CRASHLYTICS_CONSENT(value)"
 
                       - type: SizedBox
                         props:
@@ -264,30 +234,15 @@ screen:
                       - type: Card
                         props:
                           child:
-                            type: ListTile
+                            type: ConsentToggle
                             props:
-                              leading:
-                                type: Icon
-                                props:
-                                  icon: "location_on"
-                                  color: "0xFF4CAF50"
-                              title:
-                                type: Text
-                                props:
-                                  data: "Location"
-                              subtitle:
-                                type: Text
-                                props:
-                                  data: "Track hero encounters on map"
-                              trailing:
-                                type: Observer
-                                props:
-                                  query: "_location_enabled"
-                                  builder:
-                                    type: Switch
-                                    props:
-                                      value: "shql: _location_enabled"
-                                      onChanged: "shql: SET_LOCATION_CONSENT(value)"
+                              icon: "location_on"
+                              color: "0xFF4CAF50"
+                              title: "Location"
+                              subtitle: "Track hero encounters on map"
+                              query: "_location_enabled"
+                              valueExpr: "shql: _location_enabled"
+                              onChanged: "SET_LOCATION_CONSENT(value)"
 
                       - type: SizedBox
                         props:

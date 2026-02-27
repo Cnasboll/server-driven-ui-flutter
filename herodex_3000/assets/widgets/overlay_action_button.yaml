@@ -1,0 +1,30 @@
+widget:
+  type: Positioned
+  props:
+    top: "prop:top"
+    right: "prop:right"
+    child:
+      type: Semantics
+      props:
+        label: "prop:label"
+        button: true
+        child:
+          type: Material
+          props:
+            color: "prop:bgColor"
+            borderRadius: 20
+            child:
+              type: InkWell
+              props:
+                onTap: "prop:onTap"
+                borderRadius: 20
+                child:
+                  type: Padding
+                  props:
+                    padding: 8
+                    child:
+                      type: Icon
+                      props:
+                        icon: "prop:icon"
+                        color: "prop:iconColor"
+                        size: 20

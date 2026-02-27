@@ -1,0 +1,21 @@
+# A power level bar with label and linear progress indicator.
+# Props: label (String), progress (double 0..1), color (hex), bgColor (hex)
+widget:
+  type: Column
+  props:
+    crossAxisAlignment: "start"
+    children:
+      - type: Text
+        props:
+          data: "prop:label"
+          style:
+            fontSize: 12
+            fontWeight: w500
+      - type: SizedBox
+        props:
+          height: 4
+      - type: LinearProgressIndicator
+        props:
+          value: "prop:progress"
+          backgroundColor: "prop:bgColor"
+          color: "prop:color"

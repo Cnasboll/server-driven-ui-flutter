@@ -89,16 +89,7 @@ screen:
                     children: "shql: _hero_cards"
 
     bottomNavigationBar:
-      type: BottomNavigationBar
+      type: BottomNav
       props:
         currentIndex: 2
-        items:
-          - icon: "home"
-            label: "Home"
-          - icon: "cloud"
-            label: "Online"
-          - icon: "bookmark"
-            label: "Saved"
-          - icon: "settings"
-            label: "Settings"
-        onTap: "shql: TAB_NAV(2, value)"
+        onTap: "TAB_NAV(2, value)"

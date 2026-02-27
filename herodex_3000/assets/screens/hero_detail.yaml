@@ -63,16 +63,7 @@ screen:
         builder: "shql: GENERATE_HERO_DETAIL()"
 
     bottomNavigationBar:
-      type: BottomNavigationBar
+      type: BottomNav
       props:
         currentIndex: 0
-        items:
-          - icon: "home"
-            label: "Home"
-          - icon: "cloud"
-            label: "Online"
-          - icon: "bookmark"
-            label: "Saved"
-          - icon: "settings"
-            label: "Settings"
-        onTap: "shql: TAB_NAV(-1, value)"
+        onTap: "TAB_NAV(-1, value)"

@@ -1,21 +1,17 @@
-import 'package:flutter/foundation.dart' show kIsWeb, defaultTargetPlatform, TargetPlatform;
-import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+import 'dart:io' show Platform;
+
+import 'package:sqflite/sqflite.dart';
+import 'package:sqflite_common_ffi/sqflite_ffi.dart' as ffi;
 import 'package:path/path.dart' show join;
 import 'package:hero_common/persistence/database_adapter.dart';
-
-/// Returns true when running on a desktop OS (Windows, Linux, macOS).
-bool get _isDesktop =>
-    !kIsWeb &&
-    (defaultTargetPlatform == TargetPlatform.windows ||
-     defaultTargetPlatform == TargetPlatform.linux ||
-     defaultTargetPlatform == TargetPlatform.macOS);
 
 class SqfliteDriver implements DatabaseDriver {
   @override
   Future<DatabaseAdapter> open(String dbName) async {
-    if (_isDesktop) {
-      sqfliteFfiInit();
-      databaseFactory = databaseFactoryFfi;
+    // On desktop (Windows/Linux/macOS), use FFI; on mobile, use native sqflite.
+    if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
+      ffi.sqfliteFfiInit();
+      databaseFactory = ffi.databaseFactoryFfi;
     }
     final path = join(await getDatabasesPath(), dbName);
     return SqfliteDatabaseAdapter._(await openDatabase(path, version: 1));

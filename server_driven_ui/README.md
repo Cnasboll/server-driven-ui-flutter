@@ -1,7 +1,18 @@
 # server_driven_ui
 
-UI expressions are evaluated in a restricted, non-iterative sandbox to ensure determinism and safety during widget rebuilds. All side effects and control flow are confined to explicit execution contexts triggered by user event.
+The runtime framework that sits between YAML + SHQL™ and Flutter. It turns declarative YAML definitions and SHQL™ logic into live Flutter widget trees — so that application code never has to touch Dart.
 
-Program logic is defined entirely in SHQL™ (Small, Handy, Quintessential Language™) which is a general-purpose, imperative scripting language. Each word actually describes the language well — it's small (lightweight), handy (practical, embedded in YAML for UI), and quintessential (it captures the essence of what you need for expression evaluation and state management). It has lambdas, loops, object literals, and drives an entire server-driven UI framework. Plus "Quintessential" is just a great word that nobody uses enough.
+## What it does
 
-It features a comprehensive set of control flow structures, including loops and conditionals, support for first-class functions and lambdas, and built-in data structures like lists and maps. The language is interpreted by an engine that tokenizes source text, parses it into an abstract syntax tree, and executes it, allowing for dynamic and controlled program execution.
+- **`YamlUiEngine`** — Loads YAML screen and widget template definitions, resolves embedded `shql:` expressions, and produces widget trees.
+- **`WidgetRegistry`** — Maps YAML type names (e.g. `Text`, `Column`, `FilledButton`) to Flutter widget constructors. Also hosts YAML-defined widget templates that are composable via `"prop:name"` placeholder substitution.
+- **`ShqlBindings`** — Bridges the SHQL™ runtime to Flutter: exposes variables, notifies listeners on mutation, evaluates expressions. The `Observer` widget subscribes to SHQL™ variables and rebuilds automatically when they change.
+- **`callShql`** — Evaluates SHQL™ expressions from user-interaction callbacks (button presses, text input, swipe gestures). Errors are caught and displayed as SnackBars rather than crashing the app.
+
+## Design principles
+
+- **YAML defines structure.** Screens, dialogs, and reusable components are YAML files. Props are values (strings, numbers, colors). Callback props (`on*` keys) are SHQL™ expressions.
+- **SHQL™ defines behaviour.** All logic — state changes, navigation, data flow, dynamic widget tree generation — is written in SHQL™. Dart callbacks are only registered for platform operations (file I/O, network, native dialogs) and then wrapped in SHQL™ functions.
+- **Flutter is the rendering substrate.** The `WidgetRegistry` translates YAML nodes into Flutter widgets. Application code never instantiates widgets directly — that is the framework's job.
+
+Widget templates are composable: a screen YAML references a template by type name and passes props via `"prop:name"` placeholders that are substituted at build time. SHQL™ can also generate complete widget trees dynamically at runtime — the framework renders whatever tree structure SHQL™ returns.

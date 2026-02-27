@@ -1,0 +1,11 @@
+# App bar with back button and Orbitron-styled title.
+# Props: title (widget node or text node for the title)
+widget:
+  type: AppBar
+  props:
+    leading:
+      type: IconButton
+      props:
+        icon: "arrow_back"
+        onPressed: "shql: GO_BACK()"
+    title: "prop:title"

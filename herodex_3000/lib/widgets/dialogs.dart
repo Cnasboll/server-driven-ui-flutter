@@ -1,10 +1,15 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:server_driven_ui/server_driven_ui.dart';
 
 import 'conflict_resolver_dialog.dart' show ReviewAction;
 
+Widget _b(BuildContext c, Map<String, dynamic> node, String p) =>
+    WidgetRegistry.buildStatic(c, node, 'dialog.$p');
+
 /// Shows a text-input dialog over the current navigator overlay.
+/// Uses the PromptDialog YAML template with SHQL™ CLOSE_DIALOG directive.
 Future<String> showPromptDialog(
   GlobalKey<NavigatorState> navigatorKey,
   GlobalKey<ScaffoldMessengerState> messengerKey,
@@ -17,45 +22,27 @@ Future<String> showPromptDialog(
     final overlayContext = navigatorKey.currentState?.overlay?.context;
     if (overlayContext == null) {
       messengerKey.currentState?.showSnackBar(
-        const SnackBar(content: Text('Please configure your API key in Settings')),
+        SnackBar(content: _b(messengerKey.currentContext!, {
+          'type': 'Text', 'props': {'data': 'Please configure your API key in Settings'},
+        }, 'snack')),
       );
       completer.complete(defaultValue);
       return;
     }
 
-    final controller = TextEditingController(text: defaultValue);
+    // Initialize SHQL™ variable for the TextField's current value
+    WidgetRegistry.staticShql.setVariable('_DIALOG_TEXT', defaultValue);
+
     try {
-      final result = await showDialog<String>(
+      final result = await showDialog<dynamic>(
         context: overlayContext,
         barrierDismissible: false,
-        builder: (ctx) => AlertDialog(
-          title: const Text('Configuration Required'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(prompt),
-              const SizedBox(height: 12),
-              TextField(
-                controller: controller,
-                autofocus: true,
-                onSubmitted: (v) => Navigator.of(ctx).pop(v),
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(ctx).pop(defaultValue),
-              child: const Text('Cancel'),
-            ),
-            TextButton(
-              onPressed: () => Navigator.of(ctx).pop(controller.text),
-              child: const Text('OK'),
-            ),
-          ],
-        ),
+        builder: (ctx) => _b(ctx, {'type': 'PromptDialog', 'props': {
+          'prompt': prompt,
+          'defaultValue': defaultValue,
+        }}, 'prompt') as AlertDialog,
       );
-      completer.complete(result ?? defaultValue);
+      completer.complete(result is String ? result : defaultValue);
     } catch (e) {
       debugPrint('Dialog error: $e');
       completer.complete(defaultValue);
@@ -66,6 +53,7 @@ Future<String> showPromptDialog(
 }
 
 /// Shows a yes/no confirmation dialog.
+/// Uses the YesNoDialog YAML template with SHQL™ CLOSE_DIALOG directive.
 Future<bool> showYesNoDialog(
   GlobalKey<NavigatorState> navigatorKey,
   String prompt,
@@ -80,24 +68,14 @@ Future<bool> showYesNoDialog(
     }
 
     try {
-      final result = await showDialog<bool>(
+      final result = await showDialog<dynamic>(
         context: overlayContext,
         barrierDismissible: false,
-        builder: (ctx) => AlertDialog(
-          content: Text(prompt),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(ctx).pop(false),
-              child: const Text('No'),
-            ),
-            TextButton(
-              onPressed: () => Navigator.of(ctx).pop(true),
-              child: const Text('Yes'),
-            ),
-          ],
-        ),
+        builder: (ctx) => _b(ctx, {'type': 'YesNoDialog', 'props': {
+          'prompt': prompt,
+        }}, 'yesno') as AlertDialog,
       );
-      completer.complete(result ?? false);
+      completer.complete(result == true);
     } catch (e) {
       debugPrint('Dialog error: $e');
       completer.complete(false);
@@ -108,6 +86,7 @@ Future<bool> showYesNoDialog(
 }
 
 /// Shows a reconcile action dialog (Accept / Skip / Accept All / Abort).
+/// Uses the ReconcileDialog YAML template with SHQL™ CLOSE_DIALOG directive.
 Future<ReviewAction> showReconcileDialog(
   GlobalKey<NavigatorState> navigatorKey,
   String prompt,
@@ -122,34 +101,20 @@ Future<ReviewAction> showReconcileDialog(
     }
 
     try {
-      final result = await showDialog<ReviewAction>(
+      final result = await showDialog<dynamic>(
         context: overlayContext,
         barrierDismissible: false,
-        builder: (ctx) => AlertDialog(
-          title: const Text('Reconcile'),
-          content: Text(prompt),
-          actionsAlignment: MainAxisAlignment.spaceEvenly,
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(ctx).pop(ReviewAction.cancel),
-              child: const Text('Abort'),
-            ),
-            TextButton(
-              onPressed: () => Navigator.of(ctx).pop(ReviewAction.skip),
-              child: const Text('Skip'),
-            ),
-            TextButton(
-              onPressed: () => Navigator.of(ctx).pop(ReviewAction.saveAll),
-              child: const Text('Accept All'),
-            ),
-            FilledButton(
-              onPressed: () => Navigator.of(ctx).pop(ReviewAction.save),
-              child: const Text('Accept'),
-            ),
-          ],
-        ),
+        builder: (ctx) => _b(ctx, {'type': 'ReconcileDialog', 'props': {
+          'prompt': prompt,
+        }}, 'reconcile') as AlertDialog,
       );
-      completer.complete(result ?? ReviewAction.cancel);
+      // CLOSE_DIALOG returns string values — map to enum
+      completer.complete(switch (result) {
+        'save' => ReviewAction.save,
+        'skip' => ReviewAction.skip,
+        'saveAll' => ReviewAction.saveAll,
+        _ => ReviewAction.cancel,
+      });
     } catch (e) {
       debugPrint('Reconcile dialog error: $e');
       completer.complete(ReviewAction.cancel);

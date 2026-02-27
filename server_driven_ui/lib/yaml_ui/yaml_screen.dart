@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:server_driven_ui/server_driven_ui.dart';
+
+import 'yaml_ui_engine.dart';
 
 /// A widget that renders a YAML screen definition loaded from an asset file.
 class YamlScreen extends StatefulWidget {
