@@ -856,7 +856,8 @@ _MAKE_STAT_CHIP_ROWS(__stats) := BEGIN
             "label": __stats[__k].LABEL,
             "valueText": STRING(__stats[__k].VALUE),
             "color": __stats[__k].COLOR,
-            "bgColor": __stats[__k].BG_COLOR
+            "bgColor": __stats[__k].BG_COLOR,
+            "icon": __stats[__k].ICON
         }}];
         IF LENGTH(__row_children) >= 5 OR __k = LENGTH(__stats) - 1 THEN BEGIN
             -- 5 children = 3 chips + 2 gaps (groups of 3 chips)
@@ -884,7 +885,7 @@ _MAKE_HERO_CARD_TREE(__hero, __onTap, __onDelete, __locked, __onToggleLock) := B
     FOR __j := 0 TO LENGTH(_summary_fields) - 1 DO BEGIN
         __sf := _summary_fields[__j];
         IF __sf.IS_STAT THEN
-            __stats := __stats + [OBJECT{value: __sf.ACCESSOR(__hero), label: __sf.LABEL, color: __sf.COLOR, bg_color: __sf.BG_COLOR}]
+            __stats := __stats + [OBJECT{value: __sf.ACCESSOR(__hero), label: __sf.LABEL, color: __sf.COLOR, bg_color: __sf.BG_COLOR, icon: __sf.ICON}]
         ELSE BEGIN
             __val := __sf.ACCESSOR(__hero);
             IF __sf.PROP_NAME = 'name' THEN __name := __val

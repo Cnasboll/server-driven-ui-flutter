@@ -58,12 +58,12 @@ _detail_fields := [
 -- Summary fields metadata (for HeroCard)
 _summary_fields := [
     OBJECT{prop_name: 'name', accessor: (hero) => hero.NAME, is_stat: FALSE},
-    OBJECT{prop_name: 'intelligence', accessor: (hero) => POWERSTATS(hero, x => x.INTELLIGENCE, 0), is_stat: TRUE, label: 'INT', color: '0xFF2196F3', bg_color: '0x1A2196F3'},
-    OBJECT{prop_name: 'strength', accessor: (hero) => POWERSTATS(hero, x => x.STRENGTH, 0), is_stat: TRUE, label: 'STR', color: '0xFFF44336', bg_color: '0x1AF44336'},
-    OBJECT{prop_name: 'speed', accessor: (hero) => POWERSTATS(hero, x => x.SPEED, 0), is_stat: TRUE, label: 'SPE', color: '0xFFFF9800', bg_color: '0x1AFF9800'},
-    OBJECT{prop_name: 'durability', accessor: (hero) => POWERSTATS(hero, x => x.DURABILITY, 0), is_stat: TRUE, label: 'DUR', color: '0xFF4CAF50', bg_color: '0x1A4CAF50'},
-    OBJECT{prop_name: 'power', accessor: (hero) => POWERSTATS(hero, x => x.POWER, 0), is_stat: TRUE, label: 'POW', color: '0xFF9C27B0', bg_color: '0x1A9C27B0'},
-    OBJECT{prop_name: 'combat', accessor: (hero) => POWERSTATS(hero, x => x.COMBAT, 0), is_stat: TRUE, label: 'COM', color: '0xFF795548', bg_color: '0x1A795548'},
+    OBJECT{prop_name: 'intelligence', accessor: (hero) => POWERSTATS(hero, x => x.INTELLIGENCE, 0), is_stat: TRUE, label: 'INT', color: '0xFF2196F3', bg_color: '0x1A2196F3', icon: 'psychology'},
+    OBJECT{prop_name: 'strength', accessor: (hero) => POWERSTATS(hero, x => x.STRENGTH, 0), is_stat: TRUE, label: 'STR', color: '0xFFF44336', bg_color: '0x1AF44336', icon: 'fitness_center'},
+    OBJECT{prop_name: 'speed', accessor: (hero) => POWERSTATS(hero, x => x.SPEED, 0), is_stat: TRUE, label: 'SPE', color: '0xFFFF9800', bg_color: '0x1AFF9800', icon: 'speed'},
+    OBJECT{prop_name: 'durability', accessor: (hero) => POWERSTATS(hero, x => x.DURABILITY, 0), is_stat: TRUE, label: 'DUR', color: '0xFF4CAF50', bg_color: '0x1A4CAF50', icon: 'shield'},
+    OBJECT{prop_name: 'power', accessor: (hero) => POWERSTATS(hero, x => x.POWER, 0), is_stat: TRUE, label: 'POW', color: '0xFF9C27B0', bg_color: '0x1A9C27B0', icon: 'bolt'},
+    OBJECT{prop_name: 'combat', accessor: (hero) => POWERSTATS(hero, x => x.COMBAT, 0), is_stat: TRUE, label: 'COM', color: '0xFF795548', bg_color: '0x1A795548', icon: 'sports_mma'},
     OBJECT{prop_name: 'fullName', accessor: (hero) => BIOGRAPHY(hero, x => x.FULL_NAME, ''), is_stat: FALSE},
     OBJECT{prop_name: 'publisher', accessor: (hero) => BIOGRAPHY(hero, x => x.PUBLISHER, ''), is_stat: FALSE},
     OBJECT{prop_name: 'alignment', accessor: (hero) => BIOGRAPHY(hero, x => x.ALIGNMENT, 0), is_stat: FALSE},
