@@ -427,19 +427,14 @@ class _HeroDexAppState extends State<HeroDexApp> {
 
     _shqlBindings.addListener('_location_enabled', () async {
       final enabled = _shqlBindings.getVariable('_location_enabled');
-      if (enabled == true) {
-        final desc = await LocationService.getLocationDescription();
-        _setAndNotify('_location_description', desc);
-        final coords = await LocationService.getCoordinates();
-        if (coords != null) {
-          _setAndNotify('_user_latitude', coords.$1);
-          _setAndNotify('_user_longitude', coords.$2);
-        }
-        if (mounted) setState(() {});
-      } else {
-        _setAndNotify('_location_description', '');
-      }
+      await _applyLocation(enabled == true);
     });
+
+    // Apply initial location from restored preferences
+    final initialLocationEnabled = _shqlBindings.getVariable('_location_enabled');
+    if (initialLocationEnabled == true) {
+      _applyLocation(true);
+    }
 
     _connectivityService = ConnectivityService();
     _connectivityService!.connectivityStream.listen((isConnected) {
@@ -490,6 +485,21 @@ class _HeroDexAppState extends State<HeroDexApp> {
   void _setAndNotify(String name, dynamic value) {
     _shqlBindings.setVariable(name, value);
     _shqlBindings.notifyListeners(name);
+  }
+
+  Future<void> _applyLocation(bool enabled) async {
+    if (enabled) {
+      final desc = await LocationService.getLocationDescription();
+      _setAndNotify('_location_description', desc);
+      final coords = await LocationService.getCoordinates();
+      if (coords != null) {
+        _setAndNotify('_user_latitude', coords.$1);
+        _setAndNotify('_user_longitude', coords.$2);
+      }
+      if (mounted) setState(() {});
+    } else {
+      _setAndNotify('_location_description', '');
+    }
   }
 
   void _showSnackBar(String message) {

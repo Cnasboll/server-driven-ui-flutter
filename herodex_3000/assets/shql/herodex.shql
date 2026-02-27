@@ -170,6 +170,7 @@ END;
 SET_LOCATION_CONSENT(enabled) := BEGIN
     _location_enabled := enabled;
     SAVE_PREF('location_enabled', enabled);
+    SET('_location_enabled', enabled);
 END;
 
 COMPLETE_ONBOARDING() := BEGIN
