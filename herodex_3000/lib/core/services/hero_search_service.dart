@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:hero_common/models/hero_model.dart';
@@ -7,7 +6,6 @@ import 'package:hero_common/models/hero_shql_adapter.dart';
 import 'package:hero_common/models/search_response_model.dart';
 import 'package:hero_common/value_types/height.dart';
 import 'package:hero_common/value_types/weight.dart';
-import 'package:http/http.dart' as http;
 import 'package:server_driven_ui/server_driven_ui.dart';
 
 import '../../widgets/conflict_resolver_dialog.dart';
@@ -323,23 +321,6 @@ class HeroSearchService {
     });
 
     return completer.future;
-  }
-
-  // ---------------------------------------------------------------------------
-  // Generic HTTP fetch (for SHQL™ FETCH callback)
-  // ---------------------------------------------------------------------------
-
-  static Future<dynamic> httpFetch(String url) async {
-    try {
-      final response = await http.get(Uri.parse(url));
-      if (response.statusCode == 200) {
-        return jsonDecode(response.body);
-      }
-      return null;
-    } catch (e) {
-      debugPrint('Fetch error: $e');
-      return null;
-    }
   }
 
   // ---------------------------------------------------------------------------

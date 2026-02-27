@@ -116,7 +116,7 @@ screen:
                 props:
                   icon: "location_on"
                   title: "Location Access"
-                  subtitle: "Show heroes on map"
+                  subtitle: "Use your real GPS location"
                   query: "_location_enabled"
                   valueExpr: "shql: _location_enabled"
                   onChanged: "SET_LOCATION_CONSENT(value)"

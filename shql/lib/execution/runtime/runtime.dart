@@ -535,6 +535,10 @@ class Runtime {
   Future<String?> Function(String prompt)? promptFunction;
   Future<void> Function(String routeName)? navigateFunction;
   Future<dynamic> Function(String url)? fetchFunction;
+  Future<dynamic> Function(String url, dynamic body)? postFunction;
+  Future<dynamic> Function(String url, dynamic body)? patchFunction;
+  Future<dynamic> Function(String url, String token)? fetchAuthFunction;
+  Future<dynamic> Function(String url, dynamic body, String token)? patchAuthFunction;
   Future<void> Function(String key, dynamic value)? saveStateFunction;
   Future<dynamic> Function(String key, dynamic defaultValue)? loadStateFunction;
   Future<void> Function()? clsFunction;
@@ -574,6 +578,10 @@ class Runtime {
     promptFunction = other.promptFunction;
     navigateFunction = other.navigateFunction;
     fetchFunction = other.fetchFunction;
+    postFunction = other.postFunction;
+    patchFunction = other.patchFunction;
+    fetchAuthFunction = other.fetchAuthFunction;
+    patchAuthFunction = other.patchAuthFunction;
     saveStateFunction = other.saveStateFunction;
     loadStateFunction = other.loadStateFunction;
     clsFunction = other.clsFunction;
@@ -748,6 +756,59 @@ class Runtime {
     return fetchFunction?.call(url);
   }
 
+  Future<dynamic> post(
+    ExecutionContext executionContext,
+    ExecutionNode caller,
+    dynamic url,
+    dynamic body,
+  ) async {
+    if (sandboxed) {
+      return;
+    }
+
+    return postFunction?.call(url, body);
+  }
+
+  Future<dynamic> patch(
+    ExecutionContext executionContext,
+    ExecutionNode caller,
+    dynamic url,
+    dynamic body,
+  ) async {
+    if (sandboxed) {
+      return;
+    }
+
+    return patchFunction?.call(url, body);
+  }
+
+  Future<dynamic> fetchAuth(
+    ExecutionContext executionContext,
+    ExecutionNode caller,
+    dynamic url,
+    dynamic token,
+  ) async {
+    if (sandboxed) {
+      return;
+    }
+
+    return fetchAuthFunction?.call(url, token);
+  }
+
+  Future<dynamic> patchAuth(
+    ExecutionContext executionContext,
+    ExecutionNode caller,
+    dynamic url,
+    dynamic body,
+    dynamic token,
+  ) async {
+    if (sandboxed) {
+      return;
+    }
+
+    return patchAuthFunction?.call(url, body, token);
+  }
+
   Future<String> readLine(
     ExecutionContext executionContext,
     ExecutionNode caller,
@@ -898,6 +959,10 @@ class Runtime {
     setUnaryFunction("PROMPT", prompt);
     setUnaryFunction("NAVIGATE", navigate);
     setUnaryFunction("FETCH", fetch);
+    setBinaryFunction("POST", post);
+    setBinaryFunction("PATCH", patch);
+    setBinaryFunction("FETCH_AUTH", fetchAuth);
+    setTernaryFunction("PATCH_AUTH", patchAuth);
     setNullaryFunction("READLINE", readLine);
     setBinaryFunction("_DISPLAY_GRAPH", plot);
     setBinaryFunction("SET", set);

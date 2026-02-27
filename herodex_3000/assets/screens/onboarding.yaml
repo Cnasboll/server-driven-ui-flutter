@@ -239,7 +239,7 @@ screen:
                               icon: "location_on"
                               color: "0xFF4CAF50"
                               title: "Location"
-                              subtitle: "Track hero encounters on map"
+                              subtitle: "Use your real GPS location"
                               query: "_location_enabled"
                               valueExpr: "shql: _location_enabled"
                               onChanged: "SET_LOCATION_CONSENT(value)"

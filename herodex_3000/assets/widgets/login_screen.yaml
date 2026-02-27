@@ -1,8 +1,11 @@
 # Login / Register screen.
 # Uses static SHQL™ variables:
 #   _LOGIN_IS_REGISTERING (bool), _LOGIN_IS_LOADING (bool), _LOGIN_ERROR (String)
-# Dart functions registered on static bindings:
-#   _LOGIN_SUBMIT(), _LOGIN_TOGGLE_MODE(), _LOGIN_SET_EMAIL(value), _LOGIN_SET_PASSWORD(value)
+#   _LOGIN_EMAIL (String), _LOGIN_PASSWORD (String)
+# Pure SHQL™ functions (defined in app.dart _initLogin):
+#   _LOGIN_SUBMIT(), _LOGIN_TOGGLE_MODE()
+# Auth functions loaded from auth.shql:
+#   FIREBASE_SIGN_IN(), FIREBASE_SIGN_UP(), FIREBASE_SIGN_OUT()
 widget:
   type: Scaffold
   props:
@@ -70,7 +73,7 @@ widget:
                                       props:
                                         keyboardType: "emailAddress"
                                         textInputAction: "next"
-                                        onChanged: "shql: _LOGIN_SET_EMAIL(value)"
+                                        onChanged: "shql: SET('_LOGIN_EMAIL', value)"
                                         decoration:
                                           labelText: "Email"
                                           prefixIcon: "email"
@@ -83,7 +86,7 @@ widget:
                                         obscureText: true
                                         textInputAction: "done"
                                         onSubmitted: "shql: _LOGIN_SUBMIT()"
-                                        onChanged: "shql: _LOGIN_SET_PASSWORD(value)"
+                                        onChanged: "shql: SET('_LOGIN_PASSWORD', value)"
                                         decoration:
                                           labelText: "Password"
                                           prefixIcon: "lock"

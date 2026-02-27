@@ -1,5 +1,5 @@
 name: shql
-description: SHQL (Small, Handy, Quintessential Language™) engine - parser, tokenizer, and runtime.
+description: SHQL™ (Small, Handy, Quintessential Language™) engine - parser, tokenizer, and runtime.
 version: 0.1.0
 
 environment:

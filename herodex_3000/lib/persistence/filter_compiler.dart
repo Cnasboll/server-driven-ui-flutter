@@ -182,7 +182,7 @@ class FilterCompiler {
       );
       final result = await _shqlBindings.eval(expr, boundValues: boundValues);
       // Must return a bool — plain text like "batman" returns null (undefined
-      // SHQL identifier) and should fall through to text-match, not be
+      // SHQL™ identifier) and should fall through to text-match, not be
       // compiled as a predicate that silently rejects every hero.
       return result is bool;
     } catch (_) {
