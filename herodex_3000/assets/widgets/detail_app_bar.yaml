@@ -7,5 +7,5 @@ widget:
       type: IconButton
       props:
         icon: "arrow_back"
-        onPressed: "shql: GO_BACK()"
+        onPressed: "GO_BACK()"
     title: "prop:title"

@@ -29,8 +29,8 @@ screen:
                     prefixIcon: "search"
                     border: "outline"
                   value: "shql: _search_query"
-                  onChanged: "shql: _search_query := value"
-                  onSubmitted: "shql: SEARCH_HEROES(value)"
+                  onChanged: "_search_query := value"
+                  onSubmitted: "SEARCH_HEROES(value)"
 
           # Search History
           - type: Observer
@@ -116,7 +116,7 @@ screen:
                                     width: 8
                                 - type: TextButton
                                   props:
-                                    onPressed: "shql: ABORT_RECONCILE()"
+                                    onPressed: "ABORT_RECONCILE()"
                                     child:
                                       type: Text
                                       props:
@@ -173,7 +173,7 @@ screen:
               child:
                 type: OutlinedButton
                 props:
-                  onPressed: "shql: RECONCILE_HEROES()"
+                  onPressed: "RECONCILE_HEROES()"
                   child:
                     type: Row
                     props:

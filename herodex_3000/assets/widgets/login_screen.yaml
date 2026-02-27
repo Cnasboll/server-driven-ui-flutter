@@ -73,7 +73,7 @@ widget:
                                       props:
                                         keyboardType: "emailAddress"
                                         textInputAction: "next"
-                                        onChanged: "shql: SET('_LOGIN_EMAIL', value)"
+                                        onChanged: "SET('_LOGIN_EMAIL', value)"
                                         decoration:
                                           labelText: "Email"
                                           prefixIcon: "email"
@@ -85,8 +85,8 @@ widget:
                                       props:
                                         obscureText: true
                                         textInputAction: "done"
-                                        onSubmitted: "shql: _LOGIN_SUBMIT()"
-                                        onChanged: "shql: SET('_LOGIN_PASSWORD', value)"
+                                        onSubmitted: "_LOGIN_SUBMIT()"
+                                        onChanged: "SET('_LOGIN_PASSWORD', value)"
                                         decoration:
                                           labelText: "Password"
                                           prefixIcon: "lock"
@@ -108,7 +108,7 @@ widget:
                                         builder:
                                           type: FilledButton
                                           props:
-                                            onPressed: "shql: IF NOT _LOGIN_IS_LOADING THEN _LOGIN_SUBMIT()"
+                                            onPressed: "IF NOT _LOGIN_IS_LOADING THEN _LOGIN_SUBMIT()"
                                             child: "shql: IF _LOGIN_IS_LOADING THEN {'type': 'SizedBox', 'props': {'height': 20, 'width': 20, 'child': {'type': 'CircularProgressIndicator', 'props': {'strokeWidth': 2}}}} ELSE {'type': 'Text', 'props': {'data': IF _LOGIN_IS_REGISTERING THEN 'Register' ELSE 'Sign In'}}"
                                     - type: SizedBox
                                       props:
@@ -119,7 +119,7 @@ widget:
                                         builder:
                                           type: TextButton
                                           props:
-                                            onPressed: "shql: IF NOT _LOGIN_IS_LOADING THEN _LOGIN_TOGGLE_MODE()"
+                                            onPressed: "IF NOT _LOGIN_IS_LOADING THEN _LOGIN_TOGGLE_MODE()"
                                             child:
                                               type: Text
                                               props:

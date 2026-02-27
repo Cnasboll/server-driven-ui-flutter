@@ -123,7 +123,7 @@ screen:
                                 hintText: "Your superheroapi.com API key"
                                 border: "outline"
                                 prefixIcon: "vpn_key"
-                              onSubmitted: "shql: SET_API_KEY(value)"
+                              onSubmitted: "SET_API_KEY(value)"
 
                       - type: SizedBox
                         props:
@@ -139,7 +139,7 @@ screen:
                               decoration:
                                 hintText: "www.superheroapi.com"
                                 border: "outline"
-                              onSubmitted: "shql: SET_API_HOST(value)"
+                              onSubmitted: "SET_API_HOST(value)"
 
                       - type: SizedBox
                         props:
@@ -251,7 +251,7 @@ screen:
                       # Continue Button
                       - type: ElevatedButton
                         props:
-                          onPressed: "shql: COMPLETE_ONBOARDING(); GO_TO('home')"
+                          onPressed: "COMPLETE_ONBOARDING(); GO_TO('home')"
                           style:
                             minimumSize:
                               width: "infinity"

@@ -78,7 +78,7 @@ screen:
                         type: Text
                         props:
                           data: "Save Changes"
-                      onPressed: "shql: SAVE_AMENDMENTS()"
+                      onPressed: "SAVE_AMENDMENTS()"
 
                   - type: SizedBox
                     props:

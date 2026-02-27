@@ -16,7 +16,7 @@ screen:
           - type: IconButton
             props:
               icon: "shql: IF _is_dark_mode THEN 'light_mode' ELSE 'dark_mode'"
-              onPressed: "shql: TOGGLE_DARK_MODE()"
+              onPressed: "TOGGLE_DARK_MODE()"
 
     body:
       type: SingleChildScrollView
@@ -106,7 +106,7 @@ screen:
               - type: FilterEditor
                 props:
                   mode: "apply"
-                  onSelect: "shql: GO_TO('heroes')"
+                  onSelect: "GO_TO('heroes')"
 
               - type: SizedBox
                 props:

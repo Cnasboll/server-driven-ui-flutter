@@ -8,14 +8,14 @@ widget:
     actions:
       - type: TextButton
         props:
-          onPressed: "shql: CLOSE_DIALOG(FALSE)"
+          onPressed: "CLOSE_DIALOG(FALSE)"
           child:
             type: Text
             props:
               data: "No"
       - type: TextButton
         props:
-          onPressed: "shql: CLOSE_DIALOG(TRUE)"
+          onPressed: "CLOSE_DIALOG(TRUE)"
           child:
             type: Text
             props:

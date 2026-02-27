@@ -13,28 +13,28 @@ widget:
     actions:
       - type: TextButton
         props:
-          onPressed: "shql: CLOSE_DIALOG('cancel')"
+          onPressed: "CLOSE_DIALOG('cancel')"
           child:
             type: Text
             props:
               data: "Abort"
       - type: TextButton
         props:
-          onPressed: "shql: CLOSE_DIALOG('skip')"
+          onPressed: "CLOSE_DIALOG('skip')"
           child:
             type: Text
             props:
               data: "Skip"
       - type: TextButton
         props:
-          onPressed: "shql: CLOSE_DIALOG('saveAll')"
+          onPressed: "CLOSE_DIALOG('saveAll')"
           child:
             type: Text
             props:
               data: "Accept All"
       - type: FilledButton
         props:
-          onPressed: "shql: CLOSE_DIALOG('save')"
+          onPressed: "CLOSE_DIALOG('save')"
           child:
             type: Text
             props:

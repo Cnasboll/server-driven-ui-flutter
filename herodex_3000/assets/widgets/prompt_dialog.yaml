@@ -26,19 +26,19 @@ widget:
             props:
               initialValue: "prop:defaultValue"
               autofocus: true
-              onChanged: "shql: SET('_DIALOG_TEXT', value)"
-              onSubmitted: "shql: CLOSE_DIALOG(_DIALOG_TEXT)"
+              onChanged: "SET('_DIALOG_TEXT', value)"
+              onSubmitted: "CLOSE_DIALOG(_DIALOG_TEXT)"
     actions:
       - type: TextButton
         props:
-          onPressed: "shql: CLOSE_DIALOG(NULL)"
+          onPressed: "CLOSE_DIALOG(NULL)"
           child:
             type: Text
             props:
               data: "Cancel"
       - type: TextButton
         props:
-          onPressed: "shql: CLOSE_DIALOG(_DIALOG_TEXT)"
+          onPressed: "CLOSE_DIALOG(_DIALOG_TEXT)"
           child:
             type: Text
             props:

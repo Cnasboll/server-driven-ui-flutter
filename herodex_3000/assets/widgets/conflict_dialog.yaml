@@ -47,25 +47,25 @@ widget:
                 props:
                   data: "Apply to all remaining conflicts"
               value: "shql: _APPLY_TO_ALL"
-              onChanged: "shql: SET('_APPLY_TO_ALL', value)"
+              onChanged: "SET('_APPLY_TO_ALL', value)"
     actions:
       - type: TextButton
         props:
-          onPressed: "shql: CLOSE_DIALOG(NULL)"
+          onPressed: "CLOSE_DIALOG(NULL)"
           child:
             type: Text
             props:
               data: "Cancel"
       - type: FilledButton
         props:
-          onPressed: "shql: CLOSE_DIALOG(OBJECT{choice: _CONFLICT_VALUE1_ID, applyToAll: _APPLY_TO_ALL})"
+          onPressed: "CLOSE_DIALOG(OBJECT{choice: _CONFLICT_VALUE1_ID, applyToAll: _APPLY_TO_ALL})"
           child:
             type: Text
             props:
               data: "prop:useValue1Label"
       - type: FilledButton
         props:
-          onPressed: "shql: CLOSE_DIALOG(OBJECT{choice: _CONFLICT_VALUE2_ID, applyToAll: _APPLY_TO_ALL})"
+          onPressed: "CLOSE_DIALOG(OBJECT{choice: _CONFLICT_VALUE2_ID, applyToAll: _APPLY_TO_ALL})"
           child:
             type: Text
             props:

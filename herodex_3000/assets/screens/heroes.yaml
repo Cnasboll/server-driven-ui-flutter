@@ -64,7 +64,7 @@ screen:
                               height: 24
                           - type: ElevatedButton
                             props:
-                              onPressed: "shql: GO_TO('online')"
+                              onPressed: "GO_TO('online')"
                               child:
                                 type: Row
                                 props:

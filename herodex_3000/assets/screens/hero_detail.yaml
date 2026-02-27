@@ -9,7 +9,7 @@ screen:
           type: IconButton
           props:
             icon: "arrow_back"
-            onPressed: "shql: GO_BACK()"
+            onPressed: "GO_BACK()"
         title:
           type: Observer
           props:
@@ -29,7 +29,7 @@ screen:
                 type: "shql: IF _selected_hero <> null AND _selected_hero.saved_at <> null THEN 'IconButton' ELSE 'SizedBox'"
                 props:
                   icon: "edit"
-                  onPressed: "shql: EDIT_HERO()"
+                  onPressed: "EDIT_HERO()"
                   width: 0
                   height: 0
           # Lock toggle button (only for saved heroes)
@@ -40,7 +40,7 @@ screen:
                 type: "shql: IF _selected_hero <> null AND _selected_hero.saved_at <> null THEN 'IconButton' ELSE 'SizedBox'"
                 props:
                   icon: "shql: IF _selected_hero <> null AND _selected_hero.locked THEN 'lock' ELSE 'lock_open'"
-                  onPressed: "shql: _TOGGLE_LOCK_HERO(_selected_hero.id)"
+                  onPressed: "_TOGGLE_LOCK_HERO(_selected_hero.id)"
                   width: 0
                   height: 0
           # Delete button (only for saved heroes)
@@ -51,7 +51,7 @@ screen:
                 type: "shql: IF _selected_hero <> null AND _selected_hero.saved_at <> null THEN 'IconButton' ELSE 'SizedBox'"
                 props:
                   icon: "delete"
-                  onPressed: "shql: DELETE_HERO(_selected_hero.id); GO_BACK()"
+                  onPressed: "DELETE_HERO(_selected_hero.id); GO_BACK()"
                   width: 0
                   height: 0
 

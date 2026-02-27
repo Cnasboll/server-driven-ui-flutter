@@ -44,7 +44,7 @@ screen:
                         type: Switch
                         props:
                           value: "shql: _is_dark_mode"
-                          onChanged: "shql: SET_DARK_MODE(value)"
+                          onChanged: "SET_DARK_MODE(value)"
 
               - type: Divider
 
@@ -243,7 +243,7 @@ screen:
                     type: Text
                     props:
                       data: "Remove all saved heroes"
-                  onTap: "shql: CLEAR_ALL_DATA()"
+                  onTap: "CLEAR_ALL_DATA()"
 
               - type: ListTile
                 props:
@@ -262,7 +262,7 @@ screen:
                     type: Text
                     props:
                       data: "Reset and show welcome screen"
-                  onTap: "shql: RESET_ONBOARDING()"
+                  onTap: "RESET_ONBOARDING()"
 
               - type: ListTile
                 props:
@@ -281,7 +281,7 @@ screen:
                     type: Text
                     props:
                       data: "Log out of your account"
-                  onTap: "shql: SIGN_OUT()"
+                  onTap: "SIGN_OUT()"
 
     bottomNavigationBar:
       type: BottomNav
