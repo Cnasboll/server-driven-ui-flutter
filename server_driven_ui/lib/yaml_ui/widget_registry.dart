@@ -2063,7 +2063,7 @@ class _FilterEditorState extends State<_FilterEditor> {
 
   // ---- actions ----
 
-  Future<void> _selectChip(int index) async {
+  void _selectChip(int index) {
     setState(() => _editingIndex = index);
     if (index >= 0 && index < _filters.length) {
       if (!_isApplyMode) {
@@ -2073,34 +2073,34 @@ class _FilterEditorState extends State<_FilterEditor> {
       _nameController.text = _filters[index]['name']?.toString() ?? '';
     }
     if (_isApplyMode) {
-      await widget.shql.call('APPLY_FILTER($index)', targeted: true);
+      widget.shql.call('APPLY_FILTER($index)', targeted: true);
       if (widget.onSelect != null) {
-        await widget.shql.call(widget.onSelect!, targeted: true);
+        widget.shql.call(widget.onSelect!, targeted: true);
       }
     }
   }
 
-  Future<void> _selectAll() async {
+  void _selectAll() {
     setState(() => _editingIndex = -1);
     _queryController.clear();
-    await widget.shql.call('APPLY_FILTER(-1)', targeted: true);
-    await widget.shql.call("APPLY_QUERY('')", targeted: true);
+    widget.shql.call('APPLY_FILTER(-1)', targeted: true);
+    widget.shql.call("APPLY_QUERY('')", targeted: true);
   }
 
-  Future<void> _onQuerySubmitted(String value) async {
+  void _onQuerySubmitted(String value) {
     if (_isApplyMode) {
       // In apply mode, the query field is always a free-form search
-      await widget.shql.call(
+      widget.shql.call(
         'APPLY_QUERY(value)',
         targeted: true,
         boundValues: {'value': value},
       );
       if (widget.onSelect != null) {
-        await widget.shql.call(widget.onSelect!, targeted: true);
+        widget.shql.call(widget.onSelect!, targeted: true);
       }
     } else if (_editingIndex >= 0 && _editingIndex < _filters.length) {
       // In edit/manage mode, save the predicate for the selected filter
-      await widget.shql.call(
+      widget.shql.call(
         'SAVE_FILTER(name, value)',
         targeted: true,
         boundValues: {
