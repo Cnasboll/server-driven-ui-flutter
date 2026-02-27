@@ -1109,16 +1109,55 @@ GENERATE_EDIT_FORM() := BEGIN
 END;
 
 -- ============================================
--- Weather
+-- Weather (pure SHQL™ — no Dart service needed)
 -- ============================================
 _weather_temp := null;
 _weather_description := '';
 _weather_icon := 'cloud';
 _weather_wind := 0;
 
-REFRESH_WEATHER() := BEGIN
-    _FETCH_WEATHER();
+-- WMO Weather interpretation codes → human description
+-- (named __WMO_* to avoid colliding with _weather_* variables — SHQL is case-insensitive)
+__WMO_DESCRIPTION(code) := BEGIN
+    IF code = 0 THEN RETURN 'Clear sky';
+    IF code <= 3 THEN RETURN 'Partly cloudy';
+    IF code <= 48 THEN RETURN 'Foggy';
+    IF code <= 57 THEN RETURN 'Drizzle';
+    IF code <= 67 THEN RETURN 'Rain';
+    IF code <= 77 THEN RETURN 'Snow';
+    IF code <= 82 THEN RETURN 'Rain showers';
+    IF code <= 86 THEN RETURN 'Snow showers';
+    IF code >= 95 THEN RETURN 'Thunderstorm';
+    RETURN 'Cloudy';
 END;
+
+-- WMO code → Material icon name
+__WMO_ICON(code) := BEGIN
+    IF code = 0 THEN RETURN 'wb_sunny';
+    IF code <= 3 THEN RETURN 'cloud';
+    IF code <= 48 THEN RETURN 'foggy';
+    IF code <= 67 THEN RETURN 'water_drop';
+    IF code <= 77 THEN RETURN 'ac_unit';
+    IF code <= 86 THEN RETURN 'ac_unit';
+    IF code >= 95 THEN RETURN 'flash_on';
+    RETURN 'cloud';
+END;
+
+-- Fetch weather from Open-Meteo (free, no API key) using SHQL™ FETCH()
+REFRESH_WEATHER() := BEGIN
+    __url := 'https://api.open-meteo.com/v1/forecast?latitude=' + STRING(_user_latitude) + '&longitude=' + STRING(_user_longitude) + '&current_weather=true';
+    __data := FETCH(__url);
+    IF __data <> null AND __data["current_weather"] <> null THEN BEGIN
+        __current := __data["current_weather"];
+        __code := __current["weathercode"];
+        -- Use SET() not := so Observer widgets rebuild
+        SET('_weather_temp', __current["temperature"]);
+        SET('_weather_wind', __current["windspeed"]);
+        SET('_weather_description', __WMO_DESCRIPTION(__code));
+        SET('_weather_icon', __WMO_ICON(__code));
+    END;
+END;
+
 
 -- ============================================
 -- Location & Battle Map
@@ -1190,3 +1229,6 @@ GET_WAR_STATUS() := BEGIN
     index := INT(_total_heroes) % LENGTH(_war_messages);
     RETURN _war_messages[index];
 END;
+
+-- Fetch weather on startup (must be after _user_latitude/_user_longitude are defined)
+REFRESH_WEATHER();

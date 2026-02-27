@@ -49,7 +49,7 @@ SHQL™ also generates complete widget trees dynamically at runtime (e.g. `_MAKE
 
 SHQL™ is a general-purpose, Turing-complete scripting language — the *only* language application logic is written in. Variables, functions, loops, conditionals, object literals with dot-notation access, lambdas, closures: everything you need to drive a full application without writing Dart.
 
-SHQL™ needs native Dart callbacks only for platform operations (displaying a dialog, writing to a file, calling the network). These are registered on the runtime with a double-underscore prefix and wrapped in SHQL™ user functions — the application layer never touches Dart directly.
+SHQL™ needs native Dart callbacks only for platform operations (displaying a dialog, writing to a file, geolocation). Network requests are handled by the built-in `FETCH(url)` function — for example, the weather feature fetches live data from Open-Meteo entirely in SHQL™, with no Dart service class at all. Other native operations are registered on the runtime with a double-underscore prefix and wrapped in SHQL™ user functions — the application layer never touches Dart directly.
 
 It runs inside a `Runtime` with a `ConstantsSet` (interned identifiers).
 
@@ -63,6 +63,7 @@ Key SHQL™ patterns:
 - `Observer` widget — Subscribes to SHQL™ variables and rebuilds on change
 - `boundValues` — Pass Dart values to SHQL™ without string escaping
 - Dynamic widget trees — SHQL™ functions return complete widget tree maps (e.g. `_MAKE_HERO_CARD_TREE` returns a `DismissibleCard > HeroCardBody > [CachedImage, StatChips, ...]` tree; `GENERATE_BATTLE_MAP()` returns a `FlutterMap > [TileLayer, MarkerLayer]` tree)
+- `FETCH(url)` — Built-in HTTP GET + JSON parse (e.g. `REFRESH_WEATHER()` calls Open-Meteo API, parses WMO codes, sets reactive variables — zero Dart)
 - `prop:` substitution — YAML widget templates use `"prop:name"` placeholders that are resolved to caller-provided values at build time; `on*` callback props are automatically treated as SHQL™ expressions
 
 ### Mono-repo structure
@@ -136,6 +137,7 @@ You can also set the API key later in **Settings > API Configuration**.
 | **Search with debounce** | Debounced text input in FilterEditor (apply mode) and TextField widget |
 | **Swipe to delete** | `DismissibleCard` YAML template wrapping hero cards |
 | **Dynamic scaling** | `LayoutBuilder`-based responsive GridView (2-6 columns based on width) |
+| **Weather** | Live weather via Open-Meteo — pure SHQL™ (`REFRESH_WEATHER()` calls `FETCH()`, parses WMO codes, no Dart service) |
 | **Connectivity indicator** | `ConnectivityService` shows SnackBar on network changes |
 | **Localization** | `flutter_localizations` with `intl` support (`l10n/`) |
 | **Accessibility** | `Semantics` labels on hero cards and interactive elements (all in YAML) |
@@ -184,7 +186,7 @@ The shared `hero_common` package has 245+ tests covering models, predicates, JSO
 | `lib/core/services/firestore_preferences_service.dart` | Firestore cloud sync |
 | `lib/core/services/connectivity_service.dart` | Network monitoring |
 | `lib/core/services/location_service.dart` | GPS location |
-| `lib/core/services/hero_search_service.dart` | Online hero search + save flow |
+| `lib/core/services/hero_search_service.dart` | Online hero search + save flow + HTTP fetch for SHQL™ |
 | `lib/core/theme/theme_cubit.dart` | Dark/light theme BLoC |
 | `lib/persistence/sqflite_database_adapter.dart` | SQLite driver (FFI on desktop, native on mobile) |
 | `assets/shql/herodex.shql` | All SHQL™ business logic + dynamic widget tree generation |
