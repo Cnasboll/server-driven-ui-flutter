@@ -93,27 +93,48 @@ __FROM_FIRESTORE_VALUE(val) := BEGIN
     RETURN null;
 END;
 
--- Save a preference to Firestore (fire-and-forget via PATCH_AUTH)
+-- Get a valid auth token, refreshing if expired.
+__FIRESTORE_TOKEN() := BEGIN
+    __token := LOAD_STATE('_auth_id_token', '');
+    IF __token = '' THEN
+        __token := FIREBASE_REFRESH_TOKEN();
+    RETURN __token;
+END;
+
+-- Save a preference to Firestore (fire-and-forget via PATCH_AUTH).
+-- Auto-refreshes the token on 401.
 FIRESTORE_SAVE(key, value) := BEGIN
     IF _auth_uid = '' THEN RETURN null;
     IF NOT (key IN _FIRESTORE_SYNCED_KEYS) THEN RETURN null;
-    __token := LOAD_STATE('_auth_id_token', '');
+    __token := __FIRESTORE_TOKEN();
     IF __token = '' THEN RETURN null;
     __fields := {};
     __fields[key] := __TO_FIRESTORE_VALUE(value);
     __url := __FIRESTORE_DOC_URL() + '?updateMask.fieldPaths=' + key;
     __patch_body := {};
     __patch_body["fields"] := __fields;
-    PATCH_AUTH(__url, __patch_body, __token);
+    __result := PATCH_AUTH(__url, __patch_body, __token);
+    IF __result["status"] = 401 THEN BEGIN
+        __token := FIREBASE_REFRESH_TOKEN();
+        IF __token <> '' THEN
+            PATCH_AUTH(__url, __patch_body, __token);
+    END;
 END;
 
--- Load all synced preferences from Firestore
+-- Load all synced preferences from Firestore.
+-- Auto-refreshes the token if the first attempt fails.
 FIRESTORE_LOAD_ALL() := BEGIN
     IF _auth_uid = '' THEN RETURN {};
-    __token := LOAD_STATE('_auth_id_token', '');
+    __token := __FIRESTORE_TOKEN();
     IF __token = '' THEN RETURN {};
     __response := FETCH_AUTH(__FIRESTORE_DOC_URL(), __token);
-    IF __response = null THEN RETURN {};
+    -- If null, token may be expired — try refresh once
+    IF __response = null THEN BEGIN
+        __token := FIREBASE_REFRESH_TOKEN();
+        IF __token = '' THEN RETURN {};
+        __response := FETCH_AUTH(__FIRESTORE_DOC_URL(), __token);
+        IF __response = null THEN RETURN {};
+    END;
     __fields := __response["fields"];
     IF __fields = null THEN RETURN {};
     __result := {};
@@ -170,6 +191,7 @@ END;
 SET_LOCATION_CONSENT(enabled) := BEGIN
     _location_enabled := enabled;
     SAVE_PREF('location_enabled', enabled);
+    SET('_location_enabled', enabled);
 END;
 
 COMPLETE_ONBOARDING() := BEGIN

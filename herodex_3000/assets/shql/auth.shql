@@ -33,9 +33,31 @@ __FIREBASE_PERSIST_SESSION(body) := BEGIN
     __token := body["idToken"];
     __email := body["email"];
     __uid := body["localId"];
+    __refresh := body["refreshToken"];
     IF __token <> null THEN SAVE_STATE('_auth_id_token', __token);
     IF __email <> null THEN SAVE_STATE('_auth_email', __email);
     IF __uid <> null THEN SAVE_STATE('_auth_uid', __uid);
+    IF __refresh <> null THEN SAVE_STATE('_auth_refresh_token', __refresh);
+END;
+
+-- Refresh the ID token using the stored refresh token.
+-- Returns the new ID token, or '' if refresh failed.
+FIREBASE_REFRESH_TOKEN() := BEGIN
+    __refresh := LOAD_STATE('_auth_refresh_token', '');
+    IF __refresh = '' THEN RETURN '';
+    __url := 'https://securetoken.googleapis.com/v1/token?key=' + _FIREBASE_API_KEY;
+    __body := {};
+    __body["grant_type"] := 'refresh_token';
+    __body["refresh_token"] := __refresh;
+    __response := POST(__url, __body);
+    IF __response["status"] = 200 THEN BEGIN
+        __new_token := __response["body"]["id_token"];
+        __new_refresh := __response["body"]["refresh_token"];
+        IF __new_token <> null THEN SAVE_STATE('_auth_id_token', __new_token);
+        IF __new_refresh <> null THEN SAVE_STATE('_auth_refresh_token', __new_refresh);
+        RETURN __new_token;
+    END;
+    RETURN '';
 END;
 
 -- Sign in with email + password.
@@ -75,6 +97,7 @@ FIREBASE_SIGN_OUT() := BEGIN
     SAVE_STATE('_auth_id_token', null);
     SAVE_STATE('_auth_email', null);
     SAVE_STATE('_auth_uid', null);
+    SAVE_STATE('_auth_refresh_token', null);
 END;
 
 -- ============================================

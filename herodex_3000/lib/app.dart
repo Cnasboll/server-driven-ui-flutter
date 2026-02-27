@@ -182,11 +182,40 @@ class _HeroDexAppState extends State<HeroDexApp> {
     // 2. Fill remaining gaps from Firestore cloud (for cross-device sync)
     if (authUid != null && authToken != null) {
       try {
-        final cloudData = await http_client.httpFetchAuth(
+        final firestoreUrl =
           'https://firestore.googleapis.com/v1/projects/server-driven-ui-flutter'
-          '/databases/(default)/documents/preferences/$authUid',
-          authToken,
-        );
+          '/databases/(default)/documents/preferences/$authUid';
+        var token = authToken;
+        var cloudData = await http_client.httpFetchAuth(firestoreUrl, token);
+        // If token expired, try refreshing via the secure token API
+        if (cloudData == null) {
+          final refreshToken = widget.prefs.getString('_auth_refresh_token');
+          debugPrint('[CloudPrefs] Token failed, refreshToken=${refreshToken != null && refreshToken.isNotEmpty ? "present (${refreshToken.length} chars)" : "MISSING"}');
+          if (refreshToken != null && refreshToken.isNotEmpty) {
+            final refreshResult = await http_client.httpPost(
+              'https://securetoken.googleapis.com/v1/token?key=AIzaSyAi3vFRB12aGVJjTiqIBOpRazJr43kvSkA',
+              {'grant_type': 'refresh_token', 'refresh_token': refreshToken},
+            );
+            debugPrint('[CloudPrefs] Refresh response status: ${refreshResult['status']}');
+            if (refreshResult['status'] == 200) {
+              final body = refreshResult['body'] as Map<String, dynamic>?;
+              if (body != null) {
+                final newToken = body['id_token'] as String?;
+                final newRefresh = body['refresh_token'] as String?;
+                debugPrint('[CloudPrefs] Got new token: ${newToken != null ? "yes (${newToken.length} chars)" : "NO"}');
+                if (newToken != null) {
+                  await widget.prefs.setString('_auth_id_token', newToken);
+                  token = newToken;
+                }
+                if (newRefresh != null) {
+                  await widget.prefs.setString('_auth_refresh_token', newRefresh);
+                }
+                cloudData = await http_client.httpFetchAuth(firestoreUrl, token);
+                debugPrint('[CloudPrefs] Retry result: ${cloudData != null ? "success" : "still failed"}');
+              }
+            }
+          }
+        }
         final fields = (cloudData is Map) ? cloudData['fields'] as Map<String, dynamic>? : null;
         if (fields != null) {
           for (final entry in fields.entries) {
@@ -427,19 +456,14 @@ class _HeroDexAppState extends State<HeroDexApp> {
 
     _shqlBindings.addListener('_location_enabled', () async {
       final enabled = _shqlBindings.getVariable('_location_enabled');
-      if (enabled == true) {
-        final desc = await LocationService.getLocationDescription();
-        _setAndNotify('_location_description', desc);
-        final coords = await LocationService.getCoordinates();
-        if (coords != null) {
-          _setAndNotify('_user_latitude', coords.$1);
-          _setAndNotify('_user_longitude', coords.$2);
-        }
-        if (mounted) setState(() {});
-      } else {
-        _setAndNotify('_location_description', '');
-      }
+      await _applyLocation(enabled == true);
     });
+
+    // Apply initial location from restored preferences
+    final initialLocationEnabled = _shqlBindings.getVariable('_location_enabled');
+    if (initialLocationEnabled == true) {
+      _applyLocation(true);
+    }
 
     _connectivityService = ConnectivityService();
     _connectivityService!.connectivityStream.listen((isConnected) {
@@ -490,6 +514,21 @@ class _HeroDexAppState extends State<HeroDexApp> {
   void _setAndNotify(String name, dynamic value) {
     _shqlBindings.setVariable(name, value);
     _shqlBindings.notifyListeners(name);
+  }
+
+  Future<void> _applyLocation(bool enabled) async {
+    if (enabled) {
+      final desc = await LocationService.getLocationDescription();
+      _setAndNotify('_location_description', desc);
+      final coords = await LocationService.getCoordinates();
+      if (coords != null) {
+        _setAndNotify('_user_latitude', coords.$1);
+        _setAndNotify('_user_longitude', coords.$2);
+      }
+      if (mounted) setState(() {});
+    } else {
+      _setAndNotify('_location_description', '');
+    }
   }
 
   void _showSnackBar(String message) {

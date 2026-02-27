@@ -52,6 +52,7 @@ dependencies:
   equatable: ^2.0.5
   collection: ^1.18.0
   sqflite_common_ffi: ^2.4.0+2
+  sqflite_common_ffi_web: ^0.4.5
   flutter_map: ^8.2.2
   latlong2: ^0.9.1
 
