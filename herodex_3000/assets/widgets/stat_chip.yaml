@@ -14,14 +14,11 @@ widget:
         type: Column
         props:
           children:
-            - type: Text
+            - type: Icon
               props:
-                data: "prop:label"
-                style:
-                  textAlign: "center"
-                  fontSize: 10
-                  fontWeight: w600
-                  color: "prop:color"
+                icon: "prop:icon"
+                size: 12
+                color: "prop:color"
             - type: SizedBox
               props:
                 height: 2

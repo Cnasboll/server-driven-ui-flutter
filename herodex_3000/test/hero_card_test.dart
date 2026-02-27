@@ -74,6 +74,7 @@ void main() {
             'valueText': stats[i]['value']?.toString() ?? '-',
             'color': stats[i]['color'] ?? '0xFF9E9E9E',
             'bgColor': '0x1A9E9E9E',
+            'icon': stats[i]['icon'] ?? 'help_outline',
           },
         });
       }
@@ -208,18 +209,18 @@ void main() {
     testWidgets('displays stat chips from stats list', (tester) async {
       await tester.pumpWidget(buildTestCard(
         stats: [
-          {'label': 'STR', 'value': 80, 'color': '0xFFF44336'},
-          {'label': 'INT', 'value': 100, 'color': '0xFF2196F3'},
-          {'label': 'SPD', 'value': 60, 'color': '0xFFFF9800'},
+          {'label': 'STR', 'value': 80, 'color': '0xFFF44336', 'icon': 'fitness_center'},
+          {'label': 'INT', 'value': 100, 'color': '0xFF2196F3', 'icon': 'psychology'},
+          {'label': 'SPD', 'value': 60, 'color': '0xFFFF9800', 'icon': 'speed'},
         ],
       ));
       await tester.pumpAndSettle();
       expect(find.text('80'), findsOneWidget);
       expect(find.text('100'), findsOneWidget);
       expect(find.text('60'), findsOneWidget);
-      expect(find.text('STR'), findsOneWidget);
-      expect(find.text('INT'), findsOneWidget);
-      expect(find.text('SPD'), findsOneWidget);
+      expect(find.byIcon(Icons.fitness_center), findsOneWidget);
+      expect(find.byIcon(Icons.psychology), findsOneWidget);
+      expect(find.byIcon(Icons.speed), findsOneWidget);
     });
 
     testWidgets('hides delete button when onDelete is null', (tester) async {

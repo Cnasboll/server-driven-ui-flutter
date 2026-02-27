@@ -22,6 +22,16 @@ class HeroSchema {
     '0xFF4CAF50', '0xFF9C27B0', '0xFF795548',
   ];
 
+  // Positional icon palette for stat sections — same indexing as colors.
+  static const _statIconPalette = [
+    'psychology',     // Intelligence
+    'fitness_center', // Strength
+    'speed',          // Speed
+    'shield',         // Durability
+    'bolt',           // Power
+    'sports_mma',     // Combat
+  ];
+
   /// Converts snake_case to camelCase: `'full_name'` → `'fullName'`
   static String _snakeToCamelCase(String s) {
     final parts = s.split('_');
@@ -250,10 +260,11 @@ class HeroSchema {
             final label = (cf.name as String).substring(0, 3).toUpperCase();
             final color = _statColorPalette[childIndex % _statColorPalette.length];
             final bgColor = '0x1A${color.substring(4)}'; // 10% alpha
+            final icon = _statIconPalette[childIndex % _statIconPalette.length];
             sb.write(
               '    OBJECT{prop_name: \'$propName\', '
               'accessor: (hero) => $topShqlName(hero, x => x.$childShqlName, $defaultVal), '
-              'is_stat: TRUE, label: \'$label\', color: \'$color\', bg_color: \'$bgColor\'}',
+              'is_stat: TRUE, label: \'$label\', color: \'$color\', bg_color: \'$bgColor\', icon: \'$icon\'}',
             );
           } else {
             sb.write(

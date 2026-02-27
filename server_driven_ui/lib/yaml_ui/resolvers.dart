@@ -194,6 +194,11 @@ class Resolvers {
       case 'whatshot': return Icons.whatshot;
       case 'mood_bad': return Icons.mood_bad;
       case 'local_fire_department': return Icons.local_fire_department;
+      case 'psychology': return Icons.psychology;
+      case 'fitness_center': return Icons.fitness_center;
+      case 'speed': return Icons.speed;
+      case 'bolt': return Icons.bolt;
+      case 'sports_mma': return Icons.sports_mma;
       default: return Icons.help_outline;
     }
   }
