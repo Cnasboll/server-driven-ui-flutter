@@ -1,0 +1,99 @@
+-- ============================================
+-- Firestore Preferences Sync
+-- ============================================
+-- Syncs selected preferences to Firestore via REST API (per-user).
+-- _FIREBASE_API_KEY and _FIREBASE_PROJECT_ID are defined in auth.shql.
+-- _auth_uid is persisted by auth.shql on sign-in.
+
+_auth_uid := LOAD_STATE('_auth_uid', '');
+
+_FIRESTORE_SYNCED_KEYS := ['is_dark_mode', 'api_key', 'api_host',
+    'onboarding_completed', 'analytics_enabled', 'crashlytics_enabled',
+    'location_enabled', 'filters'];
+
+__FIRESTORE_DOC_URL() := BEGIN
+    RETURN 'https://firestore.googleapis.com/v1/projects/' + _FIREBASE_PROJECT_ID
+        + '/databases/(default)/documents/preferences/' + _auth_uid;
+END;
+
+-- Convert a Dart value to Firestore REST value format.
+-- Synced keys are booleans and strings; numbers are stored as stringValue
+-- and parsed back via NUMBER() in __FROM_FIRESTORE_VALUE.
+__TO_FIRESTORE_VALUE(val) := BEGIN
+    __fv := {};
+    IF val = TRUE OR val = FALSE THEN BEGIN
+        __fv["booleanValue"] := val;
+        RETURN __fv;
+    END;
+    __fv["stringValue"] := STRING(val);
+    RETURN __fv;
+END;
+
+-- Convert a Firestore REST value back to a Dart value
+__FROM_FIRESTORE_VALUE(val) := BEGIN
+    IF val["booleanValue"] <> null THEN RETURN val["booleanValue"];
+    IF val["integerValue"] <> null THEN RETURN NUMBER(val["integerValue"]);
+    IF val["doubleValue"] <> null THEN RETURN val["doubleValue"];
+    IF val["stringValue"] <> null THEN RETURN val["stringValue"];
+    RETURN null;
+END;
+
+-- Get a valid auth token, refreshing if expired.
+__FIRESTORE_TOKEN() := BEGIN
+    __token := LOAD_STATE('_auth_id_token', '');
+    IF __token = '' THEN
+        __token := FIREBASE_REFRESH_TOKEN();
+    RETURN __token;
+END;
+
+-- Save a preference to Firestore (fire-and-forget via PATCH_AUTH).
+-- Auto-refreshes the token on 401.
+FIRESTORE_SAVE(key, value) := BEGIN
+    IF _auth_uid = '' THEN RETURN null;
+    IF NOT (key IN _FIRESTORE_SYNCED_KEYS) THEN RETURN null;
+    __token := __FIRESTORE_TOKEN();
+    IF __token = '' THEN RETURN null;
+    __fields := {};
+    __fields[key] := __TO_FIRESTORE_VALUE(value);
+    __url := __FIRESTORE_DOC_URL() + '?updateMask.fieldPaths=' + key;
+    __patch_body := {};
+    __patch_body["fields"] := __fields;
+    __result := PATCH_AUTH(__url, __patch_body, __token);
+    IF __result["status"] = 401 THEN BEGIN
+        __token := FIREBASE_REFRESH_TOKEN();
+        IF __token <> '' THEN
+            PATCH_AUTH(__url, __patch_body, __token);
+    END;
+END;
+
+-- Load all synced preferences from Firestore.
+-- Auto-refreshes the token if the first attempt fails.
+FIRESTORE_LOAD_ALL() := BEGIN
+    IF _auth_uid = '' THEN RETURN {};
+    __token := __FIRESTORE_TOKEN();
+    IF __token = '' THEN RETURN {};
+    __response := FETCH_AUTH(__FIRESTORE_DOC_URL(), __token);
+    -- If null, token may be expired — try refresh once
+    IF __response = null THEN BEGIN
+        __token := FIREBASE_REFRESH_TOKEN();
+        IF __token = '' THEN RETURN {};
+        __response := FETCH_AUTH(__FIRESTORE_DOC_URL(), __token);
+        IF __response = null THEN RETURN {};
+    END;
+    __fields := __response["fields"];
+    IF __fields = null THEN RETURN {};
+    __result := {};
+    FOR __i := 0 TO LENGTH(_FIRESTORE_SYNCED_KEYS) - 1 DO BEGIN
+        __key := _FIRESTORE_SYNCED_KEYS[__i];
+        __fval := __fields[__key];
+        IF __fval <> null THEN
+            __result[__key] := __FROM_FIRESTORE_VALUE(__fval);
+    END;
+    RETURN __result;
+END;
+
+-- Wrapper: save locally + sync to Firestore
+SAVE_PREF(key, value) := BEGIN
+    SAVE_STATE(key, value);
+    FIRESTORE_SAVE(key, value);
+END;

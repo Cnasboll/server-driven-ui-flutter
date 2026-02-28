@@ -339,17 +339,31 @@ class _HeroDexAppState extends State<HeroDexApp> {
       onStateChanged: () { if (mounted) setState(() {}); },
     );
 
-    // Load SHQL™ libraries
+    // Load SHQL™ libraries (order matters — each file may depend on the previous)
     final stdlibCode = await rootBundle.loadString(
       'packages/shql/assets/stdlib.shql',
     );
-    final authCode = await rootBundle.loadString('assets/shql/auth.shql');
-    final herodexCode = await rootBundle.loadString('assets/shql/herodex.shql');
-
     await _shqlBindings.loadProgram(stdlibCode);
     await _shqlBindings.eval(HeroSchema.generateSchemaScript());
-    await _shqlBindings.loadProgram(authCode);
-    await _shqlBindings.loadProgram(herodexCode);
+
+    const shqlFiles = [
+      'auth',         // Firebase auth
+      'navigation',   // Route stack & navigation
+      'firestore',    // Firestore preferences sync (needs auth)
+      'preferences',  // Theme, onboarding, API config (needs firestore)
+      'statistics',   // Running totals & derived stats
+      'filters',      // Filter system & predicates (needs statistics)
+      'heroes',       // Hero collection CRUD (needs stats, filters, nav, auth)
+      'hero_detail',  // Detail view generation (needs heroes, schema)
+      'hero_cards',   // Card generation (needs heroes, filters, stats)
+      'search',       // Hero search & history (needs hero_cards)
+      'hero_edit',    // Hero edit form (needs heroes, nav, schema)
+      'world',        // Weather, battle map, location, war status
+    ];
+    for (final name in shqlFiles) {
+      final code = await rootBundle.loadString('assets/shql/$name.shql');
+      await _shqlBindings.loadProgram(code);
+    }
 
     final heroDexRegistry = createHeroDexWidgetRegistry();
     _yamlEngine = YamlUiEngine(_shqlBindings, heroDexRegistry);

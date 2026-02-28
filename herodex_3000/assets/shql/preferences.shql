@@ -1,0 +1,71 @@
+-- ============================================
+-- Theme
+-- ============================================
+_is_dark_mode := LOAD_STATE('is_dark_mode', FALSE);
+
+TOGGLE_DARK_MODE() := BEGIN
+    _is_dark_mode := NOT _is_dark_mode;
+    SAVE_PREF('is_dark_mode', _is_dark_mode);
+    SET('_is_dark_mode', _is_dark_mode);
+END;
+
+SET_DARK_MODE(enabled) := BEGIN
+    _is_dark_mode := enabled;
+    SAVE_PREF('is_dark_mode', enabled);
+    SET('_is_dark_mode', enabled);
+END;
+
+-- ============================================
+-- Onboarding
+-- ============================================
+_analytics_enabled := LOAD_STATE('analytics_enabled', FALSE);
+_crashlytics_enabled := LOAD_STATE('crashlytics_enabled', FALSE);
+_location_enabled := LOAD_STATE('location_enabled', FALSE);
+_onboarding_completed := LOAD_STATE('onboarding_completed', FALSE);
+
+SET_ANALYTICS_CONSENT(enabled) := BEGIN
+    _analytics_enabled := enabled;
+    SAVE_PREF('analytics_enabled', enabled);
+END;
+
+SET_CRASHLYTICS_CONSENT(enabled) := BEGIN
+    _crashlytics_enabled := enabled;
+    SAVE_PREF('crashlytics_enabled', enabled);
+END;
+
+SET_LOCATION_CONSENT(enabled) := BEGIN
+    _location_enabled := enabled;
+    SAVE_PREF('location_enabled', enabled);
+    SET('_location_enabled', enabled);
+END;
+
+COMPLETE_ONBOARDING() := BEGIN
+    _onboarding_completed := TRUE;
+    SAVE_PREF('onboarding_completed', TRUE);
+END;
+
+IS_ONBOARDING_COMPLETED() := _onboarding_completed;
+
+RESET_ONBOARDING() := BEGIN
+    _onboarding_completed := FALSE;
+    SAVE_PREF('onboarding_completed', FALSE);
+    GO_TO('onboarding');
+END;
+
+-- ============================================
+-- API Configuration
+-- ============================================
+_api_key := LOAD_STATE('api_key', '');
+_api_host := LOAD_STATE('api_host', 'www.superheroapi.com');
+
+SET_API_KEY(key) := BEGIN
+    _api_key := key;
+    SAVE_PREF('api_key', key);
+    SET('_api_key', key);
+END;
+
+SET_API_HOST(host) := BEGIN
+    _api_host := host;
+    SAVE_PREF('api_host', host);
+    SET('_api_host', host);
+END;

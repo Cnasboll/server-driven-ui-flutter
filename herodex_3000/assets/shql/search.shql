@@ -1,0 +1,75 @@
+-- ============================================
+-- Hero Search
+-- ============================================
+_search_results := [];
+_search_query := '';
+_search_history := LOAD_STATE('search_history', []);
+-- Search summary (set by Dart after dialog-based save flow)
+_search_summary := '';
+
+-- Search for heroes via API
+SEARCH_HEROES(query) := BEGIN
+    IF LENGTH(query) < 2 THEN BEGIN
+        _search_results := [];
+        SET('_search_results', []);
+        RETURN [];
+    END;
+
+    _search_query := query;
+    _is_loading := TRUE;
+    SET('_is_loading', TRUE);
+
+    -- Add to search history
+    IF NOT (query IN _search_history) THEN BEGIN
+        _search_history := [query] + SLICE(_search_history, 0, 9);
+        SAVE_STATE('search_history', _search_history);
+    END;
+
+    -- Call native Dart function to perform the actual API fetch
+    _FETCH_HEROES(query);
+
+    RETURN _search_query;
+END;
+
+-- Clear search results
+CLEAR_SEARCH() := BEGIN
+    _search_results := [];
+    _search_query := '';
+    SET('_search_results', []);
+    SET('_search_query', '');
+END;
+
+-- Generate search result cards
+GENERATE_SEARCH_CARDS() := BEGIN
+    IF LENGTH(_search_results) = 0 THEN
+        RETURN [{
+            "type": "Center",
+            "child": {
+                "type": "Text",
+                "props": {
+                    "data": "No results found"
+                }
+            }
+        }];
+
+    RETURN GENERATE_HERO_CARDS(_search_results, '_search_results', FALSE);
+END;
+
+-- Generate search history chips
+GENERATE_SEARCH_HISTORY() := BEGIN
+    result := [];
+    IF LENGTH(_search_history) = 0 THEN
+        RETURN result;
+
+    FOR i := 0 TO LENGTH(_search_history) - 1 DO BEGIN
+        query := _search_history[i];
+        result := result + [{
+            "type": "ActionChip",
+            "props": {
+                "label": query,
+                "onPressed": "shql: SEARCH_HEROES('" + query + "')"
+            }
+        }];
+    END;
+    RETURN result;
+END;

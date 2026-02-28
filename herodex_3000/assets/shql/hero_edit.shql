@@ -1,0 +1,82 @@
+-- ============================================
+-- Hero Edit
+-- ============================================
+-- Edit hero form state (list of field descriptors, populated by _PREPARE_EDIT Dart callback)
+_edit_fields := [];
+
+-- Prepare edit form generically from the hero's Field hierarchy (Dart walks the tree)
+-- and navigate to the edit screen.
+EDIT_HERO() := BEGIN
+    _PREPARE_EDIT;
+    GO_TO('hero_edit');
+END;
+
+-- Submit amendments to native code
+SAVE_AMENDMENTS() := BEGIN
+    _APPLY_AMENDMENT(_selected_hero.id);
+END;
+
+-- Generate the edit form dynamically from _edit_fields (set by _PREPARE_EDIT).
+-- Each field descriptor is OBJECT{section, label, json_section, json_name,
+-- field_type ("string"|"enum"|"number"), value, original, options (list for enums)}.
+-- Groups fields by section, producing a Card per Amendable sub-model.
+GENERATE_EDIT_FORM() := BEGIN
+    result := [];
+    IF _edit_fields = null OR LENGTH(_edit_fields) = 0 THEN
+        RETURN result;
+
+    current_section := '';
+
+    FOR i := 0 TO LENGTH(_edit_fields) - 1 DO BEGIN
+        fld := _edit_fields[i];
+
+        -- Section header when section changes (each Amendable gets its own Card-like header)
+        IF fld.SECTION <> current_section AND fld.SECTION <> '' THEN BEGIN
+            current_section := fld.SECTION;
+            -- Add spacing + section header
+            result := result + [
+                {"type": "SizedBox", "props": {"height": 24}},
+                {"type": "Text", "props": {
+                    "data": current_section,
+                    "style": {"fontSize": 16, "fontWeight": "bold", "color": "0xFF1976D2"}
+                }},
+                {"type": "SizedBox", "props": {"height": 8}}
+            ];
+        END;
+
+        -- Field label
+        result := result + [
+            {"type": "Text", "props": {
+                "data": fld.LABEL,
+                "style": {"fontWeight": "bold", "fontSize": 14}
+            }},
+            {"type": "SizedBox", "props": {"height": 4}}
+        ];
+
+        -- Widget depends on field_type
+        IF fld.FIELD_TYPE = 'enum' THEN BEGIN
+            -- Dropdown for enum fields
+            result := result + [
+                {"type": "DropdownButton", "props": {
+                    "items": fld.OPTIONS,
+                    "value": fld.VALUE,
+                    "hint": "Select " + fld.LABEL,
+                    "onChanged": "shql: _edit_fields[" + STRING(i) + "].VALUE := value"
+                }}
+            ];
+        END ELSE BEGIN
+            -- TextField for string/number fields
+            result := result + [
+                {"type": "TextField", "props": {
+                    "initialValue": fld.VALUE,
+                    "decoration": {"border": "outline"},
+                    "onChanged": "shql: _edit_fields[" + STRING(i) + "].VALUE := value"
+                }}
+            ];
+        END;
+
+        result := result + [{"type": "SizedBox", "props": {"height": 16}}];
+    END;
+
+    RETURN result;
+END;

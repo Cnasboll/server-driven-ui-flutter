@@ -1,0 +1,205 @@
+-- ============================================
+-- Filters & Predicates
+-- ============================================
+
+-- Named filters (persisted). Each filter is OBJECT{name, predicate}.
+-- Defaults: Heroes, Villains, Giants, Dwarves, Read Heads, Obsese, Strong Villains, Dumb Villains, Non-Males and Troglodytes.
+-- Use RESET_PREDICATES() to restore them.
+-- "Giants" anmd "Dwarves" demonstrate computed predicates (height > avg + 2*stdev and height < avg-2*stdev, respectively)
+_DEFAULT_FILTERS := [
+    OBJECT{name: "Heroes", predicate: "biography.alignment <= good"},
+    OBJECT{name: "Villains", predicate: "biography.alignment > good"},
+    OBJECT{name: "Giants", predicate: "appearance.height.m > _height_avg + 2 * _height_stdev"},
+    OBJECT{name: "Dwarves", predicate: "appearance.height.m < _height_avg - 2 * _height_stdev"},
+    OBJECT{name: "Red Heads", predicate: 'appearance.hair_colour ~ "red"'},
+    OBJECT{name: "Obese", predicate: "appearance.weight.kg / POW(appearance.height.m, 2) >= 30"},
+    OBJECT{name: "Strong Villains", predicate: "biography.alignment > reasonable AND powerstats.strength >= powerstats.intelligence*1.1"},
+    OBJECT{name: "Dumb Villains", predicate: "biography.alignment >= bad AND powerstats.intelligence <= 50"},
+    OBJECT{name: "Non-Males", predicate: "appearance.gender <> male"},
+    OBJECT{name: "Troglodytes", predicate: 'work.base ~ "cave"'}
+];
+_filters := LOAD_STATE('filters', _DEFAULT_FILTERS);
+_filter_counts := [];
+_filtered_heroes := [];
+_filter_lambdas := {};
+_active_filter_index := -1;
+_displayed_heroes := [];
+_current_query := '';
+
+-- Rebuild all filter result maps from scratch. Called after filter CRUD
+-- or batch operations (reconcile, init). Each _filtered_heroes[i] is a
+-- map keyed by hero ID for O(1) add/remove.
+-- Apply a predicate to a hero list, returning a map of matching heroes keyed by ID.
+-- Single place for predicate-based filtering — used by REBUILD_ALL_FILTERS,
+-- ON_HERO_ADDED, and FILTER_DISPLAYED.
+-- Uses _EVAL_PREDICATE (Dart ternary with try-catch) so a lambda that throws
+-- on a hero with null fields falls back to text-match instead of aborting the loop.
+APPLY_PREDICATE(__hero_list, __pred, __predText) := BEGIN
+    __result := {};
+    IF LENGTH(__hero_list) > 0 THEN
+        FOR __j := 0 TO LENGTH(__hero_list) - 1 DO BEGIN
+            __hero := __hero_list[__j];
+            __match := _EVAL_PREDICATE(__hero, __pred, __predText);
+            IF __match THEN
+                __result[__hero.ID] := __hero;
+        END;
+    RETURN __result;
+END;
+
+REBUILD_ALL_FILTERS() := BEGIN
+    __hero_list := MAP_VALUES(_heroes);
+    _filtered_heroes := [];
+    _filter_counts := [];
+    DEBUG_LOG('[REBUILD] start: ' + STRING(LENGTH(_filters)) + ' filters, ' + STRING(LENGTH(__hero_list)) + ' heroes');
+    FOR __i := 0 TO LENGTH(_filters) - 1 DO BEGIN
+        __predText := _filters[__i].PREDICATE;
+        __fname := _filters[__i].NAME;
+        __pred := IF __predText = '' OR __predText = null THEN null ELSE _filter_lambdas[__fname];
+        DEBUG_LOG('[REBUILD]   [' + STRING(__i) + '] name="' + __fname + '" pred=' + IF __pred <> null THEN 'lambda' ELSE 'NULL' + ' predText="' + __predText + '"');
+        __result := APPLY_PREDICATE(__hero_list, __pred, __predText);
+        _filtered_heroes := _filtered_heroes + [__result];
+        _filter_counts := _filter_counts + [LENGTH(__result)];
+        DEBUG_LOG('[REBUILD]   [' + STRING(__i) + '] name="' + __fname + '" count=' + STRING(LENGTH(__result)));
+    END;
+    SET('_filter_counts', _filter_counts);
+    DEBUG_LOG('[REBUILD] done: counts=' + STRING(_filter_counts));
+END;
+
+-- Update _displayed_heroes from the active filter or full hero map.
+-- Always produces a list (via MAP_VALUES) for card generation.
+UPDATE_DISPLAYED_HEROES() := BEGIN
+    IF _active_filter_index < 0 OR _active_filter_index >= LENGTH(_filtered_heroes) THEN
+        _displayed_heroes := MAP_VALUES(_heroes)
+    ELSE
+        _displayed_heroes := MAP_VALUES(_filtered_heroes[_active_filter_index]);
+    SET('_displayed_heroes', _displayed_heroes);
+END;
+
+-- Filter _heroes by a compiled predicate and update _displayed_heroes.
+-- Called from Dart after compiling a text query or SHQL™ expression.
+FILTER_DISPLAYED(__pred, __predText) := BEGIN
+    __matched := APPLY_PREDICATE(MAP_VALUES(_heroes), __pred, __predText);
+    _displayed_heroes := MAP_VALUES(__matched);
+    SET('_displayed_heroes', _displayed_heroes);
+END;
+
+-- Apply a filter by index (-1 = All, 0+ = index into filter arrays).
+-- Clears any active text query (filters and text queries are mutually exclusive).
+APPLY_FILTER(index) := BEGIN
+    _active_filter_index := index;
+    _current_query := '';
+    SET('_active_filter_index', _active_filter_index);
+    SET('_current_query', _current_query);
+    UPDATE_DISPLAYED_HEROES();
+END;
+
+-- Save or update a named filter. If name exists, updates its predicate in place.
+SAVE_FILTER(name, predicate) := BEGIN
+    new_filters := [];
+    found := FALSE;
+    FOR i := 0 TO LENGTH(_filters) - 1 DO BEGIN
+        IF _filters[i].name = name THEN BEGIN
+            new_filters := new_filters + [OBJECT{name: name, predicate: predicate}];
+            found := TRUE;
+        END ELSE
+            new_filters := new_filters + [_filters[i]];
+    END;
+    _filters := IF found THEN new_filters ELSE _filters + [OBJECT{name: name, predicate: predicate}];
+    SAVE_PREF('filters', _filters);
+    SET('_filters', _filters);
+END;
+
+-- Delete any filter by index. All filters are user-defined and deletable.
+-- Use RESET_PREDICATES() to restore the defaults.
+DELETE_FILTER(index) := BEGIN
+    IF index < 0 OR index >= LENGTH(_filters) THEN RETURN;
+    new_filters := [];
+    FOR i := 0 TO LENGTH(_filters) - 1 DO
+        IF i <> index THEN
+            new_filters := new_filters + [_filters[i]];
+    _filters := new_filters;
+    SAVE_PREF('filters', _filters);
+    SET('_filters', _filters);
+    IF _active_filter_index >= LENGTH(_filters) OR _active_filter_index = index THEN
+        APPLY_FILTER(-1);
+END;
+
+-- Reset to the three default filters. Replaces the entire list.
+RESET_PREDICATES() := BEGIN
+    _filters := _DEFAULT_FILTERS;
+    SAVE_PREF('filters', _filters);
+    SET('_filters', _filters);
+    APPLY_FILTER(-1);
+END;
+
+-- Add a new empty filter and select it for editing
+ADD_FILTER() := BEGIN
+    SAVE_FILTER('New Filter', '');
+    APPLY_FILTER(LENGTH(_filters) - 1);
+END;
+
+-- Rename a filter by index
+RENAME_FILTER(index, new_name) := BEGIN
+    IF index < 0 OR index >= LENGTH(_filters) THEN RETURN;
+    old := _filters[index];
+    new_filters := [];
+    FOR i := 0 TO LENGTH(_filters) - 1 DO
+        IF i = index THEN
+            new_filters := new_filters + [OBJECT{name: new_name, predicate: old.predicate}]
+        ELSE
+            new_filters := new_filters + [_filters[i]];
+    _filters := new_filters;
+    SAVE_PREF('filters', _filters);
+    SET('_filters', _filters);
+END;
+
+-- Apply an ad-hoc query without saving it as a named filter
+APPLY_QUERY(expression) := BEGIN
+    _current_query := expression;
+    _active_filter_index := -1;
+    SET('_current_query', _current_query);
+    SET('_active_filter_index', _active_filter_index);
+END;
+
+-- _filter_counts[i] corresponds to _filters[i] (set by REBUILD_ALL_FILTERS).
+GET_FILTER_COUNT(index) := IF index < 0 OR index >= LENGTH(_filter_counts) THEN 0 ELSE _filter_counts[index];
+
+-- Generate filter list items for home screen (one per named filter)
+GENERATE_FILTER_COUNTER_CARDS() := BEGIN
+    result := [];
+    _icons := ['shield', 'dangerous'];
+    _colors := ['0xFF2196F3', '0xFFF44336'];
+
+    FOR i := 0 TO LENGTH(_filters) - 1 DO BEGIN
+        count := IF i < LENGTH(_filter_counts) THEN _filter_counts[i] ELSE 0;
+        icon := IF i < LENGTH(_icons) THEN _icons[i] ELSE 'label';
+        color := IF i < LENGTH(_colors) THEN _colors[i] ELSE '0xFF9E9E9E';
+        name := _filters[i].name;
+
+        item := {
+            "type": "Card",
+            "props": {
+                "onTap": "shql: APPLY_FILTER(" + STRING(i) + "); GO_TO('heroes')",
+                "child": {
+                    "type": "Padding",
+                    "props": {
+                        "padding": 8,
+                        "child": {
+                            "type": "Row",
+                            "props": {
+                                "children": [
+                                    {"type": "Icon", "props": {"icon": icon, "color": color, "size": 20}},
+                                    {"type": "SizedBox", "props": {"width": 12}},
+                                    {"type": "Expanded", "child": {"type": "Text", "props": {"data": name}}},
+                                    {"type": "Text", "props": {"data": STRING(count), "style": {"fontWeight": "bold", "fontSize": 16}}}
+                                ]
+                            }
+                        }
+                    }
+                }
+            }
+        };
+        result := result + [item];
+    END;
+    RETURN result;
+END;

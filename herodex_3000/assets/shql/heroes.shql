@@ -1,0 +1,116 @@
+-- ============================================
+-- Hero Collection
+-- ============================================
+_heroes := {};
+_selected_hero := null;
+_hero_cards := [];
+_is_loading := FALSE;
+_error_message := '';
+_total_heroes := 0;
+_reconcile_active := FALSE;
+_reconcile_aborted := FALSE;
+_reconcile_current := '';
+_reconcile_status := '';
+_reconcile_log := [];
+
+-- Abort an in-progress reconciliation (checked each iteration by Dart)
+ABORT_RECONCILE() := BEGIN
+    _reconcile_aborted := TRUE;
+    SET('_reconcile_aborted', _reconcile_aborted);
+END;
+
+-- Notify YAML Observers that watch hero/filter/stats variables.
+-- Observer uses addListener, so SET() is required for UI updates.
+_NOTIFY_HERO_STATE() := BEGIN
+    SET('_heroes', _heroes);
+    SET('_total_heroes', _total_heroes);
+    SET('_total_fighting_power', _total_fighting_power);
+    SET('_filter_counts', _filter_counts);
+END;
+
+-- Hero added to collection. Updates heroes map, running stats, and filter
+-- membership in one call. O(filters).
+-- During init _filtered_heroes is [] so the filter block is guarded.
+ON_HERO_ADDED(__hero) := BEGIN
+    _heroes[__hero.ID] := __hero;
+    _total_heroes := LENGTH(_heroes);
+    STATS_HERO_ADDED(__hero);
+    IF LENGTH(_filtered_heroes) > 0 THEN
+        FOR __i := 0 TO LENGTH(_filtered_heroes) - 1 DO BEGIN
+            __predText := _filters[__i].PREDICATE;
+            __fname := _filters[__i].NAME;
+            IF __predText = '' OR __predText = null THEN
+                _filtered_heroes[__i][__hero.ID] := __hero
+            ELSE BEGIN
+                __pred := _filter_lambdas[__fname];
+                __match := _EVAL_PREDICATE(__hero, __pred, __predText);
+                IF __match THEN
+                    _filtered_heroes[__i][__hero.ID] := __hero;
+            END;
+            _filter_counts[__i] := LENGTH(_filtered_heroes[__i]);
+            DEBUG_LOG('[ON_HERO_ADDED] [' + STRING(__i) + '] "' + __fname + '" count=' + STRING(_filter_counts[__i]));
+        END;
+    _NOTIFY_HERO_STATE();
+END;
+
+-- Hero removed from collection. O(filters).
+ON_HERO_REMOVED(__hero) := BEGIN
+    MAP_REMOVE(_heroes, __hero.ID);
+    _total_heroes := LENGTH(_heroes);
+    STATS_HERO_REMOVED(__hero);
+    IF LENGTH(_filtered_heroes) > 0 THEN
+        FOR __i := 0 TO LENGTH(_filtered_heroes) - 1 DO BEGIN
+            MAP_REMOVE(_filtered_heroes[__i], __hero.ID);
+            _filter_counts[__i] := LENGTH(_filtered_heroes[__i]);
+        END;
+    _NOTIFY_HERO_STATE();
+END;
+
+-- Hero replaced (amend/update). Removes old, adds new. O(filters).
+-- ON_HERO_REMOVED + ON_HERO_ADDED each notify; harmless double-notify.
+ON_HERO_REPLACED(__old, __new) := BEGIN
+    ON_HERO_REMOVED(__old);
+    ON_HERO_ADDED(__new);
+END;
+
+-- Clear all heroes. Resets heroes map, stats, and all filter result maps.
+ON_HERO_CLEAR() := BEGIN
+    _heroes := {};
+    _total_heroes := 0;
+    STATS_CLEAR();
+    IF LENGTH(_filtered_heroes) > 0 THEN
+        FOR __i := 0 TO LENGTH(_filtered_heroes) - 1 DO BEGIN
+            _filtered_heroes[__i] := {};
+            _filter_counts[__i] := 0;
+        END;
+    _NOTIFY_HERO_STATE();
+END;
+
+-- Select a hero for detail view
+SELECT_HERO(hero) := BEGIN
+    _selected_hero := hero;
+    SET('_selected_hero', hero);
+    GO_TO('hero_detail');
+END;
+
+-- Save a hero to local database (extracts external_id from SHQL™ object)
+SAVE_HERO(hero) := BEGIN
+    _PERSIST_HERO(hero.external_id);
+END;
+
+-- Nullary function SHQL™ wrappers.
+-- Native nullary functions are registered as _CLEAR_ALL_DATA, _RECONCILE_HEROES.
+-- We wrap them so SHQL™ can call them with FOO() syntax (the parser always
+-- creates call(identifier, tuple) for FOO(), but IdentifierExecutionNode
+-- correctly executes nullary functions when referenced WITHOUT parentheses).
+CLEAR_ALL_DATA() := _CLEAR_ALL_DATA;
+RECONCILE_HEROES() := _RECONCILE_HEROES;
+SIGN_OUT() := BEGIN
+    FIREBASE_SIGN_OUT();
+    _SIGN_OUT;
+END;
+
+-- Toggle hero lock state (lock/unlock for reconciliation)
+-- (native implementation in Dart via _TOGGLE_LOCK_HERO unary function)
+
+GET_HERO_COUNT() := LENGTH(_heroes);
