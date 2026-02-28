@@ -58,6 +58,7 @@ class _FilterEditorState extends State<_FilterEditor> {
   int _totalHeroes = 0;
   bool _compiling = false;
   bool _filtering = false;
+  bool _pendingAddSelect = false;
 
   /// Shorthand for widget.buildChild — builds a leaf widget via the registry.
   Widget _b(Map<String, dynamic> node, String subpath) =>
@@ -131,6 +132,29 @@ class _FilterEditorState extends State<_FilterEditor> {
       _totalHeroes = heroes is Map ? heroes.length : heroes is List ? heroes.length : 0;
       _compiling = widget.shql.getVariable('_filters_compiling') == true;
       _filtering = widget.shql.getVariable('_filtering') == true;
+
+      // After Add Filter: the SHQL™ side has updated _filters — now select the
+      // new filter for editing, scroll it into view, and focus the name field.
+      if (_pendingAddSelect && _filters.isNotEmpty) {
+        _pendingAddSelect = false;
+        _editingIndex = _filters.length - 1;
+        _nameController.text =
+            _filters.last['name']?.toString() ?? '';
+        if (!_isApplyMode) {
+          _queryController.text =
+              _filters.last['predicate']?.toString() ?? '';
+        }
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (_scrollController.hasClients) {
+            _scrollController.animateTo(
+              _scrollController.position.maxScrollExtent,
+              duration: const Duration(milliseconds: 300),
+              curve: Curves.easeOut,
+            );
+          }
+          _nameFocusNode.requestFocus();
+        });
+      }
 
       // In apply mode, show the active filter's predicate (read-only hint of
       // what the filter does) or the free-form query text if no filter is active.
@@ -229,24 +253,8 @@ class _FilterEditorState extends State<_FilterEditor> {
   }
 
   void _addFilter() {
+    _pendingAddSelect = true;
     widget.shql.call('ADD_FILTER()');
-    // Auto-select the newly added filter, scroll to it, and focus the name field.
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (_filters.isNotEmpty) {
-        _selectChip(_filters.length - 1);
-        // After selecting (which triggers setState), scroll on next frame.
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (_scrollController.hasClients) {
-            _scrollController.animateTo(
-              _scrollController.position.maxScrollExtent,
-              duration: const Duration(milliseconds: 300),
-              curve: Curves.easeOut,
-            );
-          }
-          _nameFocusNode.requestFocus();
-        });
-      }
-    });
   }
 
   void _deleteFilter() {
