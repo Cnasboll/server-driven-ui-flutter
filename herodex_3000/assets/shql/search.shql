@@ -1,75 +1,170 @@
 -- ============================================
 -- Hero Search
 -- ============================================
-_search_results := [];
-_search_query := '';
-_search_history := LOAD_STATE('search_history', []);
--- Search summary (set by Dart after dialog-based save flow)
-_search_summary := '';
+Search := OBJECT{
+    search_results: [],
+    search_query: '',
+    search_history: LOAD_STATE('search_history', []),
+    -- Search summary (set by Dart after dialog-based save flow)
+    search_summary: '',
+    is_loading: FALSE,
 
--- Search for heroes via API
-SEARCH_HEROES(query) := BEGIN
-    IF LENGTH(query) < 2 THEN BEGIN
-        _search_results := [];
-        SET('_search_results', []);
-        RETURN [];
-    END;
+    SET_SEARCH_RESULTS: (results) => BEGIN
+        search_results := results;
+        PUBLISH('Search.search_results');
+    END,
 
-    _search_query := query;
-    _is_loading := TRUE;
-    SET('_is_loading', TRUE);
+    SET_IS_LOADING: (loading) => BEGIN
+        is_loading := loading;
+        PUBLISH('Search.is_loading');
+    END,
 
-    -- Add to search history
-    IF NOT (query IN _search_history) THEN BEGIN
-        _search_history := [query] + SLICE(_search_history, 0, 9);
-        SAVE_STATE('search_history', _search_history);
-    END;
+    SET_SEARCH_QUERY: (query) => BEGIN
+        search_query := query;
+        PUBLISH('Search.search_query');
+    END,
 
-    -- Call native Dart function to perform the actual API fetch
-    _FETCH_HEROES(query);
+    SET_SEARCH_SUMMARY: (value) => BEGIN
+        search_summary := value;
+        PUBLISH('Search.search_summary');
+    END,
 
-    RETURN _search_query;
-END;
+    -- Batch-set search state. Null arguments are skipped.
+    SET_SEARCH_STATE: (__results, __loading, __summary) => BEGIN
+        IF __results <> null THEN SET_SEARCH_RESULTS(__results);
+        IF __loading <> null THEN SET_IS_LOADING(__loading);
+        IF __summary <> null THEN SET_SEARCH_SUMMARY(__summary);
+    END,
 
--- Clear search results
-CLEAR_SEARCH() := BEGIN
-    _search_results := [];
-    _search_query := '';
-    SET('_search_results', []);
-    SET('_search_query', '');
-END;
+    -- Search for heroes via API, then prompt to save unsaved results.
+    SEARCH_HEROES: (query) => BEGIN
+        IF LENGTH(query) < 2 THEN BEGIN
+            SET_SEARCH_RESULTS([]);
+            RETURN [];
+        END;
 
--- Generate search result cards
-GENERATE_SEARCH_CARDS() := BEGIN
-    IF LENGTH(_search_results) = 0 THEN
-        RETURN [{
-            "type": "Center",
-            "child": {
-                "type": "Text",
-                "props": {
-                    "data": "No results found"
+        SET_SEARCH_QUERY(query);
+        SET_IS_LOADING(TRUE);
+
+        -- Add to search history
+        IF NOT (query IN search_history) THEN BEGIN
+            search_history := [query] + SLICE(search_history, 0, 9);
+            SAVE_STATE('search_history', search_history);
+        END;
+
+        -- Call native Dart function to perform the actual API fetch + parse.
+        -- On success, _FETCH_HEROES publishes search_results (SET_SEARCH_STATE).
+        _FETCH_HEROES(query);
+
+        -- After fetch, prompt user to save unsaved results
+        SAVE_SEARCH_HEROES();
+
+        RETURN search_query;
+    END,
+
+    -- Iterate search_results and prompt user to save unsaved heroes.
+    -- Dart callbacks: _REVIEW_HERO(hero, current, total) → action string,
+    --   _PERSIST_HERO(externalId) → persists the hero.
+    SAVE_SEARCH_HEROES: () => BEGIN
+        IF LENGTH(search_results) = 0 THEN RETURN;
+
+        -- Collect unsaved heroes
+        __unsaved := [];
+        IF LENGTH(search_results) > 0 THEN
+            FOR __i := 0 TO LENGTH(search_results) - 1 DO
+                IF search_results[__i].SAVED_AT = null THEN
+                    __unsaved := __unsaved + [search_results[__i]];
+
+        __total := LENGTH(search_results);
+        __already_saved := __total - LENGTH(__unsaved);
+
+        IF LENGTH(__unsaved) = 0 THEN BEGIN
+            __msg := STRING(__total) + ' result' + IF __total = 1 THEN '' ELSE 's';
+            SET_SEARCH_SUMMARY(__msg + ' found, all already saved');
+            RETURN;
+        END;
+
+        __save_count := 0;
+        __skip_count := 0;
+        __cancelled := FALSE;
+
+        FOR __i := 0 TO LENGTH(__unsaved) - 1 DO BEGIN
+            __hero := __unsaved[__i];
+            __action := _REVIEW_HERO(__hero, __i + 1, LENGTH(__unsaved));
+
+            IF __action = 'save' THEN BEGIN
+                _PERSIST_HERO(__hero.EXTERNAL_ID);
+                __save_count := __save_count + 1;
+            END
+            ELSE IF __action = 'saveAll' THEN BEGIN
+                _PERSIST_HERO(__hero.EXTERNAL_ID);
+                __save_count := __save_count + 1;
+                -- Save all remaining
+                IF __i < LENGTH(__unsaved) - 1 THEN
+                    FOR __j := __i + 1 TO LENGTH(__unsaved) - 1 DO BEGIN
+                        _PERSIST_HERO(__unsaved[__j].EXTERNAL_ID);
+                        __save_count := __save_count + 1;
+                    END;
+                BREAK;
+            END
+            ELSE IF __action = 'cancel' THEN BEGIN
+                __skip_count := __skip_count + LENGTH(__unsaved) - __i;
+                __cancelled := TRUE;
+                BREAK;
+            END
+            ELSE BEGIN
+                -- 'skip' or unknown
+                __skip_count := __skip_count + 1;
+            END;
+        END;
+
+        -- Build summary
+        __parts := STRING(__total) + ' found';
+        IF __already_saved > 0 THEN __parts := __parts + ', ' + STRING(__already_saved) + ' already saved';
+        IF __save_count > 0 THEN __parts := __parts + ', ' + STRING(__save_count) + ' saved';
+        IF __skip_count > 0 THEN __parts := __parts + ', ' + STRING(__skip_count) + ' skipped';
+        IF __cancelled THEN __parts := __parts + ', cancelled';
+        SET_SEARCH_SUMMARY(__parts);
+    END,
+
+    -- Clear search results
+    CLEAR_SEARCH: () => BEGIN
+        SET_SEARCH_RESULTS([]);
+        SET_SEARCH_QUERY('');
+    END,
+
+    -- Generate search result cards
+    GENERATE_SEARCH_CARDS: () => BEGIN
+        IF LENGTH(search_results) = 0 THEN
+            RETURN [{
+                "type": "Center",
+                "child": {
+                    "type": "Text",
+                    "props": {
+                        "data": "No results found"
+                    }
                 }
-            }
-        }];
+            }];
 
-    RETURN GENERATE_HERO_CARDS(_search_results, '_search_results', FALSE);
-END;
+        RETURN Cards.GENERATE_HERO_CARDS(search_results, '_search_results', FALSE);
+    END,
 
--- Generate search history chips
-GENERATE_SEARCH_HISTORY() := BEGIN
-    result := [];
-    IF LENGTH(_search_history) = 0 THEN
+    -- Generate search history chips
+    GENERATE_SEARCH_HISTORY: () => BEGIN
+        result := [];
+        IF LENGTH(search_history) = 0 THEN
+            RETURN result;
+
+        FOR i := 0 TO LENGTH(search_history) - 1 DO BEGIN
+            query := search_history[i];
+            result := result + [{
+                "type": "ActionChip",
+                "props": {
+                    "label": query,
+                    "onPressed": "shql: Search.SEARCH_HEROES('" + query + "')"
+                }
+            }];
+        END;
         RETURN result;
-
-    FOR i := 0 TO LENGTH(_search_history) - 1 DO BEGIN
-        query := _search_history[i];
-        result := result + [{
-            "type": "ActionChip",
-            "props": {
-                "label": query,
-                "onPressed": "shql: SEARCH_HEROES('" + query + "')"
-            }
-        }];
-    END;
-    RETURN result;
-END;
+    END
+};

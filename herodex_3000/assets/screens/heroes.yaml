@@ -27,9 +27,9 @@ screen:
             child:
               type: Observer
               props:
-                query: "_hero_cards"
+                query: "Heroes.hero_cards"
                 builder:
-                  type: "shql: IF LENGTH(_hero_cards) = 0 THEN 'Center' ELSE 'GridView'"
+                  type: "shql: IF LENGTH(Heroes.hero_cards) = 0 THEN 'Center' ELSE 'GridView'"
                   props:
                     # Empty state (no heroes saved yet)
                     child:
@@ -64,7 +64,7 @@ screen:
                               height: 24
                           - type: ElevatedButton
                             props:
-                              onPressed: "shql: GO_TO('online')"
+                              onPressed: "shql: Nav.GO_TO('online')"
                               child:
                                 type: Row
                                 props:
@@ -86,10 +86,10 @@ screen:
                     childAspectRatio: 0.55
                     crossAxisSpacing: 12
                     mainAxisSpacing: 12
-                    children: "shql: _hero_cards"
+                    children: "shql: Heroes.hero_cards"
 
     bottomNavigationBar:
       type: BottomNav
       props:
         currentIndex: 2
-        onTap: "TAB_NAV(2, value)"
+        onTap: "Nav.TAB_NAV(2, value)"

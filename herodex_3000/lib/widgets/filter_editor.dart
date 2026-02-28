@@ -108,13 +108,13 @@ class _FilterEditorState extends State<_FilterEditor> {
   }
 
   static const _watchedVars = [
-    '_filters',
-    '_filter_counts',
-    '_active_filter_index',
-    '_current_query',
-    '_heroes',
-    '_filters_compiling',
-    '_filtering',
+    'Filters.filters',
+    'Filters.filter_counts',
+    'Filters.active_filter_index',
+    'Filters.current_query',
+    'Heroes.heroes',
+    'Filters.is_compiling',
+    'Filters.is_filtering',
   ];
 
   void _onDataChanged() {
@@ -122,16 +122,26 @@ class _FilterEditorState extends State<_FilterEditor> {
     _readVariables();
   }
 
-  void _readVariables() {
+  Future<void> _readVariables() async {
+    final stateObj = await widget.shql.eval('Filters.GET_EDITOR_STATE()');
+    if (!mounted) return;
+    final state = widget.shql.objectToMap(stateObj);
+    final rawFilters = state['filters'];
+    final filterCounts = state['filter_counts'];
+    final activeIdx = state['active_filter_index'];
+    final totalHeroes = state['total_heroes'];
+    final query = (state['current_query'] ?? '').toString();
+    final compiling = state['is_compiling'] == true;
+    final filtering = state['is_filtering'] == true;
+
     setState(() {
-      final rawFilters = _getList('_filters');
-      _filters = rawFilters.map((f) => widget.shql.objectToMap(f)).toList();
-      _filterCounts = _getList('_filter_counts');
-      _activeFilterIndex = _getInt('_active_filter_index', -1);
-      final heroes = widget.shql.getVariable('_heroes');
-      _totalHeroes = heroes is Map ? heroes.length : heroes is List ? heroes.length : 0;
-      _compiling = widget.shql.getVariable('_filters_compiling') == true;
-      _filtering = widget.shql.getVariable('_filtering') == true;
+      _filters = (rawFilters is List ? List.from(rawFilters) : [])
+          .map((f) => widget.shql.objectToMap(f)).toList();
+      _filterCounts = filterCounts is List ? List.from(filterCounts) : [];
+      _activeFilterIndex = activeIdx is int ? activeIdx : -1;
+      _totalHeroes = totalHeroes is int ? totalHeroes : 0;
+      _compiling = compiling;
+      _filtering = filtering;
 
       // After Add Filter: the SHQL™ side has updated _filters — now select the
       // new filter for editing, scroll it into view, and focus the name field.
@@ -159,7 +169,6 @@ class _FilterEditorState extends State<_FilterEditor> {
       // In apply mode, show the active filter's predicate (read-only hint of
       // what the filter does) or the free-form query text if no filter is active.
       if (_isApplyMode) {
-        final query = (widget.shql.getVariable('_current_query') ?? '').toString();
         _editingIndex = -1;
         if (query.isNotEmpty) {
           _setControllerText(query);
@@ -172,16 +181,6 @@ class _FilterEditorState extends State<_FilterEditor> {
         }
       }
     });
-  }
-
-  List _getList(String name) {
-    final v = widget.shql.getVariable(name);
-    return v is List ? List.from(v) : [];
-  }
-
-  int _getInt(String name, int fallback) {
-    final v = widget.shql.getVariable(name);
-    return v is int ? v : fallback;
   }
 
   /// Update controller only when value actually differs from what's shown,
@@ -204,7 +203,7 @@ class _FilterEditorState extends State<_FilterEditor> {
       _nameController.text = _filters[index]['name']?.toString() ?? '';
     }
     if (_isApplyMode) {
-      widget.shql.call('APPLY_FILTER($index)', targeted: true);
+      widget.shql.call('Filters.APPLY_FILTER(__idx)', targeted: true, boundValues: {'__idx': index});
       if (widget.onSelect != null) {
         widget.shql.call(widget.onSelect!, targeted: true);
       }
@@ -214,15 +213,14 @@ class _FilterEditorState extends State<_FilterEditor> {
   void _selectAll() {
     setState(() => _editingIndex = -1);
     _queryController.clear();
-    widget.shql.call('APPLY_FILTER(-1)', targeted: true);
-    widget.shql.call("APPLY_QUERY('')", targeted: true);
+    widget.shql.call('Filters.APPLY_FILTER(-1)', targeted: true);
   }
 
   void _onQuerySubmitted(String value) {
     if (_isApplyMode) {
       // In apply mode, the query field is always a free-form search
       widget.shql.call(
-        'APPLY_QUERY(value)',
+        'Filters.APPLY_QUERY(value)',
         targeted: true,
         boundValues: {'value': value},
       );
@@ -232,7 +230,7 @@ class _FilterEditorState extends State<_FilterEditor> {
     } else if (_editingIndex >= 0 && _editingIndex < _filters.length) {
       // In edit/manage mode, save the predicate for the selected filter
       widget.shql.call(
-        'SAVE_FILTER(name, value)',
+        'Filters.SAVE_FILTER(name, value)',
         targeted: true,
         boundValues: {
           'name': _filters[_editingIndex]['name']?.toString() ?? '',
@@ -245,7 +243,7 @@ class _FilterEditorState extends State<_FilterEditor> {
   void _onNameSubmitted(String value) {
     if (_editingIndex >= 0 && _editingIndex < _filters.length) {
       widget.shql.call(
-        'RENAME_FILTER(index, name)',
+        'Filters.RENAME_FILTER(index, name)',
         targeted: true,
         boundValues: {'index': _editingIndex, 'name': value},
       );
@@ -254,7 +252,7 @@ class _FilterEditorState extends State<_FilterEditor> {
 
   void _addFilter() {
     _pendingAddSelect = true;
-    widget.shql.call('ADD_FILTER()');
+    widget.shql.call('Filters.ADD_FILTER()');
   }
 
   void _deleteFilter() {
@@ -262,14 +260,14 @@ class _FilterEditorState extends State<_FilterEditor> {
       final idx = _editingIndex;
       setState(() => _editingIndex = -1);
       _queryController.clear();
-      widget.shql.call('DELETE_FILTER($idx)');
+      widget.shql.call('Filters.DELETE_FILTER(__idx)', boundValues: {'__idx': idx});
     }
   }
 
   void _resetFilters() {
     setState(() => _editingIndex = -1);
     _queryController.clear();
-    widget.shql.call('RESET_PREDICATES()');
+    widget.shql.call('Filters.RESET_PREDICATES()');
   }
 
   // ---- build ----
@@ -434,7 +432,7 @@ class _FilterEditorState extends State<_FilterEditor> {
     _debouncer.run(() {
       if (_isApplyMode) {
         widget.shql.call(
-          'APPLY_QUERY(value)',
+          'Filters.APPLY_QUERY(value)',
           targeted: true,
           boundValues: {'value': value},
         );
@@ -442,7 +440,7 @@ class _FilterEditorState extends State<_FilterEditor> {
         // Update the named filter's predicate and keep it selected
         final name = _filters[_editingIndex]['name']?.toString() ?? '';
         widget.shql.call(
-          'SAVE_FILTER(name, value)',
+          'Filters.SAVE_FILTER(name, value)',
           targeted: true,
           boundValues: {'name': name, 'value': value},
         );

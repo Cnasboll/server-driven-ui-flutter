@@ -1,11 +1,6 @@
 # Login / Register screen.
-# Uses static SHQL™ variables:
-#   _LOGIN_IS_REGISTERING (bool), _LOGIN_IS_LOADING (bool), _LOGIN_ERROR (String)
-#   _LOGIN_EMAIL (String), _LOGIN_PASSWORD (String)
-# Pure SHQL™ functions (defined in app.dart _initLogin):
-#   _LOGIN_SUBMIT(), _LOGIN_TOGGLE_MODE()
-# Auth functions loaded from auth.shql:
-#   FIREBASE_SIGN_IN(), FIREBASE_SIGN_UP(), FIREBASE_SIGN_OUT()
+# Auth namespace (auth.shql): LOGIN_EMAIL, LOGIN_PASSWORD, LOGIN_ERROR,
+#   LOGIN_IS_LOADING, LOGIN_IS_REGISTERING, LOGIN_SUBMIT(), LOGIN_TOGGLE_MODE()
 widget:
   type: Scaffold
   props:
@@ -47,11 +42,11 @@ widget:
                           height: 8
                       - type: Observer
                         props:
-                          query: "_LOGIN_IS_REGISTERING"
+                          query: "Auth.LOGIN_IS_REGISTERING"
                           builder:
                             type: Text
                             props:
-                              data: "shql: IF _LOGIN_IS_REGISTERING THEN 'Create Account' ELSE 'Sign In'"
+                              data: "shql: IF Auth.LOGIN_IS_REGISTERING THEN 'Create Account' ELSE 'Sign In'"
                               style:
                                 fontSize: 16
                                 color: "0xB3FFFFFF"
@@ -73,7 +68,8 @@ widget:
                                       props:
                                         keyboardType: "emailAddress"
                                         textInputAction: "next"
-                                        onChanged: "shql: SET('_LOGIN_EMAIL', value)"
+                                        debounceMs: 0
+                                        onChanged: "shql: Auth.LOGIN_EMAIL := value"
                                         decoration:
                                           labelText: "Email"
                                           prefixIcon: "email"
@@ -85,42 +81,43 @@ widget:
                                       props:
                                         obscureText: true
                                         textInputAction: "done"
-                                        onSubmitted: "shql: _LOGIN_SUBMIT()"
-                                        onChanged: "shql: SET('_LOGIN_PASSWORD', value)"
+                                        debounceMs: 0
+                                        onSubmitted: "shql: Auth.LOGIN_SUBMIT()"
+                                        onChanged: "shql: Auth.LOGIN_PASSWORD := value"
                                         decoration:
                                           labelText: "Password"
                                           prefixIcon: "lock"
                                           border: "outline"
                                     - type: Observer
                                       props:
-                                        query: "_LOGIN_ERROR"
+                                        query: "Auth.LOGIN_ERROR"
                                         builder:
                                           type: Column
                                           props:
                                             crossAxisAlignment: "start"
-                                            children: "shql: IF _LOGIN_ERROR <> '' THEN [{'type': 'SizedBox', 'props': {'height': 12}}, {'type': 'Text', 'props': {'data': _LOGIN_ERROR, 'style': {'color': '0xFFD32F2F', 'fontSize': 13}}}] ELSE []"
+                                            children: "shql: IF Auth.LOGIN_ERROR <> '' THEN [{'type': 'SizedBox', 'props': {'height': 12}}, {'type': 'Text', 'props': {'data': Auth.LOGIN_ERROR, 'style': {'color': '0xFFD32F2F', 'fontSize': 13}}}] ELSE []"
                                     - type: SizedBox
                                       props:
                                         height: 24
                                     - type: Observer
                                       props:
-                                        query: "_LOGIN_IS_LOADING,_LOGIN_IS_REGISTERING"
+                                        query: "Auth.LOGIN_IS_LOADING,Auth.LOGIN_IS_REGISTERING"
                                         builder:
                                           type: FilledButton
                                           props:
-                                            onPressed: "shql: IF NOT _LOGIN_IS_LOADING THEN _LOGIN_SUBMIT()"
-                                            child: "shql: IF _LOGIN_IS_LOADING THEN {'type': 'SizedBox', 'props': {'height': 20, 'width': 20, 'child': {'type': 'CircularProgressIndicator', 'props': {'strokeWidth': 2}}}} ELSE {'type': 'Text', 'props': {'data': IF _LOGIN_IS_REGISTERING THEN 'Register' ELSE 'Sign In'}}"
+                                            onPressed: "shql: IF NOT Auth.LOGIN_IS_LOADING THEN Auth.LOGIN_SUBMIT()"
+                                            child: "shql: IF Auth.LOGIN_IS_LOADING THEN {'type': 'SizedBox', 'props': {'height': 20, 'width': 20, 'child': {'type': 'CircularProgressIndicator', 'props': {'strokeWidth': 2}}}} ELSE {'type': 'Text', 'props': {'data': IF Auth.LOGIN_IS_REGISTERING THEN 'Register' ELSE 'Sign In'}}"
                                     - type: SizedBox
                                       props:
                                         height: 12
                                     - type: Observer
                                       props:
-                                        query: "_LOGIN_IS_LOADING,_LOGIN_IS_REGISTERING"
+                                        query: "Auth.LOGIN_IS_LOADING,Auth.LOGIN_IS_REGISTERING"
                                         builder:
                                           type: TextButton
                                           props:
-                                            onPressed: "shql: IF NOT _LOGIN_IS_LOADING THEN _LOGIN_TOGGLE_MODE()"
+                                            onPressed: "shql: IF NOT Auth.LOGIN_IS_LOADING THEN Auth.LOGIN_TOGGLE_MODE()"
                                             child:
                                               type: Text
                                               props:
-                                                data: "shql: IF _LOGIN_IS_REGISTERING THEN 'Already have an account? Sign in' ELSE \"Don't have an account? Register\""
+                                                data: "shql: IF Auth.LOGIN_IS_REGISTERING THEN 'Already have an account? Sign in' ELSE \"Don't have an account? Register\""

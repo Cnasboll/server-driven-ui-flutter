@@ -50,9 +50,10 @@ class HeroSearchService {
   /// Get a search result by externalId (for SHQL™ _PERSIST_HERO callback).
   HeroModel? getSearchResult(String externalId) => _searchResults[externalId];
 
-  void clearSearchResults() {
+  Future<void> clearSearchResults() async {
     _searchResults.clear();
-    _setAndNotify('_search_results', []);
+    await _shqlBindings.eval('Search.SET_SEARCH_STATE(__r, null, null)',
+        boundValues: {'__r': <dynamic>[]});
   }
 
   // ---------------------------------------------------------------------------
@@ -63,8 +64,8 @@ class HeroSearchService {
     try {
       final heroService = await _coordinator.getHeroService();
       if (heroService == null) {
-        _setAndNotify('_search_results', []);
-        _setAndNotify('_is_loading', false);
+        await _shqlBindings.eval('Search.SET_SEARCH_STATE(__r, FALSE, null)',
+            boundValues: {'__r': <dynamic>[]});
         _onStateChanged();
         return;
       }
@@ -78,10 +79,11 @@ class HeroSearchService {
         }
       }
       if (data == null || data['response'] != 'success') {
-        _setAndNotify('_search_results', []);
-        _setAndNotify('_is_loading', false);
-        _setAndNotify('_search_summary',
-            data?['error']?.toString() ?? 'No results found for "$query"');
+        await _shqlBindings.eval('Search.SET_SEARCH_STATE(__r, FALSE, __s)',
+            boundValues: {
+              '__r': <dynamic>[],
+              '__s': data?['error']?.toString() ?? 'No results found for "$query"',
+            });
         _onStateChanged();
         return;
       }
@@ -109,22 +111,17 @@ class HeroSearchService {
         for (final hero in searchResponse.results) {
           _searchResults[hero.externalId] = hero;
         }
-        publishSearchResults();
-
-        _setAndNotify('_is_loading', false);
+        await publishSearchResults(loading: false);
         _onStateChanged();
-
-        // Dialog-based one-by-one save flow (like v04's saveHeroes)
-        await _showSaveHeroesDialog();
+        // SHQL™ SAVE_SEARCH_HEROES() handles the save dialog loop after _FETCH_HEROES returns.
       } finally {
         Height.conflictResolver = previousHeightResolver;
         Weight.conflictResolver = previousWeightResolver;
       }
     } catch (e) {
       debugPrint('Search error: $e');
-      _setAndNotify('_search_results', []);
-      _setAndNotify('_is_loading', false);
-      _setAndNotify('_search_summary', 'Search failed: $e');
+      await _shqlBindings.eval('Search.SET_SEARCH_STATE(__r, FALSE, __s)',
+          boundValues: {'__r': <dynamic>[], '__s': 'Search failed: $e'});
       _onStateChanged();
     }
   }
@@ -141,21 +138,12 @@ class HeroSearchService {
     }
 
     await _coordinator.persistHero(heroModel);
-    publishSearchResults();
+    await publishSearchResults();
 
-    // Update selected hero if it matches
+    // Update selected hero if it matches — reuse the instance from Heroes.heroes.
     try {
-      final selectedEid = await _shqlBindings.eval(
-        'IF _selected_hero != null THEN _selected_hero.external_id ELSE null',
-      );
-      if (selectedEid == externalId) {
-        final saved = _heroDataManager.getByExternalId(externalId);
-        if (saved != null) {
-          _setAndNotify('_selected_hero',
-            HeroShqlAdapter.heroToDisplayObject(saved, _shqlBindings.identifiers, isSaved: true),
-          );
-        }
-      }
+      await _shqlBindings.eval('Heroes.REFRESH_SELECTED_IF(__eid)',
+          boundValues: {'__eid': externalId});
     } catch (_) {}
 
     _onStateChanged();
@@ -165,9 +153,10 @@ class HeroSearchService {
   // Publish search results to SHQL™
   // ---------------------------------------------------------------------------
 
-  void publishSearchResults() {
+  Future<void> publishSearchResults({bool? loading}) async {
     if (_searchResults.isEmpty) {
-      _setAndNotify('_search_results', []);
+      await _shqlBindings.eval('Search.SET_SEARCH_STATE(__r, __l, null)',
+          boundValues: {'__r': <dynamic>[], '__l': loading});
       return;
     }
     final objects = <dynamic>[];
@@ -184,69 +173,29 @@ class HeroSearchService {
         ));
       }
     }
-    _setAndNotify('_search_results', objects);
+    await _shqlBindings.eval('Search.SET_SEARCH_STATE(__r, __l, null)',
+        boundValues: {'__r': objects, '__l': loading});
   }
 
   // ---------------------------------------------------------------------------
-  // Save heroes dialog (one-by-one review)
+  // Hero review dialog (called from SHQL™ _REVIEW_HERO callback)
   // ---------------------------------------------------------------------------
 
-  Future<void> _showSaveHeroesDialog() async {
-    final unsaved = [
-      for (final entry in _searchResults.entries)
-        if (_heroDataManager.getByExternalId(entry.key) == null) entry.value,
-    ];
-    final totalResults = _searchResults.length;
-    final alreadySaved = totalResults - unsaved.length;
-
-    if (unsaved.isEmpty) {
-      _setAndNotify('_search_summary',
-        '$totalResults result${totalResults == 1 ? '' : 's'} found, all already saved');
-      _onStateChanged();
-      return;
-    }
-
-    int saveCount = 0;
-    int skipCount = 0;
-    bool cancelled = false;
-
-    for (int i = 0; i < unsaved.length; i++) {
-      final hero = unsaved[i];
-      final result = await _showHeroReviewDialog(hero, i + 1, unsaved.length);
-
-      switch (result) {
-        case ReviewAction.save:
-          await _coordinator.persistHero(hero);
-          saveCount++;
-          break;
-        case ReviewAction.skip:
-          skipCount++;
-          break;
-        case ReviewAction.saveAll:
-          await _coordinator.persistHero(hero);
-          saveCount++;
-          for (int j = i + 1; j < unsaved.length; j++) {
-            await _coordinator.persistHero(unsaved[j]);
-            saveCount++;
-          }
-          i = unsaved.length;
-          break;
-        case ReviewAction.cancel:
-          skipCount += unsaved.length - i;
-          cancelled = true;
-          i = unsaved.length;
-          break;
-      }
-    }
-
-    final parts = <String>[];
-    parts.add('$totalResults found');
-    if (alreadySaved > 0) parts.add('$alreadySaved already saved');
-    if (saveCount > 0) parts.add('$saveCount saved');
-    if (skipCount > 0) parts.add('$skipCount skipped');
-    if (cancelled) parts.add('cancelled');
-    _setAndNotify('_search_summary', parts.join(', '));
-    _onStateChanged();
+  /// Shows a review dialog for a search result hero. Takes a SHQL™ hero object,
+  /// looks up the HeroModel by externalId, and returns an action string
+  /// ('save', 'skip', 'saveAll', 'cancel').
+  Future<String> reviewHero(dynamic heroObj, int current, int total) async {
+    final map = _shqlBindings.objectToMap(heroObj);
+    final externalId = map['external_id']?.toString() ?? '';
+    final hero = _searchResults[externalId];
+    if (hero == null) return 'skip';
+    final action = await _showHeroReviewDialog(hero, current, total);
+    return switch (action) {
+      ReviewAction.save => 'save',
+      ReviewAction.skip => 'skip',
+      ReviewAction.saveAll => 'saveAll',
+      ReviewAction.cancel => 'cancel',
+    };
   }
 
   Future<ReviewAction> _showHeroReviewDialog(HeroModel hero, int current, int total) {
@@ -323,12 +272,4 @@ class HeroSearchService {
     return completer.future;
   }
 
-  // ---------------------------------------------------------------------------
-  // Helpers
-  // ---------------------------------------------------------------------------
-
-  void _setAndNotify(String name, dynamic value) {
-    _shqlBindings.setVariable(name, value);
-    _shqlBindings.notifyListeners(name);
-  }
 }

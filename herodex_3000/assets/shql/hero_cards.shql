@@ -2,241 +2,259 @@
 -- Hero Card Generation (data-driven from _summary_fields)
 -- ============================================
 
--- Alignment visual metadata (indexed by ordinal 0-9)
-_ALIGNMENT_COLORS := ['0xFF9E9E9E', '0xFF78909C', '0xFF29B6F6', '0xFF42A5F5', '0xFF7986CB', '0xFFFFA726', '0xFFE53935', '0xFFC62828', '0xFF8B0000', '0xFF0D0000'];
-_ALIGNMENT_BORDER_COLORS := ['0x809E9E9E', '0x8078909C', '0x8029B6F6', '0x8042A5F5', '0x807986CB', '0x80FFA726', '0x80E53935', '0x80C62828', '0x808B0000', '0x800D0000'];
-_ALIGNMENT_ICONS := ['help_outline', 'balance', 'verified_user', 'shield', 'thumb_up', 'warning_amber', 'whatshot', 'mood_bad', 'local_fire_department', 'volume_up'];
-_ALIGNMENT_GRADIENT_START := ['0xFF9E9E9E', '0xFF78909C', '0xFF29B6F6', '0xFF42A5F5', '0xFF7986CB', '0xFFFFA726', '0xFFE53935', '0xFFC62828', '0xFF8B0000', '0xFF0D0000'];
-_ALIGNMENT_GRADIENT_END := ['0xFF616161', '0xFF455A64', '0xFF1E88E5', '0xFF00897B', '0xFF3949AB', '0xFFE64A19', '0xFF4A0000', '0xFF3A0000', '0xFF1A0000', '0xFF000000'];
+Cards := OBJECT{
+    -- Alignment visual metadata (indexed by ordinal 0-9)
+    ALIGNMENT_COLORS: ['0xFF9E9E9E', '0xFF78909C', '0xFF29B6F6', '0xFF42A5F5', '0xFF7986CB', '0xFFFFA726', '0xFFE53935', '0xFFC62828', '0xFF8B0000', '0xFF0D0000'],
+    ALIGNMENT_BORDER_COLORS: ['0x809E9E9E', '0x8078909C', '0x8029B6F6', '0x8042A5F5', '0x807986CB', '0x80FFA726', '0x80E53935', '0x80C62828', '0x808B0000', '0x800D0000'],
+    ALIGNMENT_ICONS: ['help_outline', 'balance', 'verified_user', 'shield', 'thumb_up', 'warning_amber', 'whatshot', 'mood_bad', 'local_fire_department', 'volume_up'],
+    ALIGNMENT_GRADIENT_START: ['0xFF9E9E9E', '0xFF78909C', '0xFF29B6F6', '0xFF42A5F5', '0xFF7986CB', '0xFFFFA726', '0xFFE53935', '0xFFC62828', '0xFF8B0000', '0xFF0D0000'],
+    ALIGNMENT_GRADIENT_END: ['0xFF616161', '0xFF455A64', '0xFF1E88E5', '0xFF00897B', '0xFF3949AB', '0xFFE64A19', '0xFF4A0000', '0xFF3A0000', '0xFF1A0000', '0xFF000000'],
 
--- Safe alignment index (clamp to valid range)
-_ALIGN_IDX(__a) := IF __a < 0 OR __a >= LENGTH(_ALIGNMENT_COLORS) THEN 0 ELSE __a;
+    -- Safe alignment index (clamp to valid range)
+    __ALIGN_IDX: (__a) => IF __a < 0 OR __a >= LENGTH(ALIGNMENT_COLORS) THEN 0 ELSE __a,
 
--- Subtitle: publisher + race joined by bullet
-_HERO_SUBTITLE(__publisher, __race) := BEGIN
-    __has_pub := __publisher <> null AND __publisher <> '';
-    __has_race := __race <> null AND __race <> '';
-    RETURN IF __has_pub AND __has_race THEN __publisher + ' \u2022 ' + __race
-           ELSE IF __has_pub THEN __publisher
-           ELSE IF __has_race THEN __race
-           ELSE '';
-END;
+    -- Subtitle: publisher + race joined by bullet
+    __HERO_SUBTITLE: (__publisher, __race) => BEGIN
+        __has_pub := __publisher <> null AND __publisher <> '';
+        __has_race := __race <> null AND __race <> '';
+        RETURN IF __has_pub AND __has_race THEN __publisher + ' • ' + __race
+               ELSE IF __has_pub THEN __publisher
+               ELSE IF __has_race THEN __race
+               ELSE '';
+    END,
 
--- Semantics label for accessibility
-_HERO_SEMANTICS(__name, __align_label, __stats) := BEGIN
-    __label := __name + ', ' + __align_label + ' alignment';
-    IF LENGTH(__stats) > 0 THEN
-        FOR __k := 0 TO LENGTH(__stats) - 1 DO
-            __label := __label + ', ' + __stats[__k].LABEL + ' ' + STRING(__stats[__k].VALUE);
-    RETURN __label;
-END;
+    -- Semantics label for accessibility
+    __HERO_SEMANTICS: (__name, __align_label, __stats) => BEGIN
+        __label := __name + ', ' + __align_label + ' alignment';
+        IF LENGTH(__stats) > 0 THEN
+            FOR __k := 0 TO LENGTH(__stats) - 1 DO
+                __label := __label + ', ' + __stats[__k].LABEL + ' ' + STRING(__stats[__k].VALUE);
+        RETURN __label;
+    END,
 
--- Build stat chip rows (groups of 3 with gaps)
-_MAKE_STAT_CHIP_ROWS(__stats) := BEGIN
-    __rows := [];
-    IF LENGTH(__stats) = 0 THEN RETURN __rows;
-    __row_children := [];
-    FOR __k := 0 TO LENGTH(__stats) - 1 DO BEGIN
-        IF LENGTH(__row_children) > 0 THEN
-            __row_children := __row_children + [{"type": "SizedBox", "props": {"width": 4}}];
-        __row_children := __row_children + [{"type": "StatChip", "props": {
-            "label": __stats[__k].LABEL,
-            "valueText": STRING(__stats[__k].VALUE),
-            "color": __stats[__k].COLOR,
-            "bgColor": __stats[__k].BG_COLOR,
-            "icon": __stats[__k].ICON
-        }}];
-        IF LENGTH(__row_children) >= 5 OR __k = LENGTH(__stats) - 1 THEN BEGIN
-            -- 5 children = 3 chips + 2 gaps (groups of 3 chips)
-            IF LENGTH(__rows) > 0 THEN
-                __rows := __rows + [{"type": "SizedBox", "props": {"height": 4}}];
-            __rows := __rows + [{"type": "Row", "children": __row_children}];
-            __row_children := [];
+    -- Build stat chip rows (groups of 3 with gaps)
+    __MAKE_STAT_CHIP_ROWS: (__stats) => BEGIN
+        __rows := [];
+        IF LENGTH(__stats) = 0 THEN RETURN __rows;
+        __row_children := [];
+        FOR __k := 0 TO LENGTH(__stats) - 1 DO BEGIN
+            IF LENGTH(__row_children) > 0 THEN
+                __row_children := __row_children + [{"type": "SizedBox", "props": {"width": 4}}];
+            __row_children := __row_children + [{"type": "StatChip", "props": {
+                "label": __stats[__k].LABEL,
+                "valueText": STRING(__stats[__k].VALUE),
+                "color": __stats[__k].COLOR,
+                "bgColor": __stats[__k].BG_COLOR,
+                "icon": __stats[__k].ICON
+            }}];
+            IF LENGTH(__row_children) >= 5 OR __k = LENGTH(__stats) - 1 THEN BEGIN
+                IF LENGTH(__rows) > 0 THEN
+                    __rows := __rows + [{"type": "SizedBox", "props": {"height": 4}}];
+                __rows := __rows + [{"type": "Row", "children": __row_children}];
+                __row_children := [];
+            END;
         END;
-    END;
-    RETURN __rows;
-END;
+        RETURN __rows;
+    END,
 
--- Build a complete hero card widget tree.
--- All JSON structure generation happens here in SHQL™ — no Dart factory needed.
-_MAKE_HERO_CARD_TREE(__hero, __onTap, __onDelete, __locked, __onToggleLock) := BEGIN
-    -- Collect props from _summary_fields
-    __stats := [];
-    __name := '';
-    __publisher := '';
-    __race := '';
-    __alignment := 0;
-    __totalPower := 0;
-    __url := null;
+    -- Build a complete hero card widget tree.
+    __MAKE_HERO_CARD_TREE: (__hero, __onTap, __onDelete, __locked, __onToggleLock) => BEGIN
+        -- Collect props from _summary_fields
+        __stats := [];
+        __name := '';
+        __publisher := '';
+        __race := '';
+        __alignment := 0;
+        __totalPower := 0;
+        __url := null;
 
-    FOR __j := 0 TO LENGTH(_summary_fields) - 1 DO BEGIN
-        __sf := _summary_fields[__j];
-        IF __sf.IS_STAT THEN
-            __stats := __stats + [OBJECT{value: __sf.ACCESSOR(__hero), label: __sf.LABEL, color: __sf.COLOR, bg_color: __sf.BG_COLOR, icon: __sf.ICON}]
-        ELSE BEGIN
-            __val := __sf.ACCESSOR(__hero);
-            IF __sf.PROP_NAME = 'name' THEN __name := __val
-            ELSE IF __sf.PROP_NAME = 'publisher' THEN __publisher := __val
-            ELSE IF __sf.PROP_NAME = 'race' THEN __race := __val
-            ELSE IF __sf.PROP_NAME = 'alignment' THEN __alignment := __val
-            ELSE IF __sf.PROP_NAME = 'totalPower' THEN __totalPower := __val
-            ELSE IF __sf.PROP_NAME = 'url' THEN __url := __val;
+        FOR __j := 0 TO LENGTH(_summary_fields) - 1 DO BEGIN
+            __sf := _summary_fields[__j];
+            IF __sf.IS_STAT THEN
+                __stats := __stats + [OBJECT{value: __sf.ACCESSOR(__hero), label: __sf.LABEL, color: __sf.COLOR, bg_color: __sf.BG_COLOR, icon: __sf.ICON}]
+            ELSE BEGIN
+                __val := __sf.ACCESSOR(__hero);
+                IF __sf.PROP_NAME = 'name' THEN __name := __val
+                ELSE IF __sf.PROP_NAME = 'publisher' THEN __publisher := __val
+                ELSE IF __sf.PROP_NAME = 'race' THEN __race := __val
+                ELSE IF __sf.PROP_NAME = 'alignment' THEN __alignment := __val
+                ELSE IF __sf.PROP_NAME = 'totalPower' THEN __totalPower := __val
+                ELSE IF __sf.PROP_NAME = 'url' THEN __url := __val;
+            END;
         END;
-    END;
 
-    __ai := _ALIGN_IDX(__alignment);
-    __align_color := _ALIGNMENT_COLORS[__ai];
-    __align_border := _ALIGNMENT_BORDER_COLORS[__ai];
-    __align_icon := _ALIGNMENT_ICONS[__ai];
-    __align_label := _ALIGNMENT_LABELS[__alignment];
-    __subtitle := _HERO_SUBTITLE(__publisher, __race);
+        __ai := __ALIGN_IDX(__alignment);
+        __align_color := ALIGNMENT_COLORS[__ai];
+        __align_border := ALIGNMENT_BORDER_COLORS[__ai];
+        __align_icon := ALIGNMENT_ICONS[__ai];
+        __align_label := _ALIGNMENT_LABELS[__alignment];
+        __subtitle := __HERO_SUBTITLE(__publisher, __race);
 
-    -- Stat chip rows
-    __stat_rows := _MAKE_STAT_CHIP_ROWS(__stats);
+        -- Stat chip rows
+        __stat_rows := __MAKE_STAT_CHIP_ROWS(__stats);
 
-    -- Info children (name, subtitle, stats, power bar)
-    __info := [{"type": "Text", "props": {"data": __name, "style": {"fontWeight": "bold"}}}];
+        -- Info children (name, subtitle, stats, power bar)
+        __info := [{"type": "Text", "props": {"data": __name, "style": {"fontWeight": "bold"}}}];
 
-    IF __subtitle <> '' THEN
-        __info := __info + [
-            {"type": "SizedBox", "props": {"height": 2}},
-            {"type": "Text", "props": {"data": __subtitle, "style": {"fontSize": 12, "color": IF _is_dark_mode THEN '0xFF9E9E9E' ELSE '0xFF757575'}}}
-        ];
+        IF __subtitle <> '' THEN
+            __info := __info + [
+                {"type": "SizedBox", "props": {"height": 2}},
+                {"type": "Text", "props": {"data": __subtitle, "style": {"fontSize": 12, "color": IF Prefs.is_dark_mode THEN '0xFF9E9E9E' ELSE '0xFF757575'}}}
+            ];
 
-    IF LENGTH(__stat_rows) > 0 THEN
-        __info := __info + [{"type": "SizedBox", "props": {"height": 8}}] + __stat_rows;
+        IF LENGTH(__stat_rows) > 0 THEN
+            __info := __info + [{"type": "SizedBox", "props": {"height": 8}}] + __stat_rows;
 
-    IF __totalPower <> null AND __totalPower > 0 THEN BEGIN
-        __progress := __totalPower / 600;
-        IF __progress > 1 THEN __progress := 1;
-        __info := __info + [
-            {"type": "SizedBox", "props": {"height": 8}},
-            {"type": "PowerBar", "props": {
-                "label": "Total Power: " + STRING(__totalPower),
-                "progress": __progress,
-                "color": __align_color,
-                "bgColor": IF _is_dark_mode THEN '0xFF616161' ELSE '0xFFE0E0E0'
-            }}
-        ];
-    END;
-
-    -- Build the image section: Expanded > Stack > [CachedImage, badge, overlays]
-    __ph_color := IF _is_dark_mode THEN '0xFF424242' ELSE '0xFFEEEEEE';
-    __ph_icon_color := IF _is_dark_mode THEN '0xFF757575' ELSE '0xFFBDBDBD';
-
-    __placeholder := {"type": "Container", "props": {"color": __ph_color, "child": {"type": "HeroPlaceholder", "props": {"color": __ph_icon_color}}}};
-    __spinner := {"type": "Container", "props": {"color": __ph_color, "child": {"type": "Center", "props": {"child": {"type": "CircularProgressIndicator", "props": {}}}}}};
-
-    -- CachedImage is the ONLY Dart boundary (3rd-party with builder callbacks)
-    __stack_children := [{"type": "CachedImage", "props": {"imageUrl": __url, "placeholder": __placeholder, "spinner": __spinner}}];
-
-    -- Alignment badge — Container with gradient (now supported in framework)
-    __stack_children := __stack_children + [{"type": "Positioned", "props": {
-        "top": 8, "left": 8,
-        "child": {"type": "Container", "props": {
-            "padding": {"left": 8, "right": 8, "top": 4, "bottom": 4},
-            "decoration": {"gradient": {"colors": [_ALIGNMENT_GRADIENT_START[__ai], _ALIGNMENT_GRADIENT_END[__ai]]}, "borderRadius": 12},
-            "child": {"type": "BadgeRow", "props": {"icon": __align_icon, "label": __align_label}}
-        }}
-    }}];
-
-    -- Overlay buttons (delete, lock)
-    IF __onDelete <> null THEN
-        __stack_children := __stack_children + [{"type": "OverlayActionButton", "props": {
-            "top": 8, "right": 8,
-            "label": "Remove " + __name + " from database",
-            "bgColor": "0x8A000000",
-            "onTap": __onDelete,
-            "icon": "delete",
-            "iconColor": "0xFFEF9A9A"
-        }}];
-    IF __onToggleLock <> null THEN
-        __stack_children := __stack_children + [{"type": "OverlayActionButton", "props": {
-            "top": IF __onDelete <> null THEN 48 ELSE 8, "right": 8,
-            "label": IF __locked THEN "Unlock " + __name + " (currently locked from reconciliation)" ELSE "Lock " + __name + " (prevent reconciliation changes)",
-            "bgColor": IF __locked THEN "0xE6FFA000" ELSE "0x8A000000",
-            "onTap": __onToggleLock,
-            "icon": IF __locked THEN "lock" ELSE "lock_open",
-            "iconColor": "0xFFFFFFFF"
-        }}];
-
-    __image_section := {"type": "Expanded", "props": {"child": {"type": "Stack", "props": {"fit": "expand", "children": __stack_children}}}};
-
-    -- Assemble card body
-    __card := {"type": "HeroCardBody", "props": {
-        "semanticsLabel": _HERO_SEMANTICS(__name, __align_label, __stats),
-        "isButton": __onTap <> null,
-        "borderColor": __align_border,
-        "onTap": __onTap,
-        "children": [
-            __image_section,
-            {"type": "Padding", "props": {
-                "padding": 12,
-                "child": {"type": "Column", "props": {
-                    "crossAxisAlignment": "start",
-                    "children": __info
+        IF __totalPower <> null AND __totalPower > 0 THEN BEGIN
+            __progress := __totalPower / 600;
+            IF __progress > 1 THEN __progress := 1;
+            __info := __info + [
+                {"type": "SizedBox", "props": {"height": 8}},
+                {"type": "PowerBar", "props": {
+                    "label": "Total Power: " + STRING(__totalPower),
+                    "progress": __progress,
+                    "color": __align_color,
+                    "bgColor": IF Prefs.is_dark_mode THEN '0xFF616161' ELSE '0xFFE0E0E0'
                 }}
+            ];
+        END;
+
+        -- Build the image section
+        __ph_color := IF Prefs.is_dark_mode THEN '0xFF424242' ELSE '0xFFEEEEEE';
+        __ph_icon_color := IF Prefs.is_dark_mode THEN '0xFF757575' ELSE '0xFFBDBDBD';
+
+        __placeholder := {"type": "Container", "props": {"color": __ph_color, "child": {"type": "HeroPlaceholder", "props": {"color": __ph_icon_color}}}};
+        __spinner := {"type": "Container", "props": {"color": __ph_color, "child": {"type": "Center", "props": {"child": {"type": "CircularProgressIndicator", "props": {}}}}}};
+
+        __stack_children := [{"type": "CachedImage", "props": {"imageUrl": __url, "placeholder": __placeholder, "spinner": __spinner}}];
+
+        -- Alignment badge
+        __stack_children := __stack_children + [{"type": "Positioned", "props": {
+            "top": 8, "left": 8,
+            "child": {"type": "Container", "props": {
+                "padding": {"left": 8, "right": 8, "top": 4, "bottom": 4},
+                "decoration": {"gradient": {"colors": [ALIGNMENT_GRADIENT_START[__ai], ALIGNMENT_GRADIENT_END[__ai]]}, "borderRadius": 12},
+                "child": {"type": "BadgeRow", "props": {"icon": __align_icon, "label": __align_label}}
             }}
-        ]
-    }};
+        }}];
 
-    -- Wrap in DismissibleCard for swipe-to-delete
-    IF __onDelete <> null THEN
-        __card := {"type": "DismissibleCard", "props": {"onDismissed": __onDelete, "child": __card}};
+        -- Overlay buttons (delete, lock)
+        IF __onDelete <> null THEN
+            __stack_children := __stack_children + [{"type": "OverlayActionButton", "props": {
+                "top": 8, "right": 8,
+                "label": "Remove " + __name + " from database",
+                "bgColor": "0x8A000000",
+                "onTap": __onDelete,
+                "icon": "delete",
+                "iconColor": "0xFFEF9A9A"
+            }}];
+        IF __onToggleLock <> null THEN
+            __stack_children := __stack_children + [{"type": "OverlayActionButton", "props": {
+                "top": IF __onDelete <> null THEN 48 ELSE 8, "right": 8,
+                "label": IF __locked THEN "Unlock " + __name + " (currently locked from reconciliation)" ELSE "Lock " + __name + " (prevent reconciliation changes)",
+                "bgColor": IF __locked THEN "0xE6FFA000" ELSE "0x8A000000",
+                "onTap": __onToggleLock,
+                "icon": IF __locked THEN "lock" ELSE "lock_open",
+                "iconColor": "0xFFFFFFFF"
+            }}];
 
-    RETURN __card;
-END;
+        __image_section := {"type": "Expanded", "props": {"child": {"type": "Stack", "props": {"fit": "expand", "children": __stack_children}}}};
 
--- source: the SHQL™ variable name as a string, e.g. '_heroes' or '_search_results'
--- deletable: TRUE for saved heroes (show trash can), FALSE for search results
-GENERATE_HERO_CARDS(heroes, source, deletable) := BEGIN
-    result := [];
-    IF LENGTH(heroes) = 0 THEN
+        -- Assemble card body
+        __card := {"type": "HeroCardBody", "props": {
+            "semanticsLabel": __HERO_SEMANTICS(__name, __align_label, __stats),
+            "isButton": __onTap <> null,
+            "borderColor": __align_border,
+            "onTap": __onTap,
+            "children": [
+                __image_section,
+                {"type": "Padding", "props": {
+                    "padding": 12,
+                    "child": {"type": "Column", "props": {
+                        "crossAxisAlignment": "start",
+                        "children": __info
+                    }}
+                }}
+            ]
+        }};
+
+        -- Wrap in DismissibleCard for swipe-to-delete
+        IF __onDelete <> null THEN
+            __card := {"type": "DismissibleCard", "props": {"onDismissed": __onDelete, "child": __card}};
+
+        RETURN __card;
+    END,
+
+    -- source: the SHQL™ variable name as a string, e.g. '_heroes' or '_search_results'
+    -- deletable: TRUE for saved heroes (show trash can), FALSE for search results
+    GENERATE_HERO_CARDS: (heroes, source, deletable) => BEGIN
+        result := [];
+        IF LENGTH(heroes) = 0 THEN
+            RETURN result;
+
+        FOR i := 0 TO LENGTH(heroes) - 1 DO BEGIN
+            hero := heroes[i];
+            __onTap := "Heroes.SELECT_HERO(" + source + "[" + STRING(i) + "])";
+            __onDelete := IF deletable THEN "DELETE_HERO('" + hero.id + "')" ELSE null;
+            result := result + [__MAKE_HERO_CARD_TREE(hero, __onTap, __onDelete, FALSE, null)];
+        END;
         RETURN result;
+    END,
 
-    FOR i := 0 TO LENGTH(heroes) - 1 DO BEGIN
-        hero := heroes[i];
-        __onTap := "SELECT_HERO(" + source + "[" + STRING(i) + "])";
-        __onDelete := IF deletable THEN "DELETE_HERO('" + hero.id + "')" ELSE null;
-        result := result + [_MAKE_HERO_CARD_TREE(hero, __onTap, __onDelete, FALSE, null)];
-    END;
-    RETURN result;
-END;
-
--- Generate saved heroes list (uses _displayed_heroes which is filtered by active filter)
-GENERATE_SAVED_HEROES_CARDS() := BEGIN
-    IF LENGTH(_heroes) = 0 THEN
-        RETURN [{
-            "type": "Center",
-            "child": {
-                "type": "Column",
-                "props": {
-                    "mainAxisAlignment": "center",
-                    "children": [
-                        {"type": "Icon", "props": {"icon": "bookmark_border", "size": 64, "color": "0xFF9E9E9E"}},
-                        {"type": "SizedBox", "props": {"height": 16}},
-                        {"type": "Text", "props": {"data": "No heroes saved yet", "style": {"fontSize": 18}}},
-                        {"type": "SizedBox", "props": {"height": 8}},
-                        {"type": "Text", "props": {"data": "Search and save heroes to build your database!", "style": {"color": "0xFF9E9E9E"}}}
-                    ]
+    -- Generate saved heroes list (uses Filters.displayed_heroes which is filtered by active filter)
+    GENERATE_SAVED_HEROES_CARDS: () => BEGIN
+        IF LENGTH(Heroes.heroes) = 0 THEN
+            RETURN [{
+                "type": "Center",
+                "child": {
+                    "type": "Column",
+                    "props": {
+                        "mainAxisAlignment": "center",
+                        "children": [
+                            {"type": "Icon", "props": {"icon": "bookmark_border", "size": 64, "color": "0xFF9E9E9E"}},
+                            {"type": "SizedBox", "props": {"height": 16}},
+                            {"type": "Text", "props": {"data": "No heroes saved yet", "style": {"fontSize": 18}}},
+                            {"type": "SizedBox", "props": {"height": 8}},
+                            {"type": "Text", "props": {"data": "Search and save heroes to build your database!", "style": {"color": "0xFF9E9E9E"}}}
+                        ]
+                    }
                 }
-            }
-        }];
+            }];
 
-    -- If filter/query is active but no heroes match, show an appropriate message
-    IF LENGTH(_displayed_heroes) = 0 AND (_active_filter_index >= 0 OR NOT (IS_NULL_OR_WHITESPACE(_current_query))) THEN BEGIN
-        __empty_msg := IF NOT (IS_NULL_OR_WHITESPACE(_current_query)) THEN 'No heroes match "' + _current_query + '"' ELSE 'No heroes match this filter';
-        RETURN [{"type": "Center", "child": {"type": "Text", "props": {"data": __empty_msg, "style": {"fontSize": 16, "color": "0xFF757575"}}}}];
-    END;
+        -- If filter/query is active but no heroes match, show an appropriate message
+        IF LENGTH(Filters.displayed_heroes) = 0 AND (Filters.active_filter_index >= 0 OR NOT (IS_NULL_OR_WHITESPACE(Filters.current_query))) THEN BEGIN
+            __empty_msg := IF NOT (IS_NULL_OR_WHITESPACE(Filters.current_query)) THEN 'No heroes match "' + Filters.current_query + '"' ELSE 'No heroes match this filter';
+            RETURN [{"type": "Center", "child": {"type": "Text", "props": {"data": __empty_msg, "style": {"fontSize": 16, "color": "0xFF757575"}}}}];
+        END;
 
-    RETURN GENERATE_HERO_CARDS(_displayed_heroes, '_displayed_heroes', TRUE);
-END;
+        RETURN GENERATE_HERO_CARDS(Filters.displayed_heroes, '_displayed_heroes', TRUE);
+    END,
 
--- Generate a single saved hero card (used by Dart per-ID cache).
--- Uses ID-based lookup from _heroes so no display index is needed.
-GENERATE_SINGLE_HERO_CARD(__hero) := BEGIN
-    __onTap := "SELECT_HERO(_heroes['" + __hero.ID + "'])";
-    __onDelete := "DELETE_HERO('" + __hero.ID + "')";
-    __onToggleLock := "_TOGGLE_LOCK_HERO('" + __hero.ID + "')";
-    RETURN _MAKE_HERO_CARD_TREE(__hero, __onTap, __onDelete, __hero.LOCKED, __onToggleLock);
-END;
+    -- Generate a single saved hero card widget tree.
+    GENERATE_SINGLE_HERO_CARD: (__hero) => BEGIN
+        __onTap := "Heroes.SELECT_HERO(Heroes.heroes['" + __hero.ID + "'])";
+        __onDelete := "DELETE_HERO('" + __hero.ID + "')";
+        __onToggleLock := "_TOGGLE_LOCK_HERO('" + __hero.ID + "')";
+        RETURN __MAKE_HERO_CARD_TREE(__hero, __onTap, __onDelete, __hero.LOCKED, __onToggleLock);
+    END,
+
+    -- Per-ID cache of pre-built hero card widget trees.
+    -- Only regenerated when a hero's data changes (persist/amend/unlock/reconcile).
+    -- Filter and query changes just reindex from the cache.
+    card_cache: {},
+
+    -- Generate + cache a single hero card.
+    CACHE_HERO_CARD: (__hero) => BEGIN
+        card_cache[__hero.ID] := GENERATE_SINGLE_HERO_CARD(__hero);
+    END,
+
+    -- Remove a hero from the card cache.
+    REMOVE_CACHED_CARD: (__id) => BEGIN
+        MAP_REMOVE(card_cache, __id);
+    END,
+
+    -- Clear the entire card cache.
+    CLEAR_CARD_CACHE: () => BEGIN
+        card_cache := {};
+    END
+};

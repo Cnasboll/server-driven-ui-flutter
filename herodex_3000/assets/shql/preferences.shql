@@ -1,71 +1,99 @@
 -- ============================================
--- Theme
+-- Preferences
 -- ============================================
-_is_dark_mode := LOAD_STATE('is_dark_mode', FALSE);
+Prefs := OBJECT{
+    -- Theme
+    is_dark_mode: LOAD_STATE('is_dark_mode', FALSE),
 
-TOGGLE_DARK_MODE() := BEGIN
-    _is_dark_mode := NOT _is_dark_mode;
-    SAVE_PREF('is_dark_mode', _is_dark_mode);
-    SET('_is_dark_mode', _is_dark_mode);
-END;
+    -- Onboarding
+    analytics_enabled: LOAD_STATE('analytics_enabled', FALSE),
+    crashlytics_enabled: LOAD_STATE('crashlytics_enabled', FALSE),
+    location_enabled: LOAD_STATE('location_enabled', FALSE),
+    onboarding_completed: LOAD_STATE('onboarding_completed', FALSE),
 
-SET_DARK_MODE(enabled) := BEGIN
-    _is_dark_mode := enabled;
-    SAVE_PREF('is_dark_mode', enabled);
-    SET('_is_dark_mode', enabled);
-END;
+    -- API Configuration
+    api_key: LOAD_STATE('api_key', ''),
+    api_host: LOAD_STATE('api_host', 'www.superheroapi.com'),
 
--- ============================================
--- Onboarding
--- ============================================
-_analytics_enabled := LOAD_STATE('analytics_enabled', FALSE);
-_crashlytics_enabled := LOAD_STATE('crashlytics_enabled', FALSE);
-_location_enabled := LOAD_STATE('location_enabled', FALSE);
-_onboarding_completed := LOAD_STATE('onboarding_completed', FALSE);
+    -- Save to cloud + notify observers. Every setter delegates here.
+    __SAVE: (key, value) => BEGIN
+        Cloud.SAVE_PREF(key, value);
+        PUBLISH('Prefs.' + key);
+    END,
 
-SET_ANALYTICS_CONSENT(enabled) := BEGIN
-    _analytics_enabled := enabled;
-    SAVE_PREF('analytics_enabled', enabled);
-END;
+    TOGGLE_DARK_MODE: () => BEGIN
+        is_dark_mode := NOT is_dark_mode;
+        __SAVE('is_dark_mode', is_dark_mode);
+    END,
 
-SET_CRASHLYTICS_CONSENT(enabled) := BEGIN
-    _crashlytics_enabled := enabled;
-    SAVE_PREF('crashlytics_enabled', enabled);
-END;
+    SET_DARK_MODE: (enabled) => BEGIN
+        is_dark_mode := enabled;
+        __SAVE('is_dark_mode', enabled);
+    END,
 
-SET_LOCATION_CONSENT(enabled) := BEGIN
-    _location_enabled := enabled;
-    SAVE_PREF('location_enabled', enabled);
-    SET('_location_enabled', enabled);
-END;
+    SET_ANALYTICS_CONSENT: (enabled) => BEGIN
+        analytics_enabled := enabled;
+        __SAVE('analytics_enabled', enabled);
+    END,
 
-COMPLETE_ONBOARDING() := BEGIN
-    _onboarding_completed := TRUE;
-    SAVE_PREF('onboarding_completed', TRUE);
-END;
+    SET_CRASHLYTICS_CONSENT: (enabled) => BEGIN
+        crashlytics_enabled := enabled;
+        __SAVE('crashlytics_enabled', enabled);
+    END,
 
-IS_ONBOARDING_COMPLETED() := _onboarding_completed;
+    SET_LOCATION_CONSENT: (enabled) => BEGIN
+        location_enabled := enabled;
+        __SAVE('location_enabled', enabled);
+    END,
 
-RESET_ONBOARDING() := BEGIN
-    _onboarding_completed := FALSE;
-    SAVE_PREF('onboarding_completed', FALSE);
-    GO_TO('onboarding');
-END;
+    COMPLETE_ONBOARDING: () => BEGIN
+        onboarding_completed := TRUE;
+        __SAVE('onboarding_completed', TRUE);
+    END,
 
--- ============================================
--- API Configuration
--- ============================================
-_api_key := LOAD_STATE('api_key', '');
-_api_host := LOAD_STATE('api_host', 'www.superheroapi.com');
+    IS_ONBOARDING_COMPLETED: () => onboarding_completed,
 
-SET_API_KEY(key) := BEGIN
-    _api_key := key;
-    SAVE_PREF('api_key', key);
-    SET('_api_key', key);
-END;
+    RESET_ONBOARDING: () => BEGIN
+        onboarding_completed := FALSE;
+        __SAVE('onboarding_completed', FALSE);
+        Nav.GO_TO('onboarding');
+    END,
 
-SET_API_HOST(host) := BEGIN
-    _api_host := host;
-    SAVE_PREF('api_host', host);
-    SET('_api_host', host);
-END;
+    SET_API_KEY: (key) => BEGIN
+        api_key := key;
+        __SAVE('api_key', key);
+    END,
+
+    SET_API_HOST: (host) => BEGIN
+        api_host := host;
+        __SAVE('api_host', host);
+    END,
+
+    -- Return all state needed by Dart initialization in one call.
+    GET_INIT_STATE: () => OBJECT{
+        is_dark_mode: is_dark_mode,
+        analytics_enabled: analytics_enabled,
+        crashlytics_enabled: crashlytics_enabled,
+        location_enabled: location_enabled,
+        onboarding_completed: onboarding_completed
+    },
+
+    -- Ensure API credentials are set, prompting the user if needed.
+    -- Returns OBJECT{api_key, api_host} or null if the user cancelled.
+    GET_API_CREDENTIALS: () => BEGIN
+        __key := api_key;
+        IF __key = null OR __key = '' OR __key = 'null' THEN BEGIN
+            __key := _PROMPT('Enter your API key:', '');
+            IF __key = null OR __key = '' THEN RETURN null;
+            SET_API_KEY(__key);
+        END;
+        __host := api_host;
+        __default := 'www.superheroapi.com';
+        IF __host = null OR __host = '' OR __host = 'null' THEN BEGIN
+            __entered := _PROMPT('Enter API host or press enter to accept default ("' + __default + '"):', __default);
+            __host := IF __entered <> null AND __entered <> '' THEN __entered ELSE __default;
+            SET_API_HOST(__host);
+        END;
+        RETURN OBJECT{api_key: __key, api_host: __host};
+    END
+};

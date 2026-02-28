@@ -31,7 +31,7 @@ screen:
                   leading:
                     type: Icon
                     props:
-                      icon: "shql: IF _is_dark_mode THEN 'dark_mode' ELSE 'light_mode'"
+                      icon: "shql: IF Prefs.is_dark_mode THEN 'dark_mode' ELSE 'light_mode'"
                   title:
                     type: Text
                     props:
@@ -39,12 +39,12 @@ screen:
                   trailing:
                     type: Observer
                     props:
-                      query: "_is_dark_mode"
+                      query: "Prefs.is_dark_mode"
                       builder:
                         type: Switch
                         props:
-                          value: "shql: _is_dark_mode"
-                          onChanged: "shql: SET_DARK_MODE(value)"
+                          value: "shql: Prefs.is_dark_mode"
+                          onChanged: "shql: Prefs.SET_DARK_MODE(value)"
 
               - type: Divider
 
@@ -57,11 +57,11 @@ screen:
               - type: ApiField
                 props:
                   label: "Superhero API Key"
-                  query: "_api_key"
-                  initialValue: "shql: _api_key"
+                  query: "Prefs.api_key"
+                  initialValue: "shql: Prefs.api_key"
                   hintText: "Enter your superheroapi.com API key"
-                  onChanged: "SET_API_KEY(value)"
-                  onSubmitted: "SET_API_KEY(value)"
+                  onChanged: "Prefs.SET_API_KEY(value)"
+                  onSubmitted: "Prefs.SET_API_KEY(value)"
 
               - type: Padding
                 props:
@@ -80,11 +80,11 @@ screen:
               - type: ApiField
                 props:
                   label: "API Host"
-                  query: "_api_host"
-                  initialValue: "shql: _api_host"
+                  query: "Prefs.api_host"
+                  initialValue: "shql: Prefs.api_host"
                   hintText: "www.superheroapi.com"
-                  onChanged: "SET_API_HOST(value)"
-                  onSubmitted: "SET_API_HOST(value)"
+                  onChanged: "Prefs.SET_API_HOST(value)"
+                  onSubmitted: "Prefs.SET_API_HOST(value)"
 
               - type: Divider
 
@@ -99,31 +99,31 @@ screen:
                   icon: "analytics"
                   title: "Analytics"
                   subtitle: "Help improve HeroDex with usage data"
-                  query: "_analytics_enabled"
-                  valueExpr: "shql: _analytics_enabled"
-                  onChanged: "SET_ANALYTICS_CONSENT(value)"
+                  query: "Prefs.analytics_enabled"
+                  valueExpr: "shql: Prefs.analytics_enabled"
+                  onChanged: "Prefs.SET_ANALYTICS_CONSENT(value)"
 
               - type: ConsentToggle
                 props:
                   icon: "bug_report"
                   title: "Crash Reports"
                   subtitle: "Automatically send crash reports"
-                  query: "_crashlytics_enabled"
-                  valueExpr: "shql: _crashlytics_enabled"
-                  onChanged: "SET_CRASHLYTICS_CONSENT(value)"
+                  query: "Prefs.crashlytics_enabled"
+                  valueExpr: "shql: Prefs.crashlytics_enabled"
+                  onChanged: "Prefs.SET_CRASHLYTICS_CONSENT(value)"
 
               - type: ConsentToggle
                 props:
                   icon: "location_on"
                   title: "Location Access"
                   subtitle: "Use your real GPS location"
-                  query: "_location_enabled"
-                  valueExpr: "shql: _location_enabled"
-                  onChanged: "SET_LOCATION_CONSENT(value)"
+                  query: "Prefs.location_enabled"
+                  valueExpr: "shql: Prefs.location_enabled"
+                  onChanged: "Prefs.SET_LOCATION_CONSENT(value)"
 
               - type: Observer
                 props:
-                  query: "_location_description"
+                  query: "World.location_description"
                   builder:
                     type: Padding
                     props:
@@ -134,7 +134,7 @@ screen:
                       child:
                         type: Text
                         props:
-                          data: "shql: IF LENGTH(_location_description) > 0 THEN 'Your location: ' + _location_description ELSE ''"
+                          data: "shql: IF LENGTH(World.location_description) > 0 THEN 'Your location: ' + World.location_description ELSE ''"
                           style:
                             fontSize: 12
                             color: "0xFF757575"
@@ -243,7 +243,7 @@ screen:
                     type: Text
                     props:
                       data: "Remove all saved heroes"
-                  onTap: "shql: CLEAR_ALL_DATA()"
+                  onTap: "shql: Heroes.CLEAR_ALL_DATA()"
 
               - type: ListTile
                 props:
@@ -262,7 +262,7 @@ screen:
                     type: Text
                     props:
                       data: "Reset and show welcome screen"
-                  onTap: "shql: RESET_ONBOARDING()"
+                  onTap: "shql: Prefs.RESET_ONBOARDING()"
 
               - type: ListTile
                 props:
@@ -281,10 +281,10 @@ screen:
                     type: Text
                     props:
                       data: "Log out of your account"
-                  onTap: "shql: SIGN_OUT()"
+                  onTap: "shql: Heroes.SIGN_OUT()"
 
     bottomNavigationBar:
       type: BottomNav
       props:
         currentIndex: 3
-        onTap: "TAB_NAV(3, value)"
+        onTap: "Nav.TAB_NAV(3, value)"

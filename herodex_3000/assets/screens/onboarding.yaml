@@ -114,16 +114,16 @@ screen:
 
                       - type: Observer
                         props:
-                          query: "_api_key"
+                          query: "Prefs.api_key"
                           builder:
                             type: TextField
                             props:
-                              initialValue: "shql: _api_key"
+                              initialValue: "shql: Prefs.api_key"
                               decoration:
                                 hintText: "Your superheroapi.com API key"
                                 border: "outline"
                                 prefixIcon: "vpn_key"
-                              onSubmitted: "shql: SET_API_KEY(value)"
+                              onSubmitted: "shql: Prefs.SET_API_KEY(value)"
 
                       - type: SizedBox
                         props:
@@ -131,15 +131,15 @@ screen:
 
                       - type: Observer
                         props:
-                          query: "_api_host"
+                          query: "Prefs.api_host"
                           builder:
                             type: TextField
                             props:
-                              initialValue: "shql: _api_host"
+                              initialValue: "shql: Prefs.api_host"
                               decoration:
                                 hintText: "www.superheroapi.com"
                                 border: "outline"
-                              onSubmitted: "shql: SET_API_HOST(value)"
+                              onSubmitted: "shql: Prefs.SET_API_HOST(value)"
 
                       - type: SizedBox
                         props:
@@ -204,9 +204,9 @@ screen:
                               color: "0xFF1976D2"
                               title: "Analytics"
                               subtitle: "Help improve HeroDex"
-                              query: "_analytics_enabled"
-                              valueExpr: "shql: _analytics_enabled"
-                              onChanged: "SET_ANALYTICS_CONSENT(value)"
+                              query: "Prefs.analytics_enabled"
+                              valueExpr: "shql: Prefs.analytics_enabled"
+                              onChanged: "Prefs.SET_ANALYTICS_CONSENT(value)"
 
                       - type: SizedBox
                         props:
@@ -222,9 +222,9 @@ screen:
                               color: "0xFFFF9800"
                               title: "Crash Reports"
                               subtitle: "Send crash reports automatically"
-                              query: "_crashlytics_enabled"
-                              valueExpr: "shql: _crashlytics_enabled"
-                              onChanged: "SET_CRASHLYTICS_CONSENT(value)"
+                              query: "Prefs.crashlytics_enabled"
+                              valueExpr: "shql: Prefs.crashlytics_enabled"
+                              onChanged: "Prefs.SET_CRASHLYTICS_CONSENT(value)"
 
                       - type: SizedBox
                         props:
@@ -240,9 +240,9 @@ screen:
                               color: "0xFF4CAF50"
                               title: "Location"
                               subtitle: "Use your real GPS location"
-                              query: "_location_enabled"
-                              valueExpr: "shql: _location_enabled"
-                              onChanged: "SET_LOCATION_CONSENT(value)"
+                              query: "Prefs.location_enabled"
+                              valueExpr: "shql: Prefs.location_enabled"
+                              onChanged: "Prefs.SET_LOCATION_CONSENT(value)"
 
                       - type: SizedBox
                         props:
@@ -251,7 +251,7 @@ screen:
                       # Continue Button
                       - type: ElevatedButton
                         props:
-                          onPressed: "shql: COMPLETE_ONBOARDING(); GO_TO('home')"
+                          onPressed: "shql: Prefs.COMPLETE_ONBOARDING(); Nav.GO_TO('home')"
                           style:
                             minimumSize:
                               width: "infinity"

@@ -28,14 +28,14 @@ screen:
                     hintText: "Enter hero or villain name..."
                     prefixIcon: "search"
                     border: "outline"
-                  value: "shql: _search_query"
-                  onChanged: "shql: _search_query := value"
-                  onSubmitted: "shql: SEARCH_HEROES(value)"
+                  value: "shql: Search.search_query"
+                  onChanged: "shql: Search.SET_SEARCH_QUERY(value)"
+                  onSubmitted: "shql: Search.SEARCH_HEROES(value)"
 
           # Search History
           - type: Observer
             props:
-              query: "_search_history"
+              query: "Search.search_history"
               builder:
                 type: Padding
                 props:
@@ -48,23 +48,23 @@ screen:
                     props:
                       spacing: 8
                       runSpacing: 4
-                      children: "shql: GENERATE_SEARCH_HISTORY()"
+                      children: "shql: Search.GENERATE_SEARCH_HISTORY()"
 
           # Loading Indicator
           - type: Observer
             props:
-              query: "_is_loading"
+              query: "Search.is_loading"
               builder:
-                type: "shql: IF _is_loading THEN 'LinearProgressIndicator' ELSE 'SizedBox'"
+                type: "shql: IF Search.is_loading THEN 'LinearProgressIndicator' ELSE 'SizedBox'"
                 props:
-                  height: "shql: IF _is_loading THEN null ELSE 0"
+                  height: "shql: IF Search.is_loading THEN null ELSE 0"
 
           # Reconcile progress (shown during reconciliation)
           - type: Observer
             props:
-              query: "_reconcile_active, _reconcile_current, _reconcile_status"
+              query: "Heroes.reconcile_active, Heroes.reconcile_current, Heroes.reconcile_status"
               builder:
-                type: "shql: IF _reconcile_active THEN 'Padding' ELSE 'SizedBox'"
+                type: "shql: IF Heroes.reconcile_active THEN 'Padding' ELSE 'SizedBox'"
                 props:
                   height: 0
                   padding:
@@ -101,13 +101,13 @@ screen:
                                       children:
                                         - type: Text
                                           props:
-                                            data: "shql: 'Reconciling: ' + _reconcile_current"
+                                            data: "shql: 'Reconciling: ' + Heroes.reconcile_current"
                                             style:
                                               fontWeight: "bold"
                                               fontSize: 13
                                         - type: Text
                                           props:
-                                            data: "shql: _reconcile_status"
+                                            data: "shql: Heroes.reconcile_status"
                                             style:
                                               fontSize: 12
                                               color: "0xFF757575"
@@ -116,7 +116,7 @@ screen:
                                     width: 8
                                 - type: TextButton
                                   props:
-                                    onPressed: "shql: ABORT_RECONCILE()"
+                                    onPressed: "shql: Heroes.ABORT_RECONCILE()"
                                     child:
                                       type: Text
                                       props:
@@ -127,9 +127,9 @@ screen:
           # Search summary message (shown after dialog-based save flow)
           - type: Observer
             props:
-              query: "_search_summary"
+              query: "Search.search_summary"
               builder:
-                type: "shql: IF LENGTH(_search_summary) > 0 THEN 'Padding' ELSE 'SizedBox'"
+                type: "shql: IF LENGTH(Search.search_summary) > 0 THEN 'Padding' ELSE 'SizedBox'"
                 props:
                   height: 0
                   padding:
@@ -159,7 +159,7 @@ screen:
                                   child:
                                     type: Text
                                     props:
-                                      data: "shql: _search_summary"
+                                      data: "shql: Search.search_summary"
                                       style:
                                         fontSize: 13
 
@@ -173,7 +173,7 @@ screen:
               child:
                 type: OutlinedButton
                 props:
-                  onPressed: "shql: RECONCILE_HEROES()"
+                  onPressed: "shql: Heroes.RECONCILE_HEROES()"
                   child:
                     type: Row
                     props:
@@ -195,12 +195,12 @@ screen:
             child:
               type: Observer
               props:
-                query: "_reconcile_log"
+                query: "Heroes.reconcile_log"
                 builder:
-                  type: "shql: IF LENGTH(_reconcile_log) > 0 THEN 'ListView' ELSE 'Center'"
+                  type: "shql: IF LENGTH(Heroes.reconcile_log) > 0 THEN 'ListView' ELSE 'Center'"
                   props:
                     padding: 0
-                    children: "shql: _reconcile_log"
+                    children: "shql: Heroes.reconcile_log"
                     child:
                       type: Column
                       props:
@@ -233,4 +233,4 @@ screen:
       type: BottomNav
       props:
         currentIndex: 1
-        onTap: "TAB_NAV(1, value)"
+        onTap: "Nav.TAB_NAV(1, value)"

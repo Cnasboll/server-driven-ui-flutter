@@ -1,140 +1,145 @@
 -- ============================================
 -- Firebase Auth
 -- ============================================
+Auth := OBJECT{
+    FIREBASE_API_KEY: 'AIzaSyAi3vFRB12aGVJjTiqIBOpRazJr43kvSkA',
+    FIREBASE_PROJECT_ID: 'server-driven-ui-flutter',
+    FIREBASE_AUTH_BASE: 'https://identitytoolkit.googleapis.com/v1/accounts',
 
-_FIREBASE_API_KEY := 'AIzaSyAi3vFRB12aGVJjTiqIBOpRazJr43kvSkA';
-_FIREBASE_PROJECT_ID := 'server-driven-ui-flutter';
-_FIREBASE_AUTH_BASE := 'https://identitytoolkit.googleapis.com/v1/accounts';
+    -- Map Firebase error codes to user-friendly messages
+    __FIREBASE_ERROR_MSG: (code) => BEGIN
+        IF code = 'EMAIL_NOT_FOUND' THEN RETURN 'No account found with this email.';
+        IF code = 'INVALID_PASSWORD' THEN RETURN 'Incorrect password.';
+        IF code = 'USER_DISABLED' THEN RETURN 'This account has been disabled.';
+        IF code = 'EMAIL_EXISTS' THEN RETURN 'An account already exists with this email.';
+        IF code = 'INVALID_EMAIL' THEN RETURN 'Please enter a valid email address.';
+        IF code = 'INVALID_LOGIN_CREDENTIALS' THEN RETURN 'Invalid email or password.';
+        IF code ~ 'WEAK_PASSWORD' THEN RETURN 'Password must be at least 6 characters.';
+        RETURN code;
+    END,
 
--- Map Firebase error codes to user-friendly messages
-__FIREBASE_ERROR_MSG(code) := BEGIN
-    IF code = 'EMAIL_NOT_FOUND' THEN RETURN 'No account found with this email.';
-    IF code = 'INVALID_PASSWORD' THEN RETURN 'Incorrect password.';
-    IF code = 'USER_DISABLED' THEN RETURN 'This account has been disabled.';
-    IF code = 'EMAIL_EXISTS' THEN RETURN 'An account already exists with this email.';
-    IF code = 'INVALID_EMAIL' THEN RETURN 'Please enter a valid email address.';
-    IF code = 'INVALID_LOGIN_CREDENTIALS' THEN RETURN 'Invalid email or password.';
-    IF code ~ 'WEAK_PASSWORD' THEN RETURN 'Password must be at least 6 characters.';
-    RETURN code;
-END;
+    -- Extract error message from Firebase REST response body
+    __FIREBASE_EXTRACT_ERROR: (body) => BEGIN
+        IF body = null THEN RETURN 'Unknown error';
+        __err := body["error"];
+        IF __err = null THEN RETURN 'Unknown error';
+        __msg := __err["message"];
+        IF __msg = null THEN RETURN 'Unknown error';
+        RETURN __FIREBASE_ERROR_MSG(__msg);
+    END,
 
--- Extract error message from Firebase REST response body
-__FIREBASE_EXTRACT_ERROR(body) := BEGIN
-    IF body = null THEN RETURN 'Unknown error';
-    __err := body["error"];
-    IF __err = null THEN RETURN 'Unknown error';
-    __msg := __err["message"];
-    IF __msg = null THEN RETURN 'Unknown error';
-    RETURN __FIREBASE_ERROR_MSG(__msg);
-END;
+    -- Persist auth session from successful response
+    __FIREBASE_PERSIST_SESSION: (body) => BEGIN
+        __token := body["idToken"];
+        __email := body["email"];
+        __uid := body["localId"];
+        __refresh := body["refreshToken"];
+        IF __token <> null THEN SAVE_STATE('_auth_id_token', __token);
+        IF __email <> null THEN SAVE_STATE('_auth_email', __email);
+        IF __uid <> null THEN BEGIN
+            SAVE_STATE('_auth_uid', __uid);
+            Cloud.SET_AUTH_UID(__uid);
+        END;
+        IF __refresh <> null THEN SAVE_STATE('_auth_refresh_token', __refresh);
+    END,
 
--- Persist auth session from successful response
-__FIREBASE_PERSIST_SESSION(body) := BEGIN
-    __token := body["idToken"];
-    __email := body["email"];
-    __uid := body["localId"];
-    __refresh := body["refreshToken"];
-    IF __token <> null THEN SAVE_STATE('_auth_id_token', __token);
-    IF __email <> null THEN SAVE_STATE('_auth_email', __email);
-    IF __uid <> null THEN SAVE_STATE('_auth_uid', __uid);
-    IF __refresh <> null THEN SAVE_STATE('_auth_refresh_token', __refresh);
-END;
+    -- Refresh the ID token using the stored refresh token.
+    -- Returns the new ID token, or '' if refresh failed.
+    FIREBASE_REFRESH_TOKEN: () => BEGIN
+        __refresh := LOAD_STATE('_auth_refresh_token', '');
+        IF __refresh = '' THEN RETURN '';
+        __url := 'https://securetoken.googleapis.com/v1/token?key=' + FIREBASE_API_KEY;
+        __body := {};
+        __body["grant_type"] := 'refresh_token';
+        __body["refresh_token"] := __refresh;
+        __response := POST(__url, __body);
+        IF __response["status"] = 200 THEN BEGIN
+            __new_token := __response["body"]["id_token"];
+            __new_refresh := __response["body"]["refresh_token"];
+            IF __new_token <> null THEN SAVE_STATE('_auth_id_token', __new_token);
+            IF __new_refresh <> null THEN SAVE_STATE('_auth_refresh_token', __new_refresh);
+            RETURN __new_token;
+        END;
+        RETURN '';
+    END,
 
--- Refresh the ID token using the stored refresh token.
--- Returns the new ID token, or '' if refresh failed.
-FIREBASE_REFRESH_TOKEN() := BEGIN
-    __refresh := LOAD_STATE('_auth_refresh_token', '');
-    IF __refresh = '' THEN RETURN '';
-    __url := 'https://securetoken.googleapis.com/v1/token?key=' + _FIREBASE_API_KEY;
-    __body := {};
-    __body["grant_type"] := 'refresh_token';
-    __body["refresh_token"] := __refresh;
-    __response := POST(__url, __body);
-    IF __response["status"] = 200 THEN BEGIN
-        __new_token := __response["body"]["id_token"];
-        __new_refresh := __response["body"]["refresh_token"];
-        IF __new_token <> null THEN SAVE_STATE('_auth_id_token', __new_token);
-        IF __new_refresh <> null THEN SAVE_STATE('_auth_refresh_token', __new_refresh);
-        RETURN __new_token;
-    END;
-    RETURN '';
-END;
+    -- Common auth request: POST to endpoint, persist session on success.
+    -- Returns null on success, error string on failure.
+    __FIREBASE_AUTH: (endpoint, email, password) => BEGIN
+        __url := FIREBASE_AUTH_BASE + ':' + endpoint + '?key=' + FIREBASE_API_KEY;
+        __body := {};
+        __body["email"] := email;
+        __body["password"] := password;
+        __body["returnSecureToken"] := TRUE;
+        __response := POST(__url, __body);
+        IF __response["status"] = 200 THEN BEGIN
+            __FIREBASE_PERSIST_SESSION(__response["body"]);
+            RETURN null;
+        END;
+        RETURN __FIREBASE_EXTRACT_ERROR(__response["body"]);
+    END,
 
--- Sign in with email + password.
--- Returns null on success, error string on failure.
-FIREBASE_SIGN_IN(email, password) := BEGIN
-    __url := _FIREBASE_AUTH_BASE + ':signInWithPassword?key=' + _FIREBASE_API_KEY;
-    __body := {};
-    __body["email"] := email;
-    __body["password"] := password;
-    __body["returnSecureToken"] := TRUE;
-    __response := POST(__url, __body);
-    IF __response["status"] = 200 THEN BEGIN
-        __FIREBASE_PERSIST_SESSION(__response["body"]);
-        RETURN null;
-    END;
-    RETURN __FIREBASE_EXTRACT_ERROR(__response["body"]);
-END;
+    FIREBASE_SIGN_IN: (email, password) => __FIREBASE_AUTH('signInWithPassword', email, password),
+    FIREBASE_SIGN_UP: (email, password) => __FIREBASE_AUTH('signUp', email, password),
 
--- Sign up with email + password.
--- Returns null on success, error string on failure.
-FIREBASE_SIGN_UP(email, password) := BEGIN
-    __url := _FIREBASE_AUTH_BASE + ':signUp?key=' + _FIREBASE_API_KEY;
-    __body := {};
-    __body["email"] := email;
-    __body["password"] := password;
-    __body["returnSecureToken"] := TRUE;
-    __response := POST(__url, __body);
-    IF __response["status"] = 200 THEN BEGIN
-        __FIREBASE_PERSIST_SESSION(__response["body"]);
-        RETURN null;
-    END;
-    RETURN __FIREBASE_EXTRACT_ERROR(__response["body"]);
-END;
+    -- Sign out: clear stored session tokens
+    FIREBASE_SIGN_OUT: () => BEGIN
+        SAVE_STATE('_auth_id_token', null);
+        SAVE_STATE('_auth_email', null);
+        SAVE_STATE('_auth_uid', null);
+        SAVE_STATE('_auth_refresh_token', null);
+    END,
 
--- Sign out: clear stored session tokens
-FIREBASE_SIGN_OUT() := BEGIN
-    SAVE_STATE('_auth_id_token', null);
-    SAVE_STATE('_auth_email', null);
-    SAVE_STATE('_auth_uid', null);
-    SAVE_STATE('_auth_refresh_token', null);
-END;
+    -- ============================================
+    -- Login screen state & logic
+    -- ============================================
+    LOGIN_IS_REGISTERING: FALSE,
+    LOGIN_IS_LOADING: FALSE,
+    LOGIN_ERROR: '',
+    LOGIN_EMAIL: '',
+    LOGIN_PASSWORD: '',
 
--- ============================================
--- Login screen state & logic
--- ============================================
+    SET_LOGIN_ERROR: (msg) => BEGIN
+        LOGIN_ERROR := msg;
+        PUBLISH('Auth.LOGIN_ERROR');
+    END,
 
-_LOGIN_IS_REGISTERING := FALSE;
-_LOGIN_IS_LOADING := FALSE;
-_LOGIN_ERROR := '';
-_LOGIN_EMAIL := '';
-_LOGIN_PASSWORD := '';
+    SET_LOGIN_IS_LOADING: (loading) => BEGIN
+        LOGIN_IS_LOADING := loading;
+        PUBLISH('Auth.LOGIN_IS_LOADING');
+    END,
 
--- Submit login/register form.
--- __ON_AUTHENTICATED is a native Dart callback registered by app.dart.
-_LOGIN_SUBMIT() := BEGIN
-    __email := TRIM(_LOGIN_EMAIL);
-    __password := _LOGIN_PASSWORD;
-    IF __email = '' OR __password = '' THEN BEGIN
-        SET('_LOGIN_ERROR', 'Please enter email and password.');
-        RETURN null;
-    END;
-    SET('_LOGIN_IS_LOADING', TRUE);
-    SET('_LOGIN_ERROR', '');
-    __result := IF _LOGIN_IS_REGISTERING THEN
-        FIREBASE_SIGN_UP(__email, __password)
-    ELSE
-        FIREBASE_SIGN_IN(__email, __password);
-    IF __result = null THEN BEGIN
-        __ON_AUTHENTICATED;
-    END ELSE BEGIN
-        SET('_LOGIN_IS_LOADING', FALSE);
-        SET('_LOGIN_ERROR', __result);
-    END;
-END;
+    SET_LOGIN_IS_REGISTERING: (registering) => BEGIN
+        LOGIN_IS_REGISTERING := registering;
+        PUBLISH('Auth.LOGIN_IS_REGISTERING');
+    END,
 
--- Toggle between sign-in and register mode.
-_LOGIN_TOGGLE_MODE() := BEGIN
-    SET('_LOGIN_IS_REGISTERING', NOT _LOGIN_IS_REGISTERING);
-    SET('_LOGIN_ERROR', '');
-END;
+    -- Submit login/register form.
+    -- __ON_AUTHENTICATED is a native Dart callback registered by app.dart.
+    LOGIN_SUBMIT: () => BEGIN
+        __email := TRIM(LOGIN_EMAIL);
+        __password := LOGIN_PASSWORD;
+        IF __email = '' OR __password = '' THEN BEGIN
+            SET_LOGIN_ERROR('Please enter email and password.');
+            RETURN null;
+        END;
+        SET_LOGIN_IS_LOADING(TRUE);
+        SET_LOGIN_ERROR('');
+        __result := IF LOGIN_IS_REGISTERING THEN
+            FIREBASE_SIGN_UP(__email, __password)
+        ELSE
+            FIREBASE_SIGN_IN(__email, __password);
+        IF __result = null THEN BEGIN
+            __ON_AUTHENTICATED;
+        END ELSE BEGIN
+            SET_LOGIN_IS_LOADING(FALSE);
+            SET_LOGIN_ERROR(__result);
+        END;
+    END,
+
+    -- Toggle between sign-in and register mode.
+    LOGIN_TOGGLE_MODE: () => BEGIN
+        SET_LOGIN_IS_REGISTERING(NOT LOGIN_IS_REGISTERING);
+        SET_LOGIN_ERROR('');
+    END
+};

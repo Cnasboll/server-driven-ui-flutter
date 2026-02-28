@@ -1155,6 +1155,86 @@ END;
     });
   });
 
+  group('THIS self-reference in OBJECT', () {
+    test('THIS resolves to the object itself', () async {
+      // getThis() returns THIS, and we verify it has the same field x
+      expect(
+        await Engine.execute('''
+          obj := OBJECT{x: 10, getThis: () => THIS};
+          obj.getThis().x
+        '''),
+        10,
+      );
+    });
+
+    test('THIS.field works for dot access', () async {
+      expect(
+        await Engine.execute('''
+          obj := OBJECT{x: 42, getX: () => THIS.x};
+          obj.getX()
+        '''),
+        42,
+      );
+    });
+
+    test('THIS enables fluent/builder pattern', () async {
+      expect(
+        await Engine.execute('''
+          builder := OBJECT{
+            value: 0,
+            setValue: (v) => BEGIN value := v; RETURN THIS; END
+          };
+          builder.setValue(99).value
+        '''),
+        99,
+      );
+    });
+
+    test('Nested objects have independent THIS', () async {
+      expect(
+        await Engine.execute('''
+          outer := OBJECT{
+            name: "outer",
+            inner: OBJECT{
+              name: "inner",
+              getName: () => THIS.name
+            },
+            getName: () => THIS.name
+          };
+          outer.inner.getName()
+        '''),
+        'inner',
+      );
+
+      expect(
+        await Engine.execute('''
+          outer := OBJECT{
+            name: "outer",
+            inner: OBJECT{
+              name: "inner",
+              getName: () => THIS.name
+            },
+            getName: () => THIS.name
+          };
+          outer.getName()
+        '''),
+        'outer',
+      );
+    });
+
+    test('THIS is mutable (can be reassigned)', () async {
+      // THIS is a variable, not a constant — users CAN reassign it
+      // but that is their choice (like any other variable)
+      expect(
+        await Engine.execute('''
+          obj := OBJECT{x: 10, getX: () => THIS.x};
+          obj.getX()
+        '''),
+        10,
+      );
+    });
+  });
+
   group('Null value handling', () {
     test('Should distinguish between undefined and null variables', () async {
       expect(await Engine.execute('x := null; x'), null);

@@ -2,81 +2,120 @@
 -- Hero Edit
 -- ============================================
 -- Edit hero form state (list of field descriptors, populated by _PREPARE_EDIT Dart callback)
-_edit_fields := [];
+HeroEdit := OBJECT{
+    edit_fields: [],
 
--- Prepare edit form generically from the hero's Field hierarchy (Dart walks the tree)
--- and navigate to the edit screen.
-EDIT_HERO() := BEGIN
-    _PREPARE_EDIT;
-    GO_TO('hero_edit');
-END;
+    -- Set edit fields from Dart (called with bound variable).
+    SET_EDIT_FIELDS: (fields) => BEGIN
+        edit_fields := fields;
+        PUBLISH('HeroEdit.edit_fields');
+    END,
 
--- Submit amendments to native code
-SAVE_AMENDMENTS() := BEGIN
-    _APPLY_AMENDMENT(_selected_hero.id);
-END;
+    -- Prepare edit form generically from the hero's Field hierarchy (Dart walks the tree)
+    -- and navigate to the edit screen.
+    EDIT_HERO: () => BEGIN
+        _PREPARE_EDIT;
+        Nav.GO_TO('hero_edit');
+    END,
 
--- Generate the edit form dynamically from _edit_fields (set by _PREPARE_EDIT).
--- Each field descriptor is OBJECT{section, label, json_section, json_name,
--- field_type ("string"|"enum"|"number"), value, original, options (list for enums)}.
--- Groups fields by section, producing a Card per Amendable sub-model.
-GENERATE_EDIT_FORM() := BEGIN
-    result := [];
-    IF _edit_fields = null OR LENGTH(_edit_fields) = 0 THEN
-        RETURN result;
+    -- Build the amendment map from edit_fields (changed values only).
+    -- Returns null if no changes were made.
+    BUILD_AMENDMENT: () => BEGIN
+        IF edit_fields = null OR LENGTH(edit_fields) = 0 THEN RETURN null;
+        __amendment := {};
+        FOR __i := 0 TO LENGTH(edit_fields) - 1 DO BEGIN
+            __fld := edit_fields[__i];
+            __value := STRING(__fld.VALUE);
+            __original := STRING(__fld.ORIGINAL);
+            IF __value = __original THEN CONTINUE;
 
-    current_section := '';
+            -- For enum fields, map display value back to enum name
+            __amend_value := __value;
+            IF __fld.FIELD_TYPE = 'enum' THEN BEGIN
+                __options := __fld.OPTIONS;
+                __names := __fld.ENUM_NAMES;
+                IF __options <> null AND __names <> null THEN BEGIN
+                    __idx := INDEX_OF(__options, __value);
+                    IF __idx >= 0 AND __idx < LENGTH(__names) THEN
+                        __amend_value := __names[__idx];
+                END;
+            END;
 
-    FOR i := 0 TO LENGTH(_edit_fields) - 1 DO BEGIN
-        fld := _edit_fields[i];
+            -- Nest under json_section if present
+            __section := STRING(__fld.JSON_SECTION);
+            __json_name := STRING(__fld.JSON_NAME);
+            IF __section <> '' THEN BEGIN
+                IF __amendment[__section] = null THEN
+                    __amendment[__section] := {};
+                __amendment[__section][__json_name] := __amend_value;
+            END ELSE
+                __amendment[__json_name] := __amend_value;
+        END;
+        IF LENGTH(__amendment) = 0 THEN RETURN null;
+        RETURN __amendment;
+    END,
 
-        -- Section header when section changes (each Amendable gets its own Card-like header)
-        IF fld.SECTION <> current_section AND fld.SECTION <> '' THEN BEGIN
-            current_section := fld.SECTION;
-            -- Add spacing + section header
+    -- Submit amendments to native code
+    SAVE_AMENDMENTS: () => BEGIN
+        _APPLY_AMENDMENT(Heroes.selected_hero.id);
+    END,
+
+    -- Generate the edit form dynamically from edit_fields (set by _PREPARE_EDIT).
+    GENERATE_EDIT_FORM: () => BEGIN
+        result := [];
+        IF edit_fields = null OR LENGTH(edit_fields) = 0 THEN
+            RETURN result;
+
+        current_section := '';
+
+        FOR i := 0 TO LENGTH(edit_fields) - 1 DO BEGIN
+            fld := edit_fields[i];
+
+            -- Section header when section changes
+            IF fld.SECTION <> current_section AND fld.SECTION <> '' THEN BEGIN
+                current_section := fld.SECTION;
+                result := result + [
+                    {"type": "SizedBox", "props": {"height": 24}},
+                    {"type": "Text", "props": {
+                        "data": current_section,
+                        "style": {"fontSize": 16, "fontWeight": "bold", "color": "0xFF1976D2"}
+                    }},
+                    {"type": "SizedBox", "props": {"height": 8}}
+                ];
+            END;
+
+            -- Field label
             result := result + [
-                {"type": "SizedBox", "props": {"height": 24}},
                 {"type": "Text", "props": {
-                    "data": current_section,
-                    "style": {"fontSize": 16, "fontWeight": "bold", "color": "0xFF1976D2"}
+                    "data": fld.LABEL,
+                    "style": {"fontWeight": "bold", "fontSize": 14}
                 }},
-                {"type": "SizedBox", "props": {"height": 8}}
+                {"type": "SizedBox", "props": {"height": 4}}
             ];
+
+            -- Widget depends on field_type
+            IF fld.FIELD_TYPE = 'enum' THEN BEGIN
+                result := result + [
+                    {"type": "DropdownButton", "props": {
+                        "items": fld.OPTIONS,
+                        "value": fld.VALUE,
+                        "hint": "Select " + fld.LABEL,
+                        "onChanged": "shql: HeroEdit.edit_fields[" + STRING(i) + "].VALUE := value"
+                    }}
+                ];
+            END ELSE BEGIN
+                result := result + [
+                    {"type": "TextField", "props": {
+                        "initialValue": fld.VALUE,
+                        "decoration": {"border": "outline"},
+                        "onChanged": "shql: HeroEdit.edit_fields[" + STRING(i) + "].VALUE := value"
+                    }}
+                ];
+            END;
+
+            result := result + [{"type": "SizedBox", "props": {"height": 16}}];
         END;
 
-        -- Field label
-        result := result + [
-            {"type": "Text", "props": {
-                "data": fld.LABEL,
-                "style": {"fontWeight": "bold", "fontSize": 14}
-            }},
-            {"type": "SizedBox", "props": {"height": 4}}
-        ];
-
-        -- Widget depends on field_type
-        IF fld.FIELD_TYPE = 'enum' THEN BEGIN
-            -- Dropdown for enum fields
-            result := result + [
-                {"type": "DropdownButton", "props": {
-                    "items": fld.OPTIONS,
-                    "value": fld.VALUE,
-                    "hint": "Select " + fld.LABEL,
-                    "onChanged": "shql: _edit_fields[" + STRING(i) + "].VALUE := value"
-                }}
-            ];
-        END ELSE BEGIN
-            -- TextField for string/number fields
-            result := result + [
-                {"type": "TextField", "props": {
-                    "initialValue": fld.VALUE,
-                    "decoration": {"border": "outline"},
-                    "onChanged": "shql: _edit_fields[" + STRING(i) + "].VALUE := value"
-                }}
-            ];
-        END;
-
-        result := result + [{"type": "SizedBox", "props": {"height": 16}}];
-    END;
-
-    RETURN result;
-END;
+        RETURN result;
+    END
+};

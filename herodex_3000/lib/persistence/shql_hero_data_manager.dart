@@ -102,15 +102,10 @@ class ShqlHeroDataManager implements HeroDataManaging {
     for (int i = 0; i < allHeroes.length; i++) {
       _heroObjectsById[allHeroes[i].id] = objects[i];
     }
-    // Batch all ON_HERO_ADDED calls into a single SHQL™ execution to avoid
-    // 44 separate parse → ExecutionContext → tick-loop cycles.
+    // Batch all ON_HERO_ADDED calls into a single SHQL™ method call.
     if (objects.isNotEmpty) {
-      await _shqlBindings.eval(
-        'IF LENGTH(__heroes_to_add) > 0 THEN '
-        'FOR __i := 0 TO LENGTH(__heroes_to_add) - 1 DO '
-        'ON_HERO_ADDED(__heroes_to_add[__i])',
-        boundValues: {'__heroes_to_add': objects},
-      );
+      await _shqlBindings.eval('Heroes.ON_HEROES_ADDED(__list)',
+          boundValues: {'__list': objects});
     }
   }
 }

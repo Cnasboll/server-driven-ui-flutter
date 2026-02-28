@@ -15,8 +15,8 @@ screen:
         actions:
           - type: IconButton
             props:
-              icon: "shql: IF _is_dark_mode THEN 'light_mode' ELSE 'dark_mode'"
-              onPressed: "shql: TOGGLE_DARK_MODE()"
+              icon: "shql: IF Prefs.is_dark_mode THEN 'light_mode' ELSE 'dark_mode'"
+              onPressed: "shql: Prefs.TOGGLE_DARK_MODE()"
 
     body:
       type: SingleChildScrollView
@@ -40,11 +40,11 @@ screen:
                   content:
                     type: Observer
                     props:
-                      query: "_total_heroes"
+                      query: "Heroes.total_heroes"
                       builder:
                         type: Text
                         props:
-                          data: "shql: GET_WAR_STATUS()"
+                          data: "shql: World.GET_WAR_STATUS()"
                           style:
                             color: "0xFFB3E5FC"
                             fontSize: 14
@@ -56,7 +56,7 @@ screen:
               # Weather Card
               - type: Observer
                 props:
-                  query: "_weather_temp, _weather_description"
+                  query: "World.weather"
                   builder:
                     type: Card
                     props:
@@ -106,7 +106,7 @@ screen:
               - type: FilterEditor
                 props:
                   mode: "apply"
-                  onSelect: "shql: GO_TO('heroes')"
+                  onSelect: "shql: Nav.GO_TO('heroes')"
 
               - type: SizedBox
                 props:
@@ -123,7 +123,7 @@ screen:
                   content:
                     type: Observer
                     props:
-                      query: "_total_fighting_power"
+                      query: "Stats.total_fighting_power"
                       builder:
                         type: AnimatedNumber
                         props:
@@ -139,7 +139,7 @@ screen:
               # Battle Map Card
               - type: Observer
                 props:
-                  query: "_heroes, _user_latitude, _user_longitude"
+                  query: "Heroes.heroes, World.user_coordinates"
                   builder:
                     type: Card
                     props:
@@ -179,7 +179,7 @@ screen:
                                       type: SizedBox
                                       props:
                                         height: 250
-                                        child: "shql: GENERATE_BATTLE_MAP()"
+                                        child: "shql: World.GENERATE_BATTLE_MAP()"
 
               - type: SizedBox
                 props:
@@ -208,11 +208,11 @@ screen:
                                 height: 8
                             - type: Observer
                               props:
-                                query: "_heroes"
+                                query: "Heroes.heroes"
                                 builder:
                                   type: Text
                                   props:
-                                    data: "shql: STRING(GET_HERO_COUNT()) + ' characters registered'"
+                                    data: "shql: STRING(Heroes.GET_HERO_COUNT()) + ' characters registered'"
                                     style:
                                       color: "0xFF757575"
 
@@ -220,4 +220,4 @@ screen:
       type: BottomNav
       props:
         currentIndex: 0
-        onTap: "TAB_NAV(0, value)"
+        onTap: "Nav.TAB_NAV(0, value)"

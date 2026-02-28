@@ -24,6 +24,14 @@ class ObjectLiteralNode extends LazyExecutionNode {
       // Step 1: Create the Object and a Scope that wraps it
       // The scope inherits from the current scope (for closures)
       obj = Object();
+
+      // Inject THIS as a self-reference on the object. Set before field
+      // evaluation so lambdas (methods) can capture it via scope resolution.
+      // THIS is a variable, not a constant, but it lives on the object scope
+      // so it shadows any outer "THIS" — and each object has its own THIS.
+      final thisId = executionContext.runtime.identifiers.include("THIS");
+      obj!.setVariable(thisId, obj);
+
       objectScope = Scope(obj!, constants: scope.constants, parent: scope);
 
       // Step 2: Create execution nodes for all values using the object's scope

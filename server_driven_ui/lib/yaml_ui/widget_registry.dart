@@ -885,6 +885,7 @@ class _StatefulTextField extends StatefulWidget {
     this.keyboardType,
     this.buildChild,
     this.path = '',
+    this.debounceMs = 500,
     required this.engine,
     super.key,
   });
@@ -902,6 +903,7 @@ class _StatefulTextField extends StatefulWidget {
   final TextInputType? keyboardType;
   final ChildBuilder? buildChild;
   final String path;
+  final int debounceMs;
   final YamlUiEngine engine;
 
   @override
@@ -921,7 +923,7 @@ class _StatefulTextFieldState extends State<_StatefulTextField> {
     if (widget.externalController == null) {
       _ownController = TextEditingController(text: widget.initialValue);
     }
-    _debouncer = Debouncer(milliseconds: 500);
+    _debouncer = Debouncer(milliseconds: widget.debounceMs);
   }
 
   @override
@@ -1078,6 +1080,7 @@ Widget _buildTextField(
     keyboardType: _resolveKeyboardType(props['keyboardType']),
     buildChild: b,
     path: path,
+    debounceMs: (props['debounceMs'] as num?)?.toInt() ?? 500,
     engine: engine,
   );
 }

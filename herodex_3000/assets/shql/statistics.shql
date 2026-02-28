@@ -2,87 +2,77 @@
 -- Hero Statistics
 -- ============================================
 -- Running totals for O(1) avg/stdev derivation
-_height_total := 0;
-_height_sq_total := 0;
-_height_count := 0;
-_weight_total := 0;
-_weight_sq_total := 0;
-_weight_count := 0;
+Stats := OBJECT{
+    height_total: 0,
+    height_sq_total: 0,
+    height_count: 0,
+    weight_total: 0,
+    weight_sq_total: 0,
+    weight_count: 0,
 
--- Running total: sum of strength across all heroes
-_total_fighting_power := 0;
+    -- Running total: sum of strength across all heroes
+    total_fighting_power: 0,
 
--- Derived statistics (recomputed from running totals via DERIVE_STATS)
-_height_avg := 0;
-_height_stdev := 0;
-_weight_avg := 0;
-_weight_stdev := 0;
+    -- Derived statistics (recomputed from running totals via DERIVE_STATS)
+    height_avg: 0,
+    height_stdev: 0,
+    weight_avg: 0,
+    weight_stdev: 0,
 
--- Derive avg and stdev from running totals. O(1).
--- avg = total/count, stdev = sqrt(E[X²] - E[X]²)
--- No SET() needed — these are consumed within SHQL™; onMutated fires from eval().
-DERIVE_STATS() := BEGIN
-    _height_avg := IF _height_count = 0 THEN 0 ELSE _height_total / _height_count;
-    __hvar := IF _height_count = 0 THEN 0 ELSE _height_sq_total / _height_count - _height_avg * _height_avg;
-    _height_stdev := IF __hvar <= 0 THEN 0 ELSE POW(__hvar, 0.5);
-    _weight_avg := IF _weight_count = 0 THEN 0 ELSE _weight_total / _weight_count;
-    __wvar := IF _weight_count = 0 THEN 0 ELSE _weight_sq_total / _weight_count - _weight_avg * _weight_avg;
-    _weight_stdev := IF __wvar <= 0 THEN 0 ELSE POW(__wvar, 0.5);
-END;
+    SET_TOTAL_FIGHTING_POWER: (value) => BEGIN
+        total_fighting_power := value;
+        PUBLISH('Stats.total_fighting_power');
+    END,
 
--- Incremental: hero added to collection. O(1).
--- Null height/weight values are skipped (no contribution to totals).
-STATS_HERO_ADDED(__hero) := BEGIN
-    __ht := HEIGHT_M(__hero, null);
-    IF __ht <> null THEN BEGIN
-        _height_total := _height_total + __ht;
-        _height_sq_total := _height_sq_total + __ht * __ht;
-        _height_count := _height_count + 1;
-    END;
-    __wt := WEIGHT_KG(__hero, null);
-    IF __wt <> null THEN BEGIN
-        _weight_total := _weight_total + __wt;
-        _weight_sq_total := _weight_sq_total + __wt * __wt;
-        _weight_count := _weight_count + 1;
-    END;
-    _total_fighting_power := _total_fighting_power + POWERSTATS(__hero, p => p.strength, 0);
-    DERIVE_STATS();
-END;
+    -- Derive avg and stdev from running totals. O(1).
+    -- avg = total/count, stdev = sqrt(E[X²] - E[X]²)
+    DERIVE_STATS: () => BEGIN
+        height_avg := IF height_count = 0 THEN 0 ELSE height_total / height_count;
+        __hvar := IF height_count = 0 THEN 0 ELSE height_sq_total / height_count - height_avg * height_avg;
+        height_stdev := IF __hvar <= 0 THEN 0 ELSE POW(__hvar, 0.5);
+        weight_avg := IF weight_count = 0 THEN 0 ELSE weight_total / weight_count;
+        __wvar := IF weight_count = 0 THEN 0 ELSE weight_sq_total / weight_count - weight_avg * weight_avg;
+        weight_stdev := IF __wvar <= 0 THEN 0 ELSE POW(__wvar, 0.5);
+        SET_TOTAL_FIGHTING_POWER(total_fighting_power);
+    END,
 
--- Incremental: hero removed from collection. O(1).
--- Null height/weight values are skipped (they never contributed).
-STATS_HERO_REMOVED(__hero) := BEGIN
-    __ht := HEIGHT_M(__hero, null);
-    IF __ht <> null THEN BEGIN
-        _height_total := _height_total - __ht;
-        _height_sq_total := _height_sq_total - __ht * __ht;
-        _height_count := _height_count - 1;
-    END;
-    __wt := WEIGHT_KG(__hero, null);
-    IF __wt <> null THEN BEGIN
-        _weight_total := _weight_total - __wt;
-        _weight_sq_total := _weight_sq_total - __wt * __wt;
-        _weight_count := _weight_count - 1;
-    END;
-    _total_fighting_power := _total_fighting_power - POWERSTATS(__hero, p => p.strength, 0);
-    DERIVE_STATS();
-END;
+    -- Adjust running totals by sign (+1 = add, -1 = remove). O(1).
+    __ADJUST: (__hero, __sign) => BEGIN
+        __ht := HEIGHT_M(__hero, null);
+        IF __ht <> null THEN BEGIN
+            height_total := height_total + __sign * __ht;
+            height_sq_total := height_sq_total + __sign * __ht * __ht;
+            height_count := height_count + __sign;
+        END;
+        __wt := WEIGHT_KG(__hero, null);
+        IF __wt <> null THEN BEGIN
+            weight_total := weight_total + __sign * __wt;
+            weight_sq_total := weight_sq_total + __sign * __wt * __wt;
+            weight_count := weight_count + __sign;
+        END;
+        total_fighting_power := total_fighting_power + __sign * POWERSTATS(__hero, p => p.strength, 0);
+        DERIVE_STATS();
+    END,
 
--- Incremental: hero replaced (amend/update). O(1).
--- Either side's height/weight can be null (no-op for that dimension).
-STATS_HERO_REPLACED(__old, __new) := BEGIN
-    STATS_HERO_REMOVED(__old);
-    STATS_HERO_ADDED(__new);
-END;
+    STATS_HERO_ADDED: (__hero) => __ADJUST(__hero, 1),
+    STATS_HERO_REMOVED: (__hero) => __ADJUST(__hero, -1),
 
--- Reset all running totals to zero. For clear-all-data.
-STATS_CLEAR() := BEGIN
-    _height_total := 0;
-    _height_sq_total := 0;
-    _height_count := 0;
-    _weight_total := 0;
-    _weight_sq_total := 0;
-    _weight_count := 0;
-    _total_fighting_power := 0;
-    DERIVE_STATS();
-END;
+    -- Incremental: hero replaced (amend/update). O(1).
+    STATS_HERO_REPLACED: (__old, __new) => BEGIN
+        STATS_HERO_REMOVED(__old);
+        STATS_HERO_ADDED(__new);
+    END,
+
+    -- Reset all running totals to zero. For clear-all-data.
+    STATS_CLEAR: () => BEGIN
+        height_total := 0;
+        height_sq_total := 0;
+        height_count := 0;
+        weight_total := 0;
+        weight_sq_total := 0;
+        weight_count := 0;
+        total_fighting_power := 0;
+        DERIVE_STATS();
+    END
+};
+

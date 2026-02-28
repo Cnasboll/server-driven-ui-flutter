@@ -1,7 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:hero_common/env/env.dart';
 import 'package:hero_common/models/hero_model.dart';
-import 'package:hero_common/models/hero_shql_adapter.dart';
 import 'package:hero_common/services/hero_service.dart';
 import 'package:hero_common/value_types/conflict_resolver.dart';
 import 'package:hero_common/value_types/height.dart';
@@ -16,8 +15,6 @@ import '../persistence/filter_compiler.dart';
 import '../persistence/shql_hero_data_manager.dart';
 
 /// Callback typedefs for UI interactions that the coordinator delegates to.
-typedef PromptCallback = Future<String> Function(String prompt, [String defaultValue]);
-typedef ConfirmCallback = Future<bool> Function(String prompt);
 typedef ReconcilePromptCallback = Future<ReviewAction> Function(String prompt);
 typedef SnackBarCallback = void Function(String message);
 
@@ -31,14 +28,12 @@ class HeroCoordinator {
     required ShqlBindings shqlBindings,
     required ShqlHeroDataManager heroDataManager,
     required FilterCompiler filterCompiler,
-    required PromptCallback showPromptDialog,
     required ReconcilePromptCallback showReconcileDialog,
     required SnackBarCallback showSnackBar,
     required VoidCallback onStateChanged,
   })  : _shqlBindings = shqlBindings,
         _heroDataManager = heroDataManager,
         _filterCompiler = filterCompiler,
-        _showPromptDialog = showPromptDialog,
         _showReconcileDialog = showReconcileDialog,
         _showSnackBar = showSnackBar,
         _onStateChanged = onStateChanged;
@@ -46,7 +41,6 @@ class HeroCoordinator {
   final ShqlBindings _shqlBindings;
   final ShqlHeroDataManager _heroDataManager;
   final FilterCompiler _filterCompiler;
-  final PromptCallback _showPromptDialog;
   final ReconcilePromptCallback _showReconcileDialog;
   final SnackBarCallback _showSnackBar;
   final VoidCallback _onStateChanged;
@@ -54,36 +48,26 @@ class HeroCoordinator {
   // Public access to the data manager (for search service and main.dart wiring)
   ShqlHeroDataManager get heroDataManager => _heroDataManager;
 
-  // Per-ID cache of pre-built hero card widget descriptions.
-  // Only regenerated when a hero's data changes (persist/amend/unlock/reconcile).
-  // Filter and query changes just reindex from the cache — no SHQL™ eval needed.
-  final Map<String, dynamic> _heroCardCache = {};
+  // Transient state for reconciliation — stores the HeroService and pending
+  // updated hero between _RECONCILE_FETCH and _RECONCILE_PERSIST callbacks.
+  HeroService? _reconcileService;
+  HeroModel? _reconcilePendingHero;
+  DateTime? _reconcileTimestamp;
 
   // ---------------------------------------------------------------------------
   // Hero CRUD
   // ---------------------------------------------------------------------------
 
-  /// Persist a hero. ON_HERO_ADDED/REPLACED updates the heroes map, running
-  /// stats, and filter membership in one SHQL™ call. O(filters).
+  /// Persist a hero. Updates SHQL™ state, caches card, rebuilds display — single eval.
   Future<void> persistHero(HeroModel hero) async {
     final oldObj = _heroDataManager.getHeroObject(hero.id);
     _heroDataManager.persist(hero);
     final newObj = _heroDataManager.getHeroObject(hero.id)!;
 
-    if (oldObj != null) {
-      await _shqlBindings.eval(
-        'ON_HERO_REPLACED(__old, __new)',
-        boundValues: {'__old': oldObj, '__new': newObj},
-      );
-    } else {
-      await _shqlBindings.eval(
-        'ON_HERO_ADDED(__hero)',
-        boundValues: {'__hero': newObj},
-      );
-    }
-
-    await _cacheHeroCard(hero.id, newObj);
-    await _updateDisplayedHeroes();
+    await _shqlBindings.eval(
+      'Heroes.ON_HERO_PERSISTED(__old, __new); Cards.CACHE_HERO_CARD(__new); Heroes.REBUILD_CARDS()',
+      boundValues: {'__old': oldObj, '__new': newObj},
+    );
     _onStateChanged();
   }
 
@@ -94,45 +78,22 @@ class HeroCoordinator {
       return;
     }
 
-    // Immediately remove from cache and displayed list so the card disappears
-    // at once, before the slower SHQL™ cleanup (ON_HERO_REMOVED iterates all filter maps).
-    _removeHeroFromCache(heroId);
-    final currentDisplayed = _shqlBindings.getVariable('_displayed_heroes');
-    if (currentDisplayed is List) {
-      final newDisplayed = currentDisplayed.where((h) {
-        if (_shqlBindings.isShqlObject(h)) {
-          return _shqlBindings.objectToMap(h)['id'] != heroId;
-        }
-        return true;
-      }).toList();
-      _setAndNotify('_displayed_heroes', newDisplayed);
-    }
-    _rebuildHeroCards();
+    // Fast path: remove card + displayed entry immediately for snappy UX,
+    // before the slower O(filters) cleanup in ON_HERO_DELETED.
+    await _shqlBindings.eval(
+      'Cards.REMOVE_CACHED_CARD(__id); Filters.REMOVE_FROM_DISPLAYED(__id); Heroes.REBUILD_CARDS()',
+      boundValues: {'__id': heroId},
+    );
 
     final oldObj = _heroDataManager.getHeroObject(heroId);
     _heroDataManager.delete(hero);
 
     if (oldObj != null) {
       await _shqlBindings.eval(
-        'ON_HERO_REMOVED(__hero)',
-        boundValues: {'__hero': oldObj},
+        'Heroes.ON_HERO_DELETED(__hero, __eid); Heroes.REBUILD_CARDS()',
+        boundValues: {'__hero': oldObj, '__eid': hero.externalId},
       );
     }
-
-    await _updateDisplayedHeroes();
-
-    // Update selected hero if it matches
-    try {
-      final selectedEid = await _shqlBindings.eval(
-        'IF _selected_hero != null THEN _selected_hero.external_id ELSE null',
-      );
-      if (selectedEid == hero.externalId) {
-        _setAndNotify('_selected_hero',
-          HeroShqlAdapter.heroToDisplayObject(hero, _shqlBindings.identifiers, isSaved: false),
-        );
-      }
-    } catch (_) {}
-
     _onStateChanged();
   }
 
@@ -143,89 +104,34 @@ class HeroCoordinator {
       return;
     }
 
-    final editFields = _shqlBindings.getVariable('_edit_fields');
-    if (editFields is! List || editFields.isEmpty) {
-      _showSnackBar('No edit data available');
-      return;
-    }
-
-    final amendment = <String, dynamic>{};
-
-    for (final fieldObj in editFields) {
-      final fld = _shqlBindings.objectToMap(fieldObj);
-      final value = fld['value']?.toString() ?? '';
-      final original = fld['original']?.toString() ?? '';
-      final jsonSection = fld['json_section']?.toString() ?? '';
-      final jsonName = fld['json_name']?.toString() ?? '';
-      final fieldType = fld['field_type']?.toString() ?? 'string';
-
-      if (value == original) continue;
-
-      String amendmentValue;
-      if (fieldType == 'enum') {
-        final options = fld['options'];
-        final names = fld['enum_names'];
-        if (options is List && names is List) {
-          final index = options.indexOf(value);
-          amendmentValue = (index >= 0 && index < names.length)
-              ? names[index].toString()
-              : value;
-        } else {
-          amendmentValue = value;
-        }
-      } else {
-        amendmentValue = value;
-      }
-
-      if (jsonSection.isNotEmpty) {
-        final section = amendment.putIfAbsent(
-          jsonSection,
-          () => <String, dynamic>{},
-        ) as Map<String, dynamic>;
-        section[jsonName] = amendmentValue;
-      } else {
-        amendment[jsonName] = amendmentValue;
-      }
-    }
-
-    if (amendment.isEmpty) {
+    // SHQL™ builds the amendment map from edit_fields (Rule 1: no Dart logic on SHQL data)
+    final amendmentObj = await _shqlBindings.eval('HeroEdit.BUILD_AMENDMENT()');
+    if (amendmentObj == null) {
       _showSnackBar('No changes made');
       return;
     }
+
+    // Convert SHQL Object → Dart Map (recursively for nested sections)
+    final amendment = _deepObjectToMap(amendmentObj);
 
     final oldObj = _heroDataManager.getHeroObject(hero.id);
     final amended = await hero.amendWith(amendment);
     _heroDataManager.persist(amended);
     final newObj = _heroDataManager.getHeroObject(amended.id)!;
 
-    if (oldObj != null) {
-      await _shqlBindings.eval(
-        'ON_HERO_REPLACED(__old, __new)',
-        boundValues: {'__old': oldObj, '__new': newObj},
-      );
-    } else {
-      await _shqlBindings.eval(
-        'ON_HERO_ADDED(__hero)',
-        boundValues: {'__hero': newObj},
-      );
-    }
-
-    await _cacheHeroCard(amended.id, newObj);
-    await _updateDisplayedHeroes();
-
-    _setAndNotify(
-      '_selected_hero',
-      HeroShqlAdapter.heroToDisplayObject(
-        amended,
-        _shqlBindings.identifiers,
-        isSaved: true,
-      ),
+    await _shqlBindings.eval(
+      'Heroes.ON_HERO_PERSISTED(__old, __new); Cards.CACHE_HERO_CARD(__new); Heroes.REBUILD_CARDS(); Heroes.FINISH_AMEND(__id)',
+      boundValues: {'__old': oldObj, '__new': newObj, '__id': amended.id},
     );
 
     _onStateChanged();
     _showSnackBar('Hero amended (locked from reconciliation)');
+  }
 
-    await _shqlBindings.eval("GO_BACK()");
+  Map<String, dynamic> _deepObjectToMap(dynamic obj) {
+    final map = _shqlBindings.objectToMap(obj);
+    return map.map((key, value) =>
+        MapEntry(key, _shqlBindings.isShqlObject(value) ? _deepObjectToMap(value) : value));
   }
 
   Future<void> toggleLock(String heroId) async {
@@ -237,239 +143,147 @@ class HeroCoordinator {
 
     final toggled = hero.locked ? hero.unlock() : hero.copyWith(locked: true);
     _heroDataManager.persist(toggled);
-    final newObj = _heroDataManager.getHeroObject(toggled.id)!;
 
-    // Lock toggle only flips a boolean — no filter/stats changes needed.
-    // Update the SHQL™ _heroes map in-place and re-cache the card.
+    // Toggle lock, re-cache card from updated heroes map entry, rebuild display.
     await _shqlBindings.eval(
-      "_heroes['${toggled.id}'].LOCKED := ${toggled.locked ? 'TRUE' : 'FALSE'}",
-    );
-    // Update _selected_hero so the detail page Observer refreshes the lock icon
-    await _shqlBindings.eval(
-      'IF _selected_hero <> null AND _selected_hero.ID = __id THEN BEGIN '
-      '_selected_hero.LOCKED := __locked; SET("_selected_hero", _selected_hero); END',
+      'Heroes.TOGGLE_LOCK(__id, __locked); Cards.CACHE_HERO_CARD(Heroes.heroes[__id]); Heroes.REBUILD_CARDS()',
       boundValues: {'__id': toggled.id, '__locked': toggled.locked},
     );
-    await _cacheHeroCard(toggled.id, newObj);
-    _rebuildHeroCards();
 
     _showSnackBar(toggled.locked
         ? 'Hero locked — reconciliation skipped'
         : 'Hero unlocked — reconciliation enabled');
   }
 
-  Future<void> reconcile() async {
-    final heroes = _heroDataManager.heroes;
-    if (heroes.isEmpty) {
+  // ---------------------------------------------------------------------------
+  // Reconciliation callbacks (called from SHQL™ RECONCILE_HEROES loop)
+  // ---------------------------------------------------------------------------
+
+  /// _INIT_RECONCILE callback: acquires HeroService (may prompt for API key).
+  /// Returns true if ready, false/null if no service.
+  Future<bool> initReconcile() async {
+    if (_heroDataManager.heroes.isEmpty) {
       _showSnackBar('No saved heroes to reconcile');
-      return;
+      return false;
+    }
+    _reconcileService = await getHeroService();
+    if (_reconcileService == null) return false;
+    _reconcileTimestamp = DateTime.timestamp();
+    return true;
+  }
+
+  /// _RECONCILE_FETCH callback: fetches online data for a hero by ID,
+  /// applies with auto-resolvers, diffs. Returns result OBJECT or null.
+  Future<dynamic> reconcileFetch(String heroId) async {
+    final hero = _heroDataManager.getById(heroId);
+    if (hero == null || _reconcileService == null) return null;
+
+    final onlineJson = await _reconcileService!.getById(hero.externalId);
+    String? error;
+    if (onlineJson != null) error = onlineJson['error'] as String?;
+
+    if (onlineJson == null || error != null) {
+      return _shqlBindings.mapToObject({
+        'found': false,
+        'error': error ?? 'not found',
+      });
     }
 
-    final heroService = await getHeroService();
-    if (heroService == null) return;
-
-    final timestamp = DateTime.timestamp();
-    int updatedCount = 0;
-    int deletionCount = 0;
-    int lockedSkipCount = 0;
-    int unchangedCount = 0;
-    int conflictCount = 0;
-
-    _setAndNotify('_reconcile_active', true);
-    _setAndNotify('_reconcile_aborted', false);
-    _setAndNotify('_reconcile_log', <dynamic>[]);
-
-    bool acceptAllDeletes = false;
-    bool acceptAllUpdates = false;
-    bool aborted = false;
-
+    final previousHeightResolver = Height.conflictResolver;
+    final previousWeightResolver = Weight.conflictResolver;
     try {
-      for (final hero in heroes) {
-        if (aborted || _shqlBindings.getVariable('_reconcile_aborted') == true) {
-          _appendReconcileLog('— Reconciliation aborted by user —', isHeader: true);
-          break;
-        }
+      final heightResolver = Height.conflictResolver =
+          AutoConflictResolver<Height>(hero.appearance.height.systemOfUnits);
+      final weightResolver = Weight.conflictResolver =
+          AutoConflictResolver<Weight>(hero.appearance.weight.systemOfUnits);
 
-        _setAndNotify('_reconcile_current', hero.name);
-        _setAndNotify('_reconcile_status', 'Fetching from online...');
-
-        final onlineJson = await heroService.getById(hero.externalId);
-        String? error;
-        if (onlineJson != null) error = onlineJson['error'] as String?;
-
-        if (onlineJson == null || error != null) {
-          if (hero.locked) {
-            _setAndNotify('_reconcile_status', 'Locked — skipping (not found online)');
-            _appendReconcileLog('${hero.name}: not found online but locked — skipping', isWarning: true);
-            lockedSkipCount++;
-            continue;
-          }
-          bool shouldDelete = acceptAllDeletes;
-          if (!acceptAllDeletes) {
-            _setAndNotify('_reconcile_status', 'Not found online — prompting for deletion');
-            final action = await _showReconcileDialog(
-              'Hero "${hero.name}" no longer exists online (${error ?? "not found"}). Delete from local database?',
-            );
-            switch (action) {
-              case ReviewAction.save: shouldDelete = true;
-              case ReviewAction.skip: shouldDelete = false;
-              case ReviewAction.saveAll: shouldDelete = true; acceptAllDeletes = true;
-              case ReviewAction.cancel: aborted = true; continue;
-            }
-          }
-          if (shouldDelete) {
-            _setAndNotify('_reconcile_status', 'Deleted');
-            final oldObj = _heroDataManager.getHeroObject(hero.id);
-            _removeHeroFromCache(hero.id);
-            _heroDataManager.delete(hero);
-            if (oldObj != null) {
-              await _shqlBindings.eval(
-                'ON_HERO_REMOVED(__hero)',
-                boundValues: {'__hero': oldObj},
-              );
-            }
-            _appendReconcileLog('${hero.name}: deleted (no longer online)');
-            deletionCount++;
-          } else {
-            _setAndNotify('_reconcile_status', 'Kept — skipped by user');
-          }
-          continue;
-        }
-
-        final previousHeightResolver = Height.conflictResolver;
-        final previousWeightResolver = Weight.conflictResolver;
-        try {
-          final heightResolver = Height.conflictResolver =
-              AutoConflictResolver<Height>(hero.appearance.height.systemOfUnits);
-          final weightResolver = Weight.conflictResolver =
-              AutoConflictResolver<Weight>(hero.appearance.weight.systemOfUnits);
-
-          HeroModel updatedHero;
-          try {
-            updatedHero = await hero.apply(onlineJson, timestamp, false);
-          } catch (e) {
-            _setAndNotify('_reconcile_status', 'Error: $e');
-            _appendReconcileLog('${hero.name}: error — $e', isWarning: true);
-            continue;
-          }
-
-          final allResolutionLogs = [
-            ...heightResolver.resolutionLog,
-            ...weightResolver.resolutionLog,
-          ];
-          for (final msg in allResolutionLogs) {
-            _appendReconcileLog('${hero.name}: $msg', isWarning: true);
-            conflictCount++;
-          }
-          if (allResolutionLogs.isNotEmpty) {
-            _setAndNotify('_reconcile_status',
-              'Resolved ${allResolutionLogs.length} unit conflict(s)');
-          }
-
-          final sb = StringBuffer();
-          final hasDiff = hero.diff(updatedHero, sb);
-          if (!hasDiff) {
-            _setAndNotify('_reconcile_status', 'Up to date — no changes');
-            unchangedCount++;
-            continue;
-          }
-
-          if (hero.locked) {
-            _setAndNotify('_reconcile_status', 'Locked — skipping changes');
-            _appendReconcileLog('${hero.name} (locked) — skipped:\n$sb', isWarning: true);
-            lockedSkipCount++;
-            continue;
-          }
-
-          bool shouldUpdate = acceptAllUpdates;
-          if (!acceptAllUpdates) {
-            final conflictNotes = allResolutionLogs.isNotEmpty
-                ? '\n\nUnit conflict resolutions:\n${allResolutionLogs.join('\n')}'
-                : '';
-            _setAndNotify('_reconcile_status', 'Changes found — prompting to update');
-            final action = await _showReconcileDialog(
-              'Update "${hero.name}" with online changes?\n\n$sb$conflictNotes',
-            );
-            switch (action) {
-              case ReviewAction.save: shouldUpdate = true;
-              case ReviewAction.skip: shouldUpdate = false;
-              case ReviewAction.saveAll: shouldUpdate = true; acceptAllUpdates = true;
-              case ReviewAction.cancel: aborted = true; continue;
-            }
-          }
-          if (shouldUpdate) {
-            _setAndNotify('_reconcile_status', 'Updated');
-            final oldObj = _heroDataManager.getHeroObject(hero.id);
-            _heroDataManager.persist(updatedHero);
-            final newObj = _heroDataManager.getHeroObject(updatedHero.id)!;
-            if (oldObj != null) {
-              await _shqlBindings.eval(
-                'ON_HERO_REPLACED(__old, __new)',
-                boundValues: {'__old': oldObj, '__new': newObj},
-              );
-            }
-            await _cacheHeroCard(updatedHero.id, newObj);
-            _appendReconcileLog('${hero.name}: updated');
-            updatedCount++;
-          } else {
-            _setAndNotify('_reconcile_status', 'Skipped by user');
-          }
-        } finally {
-          Height.conflictResolver = previousHeightResolver;
-          Weight.conflictResolver = previousWeightResolver;
-        }
+      HeroModel updatedHero;
+      try {
+        updatedHero = await hero.apply(onlineJson, _reconcileTimestamp!, false);
+      } catch (e) {
+        return _shqlBindings.mapToObject({
+          'found': true,
+          'apply_error': e.toString(),
+        });
       }
+
+      final resolutionLogs = <dynamic>[
+        ...heightResolver.resolutionLog,
+        ...weightResolver.resolutionLog,
+      ];
+
+      final sb = StringBuffer();
+      final hasDiff = hero.diff(updatedHero, sb);
+
+      _reconcilePendingHero = updatedHero;
+
+      return _shqlBindings.mapToObject({
+        'found': true,
+        'has_diff': hasDiff,
+        'diff_text': sb.toString(),
+        'resolution_logs': resolutionLogs,
+        'conflict_count': resolutionLogs.length,
+      });
     } finally {
-      _setAndNotify('_reconcile_active', false);
-      _setAndNotify('_reconcile_aborted', false);
-      _setAndNotify('_reconcile_current', '');
-      _setAndNotify('_reconcile_status', '');
+      Height.conflictResolver = previousHeightResolver;
+      Weight.conflictResolver = previousWeightResolver;
     }
-    await _filterCompiler.compileAndPublish();
-    await _shqlBindings.eval('REBUILD_ALL_FILTERS()');
-    await _updateDisplayedHeroes();
-    _onStateChanged();
-
-    final parts = <String>[
-      '$updatedCount updated',
-      '$unchangedCount unchanged',
-      if (deletionCount > 0) '$deletionCount deleted',
-      if (lockedSkipCount > 0) '$lockedSkipCount locked (skipped)',
-      if (conflictCount > 0) '$conflictCount unit conflict(s)',
-    ];
-    _appendReconcileLog('Done: ${parts.join(', ')}', isHeader: true);
-    _showSnackBar('Reconciliation complete: ${parts.join(', ')}');
   }
 
-  /// Appends a styled log entry to `_reconcile_log` for live display.
-  void _appendReconcileLog(String message, {bool isHeader = false, bool isWarning = false}) {
-    final current = (_shqlBindings.getVariable('_reconcile_log') as List?) ?? [];
-    final color = isHeader ? '0xFF1976D2' : (isWarning ? '0xFFE65100' : '0xFF212121');
-    final entry = {
-      'type': 'Padding',
-      'props': {
-        'padding': {'left': 12.0, 'right': 12.0, 'top': 4.0, 'bottom': 4.0},
-        'child': {
-          'type': 'Text',
-          'props': {
-            'data': message,
-            'style': {
-              'fontSize': 12.0,
-              'fontWeight': isHeader ? 'bold' : 'normal',
-              'color': color,
-            },
-          },
-        },
-      },
+  /// _RECONCILE_PERSIST callback: persists the pending updated hero.
+  /// Returns OBJECT{old_obj, new_obj}. SHQL handles card caching.
+  Future<dynamic> reconcilePersist(String heroId) async {
+    final pending = _reconcilePendingHero;
+    if (pending == null) return null;
+
+    final oldObj = _heroDataManager.getHeroObject(heroId);
+    _heroDataManager.persist(pending);
+    final newObj = _heroDataManager.getHeroObject(pending.id)!;
+    _reconcilePendingHero = null;
+
+    return _shqlBindings.mapToObject({
+      'old_obj': oldObj,
+      'new_obj': newObj,
+    });
+  }
+
+  /// _RECONCILE_DELETE callback: deletes a hero by ID.
+  /// Returns the old SHQL™ object for SHQL™ ON_HERO_REMOVED.
+  /// SHQL handles card cache removal.
+  dynamic reconcileDelete(String heroId) {
+    final hero = _heroDataManager.getById(heroId);
+    if (hero == null) return null;
+    final oldObj = _heroDataManager.getHeroObject(heroId);
+    _heroDataManager.delete(hero);
+    return oldObj;
+  }
+
+  /// _RECONCILE_PROMPT callback: shows reconcile dialog, returns action string.
+  Future<String> reconcilePrompt(String text) async {
+    final action = await _showReconcileDialog(text);
+    return switch (action) {
+      ReviewAction.save => 'save',
+      ReviewAction.skip => 'skip',
+      ReviewAction.saveAll => 'saveAll',
+      ReviewAction.cancel => 'cancel',
     };
-    _setAndNotify('_reconcile_log', [...current, entry]);
   }
+
+  /// _FINISH_RECONCILE callback: rebuilds filters and cards after reconciliation.
+  Future<void> finishReconcile() async {
+    _reconcileService = null;
+    _reconcilePendingHero = null;
+    _reconcileTimestamp = null;
+    await _shqlBindings.eval('Filters.FULL_REBUILD(); Heroes.REBUILD_CARDS()');
+    _onStateChanged();
+  }
+
+  /// Shows a snack bar message (exposed for SHQL™ _SHOW_SNACKBAR callback).
+  void showSnackBar(String message) => _showSnackBar(message);
 
   Future<void> clearData() async {
-    _heroCardCache.clear();
     _heroDataManager.clear();
-    await _shqlBindings.eval('ON_HERO_CLEAR()');
-    await _updateDisplayedHeroes();
+    await _shqlBindings.eval('Heroes.ON_HERO_CLEAR()');
     _onStateChanged();
   }
 
@@ -482,8 +296,8 @@ class HeroCoordinator {
     bio.Alignment: bio.Alignment.values,
   };
 
-  void prepareEdit() {
-    final heroObj = _shqlBindings.getVariable('_selected_hero');
+  Future<void> prepareEdit() async {
+    final heroObj = await _shqlBindings.eval('Heroes.selected_hero');
     if (heroObj == null) return;
     final heroMap = _shqlBindings.objectToMap(heroObj);
     final heroId = heroMap['id'] as String?;
@@ -554,7 +368,11 @@ class HeroCoordinator {
       }
     }
 
-    _shqlBindings.setVariable('_edit_fields', editFields);
+    // Set the object member AND notify via the setter method on HeroEdit.
+    await _shqlBindings.eval(
+      'HeroEdit.SET_EDIT_FIELDS(__fields)',
+      boundValues: {'__fields': editFields},
+    );
   }
 
   // ---------------------------------------------------------------------------
@@ -562,70 +380,33 @@ class HeroCoordinator {
   // ---------------------------------------------------------------------------
 
   /// Called when `_filters` SHQL™ variable changes.
-  /// Recompiles predicates and rebuilds all filter result maps in SHQL™.
+  /// SHQL™ FULL_REBUILD handles: SET_IS_COMPILING, _COMPILE_FILTERS callback,
+  /// REBUILD_ALL_FILTERS, SET_IS_COMPILING(FALSE). Then REBUILD_CARDS reindexes.
   Future<void> onFiltersChanged() async {
-    _setAndNotify('_filters_compiling', true);
-    try {
-      await _filterCompiler.compileAndPublish();
-      await _shqlBindings.eval('REBUILD_ALL_FILTERS()');
-      await _updateDisplayedHeroes();
-      _onStateChanged();
-    } finally {
-      _setAndNotify('_filters_compiling', false);
-    }
+    await _shqlBindings.eval('Filters.FULL_REBUILD(); Heroes.REBUILD_CARDS()');
+    _onStateChanged();
   }
 
-  /// Full rebuild: compile predicates, rebuild filter maps, update display.
-  /// Used after initial load.
+  /// Dart callback for _COMPILE_FILTERS — compiles predicates and publishes
+  /// the lambda map to the SHQL™ runtime.
+  Future<void> compileFilters() => _filterCompiler.compileAndPublish();
+
+  /// Dart callback for _COMPILE_QUERY — compiles a single query expression
+  /// into a SHQL™ lambda (predicate or text-match).
+  Future<dynamic> compileQuery(String query) => _filterCompiler.compileQuery(query);
+
+  /// Full rebuild: delegates to SHQL™ FULL_REBUILD which handles the
+  /// compile→rebuild→display pipeline, then rebuilds hero cards from cache.
   Future<void> rebuildAllFilters() async {
-    _setAndNotify('_filters_compiling', true);
-    try {
-      await _filterCompiler.compileAndPublish();
-      await _shqlBindings.eval('REBUILD_ALL_FILTERS()');
-      await _updateDisplayedHeroes();
-    } finally {
-      _setAndNotify('_filters_compiling', false);
-    }
+    await _shqlBindings.eval('Filters.FULL_REBUILD(); Heroes.REBUILD_CARDS()');
   }
 
-  /// Called when `_current_query` changes. Evaluates the compiled predicate
-  /// against `_heroes` in SHQL™ and updates `_displayed_heroes`.
-  ///
-  /// [FilterCompiler.compileQuery] handles the dispatch:
-  ///   • Semantically valid SHQL™ (e.g. `hero.powerstats.strength > 80`) → predicate lambda.
-  ///   • Semantically invalid (e.g. "batman" — undefined identifier throws at eval) →
-  ///     [isValidPredicate] catches that, falls back to MATCH(hero, text) text-search lambda.
+  /// Called when `_current_query` changes. SHQL™ ON_QUERY_CHANGED handles:
+  /// trim, empty check, IS_FILTERING bookends, _COMPILE_QUERY callback,
+  /// FILTER_DISPLAYED/UPDATE_DISPLAYED_HEROES. Then REBUILD_CARDS reindexes.
   Future<void> onQueryChanged() async {
-    final query = (_shqlBindings.getVariable('_current_query') ?? '').toString().trim();
-    if (query.isEmpty) {
-      // Query cleared — restore display from active filter (or all heroes).
-      await _shqlBindings.eval('UPDATE_DISPLAYED_HEROES()');
-      _rebuildHeroCards();
-      _onStateChanged();
-      return;
-    }
-    _setAndNotify('_filtering', true);
-    try {
-      final lambda = await _filterCompiler.compileQuery(query);
-
-      if (lambda == null) {
-        // No compilable filter — show all heroes.
-        await _shqlBindings.eval('UPDATE_DISPLAYED_HEROES()');
-        _rebuildHeroCards();
-        _onStateChanged();
-        return;
-      }
-
-      // Let SHQL™ iterate _heroes and apply the predicate via _EVAL_PREDICATE.
-      await _shqlBindings.eval(
-        'FILTER_DISPLAYED(__pred, __predText)',
-        boundValues: {'__pred': lambda, '__predText': query},
-      );
-      _rebuildHeroCards();
-      _onStateChanged();
-    } finally {
-      _setAndNotify('_filtering', false);
-    }
+    await _shqlBindings.eval('Filters.ON_QUERY_CHANGED(); Heroes.REBUILD_CARDS()');
+    _onStateChanged();
   }
 
   // ---------------------------------------------------------------------------
@@ -633,26 +414,13 @@ class HeroCoordinator {
   // ---------------------------------------------------------------------------
 
   Future<HeroService?> getHeroService() async {
-    var apiKey = _shqlBindings.getVariable('_api_key');
-    if (apiKey == null || apiKey.toString().isEmpty || apiKey == 'null') {
-      final entered = await _showPromptDialog('Enter your API key:');
-      if (entered.isEmpty) return null;
-      await _shqlBindings.eval("SET_API_KEY('$entered')");
-      apiKey = entered;
-    }
-
-    const defaultApiHost = 'www.superheroapi.com';
-    var apiHost = _shqlBindings.getVariable('_api_host');
-    if (apiHost == null || apiHost.toString().isEmpty || apiHost == 'null') {
-      final entered = await _showPromptDialog(
-        'Enter API host or press enter to accept default ("$defaultApiHost"):',
-        defaultApiHost,
-      );
-      apiHost = entered.isNotEmpty ? entered : defaultApiHost;
-      await _shqlBindings.eval("SET_API_HOST('$apiHost')");
-    }
-
-    return HeroService(Env.create(apiKey: apiKey.toString(), apiHost: apiHost.toString()));
+    final result = await _shqlBindings.eval('Prefs.GET_API_CREDENTIALS()');
+    if (result == null) return null;
+    final creds = _shqlBindings.objectToMap(result);
+    return HeroService(Env.create(
+      apiKey: creds['api_key'].toString(),
+      apiHost: creds['api_host'].toString(),
+    ));
   }
 
   /// Look up a HeroModel from an SHQL™ hero object and text-match against it.
@@ -669,85 +437,27 @@ class HeroCoordinator {
   // Helpers
   // ---------------------------------------------------------------------------
 
-  void _setAndNotify(String name, dynamic value) {
-    _shqlBindings.setVariable(name, value);
-    _shqlBindings.notifyListeners(name);
-  }
-
-  /// Updates `_displayed_heroes` via SHQL™, then rebuilds `_hero_cards` from
-  /// the per-ID cache. No SHQL™ eval for card generation — O(displayed) map lookups.
-  Future<void> _updateDisplayedHeroes() async {
-    await _shqlBindings.eval('UPDATE_DISPLAYED_HEROES()');
-    _rebuildHeroCards();
-  }
-
-  /// Populates the per-ID card cache for all saved heroes and rebuilds
-  /// `_hero_cards`. Call after initialize() + rebuildAllFilters() at startup.
+  /// Populates the SHQL™ card cache for all saved heroes and rebuilds
+  /// `hero_cards`. Call after initialize() + rebuildAllFilters() at startup.
   ///
   /// [onProgress] is called before each hero is cached with (current, total, heroName).
   Future<void> populateHeroCardCache({
     void Function(int current, int total, String heroName)? onProgress,
   }) async {
-    _heroCardCache.clear();
+    await _shqlBindings.eval('Cards.CLEAR_CARD_CACHE()');
     final entries = _heroDataManager.heroObjectsById.entries.toList();
     for (int i = 0; i < entries.length; i++) {
       final entry = entries[i];
       final heroName = _heroDataManager.getById(entry.key)?.name ?? '';
       onProgress?.call(i + 1, entries.length, heroName);
-      await _cacheHeroCard(entry.key, entry.value);
+      await _shqlBindings.eval('Cards.CACHE_HERO_CARD(__hero)',
+          boundValues: {'__hero': entry.value});
     }
-    _rebuildHeroCards();
+    await _shqlBindings.eval('Heroes.REBUILD_CARDS()');
   }
 
-  /// Calls SHQL™ GENERATE_SINGLE_HERO_CARD for one hero and stores the result.
-  Future<void> _cacheHeroCard(String heroId, Object heroObj) async {
-    final card = await _shqlBindings.eval(
-      'GENERATE_SINGLE_HERO_CARD(__hero)',
-      boundValues: {'__hero': heroObj},
-    );
-    if (card != null) {
-      _heroCardCache[heroId] = card;
-    }
-  }
-
-  void _removeHeroFromCache(String heroId) => _heroCardCache.remove(heroId);
-
-  /// Called when `_displayed_heroes` changes (from any source — Dart or SHQL™).
-  void onDisplayedHeroesChanged() => _rebuildHeroCards();
-
-  /// Rebuilds `_hero_cards` from `_heroCardCache` + `_displayed_heroes`.
-  /// Synchronous — no SHQL™ eval. Handles three states:
-  ///   • Cache empty → [] (YAML shows the "no heroes saved" empty state)
-  ///   • Cache non-empty but displayed empty → single "no match" widget
-  ///   • Otherwise → cards for each displayed hero, in display order
-  void _rebuildHeroCards() {
-    if (_heroCardCache.isEmpty) {
-      _setAndNotify('_hero_cards', <dynamic>[]);
-      return;
-    }
-
-    final displayed = _shqlBindings.getVariable('_displayed_heroes');
-    if (displayed is! List || displayed.isEmpty) {
-      final query = _shqlBindings.getVariable('_current_query')?.toString() ?? '';
-      final msg = query.trim().isNotEmpty
-          ? 'No heroes match "$query"'
-          : 'No heroes match this filter';
-      _setAndNotify('_hero_cards', [
-        {'type': 'Center', 'child': {'type': 'Text', 'props': {'data': msg, 'style': {'fontSize': 16, 'color': '0xFF757575'}}}}
-      ]);
-      return;
-    }
-
-    final cards = <dynamic>[];
-    for (final heroObj in displayed) {
-      if (_shqlBindings.isShqlObject(heroObj)) {
-        final id = _shqlBindings.objectToMap(heroObj)['id'] as String?;
-        if (id != null) {
-          final card = _heroCardCache[id];
-          if (card != null) cards.add(card);
-        }
-      }
-    }
-    _setAndNotify('_hero_cards', cards);
+  /// Called when `Filters.displayed_heroes` changes (from any source — Dart or SHQL™).
+  void onDisplayedHeroesChanged() {
+    _shqlBindings.eval('Heroes.REBUILD_CARDS()');
   }
 }

@@ -1,116 +1,409 @@
 -- ============================================
 -- Hero Collection
 -- ============================================
-_heroes := {};
-_selected_hero := null;
-_hero_cards := [];
-_is_loading := FALSE;
-_error_message := '';
-_total_heroes := 0;
-_reconcile_active := FALSE;
-_reconcile_aborted := FALSE;
-_reconcile_current := '';
-_reconcile_status := '';
-_reconcile_log := [];
+Heroes := OBJECT{
+    heroes: {},
+    selected_hero: null,
+    hero_cards: [],
+    is_loading: FALSE,
+    error_message: '',
+    total_heroes: 0,
+    reconcile_active: FALSE,
+    reconcile_aborted: FALSE,
+    reconcile_current: '',
+    reconcile_status: '',
+    reconcile_log: [],
 
--- Abort an in-progress reconciliation (checked each iteration by Dart)
-ABORT_RECONCILE() := BEGIN
-    _reconcile_aborted := TRUE;
-    SET('_reconcile_aborted', _reconcile_aborted);
-END;
+    SET_HEROES: (value) => BEGIN
+        heroes := value;
+        PUBLISH('Heroes.heroes');
+    END,
 
--- Notify YAML Observers that watch hero/filter/stats variables.
--- Observer uses addListener, so SET() is required for UI updates.
-_NOTIFY_HERO_STATE() := BEGIN
-    SET('_heroes', _heroes);
-    SET('_total_heroes', _total_heroes);
-    SET('_total_fighting_power', _total_fighting_power);
-    SET('_filter_counts', _filter_counts);
-END;
+    SET_TOTAL_HEROES: (value) => BEGIN
+        total_heroes := value;
+        PUBLISH('Heroes.total_heroes');
+    END,
 
--- Hero added to collection. Updates heroes map, running stats, and filter
--- membership in one call. O(filters).
--- During init _filtered_heroes is [] so the filter block is guarded.
-ON_HERO_ADDED(__hero) := BEGIN
-    _heroes[__hero.ID] := __hero;
-    _total_heroes := LENGTH(_heroes);
-    STATS_HERO_ADDED(__hero);
-    IF LENGTH(_filtered_heroes) > 0 THEN
-        FOR __i := 0 TO LENGTH(_filtered_heroes) - 1 DO BEGIN
-            __predText := _filters[__i].PREDICATE;
-            __fname := _filters[__i].NAME;
-            IF __predText = '' OR __predText = null THEN
-                _filtered_heroes[__i][__hero.ID] := __hero
-            ELSE BEGIN
-                __pred := _filter_lambdas[__fname];
-                __match := _EVAL_PREDICATE(__hero, __pred, __predText);
-                IF __match THEN
-                    _filtered_heroes[__i][__hero.ID] := __hero;
+    SET_RECONCILE_ABORTED: (value) => BEGIN
+        reconcile_aborted := value;
+        PUBLISH('Heroes.reconcile_aborted');
+    END,
+
+    SET_RECONCILE_ACTIVE: (value) => BEGIN
+        reconcile_active := value;
+        PUBLISH('Heroes.reconcile_active');
+    END,
+
+    SET_RECONCILE_CURRENT: (value) => BEGIN
+        reconcile_current := value;
+        PUBLISH('Heroes.reconcile_current');
+    END,
+
+    SET_RECONCILE_STATUS: (value) => BEGIN
+        reconcile_status := value;
+        PUBLISH('Heroes.reconcile_status');
+    END,
+
+    SET_RECONCILE_LOG: (value) => BEGIN
+        reconcile_log := value;
+        PUBLISH('Heroes.reconcile_log');
+    END,
+
+    SET_HERO_CARDS: (value) => BEGIN
+        hero_cards := value;
+        PUBLISH('Heroes.hero_cards');
+    END,
+
+    -- Append a styled log entry to reconcile_log and publish.
+    APPEND_RECONCILE_LOG: (__message, __is_header, __is_warning) => BEGIN
+        __color := IF __is_header THEN '0xFF1976D2' ELSE IF __is_warning THEN '0xFFE65100' ELSE '0xFF212121';
+        __weight := IF __is_header THEN 'bold' ELSE 'normal';
+        __entry := {
+            "type": "Padding",
+            "props": {
+                "padding": {"left": 12.0, "right": 12.0, "top": 4.0, "bottom": 4.0},
+                "child": {
+                    "type": "Text",
+                    "props": {
+                        "data": __message,
+                        "style": {
+                            "fontSize": 12.0,
+                            "fontWeight": __weight,
+                            "color": __color
+                        }
+                    }
+                }
+            }
+        };
+        reconcile_log := reconcile_log + [__entry];
+        PUBLISH('Heroes.reconcile_log');
+    END,
+
+    -- Batch-set reconcile state. Null arguments are skipped.
+    SET_RECONCILE_STATE: (__active, __aborted, __current, __status, __log) => BEGIN
+        IF __active <> null THEN SET_RECONCILE_ACTIVE(__active);
+        IF __aborted <> null THEN SET_RECONCILE_ABORTED(__aborted);
+        IF __current <> null THEN SET_RECONCILE_CURRENT(__current);
+        IF __status <> null THEN SET_RECONCILE_STATUS(__status);
+        IF __log <> null THEN SET_RECONCILE_LOG(__log);
+    END,
+
+    -- Set reconcile status and append a log entry in one call.
+    SET_STATUS_AND_LOG: (__status, __message, __is_header, __is_warning) => BEGIN
+        SET_RECONCILE_STATUS(__status);
+        APPEND_RECONCILE_LOG(__message, __is_header, __is_warning);
+    END,
+
+    -- Abort an in-progress reconciliation (checked each iteration by Dart)
+    ABORT_RECONCILE: () => SET_RECONCILE_ABORTED(TRUE),
+
+    -- Notify YAML Observers that watch hero/filter/stats variables.
+    -- Stats.total_fighting_power is already published by Stats.SET_TOTAL_FIGHTING_POWER
+    -- called from DERIVE_STATS inside STATS_HERO_ADDED/REMOVED.
+    __NOTIFY_HERO_STATE: () => BEGIN
+        SET_HEROES(heroes);
+        SET_TOTAL_HEROES(total_heroes);
+        Filters.SET_FILTER_COUNTS(Filters.filter_counts);
+    END,
+
+    -- Batch-add multiple heroes. Used during initial load.
+    ON_HEROES_ADDED: (__list) => BEGIN
+        IF LENGTH(__list) > 0 THEN
+            FOR __i := 0 TO LENGTH(__list) - 1 DO
+                ON_HERO_ADDED(__list[__i]);
+    END,
+
+    -- Hero added to collection. Updates heroes map, running stats, and filter
+    -- membership in one call. O(filters).
+    ON_HERO_ADDED: (__hero) => BEGIN
+        heroes[__hero.ID] := __hero;
+        total_heroes := LENGTH(heroes);
+        Stats.STATS_HERO_ADDED(__hero);
+        IF LENGTH(Filters.filtered_heroes) > 0 THEN
+            FOR __i := 0 TO LENGTH(Filters.filtered_heroes) - 1 DO BEGIN
+                __predText := Filters.filters[__i].PREDICATE;
+                __fname := Filters.filters[__i].NAME;
+                IF __predText = '' OR __predText = null THEN
+                    Filters.filtered_heroes[__i][__hero.ID] := __hero
+                ELSE BEGIN
+                    __pred := _filter_lambdas[__fname];
+                    __match := _EVAL_PREDICATE(__hero, __pred, __predText);
+                    IF __match THEN
+                        Filters.filtered_heroes[__i][__hero.ID] := __hero;
+                END;
+                Filters.filter_counts[__i] := LENGTH(Filters.filtered_heroes[__i]);
+                DEBUG_LOG('[ON_HERO_ADDED] [' + STRING(__i) + '] "' + __fname + '" count=' + STRING(Filters.filter_counts[__i]));
             END;
-            _filter_counts[__i] := LENGTH(_filtered_heroes[__i]);
-            DEBUG_LOG('[ON_HERO_ADDED] [' + STRING(__i) + '] "' + __fname + '" count=' + STRING(_filter_counts[__i]));
+        __NOTIFY_HERO_STATE();
+    END,
+
+    -- Hero removed from collection. O(filters).
+    ON_HERO_REMOVED: (__hero) => BEGIN
+        MAP_REMOVE(heroes, __hero.ID);
+        total_heroes := LENGTH(heroes);
+        Stats.STATS_HERO_REMOVED(__hero);
+        IF LENGTH(Filters.filtered_heroes) > 0 THEN
+            FOR __i := 0 TO LENGTH(Filters.filtered_heroes) - 1 DO BEGIN
+                MAP_REMOVE(Filters.filtered_heroes[__i], __hero.ID);
+                Filters.filter_counts[__i] := LENGTH(Filters.filtered_heroes[__i]);
+            END;
+        __NOTIFY_HERO_STATE();
+    END,
+
+    -- Hero replaced (amend/update). Removes old, adds new. O(filters).
+    ON_HERO_REPLACED: (__old, __new) => BEGIN
+        ON_HERO_REMOVED(__old);
+        ON_HERO_ADDED(__new);
+    END,
+
+    -- Hero persisted (new or replacement). Null-checks old, updates displayed heroes.
+    ON_HERO_PERSISTED: (__old, __new) => BEGIN
+        IF __old <> null THEN ON_HERO_REPLACED(__old, __new)
+        ELSE ON_HERO_ADDED(__new);
+        Filters.UPDATE_DISPLAYED_HEROES();
+    END,
+
+    -- Full delete lifecycle: remove from state, update displayed, clear selection.
+    ON_HERO_DELETED: (__hero, __eid) => BEGIN
+        ON_HERO_REMOVED(__hero);
+        Filters.UPDATE_DISPLAYED_HEROES();
+        CLEAR_SELECTED_IF(__eid);
+    END,
+
+    -- Reconcile delete: conditionally remove hero + card cache + set status + log.
+    RECONCILE_DELETE: (__hero, __status, __log_msg) => BEGIN
+        IF __hero <> null THEN BEGIN
+            ON_HERO_REMOVED(__hero);
+            Cards.REMOVE_CACHED_CARD(__hero.ID);
         END;
-    _NOTIFY_HERO_STATE();
-END;
+        SET_STATUS_AND_LOG(__status, __log_msg, FALSE, FALSE);
+    END,
 
--- Hero removed from collection. O(filters).
-ON_HERO_REMOVED(__hero) := BEGIN
-    MAP_REMOVE(_heroes, __hero.ID);
-    _total_heroes := LENGTH(_heroes);
-    STATS_HERO_REMOVED(__hero);
-    IF LENGTH(_filtered_heroes) > 0 THEN
-        FOR __i := 0 TO LENGTH(_filtered_heroes) - 1 DO BEGIN
-            MAP_REMOVE(_filtered_heroes[__i], __hero.ID);
-            _filter_counts[__i] := LENGTH(_filtered_heroes[__i]);
+    -- Reconcile update: persist hero + cache card + set status + log.
+    RECONCILE_UPDATE: (__old, __new, __status, __log_msg) => BEGIN
+        ON_HERO_PERSISTED(__old, __new);
+        Cards.CACHE_HERO_CARD(__new);
+        SET_STATUS_AND_LOG(__status, __log_msg, FALSE, FALSE);
+    END,
+
+    -- Clear all heroes. Resets heroes map, stats, filter results, displayed heroes, and card cache.
+    ON_HERO_CLEAR: () => BEGIN
+        heroes := {};
+        total_heroes := 0;
+        Stats.STATS_CLEAR();
+        IF LENGTH(Filters.filtered_heroes) > 0 THEN
+            FOR __i := 0 TO LENGTH(Filters.filtered_heroes) - 1 DO BEGIN
+                Filters.filtered_heroes[__i] := {};
+                Filters.filter_counts[__i] := 0;
+            END;
+        __NOTIFY_HERO_STATE();
+        Filters.UPDATE_DISPLAYED_HEROES();
+        Cards.CLEAR_CARD_CACHE();
+        SET_HERO_CARDS([]);
+    END,
+
+    -- Update selected hero without navigating (called from Dart after amend/delete/save).
+    SET_SELECTED_HERO: (hero) => BEGIN
+        selected_hero := hero;
+        PUBLISH('Heroes.selected_hero');
+    END,
+
+    -- Toggle locked state on a hero in the heroes map and selected_hero.
+    TOGGLE_LOCK: (__id, __locked) => BEGIN
+        heroes[__id].LOCKED := __locked;
+        IF selected_hero <> null AND selected_hero.ID = __id THEN BEGIN
+            selected_hero.LOCKED := __locked;
+            PUBLISH('Heroes.selected_hero');
         END;
-    _NOTIFY_HERO_STATE();
-END;
+    END,
 
--- Hero replaced (amend/update). Removes old, adds new. O(filters).
--- ON_HERO_REMOVED + ON_HERO_ADDED each notify; harmless double-notify.
-ON_HERO_REPLACED(__old, __new) := BEGIN
-    ON_HERO_REMOVED(__old);
-    ON_HERO_ADDED(__new);
-END;
+    -- Clear selected hero if it matches the given external_id.
+    CLEAR_SELECTED_IF: (__eid) => BEGIN
+        IF selected_hero <> null AND selected_hero.EXTERNAL_ID = __eid THEN
+            SET_SELECTED_HERO(null);
+    END,
 
--- Clear all heroes. Resets heroes map, stats, and all filter result maps.
-ON_HERO_CLEAR() := BEGIN
-    _heroes := {};
-    _total_heroes := 0;
-    STATS_CLEAR();
-    IF LENGTH(_filtered_heroes) > 0 THEN
-        FOR __i := 0 TO LENGTH(_filtered_heroes) - 1 DO BEGIN
-            _filtered_heroes[__i] := {};
-            _filter_counts[__i] := 0;
+    -- Refresh selected hero from heroes map (after save/persist).
+    REFRESH_SELECTED_IF: (__eid) => BEGIN
+        IF selected_hero <> null AND selected_hero.EXTERNAL_ID = __eid THEN
+            SET_SELECTED_HERO(heroes[selected_hero.ID]);
+    END,
+
+    -- Select hero by ID from the heroes map and set as selected.
+    SELECT_BY_ID: (__id) => SET_SELECTED_HERO(heroes[__id]),
+
+    -- Select hero by ID, set as selected, then navigate back (used after amend).
+    FINISH_AMEND: (__id) => BEGIN
+        SELECT_BY_ID(__id);
+        Nav.GO_BACK();
+    END,
+
+    -- Select a hero for detail view
+    SELECT_HERO: (hero) => BEGIN
+        SET_SELECTED_HERO(hero);
+        Nav.GO_TO('hero_detail');
+    END,
+
+    -- Save a hero to local database (extracts external_id from SHQL™ object)
+    SAVE_HERO: (hero) => BEGIN
+        _PERSIST_HERO(hero.external_id);
+    END,
+
+    -- Nullary function SHQL™ wrappers.
+    CLEAR_ALL_DATA: () => _CLEAR_ALL_DATA,
+    SIGN_OUT: () => BEGIN
+        Auth.FIREBASE_SIGN_OUT();
+        _SIGN_OUT;
+    END,
+
+    -- Reconcile all heroes against the online API.
+    -- Dart callbacks: _INIT_RECONCILE, _RECONCILE_FETCH, _RECONCILE_PERSIST,
+    --   _RECONCILE_DELETE, _RECONCILE_PROMPT, _FINISH_RECONCILE, _SHOW_SNACKBAR.
+    RECONCILE_HEROES: () => BEGIN
+        IF _INIT_RECONCILE <> TRUE THEN RETURN;
+
+        __hero_list := MAP_VALUES(heroes);
+        IF LENGTH(__hero_list) = 0 THEN RETURN;
+
+        SET_RECONCILE_STATE(TRUE, FALSE, '', '', []);
+
+        __updated := 0;
+        __deleted := 0;
+        __locked_skip := 0;
+        __unchanged := 0;
+        __conflicts := 0;
+        __accept_all_deletes := FALSE;
+        __accept_all_updates := FALSE;
+
+        FOR __i := 0 TO LENGTH(__hero_list) - 1 DO BEGIN
+            IF reconcile_aborted THEN BEGIN
+                APPEND_RECONCILE_LOG('— Reconciliation aborted by user —', TRUE, FALSE);
+                BREAK;
+            END;
+
+            __hero := __hero_list[__i];
+            SET_RECONCILE_STATE(null, null, __hero.NAME, 'Fetching from online...', null);
+
+            __result := _RECONCILE_FETCH(__hero.ID);
+            IF __result = null THEN CONTINUE;
+
+            -- Hero not found online
+            IF NOT __result.FOUND THEN BEGIN
+                IF __hero.LOCKED THEN BEGIN
+                    SET_STATUS_AND_LOG('Locked — skipping (not found online)',
+                        __hero.NAME + ': not found online but locked — skipping', FALSE, TRUE);
+                    __locked_skip := __locked_skip + 1;
+                    CONTINUE;
+                END;
+
+                __should_delete := __accept_all_deletes;
+                IF NOT __accept_all_deletes THEN BEGIN
+                    SET_RECONCILE_STATE(null, null, null, 'Not found online — prompting for deletion', null);
+                    __action := _RECONCILE_PROMPT('Hero "' + __hero.NAME + '" no longer exists online (' + __result.ERROR + '). Delete from local database?');
+                    IF __action = 'save' THEN __should_delete := TRUE
+                    ELSE IF __action = 'saveAll' THEN BEGIN __should_delete := TRUE; __accept_all_deletes := TRUE; END
+                    ELSE IF __action = 'cancel' THEN BEGIN SET_RECONCILE_ABORTED(TRUE); CONTINUE; END;
+                END;
+
+                IF __should_delete THEN BEGIN
+                    __old := _RECONCILE_DELETE(__hero.ID);
+                    RECONCILE_DELETE(__old, 'Deleted', __hero.NAME + ': deleted (no longer online)');
+                    __deleted := __deleted + 1;
+                END ELSE
+                    SET_RECONCILE_STATE(null, null, null, 'Kept — skipped by user', null);
+                CONTINUE;
+            END;
+
+            -- Apply error
+            IF __result.APPLY_ERROR <> null THEN BEGIN
+                SET_STATUS_AND_LOG('Error: ' + __result.APPLY_ERROR,
+                    __hero.NAME + ': error — ' + __result.APPLY_ERROR, FALSE, TRUE);
+                CONTINUE;
+            END;
+
+            -- Log resolution conflicts
+            __logs := __result.RESOLUTION_LOGS;
+            IF __logs <> null AND LENGTH(__logs) > 0 THEN BEGIN
+                __conflicts := __conflicts + LENGTH(__logs);
+                FOR __j := 0 TO LENGTH(__logs) - 1 DO BEGIN
+                    IF __j = LENGTH(__logs) - 1 THEN
+                        SET_STATUS_AND_LOG('Resolved ' + STRING(LENGTH(__logs)) + ' unit conflict(s)',
+                            __hero.NAME + ': ' + __logs[__j], FALSE, TRUE)
+                    ELSE
+                        APPEND_RECONCILE_LOG(__hero.NAME + ': ' + __logs[__j], FALSE, TRUE);
+                END;
+            END;
+
+            -- No changes
+            IF NOT __result.HAS_DIFF THEN BEGIN
+                SET_RECONCILE_STATE(null, null, null, 'Up to date — no changes', null);
+                __unchanged := __unchanged + 1;
+                CONTINUE;
+            END;
+
+            -- Locked hero with changes
+            IF __hero.LOCKED THEN BEGIN
+                SET_STATUS_AND_LOG('Locked — skipping changes',
+                    __hero.NAME + ' (locked) — skipped:\n' + __result.DIFF_TEXT, FALSE, TRUE);
+                __locked_skip := __locked_skip + 1;
+                CONTINUE;
+            END;
+
+            -- Prompt for update
+            __should_update := __accept_all_updates;
+            IF NOT __accept_all_updates THEN BEGIN
+                __conflict_notes := IF __logs <> null AND LENGTH(__logs) > 0 THEN
+                    '\n\nUnit conflict resolutions:\n' + STRING_JOIN(__logs, '\n')
+                ELSE '';
+                SET_RECONCILE_STATE(null, null, null, 'Changes found — prompting to update', null);
+                __action := _RECONCILE_PROMPT('Update "' + __hero.NAME + '" with online changes?\n\n' + __result.DIFF_TEXT + __conflict_notes);
+                IF __action = 'save' THEN __should_update := TRUE
+                ELSE IF __action = 'saveAll' THEN BEGIN __should_update := TRUE; __accept_all_updates := TRUE; END
+                ELSE IF __action = 'cancel' THEN BEGIN SET_RECONCILE_ABORTED(TRUE); CONTINUE; END;
+            END;
+
+            IF __should_update THEN BEGIN
+                __persisted := _RECONCILE_PERSIST(__hero.ID);
+                IF __persisted <> null THEN
+                    RECONCILE_UPDATE(__persisted.OLD_OBJ, __persisted.NEW_OBJ, 'Updated', __hero.NAME + ': updated');
+                __updated := __updated + 1;
+            END ELSE
+                SET_RECONCILE_STATE(null, null, null, 'Skipped by user', null);
         END;
-    _NOTIFY_HERO_STATE();
-END;
 
--- Select a hero for detail view
-SELECT_HERO(hero) := BEGIN
-    _selected_hero := hero;
-    SET('_selected_hero', hero);
-    GO_TO('hero_detail');
-END;
+        SET_RECONCILE_STATE(FALSE, FALSE, '', '', null);
+        _FINISH_RECONCILE;
 
--- Save a hero to local database (extracts external_id from SHQL™ object)
-SAVE_HERO(hero) := BEGIN
-    _PERSIST_HERO(hero.external_id);
-END;
+        __parts := STRING(__updated) + ' updated, ' + STRING(__unchanged) + ' unchanged';
+        IF __deleted > 0 THEN __parts := __parts + ', ' + STRING(__deleted) + ' deleted';
+        IF __locked_skip > 0 THEN __parts := __parts + ', ' + STRING(__locked_skip) + ' locked (skipped)';
+        IF __conflicts > 0 THEN __parts := __parts + ', ' + STRING(__conflicts) + ' unit conflict(s)';
+        APPEND_RECONCILE_LOG('Done: ' + __parts, TRUE, FALSE);
+        _SHOW_SNACKBAR('Reconciliation complete: ' + __parts);
+    END,
 
--- Nullary function SHQL™ wrappers.
--- Native nullary functions are registered as _CLEAR_ALL_DATA, _RECONCILE_HEROES.
--- We wrap them so SHQL™ can call them with FOO() syntax (the parser always
--- creates call(identifier, tuple) for FOO(), but IdentifierExecutionNode
--- correctly executes nullary functions when referenced WITHOUT parentheses).
-CLEAR_ALL_DATA() := _CLEAR_ALL_DATA;
-RECONCILE_HEROES() := _RECONCILE_HEROES;
-SIGN_OUT() := BEGIN
-    FIREBASE_SIGN_OUT();
-    _SIGN_OUT;
-END;
+    GET_HERO_COUNT: () => LENGTH(heroes),
 
--- Toggle hero lock state (lock/unlock for reconciliation)
--- (native implementation in Dart via _TOGGLE_LOCK_HERO unary function)
+    -- Rebuild hero_cards from Cards.card_cache + displayed_heroes.
+    REBUILD_CARDS: () => BEGIN
+        IF LENGTH(Cards.card_cache) = 0 THEN BEGIN
+            SET_HERO_CARDS([]);
+            RETURN;
+        END;
+        __display := Filters.GET_DISPLAY_STATE();
+        __heroes := __display.HEROES;
+        IF __heroes = null OR LENGTH(__heroes) = 0 THEN BEGIN
+            __empty := __display.EMPTY_CARD;
+            SET_HERO_CARDS(IF __empty <> null THEN [__empty] ELSE []);
+            RETURN;
+        END;
+        __cards := [];
+        FOR __i := 0 TO LENGTH(__heroes) - 1 DO BEGIN
+            __id := __heroes[__i].ID;
+            IF __id <> null AND Cards.card_cache[__id] <> null THEN
+                __cards := __cards + [Cards.card_cache[__id]];
+        END;
+        SET_HERO_CARDS(__cards);
+    END
+};
 
-GET_HERO_COUNT() := LENGTH(_heroes);

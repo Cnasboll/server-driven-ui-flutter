@@ -9,49 +9,49 @@ screen:
           type: IconButton
           props:
             icon: "arrow_back"
-            onPressed: "shql: GO_BACK()"
+            onPressed: "shql: Nav.GO_BACK()"
         title:
           type: Observer
           props:
-            query: "_selected_hero"
+            query: "Heroes.selected_hero"
             builder:
               type: Text
               props:
-                data: "shql: IF _selected_hero <> null THEN _selected_hero.name ELSE 'Hero Details'"
+                data: "shql: IF Heroes.selected_hero <> null THEN Heroes.selected_hero.name ELSE 'Hero Details'"
                 style:
                   fontFamily: "Orbitron"
         actions:
           # Edit button (only for saved heroes)
           - type: Observer
             props:
-              query: "_selected_hero"
+              query: "Heroes.selected_hero"
               builder:
-                type: "shql: IF _selected_hero <> null AND _selected_hero.saved_at <> null THEN 'IconButton' ELSE 'SizedBox'"
+                type: "shql: IF Heroes.selected_hero <> null AND Heroes.selected_hero.saved_at <> null THEN 'IconButton' ELSE 'SizedBox'"
                 props:
                   icon: "edit"
-                  onPressed: "shql: EDIT_HERO()"
+                  onPressed: "shql: HeroEdit.EDIT_HERO()"
                   width: 0
                   height: 0
           # Lock toggle button (only for saved heroes)
           - type: Observer
             props:
-              query: "_selected_hero"
+              query: "Heroes.selected_hero"
               builder:
-                type: "shql: IF _selected_hero <> null AND _selected_hero.saved_at <> null THEN 'IconButton' ELSE 'SizedBox'"
+                type: "shql: IF Heroes.selected_hero <> null AND Heroes.selected_hero.saved_at <> null THEN 'IconButton' ELSE 'SizedBox'"
                 props:
-                  icon: "shql: IF _selected_hero <> null AND _selected_hero.locked THEN 'lock' ELSE 'lock_open'"
-                  onPressed: "shql: _TOGGLE_LOCK_HERO(_selected_hero.id)"
+                  icon: "shql: IF Heroes.selected_hero <> null AND Heroes.selected_hero.locked THEN 'lock' ELSE 'lock_open'"
+                  onPressed: "shql: _TOGGLE_LOCK_HERO(Heroes.selected_hero.id)"
                   width: 0
                   height: 0
           # Delete button (only for saved heroes)
           - type: Observer
             props:
-              query: "_selected_hero"
+              query: "Heroes.selected_hero"
               builder:
-                type: "shql: IF _selected_hero <> null AND _selected_hero.saved_at <> null THEN 'IconButton' ELSE 'SizedBox'"
+                type: "shql: IF Heroes.selected_hero <> null AND Heroes.selected_hero.saved_at <> null THEN 'IconButton' ELSE 'SizedBox'"
                 props:
                   icon: "delete"
-                  onPressed: "shql: DELETE_HERO(_selected_hero.id); GO_BACK()"
+                  onPressed: "shql: DELETE_HERO(Heroes.selected_hero.id); Nav.GO_BACK()"
                   width: 0
                   height: 0
 
@@ -59,11 +59,11 @@ screen:
     body:
       type: Observer
       props:
-        query: "_selected_hero"
-        builder: "shql: GENERATE_HERO_DETAIL()"
+        query: "Heroes.selected_hero"
+        builder: "shql: Detail.GENERATE_HERO_DETAIL()"
 
     bottomNavigationBar:
       type: BottomNav
       props:
         currentIndex: 0
-        onTap: "TAB_NAV(-1, value)"
+        onTap: "Nav.TAB_NAV(-1, value)"
