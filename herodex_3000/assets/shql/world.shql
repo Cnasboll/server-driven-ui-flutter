@@ -10,6 +10,7 @@ _battle_locations := [];
 GENERATE_BATTLE_MAP() := BEGIN
     __markers := [];
     __hero_list := MAP_VALUES(_heroes);
+    IF LENGTH(__hero_list) > 0 THEN
     FOR i := 0 TO LENGTH(__hero_list) - 1 DO BEGIN
         hero := __hero_list[i];
         name := NVL(hero, h => h.name, "Unknown");
