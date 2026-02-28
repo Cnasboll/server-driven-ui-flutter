@@ -286,7 +286,7 @@ class WidgetRegistry {
         Navigator.of(context).pop(value);
       }
     }).catchError((Object e) {
-      debugPrint('SHQL error: $e');
+      debugPrint('SHQL™ error: $e');
       if (context.mounted) {
         ScaffoldMessenger.maybeOf(context)?.showSnackBar(
           SnackBar(
@@ -3009,14 +3009,22 @@ Widget _buildDismissible(
   final backgroundNode = props['background'];
   final onDismissed = props['onDismissed'];
 
-  DismissDirectionCallback? cb;
+  // Use confirmDismiss to trigger the delete, then return false.
+  // The SHQL™ delete removes the item from the data list, which triggers a
+  // rebuild that removes the Dismissible from the tree naturally.
+  // Returning true would crash: the async delete rebuilds the tree mid-await,
+  // so the Dismissible is disposed before confirmDismiss returns.
+  ConfirmDismissCallback? confirm;
   if (onDismissed is DismissDirectionCallback) {
-    cb = onDismissed;
+    confirm = (direction) async { onDismissed(direction); return false; };
   } else if (onDismissed is VoidCallback) {
-    cb = (_) => onDismissed();
+    confirm = (_) async { onDismissed(); return false; };
   } else if (isShqlRef(onDismissed)) {
     final (:code, :targeted) = parseShql(onDismissed as String);
-    cb = (_) => WidgetRegistry.callShql(context, shql, code, targeted: targeted);
+    confirm = (_) async {
+      shql.call(code, targeted: targeted);
+      return false;
+    };
   }
 
   final directionStr = props['direction']?.toString();
@@ -3028,7 +3036,7 @@ Widget _buildDismissible(
     key: key,
     direction: direction,
     background: backgroundNode != null ? b(backgroundNode, '$path.background') : null,
-    onDismissed: cb,
+    confirmDismiss: confirm,
     child: childNode != null
         ? b(childNode, '$path.child')
         : const SizedBox.shrink(),

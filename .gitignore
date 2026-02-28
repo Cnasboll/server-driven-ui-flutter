@@ -37,6 +37,33 @@ doc/api/
 **/linux/runner/
 **/macos/Runner/
 
+# Android build
+.gradle/
+gradle-wrapper.jar
+gradlew
+gradlew.bat
+local.properties
+.cxx/
+
+# Signing keys (security sensitive)
+key.properties
+*.keystore
+*.jks
+
+# IDE
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# macOS
+.DS_Store
+
+# Build artifacts
+app.*.symbols
+app.*.map.json
+/coverage/
+
 # Mercurial files
 *.hg/
 *.hgignore
