@@ -49,13 +49,12 @@ SHQL™ also generates complete widget trees dynamically at runtime (e.g. `_MAKE
 
 SHQL™ is a general-purpose, Turing-complete scripting language — the *only* language application logic is written in. Variables, functions, loops, conditionals, object literals with dot-notation access, lambdas, closures: everything you need to drive a full application without writing Dart.
 
-SHQL™ needs native Dart callbacks only for platform operations (displaying a dialog, writing to a file, geolocation). Network requests are handled by built-in HTTP functions — `FETCH(url)` for GET, `POST(url, body)` and `PATCH(url, body)` for mutations. Firebase Auth sign-in/sign-up is pure SHQL™ (`auth.shql` POSTs to the Identity Toolkit REST API). Firestore preference sync is pure SHQL™ (`herodex.shql` PATCHes the Firestore REST API). Weather fetches live data from Open-Meteo entirely in SHQL™. No Dart service classes for any of these — only the HTTP client boundary exists in Dart.
+SHQL™ needs native Dart callbacks only for platform operations (displaying a dialog, writing to a file, geolocation). Network requests are handled by built-in HTTP functions — `FETCH(url)` for GET, `POST(url, body)` and `PATCH(url, body)` for mutations. Firebase Auth sign-in/sign-up is pure SHQL™ (`auth.shql` POSTs to the Identity Toolkit REST API). Firestore preference sync is pure SHQL™ (`firestore.shql` PATCHes the Firestore REST API). Weather fetches live data from Open-Meteo entirely in SHQL™. No Dart service classes for any of these — only the HTTP client boundary exists in Dart.
 
 It runs inside a `Runtime` with a `ConstantsSet` (interned identifiers).
 
 - **`shql/`** — The language engine: parser, tokenizer, execution nodes, runtime
-- **`assets/shql/auth.shql`** — Firebase Auth in pure SHQL™ (sign-in, sign-up, sign-out, error mapping, session persistence via POST to Identity Toolkit REST API)
-- **`assets/shql/herodex.shql`** — All app business logic: navigation, filters, search, statistics, Firestore preference sync (PATCH to Firestore REST API)
+- **`assets/shql/`** — 12 cohesive SHQL™ scripts, each owning one concern: `auth` (Firebase Auth), `navigation` (route stack), `firestore` (Firestore sync), `preferences` (theme/onboarding/API config), `statistics` (running totals), `filters` (predicates & CRUD), `heroes` (collection state), `hero_detail` (detail view), `hero_cards` (card generation), `search` (API search), `hero_edit` (edit form), `world` (weather/map/war status)
 - **`shql/assets/stdlib.shql`** — Standard library (SET, LOAD_STATE, SAVE_STATE, etc.)
 
 Key SHQL™ patterns:
@@ -209,8 +208,7 @@ The shared `hero_common` package has 245+ tests covering models, predicates, JSO
 | `lib/core/services/hero_search_service.dart` | Online hero search + save flow + HTTP fetch for SHQL™ |
 | `lib/core/theme/theme_cubit.dart` | Dark/light theme BLoC |
 | `lib/persistence/sqflite_database_adapter.dart` | SQLite driver (FFI on desktop, native on mobile) |
-| `assets/shql/auth.shql` | Firebase Auth in pure SHQL™ (sign-in, sign-up, sign-out, error mapping) |
-| `assets/shql/herodex.shql` | All SHQL™ business logic + dynamic widget tree generation + Firestore sync |
+| `assets/shql/*.shql` | 12 SHQL™ scripts: auth, navigation, firestore, preferences, statistics, filters, heroes, hero_detail, hero_cards, search, hero_edit, world |
 | `assets/screens/*.yaml` | SDUI screen definitions (7 screens) |
 | `assets/widgets/*.yaml` | Reusable YAML widget templates (17 templates including login, dialogs, cards) |
 

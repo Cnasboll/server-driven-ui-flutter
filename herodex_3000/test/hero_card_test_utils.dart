@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 /// Test-only utility: alignment style lookups and string formatters.
 ///
-/// At runtime, all of this lives in SHQL™ (`herodex.shql`). This Dart copy
+/// At runtime, all of this lives in SHQL™ (`hero_cards.shql`). This Dart copy
 /// exists solely so that unit tests can verify expected colours, labels, and
 /// semantics strings without booting the full SHQL™ engine.
 class HeroCard {

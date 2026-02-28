@@ -1,0 +1,123 @@
+-- ============================================
+-- Location & Battle Map
+-- ============================================
+_location_description := '';
+_user_latitude := 56.28;
+_user_longitude := 13.28;
+_battle_locations := [];
+
+-- Generate the complete battle map widget tree (FlutterMap + markers).
+GENERATE_BATTLE_MAP() := BEGIN
+    __markers := [];
+    __hero_list := MAP_VALUES(_heroes);
+    FOR i := 0 TO LENGTH(__hero_list) - 1 DO BEGIN
+        hero := __hero_list[i];
+        name := NVL(hero, h => h.name, "Unknown");
+        alignment := BIOGRAPHY(hero, b => b.alignment, NEUTRAL);
+        -- Spread heroes around user location using a simple deterministic offset
+        -- based on the hero index to avoid all markers stacking
+        angle := i * 2.39996;  --- golden angle in radians
+        radius := 0.05 + (i % 7) * 0.02;
+        lat := _user_latitude + radius * COS(angle);
+        lon := _user_longitude + radius * SIN(angle);
+        __is_villain := alignment > GOOD;
+        __color := IF __is_villain THEN '0xFFF44336' ELSE '0xFF2196F3';
+
+        -- Marker child: Tooltip > Container(circle, shadow) > Icon
+        __marker_child := {"type": "Tooltip", "props": {
+            "message": name,
+            "child": {"type": "Container", "props": {
+                "decoration": {
+                    "color": __color,
+                    "shape": "circle",
+                    "border": {"color": "0xFFFFFFFF", "width": 2},
+                    "boxShadow": [{"blurRadius": 4, "color": "0x42000000"}]
+                },
+                "child": {"type": "Icon", "props": {"icon": IF __is_villain THEN "dangerous" ELSE "shield", "color": "0xFFFFFFFF", "size": 20}}
+            }}
+        }};
+
+        __markers := __markers + [{"lat": lat, "lon": lon, "child": __marker_child}];
+    END;
+
+    RETURN {"type": "FlutterMap", "props": {
+        "latitude": _user_latitude,
+        "longitude": _user_longitude,
+        "zoom": 10,
+        "children": [
+            {"type": "TileLayer", "props": {}},
+            {"type": "MarkerLayer", "props": {"markers": __markers}}
+        ]
+    }};
+END;
+
+-- ============================================
+-- Weather
+-- ============================================
+_weather_temp := null;
+_weather_description := '';
+_weather_icon := 'cloud';
+_weather_wind := 0;
+
+-- WMO Weather interpretation codes → human description
+-- (named __WMO_* to avoid colliding with _weather_* variables — SHQL™ is case-insensitive)
+__WMO_DESCRIPTION(code) := BEGIN
+    IF code = 0 THEN RETURN 'Clear sky';
+    IF code <= 3 THEN RETURN 'Partly cloudy';
+    IF code <= 48 THEN RETURN 'Foggy';
+    IF code <= 57 THEN RETURN 'Drizzle';
+    IF code <= 67 THEN RETURN 'Rain';
+    IF code <= 77 THEN RETURN 'Snow';
+    IF code <= 82 THEN RETURN 'Rain showers';
+    IF code <= 86 THEN RETURN 'Snow showers';
+    IF code >= 95 THEN RETURN 'Thunderstorm';
+    RETURN 'Cloudy';
+END;
+
+-- WMO code → Material icon name
+__WMO_ICON(code) := BEGIN
+    IF code = 0 THEN RETURN 'wb_sunny';
+    IF code <= 3 THEN RETURN 'cloud';
+    IF code <= 48 THEN RETURN 'foggy';
+    IF code <= 67 THEN RETURN 'water_drop';
+    IF code <= 77 THEN RETURN 'ac_unit';
+    IF code <= 86 THEN RETURN 'ac_unit';
+    IF code >= 95 THEN RETURN 'flash_on';
+    RETURN 'cloud';
+END;
+
+-- Fetch weather from Open-Meteo (free, no API key) using SHQL™ FETCH()
+REFRESH_WEATHER() := BEGIN
+    __url := 'https://api.open-meteo.com/v1/forecast?latitude=' + STRING(_user_latitude) + '&longitude=' + STRING(_user_longitude) + '&current_weather=true';
+    __data := FETCH(__url);
+    IF __data <> null AND __data["current_weather"] <> null THEN BEGIN
+        __current := __data["current_weather"];
+        __code := __current["weathercode"];
+        -- Use SET() not := so Observer widgets rebuild
+        SET('_weather_temp', __current["temperature"]);
+        SET('_weather_wind', __current["windspeed"]);
+        SET('_weather_description', __WMO_DESCRIPTION(__code));
+        SET('_weather_icon', __WMO_ICON(__code));
+    END;
+END;
+
+-- ============================================
+-- War Status
+-- ============================================
+_war_messages := [
+    "The invasion has been pushed back 47%",
+    "Heroes are making progress in sector 7",
+    "Villains have joined forces against the common enemy",
+    "Defense grid holding steady",
+    "New recruits arriving daily",
+    "Morale is high among the defenders"
+];
+
+GET_WAR_STATUS() := BEGIN
+    -- Return a "random" message based on current second
+    index := INT(_total_heroes) % LENGTH(_war_messages);
+    RETURN _war_messages[index];
+END;
+
+-- Fetch weather on startup (must be after _user_latitude/_user_longitude are defined)
+REFRESH_WEATHER();

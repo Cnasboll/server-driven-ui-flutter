@@ -1,0 +1,47 @@
+-- ============================================
+-- Navigation
+-- ============================================
+_tab_routes := ['home', 'online', 'heroes', 'settings'];
+_navigation_stack := LOAD_STATE('navigation_stack', ['home']);
+
+TAB_NAV(current, idx) := IF idx <> current THEN GO_TO(_tab_routes[idx]);
+
+PUSH_ROUTE(route) := BEGIN
+    IF LENGTH(_navigation_stack) = 0 THEN
+        _navigation_stack := [route]
+    ELSE BEGIN
+        current_route := _navigation_stack[LENGTH(_navigation_stack) - 1];
+        IF current_route <> route THEN BEGIN
+            IF route IN _navigation_stack THEN
+                _navigation_stack := SLICE(_navigation_stack, 0, INDEX_OF(_navigation_stack, route))
+            ELSE
+                _navigation_stack := _navigation_stack + [route];
+        END;
+    END;
+    SET('_navigation_stack', _navigation_stack);
+    SAVE_STATE('navigation_stack', _navigation_stack);
+    RETURN _navigation_stack;
+END;
+
+POP_ROUTE() := BEGIN
+    IF LENGTH(_navigation_stack) > 1 THEN BEGIN
+        _navigation_stack := SLICE(_navigation_stack, 0, LENGTH(_navigation_stack) - 2);
+        SET('_navigation_stack', _navigation_stack);
+        SAVE_STATE('navigation_stack', _navigation_stack);
+        RETURN _navigation_stack[LENGTH(_navigation_stack) - 1];
+    END ELSE
+        RETURN 'home';
+END;
+
+GO_BACK() := BEGIN
+    previous_route := POP_ROUTE();
+    NAVIGATE(previous_route);
+    RETURN previous_route;
+END;
+
+GO_TO(route) := BEGIN
+    PUSH_ROUTE(route);
+    NAVIGATE(route);
+END;
+
+CAN_GO_BACK() := LENGTH(_navigation_stack) > 1;

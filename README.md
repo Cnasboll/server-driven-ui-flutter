@@ -74,8 +74,9 @@ hero_common/          — Shared Dart package (no platform dependencies)
 herodex_3000/         — Flutter mobile app (SDUI showcase)
   assets/screens/       7 YAML screen definitions
   assets/widgets/       17 YAML widget templates (login, cards, dialogs, nav, etc.)
-  assets/shql/          auth.shql (Firebase Auth via POST), herodex.shql (business
-                        logic, Firestore sync via PATCH, dynamic widget trees)
+  assets/shql/          12 SHQL™ scripts: auth, navigation, firestore, preferences,
+                        statistics, filters, heroes, hero_detail, hero_cards,
+                        search, hero_edit, world (weather/map/war status)
   lib/                  App shell, startup auth check, 4 thin Dart widget factories
                         for third-party libraries (CachedNetworkImage, FlutterMap)
 
@@ -96,7 +97,7 @@ awesome_calculator/   — Calculator app (SHQL™ shell without YAML/SDUI)
 | **shql** | The SHQL™ engine: tokenizer, parser, AST, async runtime. No Flutter dependency. |
 | **server_driven_ui** | SDUI framework: `YamlUiEngine` resolves SHQL™ in YAML, `WidgetRegistry` maps types to widgets, `ShqlBindings` bridges SHQL™ variables to Flutter state, `Observer` widget rebuilds on variable changes. |
 | **hero_common** | Shared models (`HeroModel`, `PowerStatsModel`, etc.), `Field<T,V>` metadata system, `HeroRepository` (SQL, caching, job queue), `ConflictResolver` for height/weight unit conflicts, value types. No platform dependencies — used by both herodex_3000 and v04. |
-| **herodex_3000** | Flutter app showcasing the full SDUI stack. All UI in YAML + SHQL™. Only 4 Dart widget factories for third-party library boundaries (`CachedImage`, `FlutterMap`, `TileLayer`, `MarkerLayer`). Firebase Auth and Firestore sync are pure SHQL™ (`auth.shql` POSTs to Identity Toolkit, `herodex.shql` PATCHes Firestore REST). Location services, connectivity monitoring. |
+| **herodex_3000** | Flutter app showcasing the full SDUI stack. All UI in YAML + SHQL™. Only 4 Dart widget factories for third-party library boundaries (`CachedImage`, `FlutterMap`, `TileLayer`, `MarkerLayer`). Firebase Auth and Firestore sync are pure SHQL™ (`auth.shql` POSTs to Identity Toolkit, `firestore.shql` PATCHes Firestore REST). 12 cohesive SHQL™ scripts, each owning one concern. |
 | **v04** | Console (terminal) app using the same `hero_common` backend. SHQL™ predicates for searching/filtering heroes. Menu-driven CRUD, online search, reconciliation, amendments. |
 | **awesome_calculator** | Standalone SHQL™ shell — no YAML, no SDUI. Calculator with PLOT(), program LOAD/SAVE, math functions. Demonstrates that SHQL™ is a general-purpose language independent of the UI framework. |
 

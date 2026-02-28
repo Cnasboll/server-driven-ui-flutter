@@ -4,6 +4,8 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:server_driven_ui/server_driven_ui.dart';
 
+import 'package:herodex_3000/widgets/filter_editor.dart';
+
 /// Creates a [WidgetRegistry] with HeroDex-specific custom widgets
 /// layered on top of the basic SDUI widgets.
 ///
@@ -101,6 +103,13 @@ HeroDexWidgetRegistry createHeroDexWidgetRegistry() {
           }
           return MarkerLayer(key: key, markers: markers);
         },
+
+    // -----------------------------------------------------------------------
+    // FilterEditor — HeroDex-specific filter management widget.
+    // Reads/writes SHQL™ variables (_filters, _filter_counts, etc.) and calls
+    // SHQL™ functions (APPLY_FILTER, SAVE_FILTER, etc.) from filters.shql.
+    // -----------------------------------------------------------------------
+    'FilterEditor': buildFilterEditor,
   };
 
   return HeroDexWidgetRegistry(basicRegistry, customFactories);

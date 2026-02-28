@@ -1,0 +1,173 @@
+-- ============================================
+-- Hero Detail Helpers (used by GENERATE_HERO_DETAIL)
+-- ============================================
+
+-- Wrap children in a Card with a section title, with padding.
+_MAKE_DETAIL_CARD(section_title, children) := {
+    "type": "Padding",
+    "props": {
+        "padding": {"left": 16, "right": 16, "bottom": 16},
+        "child": {
+            "type": "Card",
+            "props": {
+                "child": {
+                    "type": "Padding",
+                    "props": {
+                        "padding": 16,
+                        "child": {
+                            "type": "Column",
+                            "props": {
+                                "crossAxisAlignment": "start",
+                                "children": [{"type": "Text", "props": {"data": section_title, "style": {"fontSize": 18, "fontWeight": "bold"}}}, {"type": "SizedBox", "props": {"height": 12}}] + children
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+};
+
+-- A single stat widget: big colored number with label
+_MAKE_STAT_WIDGET(fld, hero) := {
+    "type": "Expanded",
+    "child": {
+        "type": "Column",
+        "children": [
+            {"type": "Text", "props": {"data": fld.LABEL, "style": {"fontSize": 12, "color": "0xFF757575"}}},
+            {"type": "Text", "props": {"data": (IF hero <> null THEN STRING(fld.ACCESSOR(hero)) ELSE '-'), "style": {"fontSize": 24, "fontWeight": "bold", "color": fld.COLOR}}}
+        ]
+    }
+};
+
+-- A label:value text row
+_MAKE_TEXT_ROW(fld, hero) := [
+    {"type": "Row", "children": [
+        {"type": "Text", "props": {"data": fld.LABEL + ": ", "style": {"fontWeight": "bold"}}},
+        {"type": "Expanded", "child": {"type": "Text", "props": {"data": (IF hero <> null THEN STRING(fld.ACCESSOR(hero)) ELSE 'Unknown')}}}
+    ]},
+    {"type": "SizedBox", "props": {"height": 8}}
+];
+
+-- An enum label:value row (uses a label list for display)
+_MAKE_ENUM_ROW(fld, hero) := [
+    {"type": "Row", "children": [
+        {"type": "Text", "props": {"data": fld.LABEL + ": ", "style": {"fontWeight": "bold"}}},
+        {"type": "Expanded", "child": {"type": "Text", "props": {"data": (IF hero <> null THEN fld.ENUM_LABELS[fld.ACCESSOR(hero)] ELSE 'Unknown')}}}
+    ]},
+    {"type": "SizedBox", "props": {"height": 8}}
+];
+
+-- A measurement label:value row (height/weight with unit suffix and > 0 check)
+_MAKE_MEASUREMENT_ROW(fld, hero) := [
+    {"type": "Row", "children": [
+        {"type": "Text", "props": {"data": fld.LABEL + ": ", "style": {"fontWeight": "bold"}}},
+        {"type": "Expanded", "child": {"type": "Text", "props": {"data": (IF hero <> null AND fld.ACCESSOR(hero) > 0 THEN STRING(fld.ACCESSOR(hero)) + ' ' + fld.UNIT ELSE 'Unknown')}}}
+    ]},
+    {"type": "SizedBox", "props": {"height": 8}}
+];
+
+-- ============================================
+-- GENERATE_HERO_DETAIL: data-driven detail view
+-- ============================================
+-- Iterates _detail_fields metadata and builds the full detail body widget tree.
+-- Hero image & alignment badge at top, then one Card per section.
+GENERATE_HERO_DETAIL() := BEGIN
+    hero := _selected_hero;
+    IF hero = null THEN RETURN {"type": "SizedBox"};
+
+    result := [];
+
+    -- Hero Image
+    __img_url := IMAGE(hero, img => img.url, null);
+    __img_widget := IF __img_url <> null THEN
+        {"type": "Image", "props": {"src": __img_url, "fit": "contain"}}
+    ELSE
+        {"type": "Icon", "props": {"icon": "person", "size": 100, "color": "0xFF757575"}};
+    result := result + [{"type": "Container", "props": {"height": 300, "color": "0xFF212121", "child": __img_widget}}];
+
+    -- Alignment Badge
+    __align := BIOGRAPHY(hero, b => b.alignment, 0);
+    __badge_color := IF __align <= GOOD THEN '0xFF2196F3' ELSE IF __align >= BAD THEN '0xFFF44336' ELSE '0xFF9E9E9E';
+    __badge_text := UPPERCASE(_ALIGNMENT_LABELS[__align]);
+    result := result + [{
+        "type": "Container",
+        "props": {
+            "transform": "translate(0, -20)",
+            "alignment": "center",
+            "child": {
+                "type": "Container",
+                "props": {
+                    "padding": {"horizontal": 24, "vertical": 8},
+                    "decoration": {"color": __badge_color, "borderRadius": 20},
+                    "child": {"type": "Text", "props": {"data": __badge_text, "style": {"color": "0xFFFFFFFF", "fontWeight": "bold"}}}
+                }
+            }
+        }
+    }];
+
+    -- Iterate _detail_fields grouped by section
+    current_section := '';
+    section_children := [];
+    stat_widgets := [];
+
+    FOR __i := 0 TO LENGTH(_detail_fields) - 1 DO BEGIN
+        fld := _detail_fields[__i];
+
+        -- When section changes, flush the previous section
+        IF fld.SECTION <> current_section THEN BEGIN
+            IF current_section <> '' THEN BEGIN
+                -- If the previous section had stats, lay them out in rows of 3
+                IF LENGTH(stat_widgets) > 0 THEN BEGIN
+                    section_children := [{"type": "SizedBox", "props": {"height": 4}}];
+                    __row := [];
+                    FOR __s := 0 TO LENGTH(stat_widgets) - 1 DO BEGIN
+                        __row := __row + [stat_widgets[__s]];
+                        IF LENGTH(__row) = 3 OR __s = LENGTH(stat_widgets) - 1 THEN BEGIN
+                            section_children := section_children + [{"type": "Row", "children": __row}];
+                            IF __s < LENGTH(stat_widgets) - 1 THEN
+                                section_children := section_children + [{"type": "SizedBox", "props": {"height": 16}}];
+                            __row := [];
+                        END;
+                    END;
+                END;
+                result := result + [_MAKE_DETAIL_CARD(current_section, section_children)];
+            END;
+            current_section := fld.SECTION;
+            section_children := [];
+            stat_widgets := [];
+        END;
+
+        -- Build widget based on display_type
+        IF fld.DISPLAY_TYPE = 'stat' THEN
+            stat_widgets := stat_widgets + [_MAKE_STAT_WIDGET(fld, hero)]
+        ELSE IF fld.DISPLAY_TYPE = 'enum_label' THEN
+            section_children := section_children + _MAKE_ENUM_ROW(fld, hero)
+        ELSE IF fld.DISPLAY_TYPE = 'measurement' THEN
+            section_children := section_children + _MAKE_MEASUREMENT_ROW(fld, hero)
+        ELSE
+            section_children := section_children + _MAKE_TEXT_ROW(fld, hero);
+    END;
+
+    -- Flush last section
+    IF current_section <> '' THEN BEGIN
+        IF LENGTH(stat_widgets) > 0 THEN BEGIN
+            section_children := [{"type": "SizedBox", "props": {"height": 4}}];
+            __row := [];
+            FOR __s := 0 TO LENGTH(stat_widgets) - 1 DO BEGIN
+                __row := __row + [stat_widgets[__s]];
+                IF LENGTH(__row) = 3 OR __s = LENGTH(stat_widgets) - 1 THEN BEGIN
+                    section_children := section_children + [{"type": "Row", "children": __row}];
+                    IF __s < LENGTH(stat_widgets) - 1 THEN
+                        section_children := section_children + [{"type": "SizedBox", "props": {"height": 16}}];
+                    __row := [];
+                END;
+            END;
+        END;
+        result := result + [_MAKE_DETAIL_CARD(current_section, section_children)];
+    END;
+
+    result := result + [{"type": "SizedBox", "props": {"height": 24}}];
+
+    RETURN {"type": "SingleChildScrollView", "props": {"child": {"type": "Column", "props": {"crossAxisAlignment": "stretch", "children": result}}}};
+END;

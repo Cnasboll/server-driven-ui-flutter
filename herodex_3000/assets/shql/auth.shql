@@ -1,5 +1,5 @@
 -- ============================================
--- Firebase Auth (pure SHQL™ — no Dart service)
+-- Firebase Auth
 -- ============================================
 
 _FIREBASE_API_KEY := 'AIzaSyAi3vFRB12aGVJjTiqIBOpRazJr43kvSkA';
