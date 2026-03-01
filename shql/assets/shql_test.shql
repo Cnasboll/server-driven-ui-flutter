@@ -4,23 +4,37 @@
 -- Assertion functions for writing tests in SHQL™.
 -- Each delegates to a Dart callback registered by ShqlTestRunner.
 --
--- Expression-based assertions take a STRING expression as first arg.
--- The Dart side evaluates it and includes the expression text in errors.
---
 -- Usage:
---   EXPECT("Heroes.total_heroes", 1)
---   ASSERT("Nav.CAN_GO_BACK()")
+--   EXPECT(Heroes.total_heroes, 1)
+--   ASSERT(Nav.CAN_GO_BACK())
 --   ASSERT_CALLED('SAVE_STATE')
 -- ============================================
 
--- Expression-based: first arg is a string, evaluated by Dart
-EXPECT(expr, expected)         := __EXPECT(expr, expected);
-ASSERT(expr)                   := __ASSERT(expr);
-ASSERT_FALSE(expr)             := __ASSERT_FALSE(expr);
+EXPECT(actual, expected)       := __EXPECT(actual, expected);
+ASSERT(condition)              := __ASSERT(condition);
+ASSERT_FALSE(condition)        := __ASSERT_FALSE(condition);
+ASSERT_TRUE(condition, label)  := __ASSERT_TRUE(condition, label);
 
--- Direct value assertions: first arg is already evaluated
-EXPECT_EQ(actual, expected, label) := __EXPECT_EQ(actual, expected, label);
-ASSERT_TRUE(condition, label)      := __ASSERT_TRUE(condition, label);
+-- Collection assertions (pure SHQL™ — uses the IN operator)
+ASSERT_CONTAINS(list, value) := ASSERT_TRUE(value IN list, 'Expected list to contain ' + STRING(value));
+ASSERT_NOT_CONTAINS(list, value) := ASSERT_TRUE(NOT (value IN list), 'Expected list to NOT contain ' + STRING(value));
+
+-- Asserts that all values appear in list in the given order (not necessarily adjacent).
+ASSERT_CONTAINS_IN_ORDER(list, values) := BEGIN
+    __pos := 0;
+    IF LENGTH(values) > 0 THEN
+        FOR __i := 0 TO LENGTH(values) - 1 DO BEGIN
+            __found := FALSE;
+            IF LENGTH(list) > __pos THEN
+                FOR __j := __pos TO LENGTH(list) - 1 DO
+                    IF list[__j] = values[__i] THEN BEGIN
+                        __pos := __j + 1;
+                        __found := TRUE;
+                        BREAK;
+                    END;
+            ASSERT_TRUE(__found, 'Expected ' + STRING(values[__i]) + ' at or after index ' + STRING(__pos) + ' in list');
+        END;
+END;
 
 -- Side-effect verification
 ASSERT_CALLED(name)            := __ASSERT_CALLED(name);

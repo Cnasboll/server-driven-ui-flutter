@@ -33,9 +33,10 @@ class ShqlBindings {
     Map<String, Function(dynamic)>? unaryFunctions,
     Map<String, Function(dynamic, dynamic)>? binaryFunctions,
     Map<String, Function(dynamic, dynamic, dynamic)>? ternaryFunctions,
+    Runtime? runtime,
   }) {
     _constantsSet = constantsSet ?? Runtime.prepareConstantsSet();
-    _runtime = Runtime.prepareRuntime(_constantsSet);
+    _runtime = runtime ?? Runtime.prepareRuntime(_constantsSet);
     _runtime.printFunction = printLine;
     _runtime.readlineFunction = readline;
     _runtime.promptFunction = prompt;

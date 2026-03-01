@@ -27,7 +27,7 @@ class HeroCoordinator {
   HeroCoordinator({
     required ShqlBindings shqlBindings,
     required HeroDataManaging heroDataManager,
-    required HeroServicing Function() heroServiceFactory,
+    required HeroServicing? Function() heroServiceFactory,
     required FilterCompiler filterCompiler,
     required ReconcilePromptCallback showReconcileDialog,
     required SnackBarCallback showSnackBar,
@@ -42,7 +42,7 @@ class HeroCoordinator {
 
   final ShqlBindings _shqlBindings;
   final HeroDataManaging _heroDataManager;
-  final HeroServicing Function() _heroServiceFactory;
+  final HeroServicing? Function() _heroServiceFactory;
   final FilterCompiler _filterCompiler;
   final ReconcilePromptCallback _showReconcileDialog;
   final SnackBarCallback _showSnackBar;
@@ -133,8 +133,10 @@ class HeroCoordinator {
   Future<dynamic> reconcileFetch(String heroId) async {
     final hero = _heroDataManager.getById(heroId);
     if (hero == null) return null;
+    final heroService = _heroServiceFactory();
+    if (heroService == null) return null;
 
-    final onlineJson = await _heroServiceFactory().getById(hero.externalId);
+    final onlineJson = await heroService.getById(hero.externalId);
     String? error;
     if (onlineJson != null) error = onlineJson['error'] as String?;
 

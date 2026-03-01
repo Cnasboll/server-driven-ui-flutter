@@ -10,10 +10,10 @@ void main() {
   });
 
   group('EXPECT', () {
-    test('passes when expression evaluates to expected value', () async {
+    test('passes when value equals expected', () async {
       await r.eval(r'''
         x := 42;
-        EXPECT("x", 42)
+        EXPECT(x, 42)
       ''');
     });
 
@@ -21,69 +21,89 @@ void main() {
       await r.eval(r'''
         a := 10;
         b := 20;
-        EXPECT("a + b", 30)
+        EXPECT(a + b, 30)
       ''');
     });
 
     test('works with string values', () async {
       await r.eval(r'''
         name := 'Batman';
-        EXPECT("name", 'Batman')
+        EXPECT(name, 'Batman')
       ''');
     });
 
     test('works with object member access', () async {
       await r.eval(r'''
         hero := OBJECT{name: 'Superman', power: 100};
-        EXPECT("hero.name", 'Superman');
-        EXPECT("hero.power", 100)
+        EXPECT(hero.name, 'Superman');
+        EXPECT(hero.power, 100)
       ''');
     });
 
-    test('fails when values do not match', () async {
-      var failedExpr = '';
+    test('failed EXPECT contains source location info', () async {
+      Object? caughtError;
       final failing = ShqlTestRunner(
         onExpect: (actual, expected, expr) {
-          if (actual != expected) failedExpr = expr;
+          if (actual != expected) throw 'MISMATCH: actual=$actual expected=$expected ($expr)';
         },
       );
       await failing.setUp();
-      await failing.eval('x := 1; EXPECT("x", 99)');
-      expect(failedExpr, contains('EXPECT'));
-      expect(failedExpr, contains('x'));
+      try {
+        await failing.eval('x := 1; EXPECT(x, 99)');
+      } catch (e) {
+        caughtError = e;
+      }
+      expect(caughtError, isNotNull, reason: 'Should have thrown');
+      final msg = caughtError.toString();
+      // The RuntimeException wraps the error with source code snippet
+      expect(msg, contains('EXPECT'), reason: 'Error should reference EXPECT');
+      expect(msg, contains('99'), reason: 'Error should contain expected value');
     });
   });
 
   group('ASSERT', () {
-    test('passes when expression is true', () async {
+    test('passes when condition is true', () async {
       await r.eval(r'''
         x := 5;
-        ASSERT("x > 3")
+        ASSERT(x > 3)
       ''');
     });
 
-    test('works with boolean expressions', () async {
+    test('works with boolean values', () async {
       await r.eval(r'''
         flag := TRUE;
-        ASSERT("flag")
+        ASSERT(flag)
       ''');
+    });
+
+    test('failed ASSERT contains source location info', () async {
+      Object? caughtError;
+      final failing = ShqlTestRunner(
+        onExpect: (actual, expected, expr) {
+          if (actual != expected) throw 'ASSERTION FAILED: $expr';
+        },
+      );
+      await failing.setUp();
+      try {
+        await failing.eval(r'''
+          x := 5;
+          ASSERT(x > 100)
+        ''');
+      } catch (e) {
+        caughtError = e;
+      }
+      expect(caughtError, isNotNull, reason: 'Should have thrown');
+      final msg = caughtError.toString();
+      // RuntimeException wraps with source snippet containing the failing line
+      expect(msg, contains('ASSERT'), reason: 'Error should reference ASSERT');
     });
   });
 
   group('ASSERT_FALSE', () {
-    test('passes when expression is false', () async {
+    test('passes when condition is false', () async {
       await r.eval(r'''
         x := 1;
-        ASSERT_FALSE("x > 10")
-      ''');
-    });
-  });
-
-  group('EXPECT_EQ', () {
-    test('passes with direct value comparison', () async {
-      await r.eval(r'''
-        total := 3 + 4;
-        EXPECT_EQ(total, 7, 'addition result')
+        ASSERT_FALSE(x > 10)
       ''');
     });
   });
@@ -92,6 +112,38 @@ void main() {
     test('passes with true condition', () async {
       await r.eval(r'''
         ASSERT_TRUE(5 > 3, 'five is greater than three')
+      ''');
+    });
+  });
+
+  group('ASSERT_CONTAINS', () {
+    test('passes when list contains value', () async {
+      await r.eval(r'''
+        items := ['a', 'b', 'c'];
+        ASSERT_CONTAINS(items, 'b')
+      ''');
+    });
+
+    test('ASSERT_NOT_CONTAINS passes when value absent', () async {
+      await r.eval(r'''
+        items := ['a', 'b'];
+        ASSERT_NOT_CONTAINS(items, 'z')
+      ''');
+    });
+  });
+
+  group('ASSERT_CONTAINS_IN_ORDER', () {
+    test('passes when values appear in order', () async {
+      await r.eval(r'''
+        log := ['start', 'a', 'x', 'b', 'end'];
+        ASSERT_CONTAINS_IN_ORDER(log, ['a', 'b'])
+      ''');
+    });
+
+    test('handles empty values list', () async {
+      await r.eval(r'''
+        log := ['a', 'b'];
+        ASSERT_CONTAINS_IN_ORDER(log, [])
       ''');
     });
   });
@@ -149,10 +201,9 @@ void main() {
   group('makeObject / readField', () {
     test('creates SHQL objects usable with EXPECT', () async {
       final hero = r.makeObject({'id': 'h1', 'name': 'Batman'});
-      // Use EXPECT_EQ for direct value assertions on bound objects
       await r.eval(r'''
-        EXPECT_EQ(__h.NAME, 'Batman', '__h.NAME');
-        EXPECT_EQ(__h.ID, 'h1', '__h.ID')
+        EXPECT(__h.NAME, 'Batman');
+        EXPECT(__h.ID, 'h1')
       ''', boundValues: {'__h': hero});
     });
 
@@ -167,7 +218,7 @@ void main() {
       r.mockUnary('DOUBLE_IT', (x) => x * 2);
       await r.eval(r'''
         result := DOUBLE_IT(5);
-        EXPECT("result", 10)
+        EXPECT(result, 10)
       ''');
     });
 
@@ -175,7 +226,7 @@ void main() {
       r.mockBinary('ADD', (a, b) => a + b);
       await r.eval(r'''
         result := ADD(3, 4);
-        EXPECT("result", 7)
+        EXPECT(result, 7)
       ''');
     });
 
@@ -186,9 +237,9 @@ void main() {
         return v;
       });
       await r.eval(r'''
-        EXPECT("CLAMP(50, 0, 100)", 50);
-        EXPECT("CLAMP(-5, 0, 100)", 0);
-        EXPECT("CLAMP(999, 0, 100)", 100)
+        EXPECT(CLAMP(50, 0, 100), 50);
+        EXPECT(CLAMP(-5, 0, 100), 0);
+        EXPECT(CLAMP(999, 0, 100), 100)
       ''');
     });
   });
@@ -206,11 +257,11 @@ void main() {
         Counter.INCREMENT();
         Counter.INCREMENT();
         Counter.INCREMENT();
-        EXPECT("Counter.value", 3);
+        EXPECT(Counter.value, 3);
         ASSERT_CALL_COUNT('SAVE_STATE', 3);
 
         Counter.RESET();
-        EXPECT("Counter.value", 0);
+        EXPECT(Counter.value, 0);
       ''');
     });
   });

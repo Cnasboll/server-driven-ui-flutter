@@ -66,5 +66,8 @@ class MockHeroService implements HeroServicing {
     return Future.value(hero);
   }
 
+  /// Remove a hero from the mock data (simulates hero deleted from the API).
+  void removeById(String id) => _jsonByHeroId.remove(id);
+
   final Map<String, String> _jsonByHeroId;
 }

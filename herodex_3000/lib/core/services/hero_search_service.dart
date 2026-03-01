@@ -24,7 +24,7 @@ class HeroSearchService {
   HeroSearchService({
     required ShqlBindings shqlBindings,
     required HeroDataManaging heroDataManager,
-    required HeroServicing Function() heroServiceFactory,
+    required HeroServicing? Function() heroServiceFactory,
     required GlobalKey<NavigatorState> navigatorKey,
   })  : _shqlBindings = shqlBindings,
         _heroDataManager = heroDataManager,
@@ -33,7 +33,7 @@ class HeroSearchService {
 
   final ShqlBindings _shqlBindings;
   final HeroDataManaging _heroDataManager;
-  final HeroServicing Function() _heroServiceFactory;
+  final HeroServicing? Function() _heroServiceFactory;
   final GlobalKey<NavigatorState> _navigatorKey;
 
   /// API response cache — same query on the same day returns cached JSON.
@@ -57,11 +57,16 @@ class HeroSearchService {
   /// HeroModels are opaque to SHQL — passed to other callbacks for inspection.
   Future<dynamic> fetchHeroes(String query) async {
     try {
+      final heroService = _heroServiceFactory();
+      if (heroService == null) {
+        return _errorResult('No API credentials configured');
+      }
+
       _pruneCache();
       final key = _cacheKey(query);
       var data = _searchCache[key];
       if (data == null) {
-        data = await _heroServiceFactory().search(query);
+        data = await heroService.search(query);
         if (data != null && data['response'] == 'success') {
           _searchCache[key] = data;
         }

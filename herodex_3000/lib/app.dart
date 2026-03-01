@@ -374,6 +374,7 @@ class _HeroDexAppState extends State<HeroDexApp> {
     _coordinator = HeroCoordinator(
       shqlBindings: _shqlBindings,
       heroDataManager: _heroDataManager,
+      heroServiceFactory: _getHeroService,
       filterCompiler: filterCompiler,
       showReconcileDialog: _showReconcileDialog,
       showSnackBar: _showSnackBar,
@@ -383,7 +384,7 @@ class _HeroDexAppState extends State<HeroDexApp> {
     _searchService = HeroSearchService(
       shqlBindings: _shqlBindings,
       heroDataManager: _heroDataManager,
-      coordinator: _coordinator,
+      heroServiceFactory: _getHeroService,
       navigatorKey: _navigatorKey,
     );
 
@@ -541,11 +542,11 @@ class _HeroDexAppState extends State<HeroDexApp> {
     }
   }
 
-  HeroServicing _getHeroService() {
+  HeroServicing? _getHeroService() {
     if (_heroService == null) {
       _updateHeroService();
     }
-    return _heroService!;
+    return _heroService;
   }
 
   Future<void> _applyLocation(bool enabled) async {

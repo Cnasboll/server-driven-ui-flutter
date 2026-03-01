@@ -158,56 +158,32 @@ class ShqlTestRunner {
   // ─── Internals ────────────────────────────────────────────────────
 
   void _registerTestCallbacks() {
-    // EXPECT("expr", expected) — eval the expression string, compare.
+    // EXPECT(actual, expected) — direct value comparison.
     runtime.setBinaryFunction(
       '__EXPECT',
-      (ExecutionContext ctx, ExecutionNode caller, dynamic exprStr,
-          dynamic expected) async {
-        final actual = await Engine.execute(
-          exprStr as String,
-          runtime: runtime,
-          constantsSet: constantsSet,
-        );
-        onExpect(actual, expected, 'EXPECT("$exprStr", $expected)');
+      (ExecutionContext ctx, ExecutionNode caller, dynamic actual,
+          dynamic expected) {
+        onExpect(actual, expected, 'EXPECT($actual, $expected)');
       },
     );
 
-    // ASSERT("expr") — eval expression string, expect truthy.
+    // ASSERT(condition) — direct boolean check.
     runtime.setUnaryFunction(
       '__ASSERT',
-      (ExecutionContext ctx, ExecutionNode caller, dynamic exprStr) async {
-        final actual = await Engine.execute(
-          exprStr as String,
-          runtime: runtime,
-          constantsSet: constantsSet,
-        );
-        onExpect(actual, true, 'ASSERT("$exprStr")');
+      (ExecutionContext ctx, ExecutionNode caller, dynamic condition) {
+        onExpect(condition, true, 'ASSERT($condition)');
       },
     );
 
-    // ASSERT_FALSE("expr") — eval expression string, expect falsy.
+    // ASSERT_FALSE(condition) — direct boolean check (negated).
     runtime.setUnaryFunction(
       '__ASSERT_FALSE',
-      (ExecutionContext ctx, ExecutionNode caller, dynamic exprStr) async {
-        final actual = await Engine.execute(
-          exprStr as String,
-          runtime: runtime,
-          constantsSet: constantsSet,
-        );
-        onExpect(actual, false, 'ASSERT_FALSE("$exprStr")');
+      (ExecutionContext ctx, ExecutionNode caller, dynamic condition) {
+        onExpect(condition, false, 'ASSERT_FALSE($condition)');
       },
     );
 
-    // EXPECT_EQ(actual, expected, label) — direct value comparison.
-    runtime.setTernaryFunction(
-      '__EXPECT_EQ',
-      (ExecutionContext ctx, ExecutionNode caller, dynamic actual,
-          dynamic expected, dynamic label) {
-        onExpect(actual, expected, '$label');
-      },
-    );
-
-    // ASSERT_TRUE(condition, label) — direct boolean check.
+    // ASSERT_TRUE(condition, label) — direct boolean check with label.
     runtime.setBinaryFunction(
       '__ASSERT_TRUE',
       (ExecutionContext ctx, ExecutionNode caller, dynamic condition,
