@@ -119,11 +119,11 @@ SHQL™ drives **all** orchestration. Dart callbacks exist only for operations t
 │    └── FULL_REBUILD_AND_DISPLAY() ─── SHQL rebuild                ││
 │  ─────────────────────────────────────────────────────────────────┘│
 │                                                                     │
-│  Heroes.DELETE_HERO_FULL(id)                                       │
+│  Heroes.DELETE_HERO(id)                                             │
 │    │ __old := heroes[id]  (SHQL grabs old object)                  │
+│    ├── ON_HERO_REMOVED(__old) ─── SHQL state cleanup               │
 │    ├── Cards.REMOVE_CACHED_CARD(id) ─── SHQL                      │
-│    ├── _HERO_DATA_DELETE(id) ──→ Dart: DB delete, returns eid      │
-│    └── ON_HERO_DELETED(__old, eid) ─── SHQL state cleanup          │
+│    └── _HERO_DATA_DELETE(id) ──→ Dart: DB delete                   │
 │                                                                     │
 │  HeroEdit.SAVE_AMENDMENTS()                                        │
 │    │ __old := Heroes.heroes[id]  (SHQL grabs old object)           │

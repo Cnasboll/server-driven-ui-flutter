@@ -40,7 +40,7 @@ screen:
                 type: "shql: IF Heroes.selected_hero <> null AND Heroes.heroes[Heroes.selected_hero.ID] <> null THEN 'IconButton' ELSE 'SizedBox'"
                 props:
                   icon: "shql: IF Heroes.selected_hero <> null AND Heroes.selected_hero.locked THEN 'lock' ELSE 'lock_open'"
-                  onPressed: "shql: _TOGGLE_LOCK_HERO(Heroes.selected_hero.id)"
+                  onPressed: "shql: Heroes.TOGGLE_LOCK(Heroes.selected_hero.ID)"
                   width: 0
                   height: 0
           # Delete button (only for saved heroes)

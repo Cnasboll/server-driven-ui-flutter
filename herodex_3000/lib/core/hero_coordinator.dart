@@ -63,18 +63,6 @@ class HeroCoordinator {
   // Hero CRUD
   // ---------------------------------------------------------------------------
 
-  /// Persist a hero to DB, create SHQL object, let SHQL handle old lookup + state — single eval.
-  Future<void> persistHero(HeroModel hero) async {
-    _heroDataManager.persist(hero);
-    final newObj = _createHeroObject(hero);
-
-    await _shqlBindings.eval(
-      'Heroes.PERSIST_AND_REBUILD(__new)',
-      boundValues: {'__new': newObj},
-    );
-    _onStateChanged();
-  }
-
   /// _HERO_DATA_DELETE callback: deletes hero from DB.
   /// Returns true on success, null if hero not found.
   /// SHQL owns both objects and IDs — Dart just does the DB delete.

@@ -56,8 +56,8 @@ HeroEdit := OBJECT{
         RETURN __amendment;
     END,
 
-    -- Submit amendments: build amendment map, Dart applies to model + DB,
-    -- SHQL updates state + cards + navigates back.
+    -- Submit amendments: SHQL remove → Dart amend → SHQL add.
+    -- Stack discipline: Dart operation sandwiched between SHQL transactions.
     SAVE_AMENDMENTS: () => BEGIN
         __amendment := BUILD_AMENDMENT();
         IF __amendment = null THEN BEGIN
@@ -65,9 +65,17 @@ HeroEdit := OBJECT{
             RETURN;
         END;
         __hero_id := Heroes.selected_hero.ID;
+        -- SHQL remove (top of stack)
+        __old := Heroes.heroes[__hero_id];
+        IF __old <> null THEN Heroes.ON_HERO_REMOVED(__old);
+        Cards.REMOVE_CACHED_CARD(__hero_id);
+        -- Dart amend (middle)
         __result := _HERO_DATA_AMEND(__hero_id, __amendment);
         IF __result = null THEN RETURN;
-        Heroes.PERSIST_AND_REBUILD(__result.NEW_OBJ);
+        -- SHQL add (back on stack)
+        Heroes.ON_HERO_ADDED(__result.NEW_OBJ);
+        Cards.CACHE_HERO_CARD(__result.NEW_OBJ);
+        Heroes.REBUILD_CARDS();
         Heroes.FINISH_AMEND(__result.ID);
         _SHOW_SNACKBAR('Hero amended (locked from reconciliation)');
     END,

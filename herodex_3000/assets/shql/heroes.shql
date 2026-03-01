@@ -130,37 +130,20 @@ Heroes := OBJECT{
         __NOTIFY_HERO_STATE();
     END,
 
-    -- Hero replaced (amend/update). Removes old, adds new. O(filters).
-    ON_HERO_REPLACED: (__old, __new) => BEGIN
-        ON_HERO_REMOVED(__old);
-        ON_HERO_ADDED(__new);
-    END,
-
-    -- Hero persisted (new or replacement). Filters updated incrementally by ON_HERO_ADDED/REMOVED.
-    ON_HERO_PERSISTED: (__old, __new) => BEGIN
-        IF __old <> null THEN ON_HERO_REPLACED(__old, __new)
-        ELSE ON_HERO_ADDED(__new);
-    END,
-
-    -- Full delete lifecycle: remove from state, clear selection.
-    ON_HERO_DELETED: (__hero) => BEGIN
-        ON_HERO_REMOVED(__hero);
-        CLEAR_SELECTED_IF(__hero.ID);
-    END,
-
-    -- Complete delete flow: Dart DB delete, SHQL state cleanup — one call from YAML.
-    -- _HERO_DATA_DELETE(id) deletes from DB, returns TRUE/null. SHQL owns both objects and IDs.
-    DELETE_HERO_FULL: (__id) => BEGIN
+    -- Delete hero: remove from SHQL state (heroes, filters, stats), clear selection.
+    -- Stack discipline: SHQL first, then Dart DB — no hero exists in SHQL
+    -- without backing in HeroDataManager.
+    DELETE_HERO: (__id) => BEGIN
         __old := heroes[__id];
         IF __old = null THEN RETURN;
-        IF _HERO_DATA_DELETE(__id) THEN BEGIN
-            ON_HERO_DELETED(__old);
-            Cards.REMOVE_CACHED_CARD(__id);
-            REBUILD_CARDS();
-        END;
+        ON_HERO_REMOVED(__old);
+        CLEAR_SELECTED_IF(__id);
+        Cards.REMOVE_CACHED_CARD(__id);
+        REBUILD_CARDS();
+        _HERO_DATA_DELETE(__id);
     END,
 
-    -- Reconcile delete: conditionally remove hero + card cache + set status + log.
+    -- Reconcile delete: remove from SHQL + card cache, then status + log.
     RECONCILE_DELETE: (__hero, __status, __log_msg) => BEGIN
         IF __hero <> null THEN BEGIN
             ON_HERO_REMOVED(__hero);
@@ -169,10 +152,16 @@ Heroes := OBJECT{
         SET_STATUS_AND_LOG(__status, __log_msg, FALSE, FALSE);
     END,
 
-    -- Reconcile update: persist hero + cache card + set status + log.
-    RECONCILE_UPDATE: (__old, __new, __status, __log_msg) => BEGIN
-        ON_HERO_PERSISTED(__old, __new);
-        Cards.CACHE_HERO_CARD(__new);
+    -- Reconcile update (auto-amend): SHQL remove → Dart persist → SHQL add.
+    -- Stack discipline: Dart operation sandwiched between SHQL transactions.
+    RECONCILE_UPDATE: (__old, __opaque, __status, __log_msg) => BEGIN
+        ON_HERO_REMOVED(__old);
+        Cards.REMOVE_CACHED_CARD(__old.ID);
+        __new := _RECONCILE_PERSIST(__opaque);
+        IF __new <> null THEN BEGIN
+            ON_HERO_ADDED(__new);
+            Cards.CACHE_HERO_CARD(__new);
+        END;
         SET_STATUS_AND_LOG(__status, __log_msg, FALSE, FALSE);
     END,
 
@@ -193,26 +182,19 @@ Heroes := OBJECT{
         PUBLISH('Heroes.selected_hero');
     END,
 
-    -- Complete toggle lock flow: Dart DB toggle + SHQL state update — callable from YAML.
+    -- Toggle lock: Dart DB toggle + SHQL state update + card rebuild.
     -- _HERO_DATA_TOGGLE_LOCK(id) does model toggle + DB persist, returns {locked: bool}.
-    TOGGLE_LOCK_FULL: (__id) => BEGIN
+    TOGGLE_LOCK: (__id) => BEGIN
         __result := _HERO_DATA_TOGGLE_LOCK(__id);
         IF __result = null THEN RETURN;
-        TOGGLE_LOCK(__id, __result.LOCKED);
+        __SET_LOCKED(__id, __result.LOCKED);
         Cards.CACHE_HERO_CARD(heroes[__id]);
         REBUILD_CARDS();
         _SHOW_SNACKBAR(IF __result.LOCKED THEN 'Hero locked — reconciliation skipped' ELSE 'Hero unlocked — reconciliation enabled');
     END,
 
-    -- Toggle lock, re-cache card, rebuild display — internal helper.
-    TOGGLE_LOCK_AND_REBUILD: (__id, __locked) => BEGIN
-        TOGGLE_LOCK(__id, __locked);
-        Cards.CACHE_HERO_CARD(heroes[__id]);
-        REBUILD_CARDS();
-    END,
-
-    -- Toggle locked state on a hero in the heroes map and selected_hero.
-    TOGGLE_LOCK: (__id, __locked) => BEGIN
+    -- Set locked state on a hero in the heroes map and selected_hero.
+    __SET_LOCKED: (__id, __locked) => BEGIN
         heroes[__id].LOCKED := __locked;
         IF selected_hero <> null AND selected_hero.ID = __id THEN BEGIN
             selected_hero.LOCKED := __locked;
@@ -312,8 +294,8 @@ Heroes := OBJECT{
                 END;
 
                 IF __should_delete THEN BEGIN
-                    _RECONCILE_DELETE(__hero.ID);
                     RECONCILE_DELETE(__hero, 'Deleted', __hero.NAME + ': deleted (no longer online)');
+                    _RECONCILE_DELETE(__hero.ID);
                     __deleted := __deleted + 1;
                 END ELSE
                     SET_RECONCILE_STATE(null, null, null, 'Kept — skipped by user', null);
@@ -369,10 +351,7 @@ Heroes := OBJECT{
             END;
 
             IF __should_update THEN BEGIN
-                -- Pass opaque HeroModel to Dart → persist + map to SHQL Object
-                __new_obj := _RECONCILE_PERSIST(__result.UPDATED_HERO);
-                IF __new_obj <> null THEN
-                    RECONCILE_UPDATE(__hero, __new_obj, 'Updated', __hero.NAME + ': updated');
+                RECONCILE_UPDATE(__hero, __result.UPDATED_HERO, 'Updated', __hero.NAME + ': updated');
                 __updated := __updated + 1;
             END ELSE
                 SET_RECONCILE_STATE(null, null, null, 'Skipped by user', null);
@@ -392,11 +371,12 @@ Heroes := OBJECT{
 
     GET_HERO_COUNT: () => LENGTH(heroes),
 
-    -- Persist hero (add/replace), cache card, rebuild display.
-    -- Looks up old from heroes map by ID — caller only provides the new object.
+    -- Add newly saved hero to SHQL state, cache card, rebuild display.
+    -- Used by search after _SAVE_HERO persists to Dart/DB.
     PERSIST_AND_REBUILD: (__new) => BEGIN
         __old := heroes[__new.ID];
-        ON_HERO_PERSISTED(__old, __new);
+        IF __old <> null THEN ON_HERO_REMOVED(__old);
+        ON_HERO_ADDED(__new);
         Cards.CACHE_HERO_CARD(__new);
         REBUILD_CARDS();
     END,
