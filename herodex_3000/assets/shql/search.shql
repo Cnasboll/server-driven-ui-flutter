@@ -41,6 +41,11 @@ Search := OBJECT{
         IF __summary <> null THEN SET_SEARCH_SUMMARY(__summary);
     END,
 
+    -- UI helpers for YAML templates.
+    LOADING_TYPE: () => IF is_loading THEN 'LinearProgressIndicator' ELSE 'SizedBox',
+    LOADING_HEIGHT: () => IF is_loading THEN null ELSE 0,
+    SUMMARY_TYPE: () => IF LENGTH(search_summary) > 0 THEN 'Padding' ELSE 'SizedBox',
+
     -- Search for heroes via API, then prompt to save unsaved results.
     -- HeroModels returned by _SEARCH_HEROES are opaque — SHQL holds them and
     -- passes to _GET_SAVED_ID, _PERSIST_HERO, _MAP_HERO, _REVIEW_HERO.

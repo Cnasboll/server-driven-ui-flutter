@@ -484,6 +484,98 @@ void main() {
     );
   });
 
+  test('FOR CONTINUE with IF', () async {
+    expect(
+      await Engine.execute(r'''
+        __test() := BEGIN
+          __result := [];
+          FOR __i := 0 TO 2 DO BEGIN
+            IF __i = 1 THEN CONTINUE;
+            __result := __result + [__i];
+          END;
+          RETURN __result;
+        END;
+        __test()
+      '''),
+      [0, 2],
+    );
+  });
+
+  test('FOR CONTINUE with nested IF-ELSE IF', () async {
+    expect(
+      await Engine.execute(r'''
+        __test() := BEGIN
+          __result := [];
+          FOR __i := 0 TO 2 DO BEGIN
+            IF __i = 0 THEN __result := __result + ['zero']
+            ELSE IF __i = 1 THEN BEGIN
+              __result := __result + ['skip'];
+              CONTINUE;
+            END
+            ELSE __result := __result + ['two'];
+            __result := __result + ['after'];
+          END;
+          RETURN __result;
+        END;
+        __test()
+      '''),
+      ['zero', 'after', 'skip', 'two', 'after'],
+    );
+  });
+
+  test('FOR CONTINUE inside nested IF-THEN-BEGIN-END', () async {
+    expect(
+      await Engine.execute(r'''
+        __test() := BEGIN
+          __result := [];
+          __flag := TRUE;
+          FOR __i := 0 TO 2 DO BEGIN
+            IF __flag THEN BEGIN
+              IF __i = 1 THEN BEGIN
+                __result := __result + ['skip'];
+                CONTINUE;
+              END;
+            END;
+            __result := __result + [__i];
+          END;
+          RETURN __result;
+        END;
+        __test()
+      '''),
+      [0, 'skip', 2],
+    );
+  });
+
+  test('FOR CONTINUE with nested ELSE IF BREAK pattern', () async {
+    var (runtime, constantsSet) = await _loadStdLib();
+    expect(
+      await Engine.execute(r'''
+        __test() := BEGIN
+          __result := [];
+          __flag := TRUE;
+          __action := 'skip';
+          FOR __i := 0 TO 2 DO BEGIN
+            IF __flag THEN BEGIN
+              IF __action = 'saveAll' THEN __result := __result + ['saveAll']
+              ELSE IF __action = 'cancel' THEN BEGIN
+                __result := __result + ['cancel'];
+                BREAK;
+              END
+              ELSE IF __action <> 'save' THEN BEGIN
+                __result := __result + ['skipped'];
+                CONTINUE;
+              END;
+            END;
+            __result := __result + ['after:' + STRING(__i)];
+          END;
+          RETURN __result;
+        END;
+        __test()
+      ''', runtime: runtime, constantsSet: constantsSet),
+      ['skipped', 'skipped', 'skipped'],
+    );
+  });
+
   test("Test repeat until", () async {
     expect(
       (await Engine.execute("x := 0; REPEAT x := x + 1 UNTIL x = 10; x")),

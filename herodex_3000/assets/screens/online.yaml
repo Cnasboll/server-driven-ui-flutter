@@ -55,16 +55,16 @@ screen:
             props:
               query: "Search.is_loading"
               builder:
-                type: "shql: IF Search.is_loading THEN 'LinearProgressIndicator' ELSE 'SizedBox'"
+                type: "shql: Search.LOADING_TYPE()"
                 props:
-                  height: "shql: IF Search.is_loading THEN null ELSE 0"
+                  height: "shql: Search.LOADING_HEIGHT()"
 
           # Reconcile progress (shown during reconciliation)
           - type: Observer
             props:
               query: "Heroes.reconcile_active, Heroes.reconcile_current, Heroes.reconcile_status"
               builder:
-                type: "shql: IF Heroes.reconcile_active THEN 'Padding' ELSE 'SizedBox'"
+                type: "shql: Heroes.RECONCILE_ACTIVE_TYPE()"
                 props:
                   height: 0
                   padding:
@@ -101,7 +101,7 @@ screen:
                                       children:
                                         - type: Text
                                           props:
-                                            data: "shql: 'Reconciling: ' + Heroes.reconcile_current"
+                                            data: "shql: Heroes.RECONCILE_CURRENT_LABEL()"
                                             style:
                                               fontWeight: "bold"
                                               fontSize: 13
@@ -129,7 +129,7 @@ screen:
             props:
               query: "Search.search_summary"
               builder:
-                type: "shql: IF LENGTH(Search.search_summary) > 0 THEN 'Padding' ELSE 'SizedBox'"
+                type: "shql: Search.SUMMARY_TYPE()"
                 props:
                   height: 0
                   padding:
@@ -197,7 +197,7 @@ screen:
               props:
                 query: "Heroes.reconcile_log"
                 builder:
-                  type: "shql: IF LENGTH(Heroes.reconcile_log) > 0 THEN 'ListView' ELSE 'Center'"
+                  type: "shql: Heroes.RECONCILE_LOG_TYPE()"
                   props:
                     padding: 0
                     children: "shql: Heroes.reconcile_log"

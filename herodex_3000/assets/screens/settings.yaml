@@ -31,7 +31,7 @@ screen:
                   leading:
                     type: Icon
                     props:
-                      icon: "shql: IF Prefs.is_dark_mode THEN 'dark_mode' ELSE 'light_mode'"
+                      icon: "shql: Prefs.DARK_MODE_SETTINGS_ICON()"
                   title:
                     type: Text
                     props:
@@ -134,7 +134,7 @@ screen:
                       child:
                         type: Text
                         props:
-                          data: "shql: IF LENGTH(World.location_description) > 0 THEN 'Your location: ' + World.location_description ELSE ''"
+                          data: "shql: World.LOCATION_LABEL()"
                           style:
                             fontSize: 12
                             color: "0xFF757575"

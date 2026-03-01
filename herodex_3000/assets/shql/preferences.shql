@@ -15,8 +15,20 @@ Prefs := OBJECT{
     api_key: LOAD_STATE('api_key', ''),
     api_host: LOAD_STATE('api_host', 'www.superheroapi.com'),
 
+    -- Dispatch platform side-effects for a preference change.
+    -- Each case calls a registered Dart callback for the platform boundary.
+    _ON_PREF_CHANGED: (key, value) => BEGIN
+        IF key = 'is_dark_mode' THEN _SET_DARK_MODE(value)
+        ELSE IF key = 'analytics_enabled' THEN _SET_ANALYTICS(value)
+        ELSE IF key = 'crashlytics_enabled' THEN _SET_CRASHLYTICS(value)
+        ELSE IF key = 'location_enabled' THEN BEGIN
+            __loc := _GET_LOCATION(value);
+            World.SET_LOCATION(__loc.DESCRIPTION, __loc.LATITUDE, __loc.LONGITUDE);
+        END
+        ELSE IF key = 'api_key' OR key = 'api_host' THEN _REFRESH_HERO_SERVICE(null);
+    END,
+
     -- Save to cloud + notify observers + push to Dart platform layer.
-    -- _ON_PREF_CHANGED(key, value) handles ThemeCubit, Firebase, location.
     __SAVE: (key, value) => BEGIN
         Cloud.SAVE_PREF(key, value);
         PUBLISH('Prefs.' + key);
@@ -53,6 +65,17 @@ Prefs := OBJECT{
         __SAVE('onboarding_completed', TRUE);
     END,
 
+    -- Complete onboarding and navigate to home screen.
+    FINISH_ONBOARDING: () => BEGIN
+        COMPLETE_ONBOARDING();
+        Nav.GO_TO('home');
+    END,
+
+    -- UI helpers for YAML templates.
+    DARK_MODE_ICON: () => IF is_dark_mode THEN 'light_mode' ELSE 'dark_mode',
+    DARK_MODE_SETTINGS_ICON: () => IF is_dark_mode THEN 'dark_mode' ELSE 'light_mode',
+    INITIAL_ROUTE: () => IF onboarding_completed THEN 'home' ELSE 'onboarding',
+
     IS_ONBOARDING_COMPLETED: () => onboarding_completed,
 
     RESET_ONBOARDING: () => BEGIN
@@ -71,14 +94,15 @@ Prefs := OBJECT{
         __SAVE('api_host', host);
     END,
 
-    -- Return all state needed by Dart initialization in one call.
-    GET_INIT_STATE: () => OBJECT{
-        is_dark_mode: is_dark_mode,
-        analytics_enabled: analytics_enabled,
-        crashlytics_enabled: crashlytics_enabled,
-        location_enabled: location_enabled,
-        onboarding_completed: onboarding_completed
-    },
+    -- Apply all initial preferences by calling _ON_PREF_CHANGED for each.
+    -- Returns the initial route ('home' or 'onboarding').
+    APPLY_INIT_STATE: () => BEGIN
+        _ON_PREF_CHANGED('is_dark_mode', is_dark_mode);
+        _ON_PREF_CHANGED('analytics_enabled', analytics_enabled);
+        _ON_PREF_CHANGED('crashlytics_enabled', crashlytics_enabled);
+        _ON_PREF_CHANGED('location_enabled', location_enabled);
+        RETURN IF onboarding_completed THEN 'home' ELSE 'onboarding';
+    END,
 
     -- Ensure API credentials are set, prompting the user if needed.
     -- Returns OBJECT{api_key, api_host} or null if the user cancelled.

@@ -82,10 +82,18 @@ class _FilterEditorState extends State<_FilterEditor> {
     _debouncer = Debouncer(milliseconds: 500);
     _subscribe();
     _readVariables();
+    _installOnApplyCallback();
   }
 
   @override
   void dispose() {
+    // Only clear the on_apply callback if this instance installed one.
+    // The heroes screen's FilterEditor (no onSelect) must NOT clear the
+    // callback that the home screen's FilterEditor installed, because
+    // GoRouter disposes the old screen AFTER mounting the new one.
+    if (_isApplyMode && widget.onSelect != null) {
+      widget.shql.call('Filters.SET_ON_APPLY(null)');
+    }
     _unsubscribe();
     _queryController.dispose();
     _nameController.dispose();
@@ -93,6 +101,18 @@ class _FilterEditorState extends State<_FilterEditor> {
     _scrollController.dispose();
     _nameFocusNode.dispose();
     super.dispose();
+  }
+
+  /// Install the on_apply callback on the Filters namespace.
+  /// In apply mode with an onSelect expression, this stores a lambda
+  /// so APPLY_FILTER / APPLY_QUERY auto-trigger it (no consecutive calls).
+  void _installOnApplyCallback() {
+    if (_isApplyMode && widget.onSelect != null) {
+      final expr = widget.onSelect!;
+      // Strip "shql: " prefix if present (YAML prop values include it)
+      final code = expr.startsWith('shql: ') ? expr.substring(6) : expr;
+      widget.shql.call('Filters.SET_ON_APPLY(() => $code)');
+    }
   }
 
   void _subscribe() {
@@ -204,9 +224,6 @@ class _FilterEditorState extends State<_FilterEditor> {
     }
     if (_isApplyMode) {
       widget.shql.call('Filters.APPLY_FILTER(__idx)', targeted: true, boundValues: {'__idx': index});
-      if (widget.onSelect != null) {
-        widget.shql.call(widget.onSelect!, targeted: true);
-      }
     }
   }
 
@@ -218,15 +235,13 @@ class _FilterEditorState extends State<_FilterEditor> {
 
   void _onQuerySubmitted(String value) {
     if (_isApplyMode) {
-      // In apply mode, the query field is always a free-form search
+      // In apply mode, the query field is always a free-form search.
+      // on_apply callback (if set) fires inside APPLY_QUERY automatically.
       widget.shql.call(
         'Filters.APPLY_QUERY(value)',
         targeted: true,
         boundValues: {'value': value},
       );
-      if (widget.onSelect != null) {
-        widget.shql.call(widget.onSelect!, targeted: true);
-      }
     } else if (_editingIndex >= 0 && _editingIndex < _filters.length) {
       // In edit/manage mode, save the predicate for the selected filter
       widget.shql.call(

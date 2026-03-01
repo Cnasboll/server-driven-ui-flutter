@@ -1,0 +1,37 @@
+# Splash / loading screen (pre-init).
+# Props: loadingStatus (String) — current loading step, empty while idle.
+widget:
+  type: Scaffold
+  props:
+    backgroundColor: "0xFF1A237E"
+    body:
+      type: Center
+      props:
+        child:
+          type: Column
+          props:
+            mainAxisAlignment: "center"
+            children:
+              - type: Icon
+                props:
+                  icon: "shield"
+                  size: 100
+                  color: "0xFFFFFFFF"
+              - type: SizedBox
+                props:
+                  height: 24
+              - type: Text
+                props:
+                  data: "HeroDex 3000"
+                  style:
+                    fontSize: 32
+                    fontWeight: "bold"
+                    color: "0xFFFFFFFF"
+                    fontFamily: "Orbitron"
+              - type: SizedBox
+                props:
+                  height: 48
+              - type: CircularProgressIndicator
+                props:
+                  valueColor: "0xFFFFFFFF"
+              - prop:loadingStatusWidget

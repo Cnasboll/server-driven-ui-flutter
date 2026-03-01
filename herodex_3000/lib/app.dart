@@ -91,6 +91,7 @@ class _HeroDexAppState extends State<HeroDexApp> {
     'HeroCardBody': 'assets/widgets/hero_card_body.yaml',
     'DismissibleCard': 'assets/widgets/dismissible_card.yaml',
     'HeroPlaceholder': 'assets/widgets/hero_placeholder.yaml',
+    'SplashScreen': 'assets/widgets/splash_screen.yaml',
   };
 
   @override
@@ -137,6 +138,10 @@ class _HeroDexAppState extends State<HeroDexApp> {
   }
 
   Future<void> _initServices() async {
+    // Load splash template early so build() can use it while we init.
+    final splashYaml = await rootBundle.loadString('assets/widgets/splash_screen.yaml');
+    WidgetRegistry.loadStaticTemplate('SplashScreen', splashYaml);
+
     // Initialize static bindings for dialogs (CLOSE_DIALOG, variable access).
     WidgetRegistry.initStaticBindings();
 
@@ -234,8 +239,12 @@ class _HeroDexAppState extends State<HeroDexApp> {
       }
     }
 
+    final sw = Stopwatch()..start();
+    void lap(String label) { debugPrint('[Startup] $label: ${sw.elapsedMilliseconds}ms'); sw.reset(); sw.start(); }
+
     final constantsSet = Runtime.prepareConstantsSet();
     HeroShqlAdapter.registerHeroSchema(constantsSet);
+    lap('prepareConstantsSet + registerHeroSchema');
 
     _shqlBindings = ShqlBindings(
       constantsSet: constantsSet,
@@ -252,7 +261,7 @@ class _HeroDexAppState extends State<HeroDexApp> {
         _router.go(path);
       },
       nullaryFunctions: {
-        '_HERO_DATA_CLEAR': () => _coordinator.heroDataClear(),
+        '_HERO_CLEAR': () => _coordinator.heroClear(),
         '_SIGN_OUT': () async => await _handleSignOut(),
         '_COMPILE_FILTERS': () => _coordinator.compileFilters(),
         '_INIT_RECONCILE': () => _coordinator.initReconcile(),
@@ -278,20 +287,16 @@ class _HeroDexAppState extends State<HeroDexApp> {
         '_GET_SAVED_ID': (hero) => _coordinator.getSavedId(hero),
         '_PERSIST_HERO': (hero) => _coordinator.persistAndMap(hero),
         '_MAP_HERO': (hero) => _coordinator.mapHero(hero),
-        '_HERO_DATA_TOGGLE_LOCK': (heroId) {
-          if (heroId is String) return _coordinator.heroDataToggleLock(heroId);
+        '_HERO_TOGGLE_LOCK': (heroId) {
+          if (heroId is String) return _coordinator.heroToggleLock(heroId);
           return null;
         },
         '_RECONCILE_FETCH': (heroId) async {
           if (heroId is String) return await _coordinator.reconcileFetch(heroId);
           return null;
         },
-        '_RECONCILE_DELETE': (heroId) {
-          if (heroId is String) _coordinator.reconcileDelete(heroId);
-          return null;
-        },
-        '_HERO_DATA_DELETE': (heroId) {
-          if (heroId is String) return _coordinator.heroDataDelete(heroId);
+        '_HERO_DELETE': (heroId) {
+          if (heroId is String) return _coordinator.heroDelete(heroId);
           return null;
         },
         '_RECONCILE_PROMPT': (text) async =>
@@ -299,6 +304,41 @@ class _HeroDexAppState extends State<HeroDexApp> {
         '_SHOW_SNACKBAR': (message) {
           if (message is String) _coordinator.showSnackBar(message);
           return null;
+        },
+        '_SET_DARK_MODE': (value) {
+          if (value is bool && mounted) {
+            context.read<ThemeCubit>().set(
+                value ? ThemeMode.dark : ThemeMode.light);
+          }
+          return null;
+        },
+        '_SET_ANALYTICS': (enabled) {
+          if (enabled is bool) FirebaseService.setAnalyticsEnabled(enabled);
+          return null;
+        },
+        '_SET_CRASHLYTICS': (enabled) {
+          if (enabled is bool) FirebaseService.setCrashlyticsEnabled(enabled);
+          return null;
+        },
+        '_REFRESH_HERO_SERVICE': (_) {
+          _updateHeroService();
+          return null;
+        },
+        '_GET_LOCATION': (enabled) async {
+          if (enabled != true) {
+            return _shqlBindings.mapToObject({
+              'description': '',
+              'latitude': null,
+              'longitude': null,
+            });
+          }
+          final desc = await LocationService.getLocationDescription();
+          final coords = await LocationService.getCoordinates();
+          return _shqlBindings.mapToObject({
+            'description': desc,
+            'latitude': coords?.$1,
+            'longitude': coords?.$2,
+          });
         },
       },
       binaryFunctions: {
@@ -309,28 +349,9 @@ class _HeroDexAppState extends State<HeroDexApp> {
               prompt?.toString() ?? '',
               defaultValue?.toString() ?? '',
             ),
-        '_HERO_DATA_AMEND': (heroId, amendment) async {
+        '_HERO_AMEND': (heroId, amendment) async {
           if (heroId is String && heroId.isNotEmpty) {
-            return await _coordinator.heroDataAmend(heroId, amendment);
-          }
-          return null;
-        },
-        '_ON_PREF_CHANGED': (key, value) {
-          if (key is! String) return null;
-          switch (key) {
-            case 'is_dark_mode':
-              if (value is bool && mounted) {
-                context.read<ThemeCubit>().set(
-                    value ? ThemeMode.dark : ThemeMode.light);
-              }
-            case 'analytics_enabled':
-              if (value is bool) FirebaseService.setAnalyticsEnabled(value);
-            case 'crashlytics_enabled':
-              if (value is bool) FirebaseService.setCrashlyticsEnabled(value);
-            case 'location_enabled':
-              _applyLocation(value == true);
-            case 'api_key' || 'api_host':
-              _updateHeroService();
+            return await _coordinator.heroAmend(heroId, amendment);
           }
           return null;
         },
@@ -362,11 +383,14 @@ class _HeroDexAppState extends State<HeroDexApp> {
       },
     );
 
+    lap('ShqlBindings constructor');
+
     _heroDataManager = HeroDataManager(
       await HeroRepository.create('herodex_3000.db', SqfliteDriver()),
       runtime: _shqlBindings.runtime,
       constantsSet: _shqlBindings.constantsSet,
     );
+    lap('HeroDataManager + DB open');
 
     final filterCompiler = FilterCompiler(_shqlBindings);
 
@@ -380,20 +404,24 @@ class _HeroDexAppState extends State<HeroDexApp> {
           dialogs.showHeroReviewDialog(_navigatorKey, hero, current, total),
       showSnackBar: _showSnackBar,
       onStateChanged: () { if (mounted) setState(() {}); },
+      searchHeightConflictResolver: FlutterConflictResolver<Height>(
+        (name, v, cv) => showConflictDialog(_navigatorKey, name, v, cv),
+      ),
+      searchWeightConflictResolver: FlutterConflictResolver<Weight>(
+        (name, v, cv) => showConflictDialog(_navigatorKey, name, v, cv),
+      ),
     );
-    _coordinator.searchHeightConflictResolver = FlutterConflictResolver<Height>(
-      (name, v, cv) => showConflictDialog(_navigatorKey, name, v, cv),
-    );
-    _coordinator.searchWeightConflictResolver = FlutterConflictResolver<Weight>(
-      (name, v, cv) => showConflictDialog(_navigatorKey, name, v, cv),
-    );
+
+    lap('HeroCoordinator constructor');
 
     // Load SHQL™ libraries (order matters — each file may depend on the previous)
     final stdlibCode = await rootBundle.loadString(
       'packages/shql/assets/stdlib.shql',
     );
     await _shqlBindings.loadProgram(stdlibCode);
+    lap('stdlib.shql');
     await _shqlBindings.eval(HeroSchema.generateSchemaScript());
+    lap('HeroSchema');
 
     const shqlFiles = [
       'auth',         // Firebase auth
@@ -412,6 +440,7 @@ class _HeroDexAppState extends State<HeroDexApp> {
     for (final name in shqlFiles) {
       final code = await rootBundle.loadString('assets/shql/$name.shql');
       await _shqlBindings.loadProgram(code);
+      lap('shql/$name.shql');
     }
 
     final heroDexRegistry = createHeroDexWidgetRegistry();
@@ -429,32 +458,22 @@ class _HeroDexAppState extends State<HeroDexApp> {
       _yamlEngine.loadWidgetTemplate(entry.key, yaml);
       WidgetRegistry.loadStaticTemplate(entry.key, yaml);
     }
+    lap('YAML templates');
 
-    // Filter and query changes are handled directly in SHQL™:
+    // Filter and query changes are handled in SHQL™:
     // - __PERSIST_FILTERS() calls FULL_REBUILD_AND_DISPLAY() after mutating filters
-    // - APPLY_QUERY sets current_query, then ON_QUERY_CHANGED_AND_REBUILD() is called
-    //   by the SHQL caller (filter_editor calls APPLY_QUERY then the Dart listener used
-    //   to trigger ON_QUERY_CHANGED). Now SHQL handles this directly.
-    // No Dart listeners needed — SHQL drives the orchestration.
+    // - APPLY_QUERY sets current_query, then ON_QUERY_CHANGED_AND_REBUILD() runs
+    // SHQL™ drives the orchestration — no Dart listeners needed.
 
-    // Initialize hero data (stats are updated per-hero inside initialize),
-    // then build filter results. Stats are already correct by the time
-    // filters are compiled, so predicates like "Giants" see current avg/stdev.
+    // Full startup: add heroes → compile filters → rebuild → populate cards.
     if (mounted) setState(() => _loadingStatus = 'Loading heroes...');
-    await _coordinator.initializeHeroes();
-    if (mounted) setState(() => _loadingStatus = 'Building filters...');
-    try {
-      await _coordinator.rebuildAllFilters();
-    } catch (e) {
-      debugPrint('rebuildAllFilters failed at startup: $e');
-    }
+    await _coordinator.startup();
+    lap('startup');
     if (mounted) setState(() => _loadingStatus = '');
-    await _coordinator.populateHeroCardCache();
 
-    // Read all initial preferences in one SHQL™ call (Rule 2: batch reads)
-    final initState = _shqlBindings.objectToMap(
-        await _shqlBindings.eval('Prefs.GET_INIT_STATE()'));
-    final initialRoute = initState['onboarding_completed'] == true ? 'home' : 'onboarding';
+    // Apply initial preferences via SHQL™ (calls _ON_PREF_CHANGED for each)
+    // and determine initial route in one call.
+    final initialRoute = await _shqlBindings.eval('Prefs.APPLY_INIT_STATE()') as String;
 
     _router = GoRouter(
       navigatorKey: _navigatorKey,
@@ -471,43 +490,11 @@ class _HeroDexAppState extends State<HeroDexApp> {
       ],
     );
 
-    // Apply initial preferences from restored state.
-    // Ongoing changes are pushed by SHQL™ via _ON_PREF_CHANGED(key, value)
-    // called from Prefs.__SAVE — no listeners needed.
-    final initialDarkMode = initState['is_dark_mode'];
-    if (initialDarkMode is bool && mounted) {
-      context.read<ThemeCubit>().set(initialDarkMode ? ThemeMode.dark : ThemeMode.light);
-    }
-    final analyticsEnabled = initState['analytics_enabled'];
-    if (analyticsEnabled is bool) await FirebaseService.setAnalyticsEnabled(analyticsEnabled);
-    final crashlyticsEnabled = initState['crashlytics_enabled'];
-    if (crashlyticsEnabled is bool) await FirebaseService.setCrashlyticsEnabled(crashlyticsEnabled);
-    if (initState['location_enabled'] == true) {
-      _applyLocation(true);
-    }
-
     _connectivityService = ConnectivityService();
     _connectivityService!.connectivityStream.listen((isConnected) {
       final messenger = _scaffoldMessengerKey.currentState;
       if (messenger == null) return;
-      messenger.clearSnackBars();
-      messenger.showSnackBar(
-        SnackBar(
-          content: Row(
-            children: [
-              Icon(
-                isConnected ? Icons.wifi : Icons.wifi_off,
-                color: Colors.white,
-              ),
-              const SizedBox(width: 12),
-              Text(isConnected ? 'Back online' : 'No internet connection'),
-            ],
-          ),
-          backgroundColor: isConnected ? Colors.green : Colors.red,
-          duration: Duration(seconds: isConnected ? 2 : 5),
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
+      _connectivityService!.showConnectivitySnackbar(messenger, isConnected);
     });
 
     setState(() {
@@ -549,14 +536,6 @@ class _HeroDexAppState extends State<HeroDexApp> {
     return _heroService;
   }
 
-  Future<void> _applyLocation(bool enabled) async {
-    final desc = enabled ? await LocationService.getLocationDescription() : '';
-    final coords = enabled ? await LocationService.getCoordinates() : null;
-    await _shqlBindings.eval('World.SET_LOCATION(__desc, __lat, __lon)',
-        boundValues: {'__desc': desc, '__lat': coords?.$1, '__lon': coords?.$2});
-    if (enabled && mounted) setState(() {});
-  }
-
   void _showSnackBar(String message) {
     _scaffoldMessengerKey.currentState?.showSnackBar(
       SnackBar(content: Text(message), behavior: SnackBarBehavior.floating),
@@ -589,7 +568,7 @@ class _HeroDexAppState extends State<HeroDexApp> {
     } else {
       await widget.prefs.setString(key, value.toString());
     }
-    // Firestore sync is now handled by SAVE_PREF() in SHQL™
+    // Firestore sync: SAVE_PREF() in SHQL™ handles cloud persistence
   }
 
   Future<dynamic> _handleLoadState(String key, dynamic defaultValue) async {
@@ -670,78 +649,59 @@ class _HeroDexAppState extends State<HeroDexApp> {
 
   @override
   Widget build(BuildContext context) {
-    if (!_authenticated) {
-      return BlocBuilder<ThemeCubit, ThemeMode>(
-        builder: (context, themeMode) {
-          return MaterialApp(
-            title: 'HeroDex 3000',
-            debugShowCheckedModeBanner: false,
-            theme: AppTheme.lightTheme,
-            darkTheme: AppTheme.darkTheme,
-            themeMode: themeMode,
-            home: _loginReady
-                ? WidgetRegistry.buildStatic(context, {'type': 'LoginScreen', 'props': {}}, 'login')
-                : const SizedBox.shrink(),
-          );
-        },
-      );
-    }
-
-    if (!_initialized) {
-      final progressChildren = <dynamic>[
-        {'type': 'CircularProgressIndicator', 'props': {'valueColor': '0xFFFFFFFF'}},
-        if (_loadingStatus.isNotEmpty) ...[
-          {'type': 'SizedBox', 'props': {'height': 16}},
-          {'type': 'Text', 'props': {
-            'data': _loadingStatus,
-            'style': {'fontSize': 14, 'color': '0xB3FFFFFF', 'fontFamily': 'Orbitron'},
-          }},
-        ],
-      ];
-
-      return BlocBuilder<ThemeCubit, ThemeMode>(
-        builder: (context, themeMode) {
-          return MaterialApp(
-            debugShowCheckedModeBanner: false,
-            theme: AppTheme.lightTheme,
-            darkTheme: AppTheme.darkTheme,
-            themeMode: themeMode,
-            home: WidgetRegistry.buildStatic(context, {'type': 'Scaffold', 'props': {
-              'backgroundColor': '0xFF1A237E',
-              'body': {'type': 'Center', 'child': {
-                'type': 'Column', 'props': {
-                  'mainAxisAlignment': 'center',
-                  'children': [
-                    {'type': 'Icon', 'props': {'icon': 'shield', 'size': 100, 'color': '0xFFFFFFFF'}},
-                    {'type': 'SizedBox', 'props': {'height': 24}},
-                    {'type': 'Text', 'props': {
-                      'data': 'HeroDex 3000',
-                      'style': {'fontSize': 32, 'fontWeight': 'bold', 'color': '0xFFFFFFFF', 'fontFamily': 'Orbitron'},
-                    }},
-                    {'type': 'SizedBox', 'props': {'height': 48}},
-                    ...progressChildren,
-                  ],
-                },
-              }},
-            }}, 'splash'),
-          );
-        },
-      );
-    }
-
     return BlocBuilder<ThemeCubit, ThemeMode>(
       builder: (context, themeMode) {
-        return MaterialApp.router(
-          title: 'HeroDex 3000',
-          debugShowCheckedModeBanner: false,
-          scaffoldMessengerKey: _scaffoldMessengerKey,
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
-          supportedLocales: AppLocalizations.supportedLocales,
-          theme: AppTheme.lightTheme,
-          darkTheme: AppTheme.darkTheme,
-          themeMode: themeMode,
-          routerConfig: _router,
-        );
+        final themeProps = {
+          'debugShowCheckedModeBanner': false,
+          'theme': AppTheme.lightTheme,
+          'darkTheme': AppTheme.darkTheme,
+          'themeMode': themeMode,
+        };
+
+        if (!_authenticated) {
+          return WidgetRegistry.buildStatic(context, {
+            'type': 'MaterialApp',
+            'props': {
+              'title': 'HeroDex 3000',
+              ...themeProps,
+              'home': _loginReady
+                  ? {'type': 'LoginScreen', 'props': {}}
+                  : {'type': 'SizedBox', 'props': {}},
+            },
+          }, 'app.login');
+        }
+
+        if (!_initialized) {
+          return WidgetRegistry.buildStatic(context, {
+            'type': 'MaterialApp',
+            'props': {
+              ...themeProps,
+              'home': {'type': 'SplashScreen', 'props': {
+                'loadingStatusWidget': _loadingStatus.isNotEmpty
+                    ? {'type': 'Padding', 'props': {
+                        'padding': 16,
+                        'child': {'type': 'Text', 'props': {
+                          'data': _loadingStatus,
+                          'style': {'fontSize': 14, 'color': '0xB3FFFFFF', 'fontFamily': 'Orbitron'},
+                        }},
+                      }}
+                    : {'type': 'SizedBox', 'props': {}},
+              }},
+            },
+          }, 'app.splash');
+        }
+
+        return WidgetRegistry.buildStatic(context, {
+          'type': 'MaterialApp',
+          'props': {
+            'title': 'HeroDex 3000',
+            ...themeProps,
+            'scaffoldMessengerKey': _scaffoldMessengerKey,
+            'localizationsDelegates': AppLocalizations.localizationsDelegates,
+            'supportedLocales': AppLocalizations.supportedLocales,
+            'routerConfig': _router,
+          },
+        }, 'app.main');
       },
     );
   }

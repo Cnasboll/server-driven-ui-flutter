@@ -263,5 +263,13 @@ Cards := OBJECT{
     -- Clear the entire card cache.
     CLEAR_CARD_CACHE: () => BEGIN
         card_cache := {};
+    END,
+
+    -- Clear card cache, batch-cache heroes, then rebuild displayed cards.
+    -- Single entry point for Dart startup (replaces 3-statement eval).
+    POPULATE_AND_REBUILD: (__heroes) => BEGIN
+        CLEAR_CARD_CACHE();
+        CACHE_HERO_CARDS(__heroes);
+        Heroes.REBUILD_CARDS();
     END
 };

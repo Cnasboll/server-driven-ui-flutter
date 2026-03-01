@@ -46,7 +46,7 @@ widget:
                           builder:
                             type: Text
                             props:
-                              data: "shql: IF Auth.LOGIN_IS_REGISTERING THEN 'Create Account' ELSE 'Sign In'"
+                              data: "shql: Auth.LOGIN_TITLE()"
                               style:
                                 fontSize: 16
                                 color: "0xB3FFFFFF"
@@ -69,7 +69,7 @@ widget:
                                         keyboardType: "emailAddress"
                                         textInputAction: "next"
                                         debounceMs: 0
-                                        onChanged: "shql: Auth.LOGIN_EMAIL := value"
+                                        onChanged: "shql: Auth.SET_LOGIN_EMAIL(value)"
                                         decoration:
                                           labelText: "Email"
                                           prefixIcon: "email"
@@ -83,7 +83,7 @@ widget:
                                         textInputAction: "done"
                                         debounceMs: 0
                                         onSubmitted: "shql: Auth.LOGIN_SUBMIT()"
-                                        onChanged: "shql: Auth.LOGIN_PASSWORD := value"
+                                        onChanged: "shql: Auth.SET_LOGIN_PASSWORD(value)"
                                         decoration:
                                           labelText: "Password"
                                           prefixIcon: "lock"
@@ -95,7 +95,7 @@ widget:
                                           type: Column
                                           props:
                                             crossAxisAlignment: "start"
-                                            children: "shql: IF Auth.LOGIN_ERROR <> '' THEN [{'type': 'SizedBox', 'props': {'height': 12}}, {'type': 'Text', 'props': {'data': Auth.LOGIN_ERROR, 'style': {'color': '0xFFD32F2F', 'fontSize': 13}}}] ELSE []"
+                                            children: "shql: Auth.LOGIN_ERROR_CHILDREN()"
                                     - type: SizedBox
                                       props:
                                         height: 24
@@ -105,8 +105,8 @@ widget:
                                         builder:
                                           type: FilledButton
                                           props:
-                                            onPressed: "shql: IF NOT Auth.LOGIN_IS_LOADING THEN Auth.LOGIN_SUBMIT()"
-                                            child: "shql: IF Auth.LOGIN_IS_LOADING THEN {'type': 'SizedBox', 'props': {'height': 20, 'width': 20, 'child': {'type': 'CircularProgressIndicator', 'props': {'strokeWidth': 2}}}} ELSE {'type': 'Text', 'props': {'data': IF Auth.LOGIN_IS_REGISTERING THEN 'Register' ELSE 'Sign In'}}"
+                                            onPressed: "shql: Auth.LOGIN_SUBMIT_IF_READY()"
+                                            child: "shql: Auth.LOGIN_BUTTON_CHILD()"
                                     - type: SizedBox
                                       props:
                                         height: 12
@@ -116,8 +116,8 @@ widget:
                                         builder:
                                           type: TextButton
                                           props:
-                                            onPressed: "shql: IF NOT Auth.LOGIN_IS_LOADING THEN Auth.LOGIN_TOGGLE_MODE()"
+                                            onPressed: "shql: Auth.LOGIN_TOGGLE_IF_READY()"
                                             child:
                                               type: Text
                                               props:
-                                                data: "shql: IF Auth.LOGIN_IS_REGISTERING THEN 'Already have an account? Sign in' ELSE \"Don't have an account? Register\""
+                                                data: "shql: Auth.LOGIN_TOGGLE_TEXT()"

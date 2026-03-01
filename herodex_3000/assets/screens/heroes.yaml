@@ -29,7 +29,7 @@ screen:
               props:
                 query: "Heroes.hero_cards"
                 builder:
-                  type: "shql: IF LENGTH(Heroes.hero_cards) = 0 THEN 'Center' ELSE 'GridView'"
+                  type: "shql: Heroes.HERO_GRID_TYPE()"
                   props:
                     # Empty state (no heroes saved yet)
                     child:

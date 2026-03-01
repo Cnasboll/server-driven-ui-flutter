@@ -15,7 +15,7 @@ screen:
         actions:
           - type: IconButton
             props:
-              icon: "shql: IF Prefs.is_dark_mode THEN 'light_mode' ELSE 'dark_mode'"
+              icon: "shql: Prefs.DARK_MODE_ICON()"
               onPressed: "shql: Prefs.TOGGLE_DARK_MODE()"
 
     body:
@@ -70,7 +70,7 @@ screen:
                               children:
                                 - type: Icon
                                   props:
-                                    icon: "shql: _weather_icon"
+                                    icon: "shql: World.weather_icon"
                                     color: "0xFF42A5F5"
                                     size: 40
                                 - type: SizedBox
@@ -82,18 +82,18 @@ screen:
                                     children:
                                       - type: Text
                                         props:
-                                          data: "shql: IF _weather_temp <> null THEN STRING(ROUND(_weather_temp)) + '°C' ELSE 'Loading...'"
+                                          data: "shql: World.WEATHER_TEMP_LABEL()"
                                           style:
                                             fontSize: 24
                                             fontWeight: "bold"
                                       - type: Text
                                         props:
-                                          data: "shql: _weather_description"
+                                          data: "shql: World.weather_description"
                                           style:
                                             color: "0xFF757575"
                                       - type: Text
                                         props:
-                                          data: "shql: 'Wind: ' + STRING(ROUND(_weather_wind)) + ' km/h'"
+                                          data: "shql: World.WEATHER_WIND_LABEL()"
                                           style:
                                             fontSize: 12
                                             color: "0xFF9E9E9E"
@@ -127,7 +127,7 @@ screen:
                       builder:
                         type: AnimatedNumber
                         props:
-                          value: "shql: _total_fighting_power"
+                          value: "shql: Stats.total_fighting_power"
                           fontSize: 36
                           fontWeight: "bold"
                           color: "0xFFFF9800"
@@ -212,7 +212,7 @@ screen:
                                 builder:
                                   type: Text
                                   props:
-                                    data: "shql: STRING(Heroes.GET_HERO_COUNT()) + ' characters registered'"
+                                    data: "shql: Heroes.HERO_COUNT_LABEL()"
                                     style:
                                       color: "0xFF757575"
 

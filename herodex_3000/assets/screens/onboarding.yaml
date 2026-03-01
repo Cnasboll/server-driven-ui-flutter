@@ -251,7 +251,7 @@ screen:
                       # Continue Button
                       - type: ElevatedButton
                         props:
-                          onPressed: "shql: Prefs.COMPLETE_ONBOARDING(); Nav.GO_TO('home')"
+                          onPressed: "shql: Prefs.FINISH_ONBOARDING()"
                           style:
                             minimumSize:
                               width: "infinity"

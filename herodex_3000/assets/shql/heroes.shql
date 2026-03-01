@@ -131,8 +131,8 @@ Heroes := OBJECT{
     END,
 
     -- Delete hero: remove from SHQL state (heroes, filters, stats), clear selection.
-    -- Stack discipline: SHQL first, then Dart DB — no hero exists in SHQL
-    -- without backing in HeroDataManager.
+    -- Stack discipline: SHQL first, then Dart DB — every hero in SHQL
+    -- is backed by HeroDataManager.
     DELETE_HERO: (__id) => BEGIN
         __old := heroes[__id];
         IF __old = null THEN RETURN;
@@ -140,7 +140,7 @@ Heroes := OBJECT{
         CLEAR_SELECTED_IF(__id);
         Cards.REMOVE_CACHED_CARD(__id);
         REBUILD_CARDS();
-        _HERO_DATA_DELETE(__id);
+        _HERO_DELETE(__id);
     END,
 
     -- Reconcile delete: remove from SHQL + card cache, then status + log.
@@ -183,9 +183,9 @@ Heroes := OBJECT{
     END,
 
     -- Toggle lock: Dart DB toggle + SHQL state update + card rebuild.
-    -- _HERO_DATA_TOGGLE_LOCK(id) does model toggle + DB persist, returns {locked: bool}.
+    -- _HERO_TOGGLE_LOCK(id) does model toggle + DB persist, returns {locked: bool}.
     TOGGLE_LOCK: (__id) => BEGIN
-        __result := _HERO_DATA_TOGGLE_LOCK(__id);
+        __result := _HERO_TOGGLE_LOCK(__id);
         IF __result = null THEN RETURN;
         __SET_LOCKED(__id, __result.LOCKED);
         Cards.CACHE_HERO_CARD(heroes[__id]);
@@ -231,9 +231,17 @@ Heroes := OBJECT{
 
     -- Clear all data: Dart clears DB, SHQL clears state.
     CLEAR_ALL_DATA: () => BEGIN
-        _HERO_DATA_CLEAR;
+        _HERO_CLEAR;
         ON_HERO_CLEAR();
     END,
+    -- Delete selected hero and navigate back.
+    DELETE_SELECTED_AND_GO_BACK: () => BEGIN
+        IF selected_hero <> null THEN BEGIN
+            DELETE_HERO(selected_hero.ID);
+            Nav.GO_BACK();
+        END;
+    END,
+
     SIGN_OUT: () => BEGIN
         Auth.FIREBASE_SIGN_OUT();
         _SIGN_OUT;
@@ -244,7 +252,7 @@ Heroes := OBJECT{
     --   _INIT_RECONCILE → bool (acquires HeroService)
     --   _RECONCILE_FETCH(heroId) → {found, has_diff, diff_text, resolution_logs, updated_hero (opaque)}
     --   _PERSIST_HERO(opaqueHeroModel) → SHQL Object (persists + maps)
-    --   _RECONCILE_DELETE(heroId) → void (DB delete)
+    --   _HERO_DELETE(heroId) → void (DB delete)
     --   _RECONCILE_PROMPT(text) → action string
     --   _FINISH_RECONCILE → void (cleanup)
     RECONCILE_HEROES: () => BEGIN
@@ -295,7 +303,7 @@ Heroes := OBJECT{
 
                 IF __should_delete THEN BEGIN
                     RECONCILE_DELETE(__hero, 'Deleted', __hero.NAME + ': deleted (no longer online)');
-                    _RECONCILE_DELETE(__hero.ID);
+                    _HERO_DELETE(__hero.ID);
                     __deleted := __deleted + 1;
                 END ELSE
                     SET_RECONCILE_STATE(null, null, null, 'Kept — skipped by user', null);
@@ -357,6 +365,7 @@ Heroes := OBJECT{
                 SET_RECONCILE_STATE(null, null, null, 'Skipped by user', null);
         END;
 
+        __was_aborted := reconcile_aborted;
         SET_RECONCILE_STATE(FALSE, FALSE, '', '', null);
         _FINISH_RECONCILE;
         FULL_REBUILD_AND_DISPLAY();
@@ -365,11 +374,22 @@ Heroes := OBJECT{
         IF __deleted > 0 THEN __parts := __parts + ', ' + STRING(__deleted) + ' deleted';
         IF __locked_skip > 0 THEN __parts := __parts + ', ' + STRING(__locked_skip) + ' locked (skipped)';
         IF __conflicts > 0 THEN __parts := __parts + ', ' + STRING(__conflicts) + ' unit conflict(s)';
-        APPEND_RECONCILE_LOG('Done: ' + __parts, TRUE, FALSE);
-        _SHOW_SNACKBAR('Reconciliation complete: ' + __parts);
+        __label := IF __was_aborted THEN 'Reconciliation aborted' ELSE 'Reconciliation complete';
+        APPEND_RECONCILE_LOG(__label + ': ' + __parts, TRUE, FALSE);
+        _SHOW_SNACKBAR(__label + ': ' + __parts);
     END,
 
     GET_HERO_COUNT: () => LENGTH(heroes),
+
+    -- UI helpers for YAML templates.
+    HERO_GRID_TYPE: () => IF LENGTH(hero_cards) = 0 THEN 'Center' ELSE 'GridView',
+    SELECTED_HERO_TITLE: () => IF selected_hero <> null THEN selected_hero.NAME ELSE 'Hero Details',
+    IS_SAVED_HERO_TYPE: () => IF selected_hero <> null AND heroes[selected_hero.ID] <> null THEN 'IconButton' ELSE 'SizedBox',
+    SELECTED_LOCK_ICON: () => IF selected_hero <> null AND selected_hero.LOCKED THEN 'lock' ELSE 'lock_open',
+    RECONCILE_ACTIVE_TYPE: () => IF reconcile_active THEN 'Padding' ELSE 'SizedBox',
+    RECONCILE_CURRENT_LABEL: () => 'Reconciling: ' + reconcile_current,
+    RECONCILE_LOG_TYPE: () => IF LENGTH(reconcile_log) > 0 THEN 'ListView' ELSE 'Center',
+    HERO_COUNT_LABEL: () => STRING(GET_HERO_COUNT()) + ' characters registered',
 
     -- Add newly saved hero to SHQL state, cache card, rebuild display.
     -- Used by search after _PERSIST_HERO persists to Dart/DB.
@@ -385,6 +405,14 @@ Heroes := OBJECT{
     FULL_REBUILD_AND_DISPLAY: () => BEGIN
         Filters.FULL_REBUILD();
         REBUILD_CARDS();
+    END,
+
+    -- Full startup: add heroes, compile+rebuild filters, populate card cache.
+    -- Single entry point replacing 3 consecutive Dart evals at startup.
+    STARTUP: (__list) => BEGIN
+        ON_HEROES_ADDED(__list);
+        Filters.FULL_REBUILD();
+        Cards.POPULATE_AND_REBUILD(__list);
     END,
 
     -- Rebuild hero_cards from Cards.card_cache + displayed_heroes.

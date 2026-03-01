@@ -40,10 +40,8 @@ class ConnectivityService {
   }
 
   /// Show a snackbar when connectivity changes
-  void showConnectivitySnackbar(BuildContext context, bool isConnected) {
-    final messenger = ScaffoldMessenger.of(context);
+  void showConnectivitySnackbar(ScaffoldMessengerState messenger, bool isConnected) {
     messenger.clearSnackBars();
-
     messenger.showSnackBar(
       SnackBar(
         content: Row(

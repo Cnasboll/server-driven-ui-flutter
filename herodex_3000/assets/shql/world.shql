@@ -126,6 +126,11 @@ World := OBJECT{
         "Morale is high among the defenders"
     ],
 
+    -- UI helpers for YAML templates.
+    WEATHER_TEMP_LABEL: () => IF weather_temp <> null THEN STRING(ROUND(weather_temp)) + '°C' ELSE 'Loading...',
+    WEATHER_WIND_LABEL: () => 'Wind: ' + STRING(ROUND(weather_wind)) + ' km/h',
+    LOCATION_LABEL: () => IF LENGTH(location_description) > 0 THEN 'Your location: ' + location_description ELSE '',
+
     GET_WAR_STATUS: () => BEGIN
         index := INT(Heroes.total_heroes) % LENGTH(war_messages);
         RETURN war_messages[index];

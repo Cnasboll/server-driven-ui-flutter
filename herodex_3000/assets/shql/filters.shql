@@ -186,12 +186,22 @@ Filters := OBJECT{
         Heroes.FULL_REBUILD_AND_DISPLAY();
     END,
 
+    -- Optional callback invoked after any filter/query apply.
+    -- Set by the FilterEditor widget when in apply mode (e.g., navigate to heroes).
+    on_apply: null,
+
+    SET_ON_APPLY: (__callback) => BEGIN
+        on_apply := __callback;
+    END,
+
     -- Apply a filter by index (-1 = All, 0+ = index into filter arrays).
+    -- Calls on_apply callback if set (e.g., navigate after selection).
     APPLY_FILTER: (index) => BEGIN
         SET_ACTIVE_FILTER_INDEX(index);
         SET_CURRENT_QUERY('');
         UPDATE_DISPLAYED_HEROES();
         Heroes.REBUILD_CARDS();
+        IF on_apply <> null THEN on_apply();
     END,
 
     -- Save or update a named filter.
@@ -249,11 +259,13 @@ Filters := OBJECT{
         __PERSIST_FILTERS();
     END,
 
-    -- Apply an ad-hoc query without saving it as a named filter
+    -- Apply an ad-hoc query without saving it as a named filter.
+    -- Calls on_apply callback if set (e.g., navigate after submission).
     APPLY_QUERY: (expression) => BEGIN
         SET_CURRENT_QUERY(expression);
         SET_ACTIVE_FILTER_INDEX(-1);
         ON_QUERY_CHANGED_AND_REBUILD();
+        IF on_apply <> null THEN on_apply();
     END,
 
     -- Handle query change + rebuild cards — one call from Dart.
@@ -331,7 +343,7 @@ Filters := OBJECT{
             item := {
                 "type": "Card",
                 "props": {
-                    "onTap": "shql: Filters.APPLY_FILTER(" + STRING(i) + "); Nav.GO_TO('heroes')",
+                    "onTap": "shql: Filters.APPLY_AND_NAVIGATE(" + STRING(i) + ")",
                     "child": {
                         "type": "Padding",
                         "props": {
@@ -354,5 +366,12 @@ Filters := OBJECT{
             result := result + [item];
         END;
         RETURN result;
+    END,
+
+    -- Apply filter by index and navigate to heroes screen.
+    -- Used by filter counter cards on the home screen.
+    APPLY_AND_NAVIGATE: (__idx) => BEGIN
+        APPLY_FILTER(__idx);
+        Nav.GO_TO('heroes');
     END
 };

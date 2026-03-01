@@ -17,7 +17,7 @@ screen:
             builder:
               type: Text
               props:
-                data: "shql: IF Heroes.selected_hero <> null THEN Heroes.selected_hero.name ELSE 'Hero Details'"
+                data: "shql: Heroes.SELECTED_HERO_TITLE()"
                 style:
                   fontFamily: "Orbitron"
         actions:
@@ -26,7 +26,7 @@ screen:
             props:
               query: "Heroes.selected_hero"
               builder:
-                type: "shql: IF Heroes.selected_hero <> null AND Heroes.heroes[Heroes.selected_hero.ID] <> null THEN 'IconButton' ELSE 'SizedBox'"
+                type: "shql: Heroes.IS_SAVED_HERO_TYPE()"
                 props:
                   icon: "edit"
                   onPressed: "shql: HeroEdit.EDIT_HERO()"
@@ -37,9 +37,9 @@ screen:
             props:
               query: "Heroes.selected_hero"
               builder:
-                type: "shql: IF Heroes.selected_hero <> null AND Heroes.heroes[Heroes.selected_hero.ID] <> null THEN 'IconButton' ELSE 'SizedBox'"
+                type: "shql: Heroes.IS_SAVED_HERO_TYPE()"
                 props:
-                  icon: "shql: IF Heroes.selected_hero <> null AND Heroes.selected_hero.locked THEN 'lock' ELSE 'lock_open'"
+                  icon: "shql: Heroes.SELECTED_LOCK_ICON()"
                   onPressed: "shql: Heroes.TOGGLE_LOCK(Heroes.selected_hero.ID)"
                   width: 0
                   height: 0
@@ -48,10 +48,10 @@ screen:
             props:
               query: "Heroes.selected_hero"
               builder:
-                type: "shql: IF Heroes.selected_hero <> null AND Heroes.heroes[Heroes.selected_hero.ID] <> null THEN 'IconButton' ELSE 'SizedBox'"
+                type: "shql: Heroes.IS_SAVED_HERO_TYPE()"
                 props:
                   icon: "delete"
-                  onPressed: "shql: DELETE_HERO(Heroes.selected_hero.id); Nav.GO_BACK()"
+                  onPressed: "shql: Heroes.DELETE_SELECTED_AND_GO_BACK()"
                   width: 0
                   height: 0
 

@@ -35,6 +35,8 @@ class HeroCoordinator {
     required ReviewHeroCallback showReviewHeroDialog,
     required SnackBarCallback showSnackBar,
     required VoidCallback onStateChanged,
+    this.searchHeightConflictResolver,
+    this.searchWeightConflictResolver,
   })  : _shqlBindings = shqlBindings,
         _heroDataManager = heroDataManager,
         _heroServiceFactory = heroServiceFactory,
@@ -67,27 +69,27 @@ class HeroCoordinator {
   // Hero CRUD
   // ---------------------------------------------------------------------------
 
-  /// _HERO_DATA_DELETE callback: deletes hero from DB.
+  /// _HERO_DELETE callback: deletes hero from DB.
   /// Returns true on success, null if hero not found.
-  /// SHQL owns both objects and IDs — Dart just does the DB delete.
-  dynamic heroDataDelete(String heroId) {
+  /// SHQL™ owns both objects and IDs — Dart just does the DB delete.
+  dynamic heroDelete(String heroId) {
     final hero = _heroDataManager.getById(heroId);
     if (hero == null) return null;
     _heroDataManager.delete(hero);
     return true;
   }
 
-  /// Dart primitive: apply an amendment map to a hero model, persist to DB.
-  /// Returns {new_obj, id} for SHQL to update state, or null on failure.
-  /// SHQL provides the old object from Heroes.heroes itself.
-  Future<dynamic> heroDataAmend(String heroId, dynamic amendmentObj) async {
+  /// _HERO_AMEND callback: apply an amendment map to a hero model, persist to DB.
+  /// Returns {new_obj, id} for SHQL™ to update state, or null on failure.
+  /// SHQL™ provides the old object from Heroes.heroes itself.
+  Future<dynamic> heroAmend(String heroId, dynamic amendmentObj) async {
     final hero = _heroDataManager.getById(heroId);
     if (hero == null) {
       debugPrint('Hero not found for id: $heroId');
       return null;
     }
 
-    // Convert SHQL Object → Dart Map (recursively for nested sections)
+    // Convert SHQL™ Object → Dart Map (recursively for nested sections)
     final amendment = _deepObjectToMap(amendmentObj);
 
     final amended = await hero.amendWith(amendment);
@@ -103,14 +105,22 @@ class HeroCoordinator {
   }
 
   Map<String, dynamic> _deepObjectToMap(dynamic obj) {
-    final map = _shqlBindings.objectToMap(obj);
+    final Map<String, dynamic> map;
+    if (_shqlBindings.isShqlObject(obj)) {
+      map = _shqlBindings.objectToMap(obj);
+    } else if (obj is Map) {
+      map = obj.map((k, v) => MapEntry(k.toString(), v));
+    } else {
+      return {};
+    }
     return map.map((key, value) =>
-        MapEntry(key, _shqlBindings.isShqlObject(value) ? _deepObjectToMap(value) : value));
+        MapEntry(key, (value is Map || _shqlBindings.isShqlObject(value))
+            ? _deepObjectToMap(value) : value));
   }
 
-  /// _HERO_DATA_TOGGLE_LOCK callback: toggles lock on hero model, persists to DB.
+  /// _HERO_TOGGLE_LOCK callback: toggles lock on hero model, persists to DB.
   /// Returns {locked: bool} or null if hero not found.
-  dynamic heroDataToggleLock(String heroId) {
+  dynamic heroToggleLock(String heroId) {
     final hero = _heroDataManager.getById(heroId);
     if (hero == null) return null;
     final toggled = hero.locked ? hero.unlock() : hero.copyWith(locked: true);
@@ -207,13 +217,6 @@ class HeroCoordinator {
     return _createHeroObject(hero);
   }
 
-  /// _RECONCILE_DELETE callback: deletes a hero by ID from the DB.
-  /// SHQL provides the old object from Heroes.heroes for state cleanup.
-  void reconcileDelete(String heroId) {
-    final hero = _heroDataManager.getById(heroId);
-    if (hero != null) _heroDataManager.delete(hero);
-  }
-
   /// _RECONCILE_PROMPT callback: shows reconcile dialog, returns action string.
   Future<String> reconcilePrompt(String text) async {
     final action = await _showReconcileDialog(text);
@@ -226,7 +229,7 @@ class HeroCoordinator {
   }
 
   /// _FINISH_RECONCILE callback: cleans up transient Dart reconciliation state.
-  /// SHQL handles the rebuild (FULL_REBUILD_AND_DISPLAY) itself after calling this.
+  /// SHQL™ handles the rebuild (FULL_REBUILD_AND_DISPLAY) itself after calling this.
   void finishReconcile() {
     _reconcileTimestamp = null;
   }
@@ -234,9 +237,9 @@ class HeroCoordinator {
   /// Shows a snack bar message (exposed for SHQL™ _SHOW_SNACKBAR callback).
   void showSnackBar(String message) => _showSnackBar(message);
 
-  /// Dart primitive: clear all hero data from the database.
-  /// SHQL handles the state cleanup (ON_HERO_CLEAR) itself.
-  void heroDataClear() {
+  /// _HERO_CLEAR callback: clear all hero data from the database.
+  /// SHQL™ handles the state cleanup (ON_HERO_CLEAR) itself.
+  void heroClear() {
     _heroDataManager.clear();
     _onStateChanged();
   }
@@ -337,7 +340,6 @@ class HeroCoordinator {
   }
 
   /// Conflict resolvers for height/weight parsing during search.
-  /// Set by app.dart after construction (FlutterConflictResolver with dialog UI).
   /// Null in tests — search parsing uses default (first-provided-value) resolver.
   ConflictResolver<Height>? searchHeightConflictResolver;
   ConflictResolver<Weight>? searchWeightConflictResolver;
@@ -352,7 +354,7 @@ class HeroCoordinator {
   };
 
   /// Dart primitive: build edit field descriptors from a hero's Field hierarchy.
-  /// Returns a list of SHQL Objects, or null if hero not found.
+  /// Returns a list of SHQL™ Objects, or null if hero not found.
   dynamic buildEditFields(String heroId) {
     final hero = _heroDataManager.getById(heroId);
     if (hero == null) return null;
@@ -435,12 +437,6 @@ class HeroCoordinator {
   /// into a SHQL™ lambda (predicate or text-match).
   Future<dynamic> compileQuery(String query) => _filterCompiler.compileQuery(query);
 
-  /// Full rebuild: delegates to SHQL™ FULL_REBUILD which handles the
-  /// compile→rebuild→display pipeline, then rebuilds hero cards from cache.
-  Future<void> rebuildAllFilters() async {
-    await _shqlBindings.eval('Heroes.FULL_REBUILD_AND_DISPLAY()');
-  }
-
   /// Look up a HeroModel from an SHQL™ hero object and text-match against it.
   bool matchHeroObject(dynamic heroObj, String text) {
     final map = _shqlBindings.objectToMap(heroObj);
@@ -455,32 +451,16 @@ class HeroCoordinator {
   // Initialization
   // ---------------------------------------------------------------------------
 
-  /// Loads all heroes from DB, creates SHQL™ display objects, and pushes them
-  /// into the SHQL™ runtime via Heroes.ON_HEROES_ADDED.
-  Future<void> initializeHeroes() async {
-    final allHeroes = _heroDataManager.heroes;
-    if (allHeroes.isNotEmpty) {
-      final objects = HeroShqlAdapter.heroesToShqlList(
-        allHeroes, _shqlBindings.identifiers,
-      );
-      await _shqlBindings.eval('Heroes.ON_HEROES_ADDED(__list)',
-          boundValues: {'__list': objects});
-    }
-  }
-
-  /// Populates the SHQL™ card cache for all saved heroes and rebuilds
-  /// `hero_cards`. Call after initializeHeroes() + rebuildAllFilters() at startup.
-  /// Single eval — no per-hero loop from Dart.
-  Future<void> populateHeroCardCache() async {
+  /// Full startup: loads all heroes from DB, adds them to SHQL™ state,
+  /// compiles and rebuilds filters, populates card cache — one SHQL™ eval.
+  Future<void> startup() async {
     final allHeroes = _heroDataManager.heroes;
     if (allHeroes.isEmpty) return;
     final objects = HeroShqlAdapter.heroesToShqlList(
       allHeroes, _shqlBindings.identifiers,
     );
-    await _shqlBindings.eval(
-      'Cards.CLEAR_CARD_CACHE(); Cards.CACHE_HERO_CARDS(__list); Heroes.REBUILD_CARDS()',
-      boundValues: {'__list': objects},
-    );
+    await _shqlBindings.eval('Heroes.STARTUP(__list)',
+        boundValues: {'__list': objects});
   }
 
 }

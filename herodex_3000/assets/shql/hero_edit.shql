@@ -70,7 +70,7 @@ HeroEdit := OBJECT{
         IF __old <> null THEN Heroes.ON_HERO_REMOVED(__old);
         Cards.REMOVE_CACHED_CARD(__hero_id);
         -- Dart amend (middle)
-        __result := _HERO_DATA_AMEND(__hero_id, __amendment);
+        __result := _HERO_AMEND(__hero_id, __amendment);
         IF __result = null THEN RETURN;
         -- SHQL add (back on stack)
         Heroes.ON_HERO_ADDED(__result.NEW_OBJ);
