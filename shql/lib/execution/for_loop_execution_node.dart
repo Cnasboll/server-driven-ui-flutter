@@ -22,6 +22,7 @@ class ForLoopExecutionNode extends LazyExecutionNode {
   ExecutionNode? _targetNode;
   ExecutionNode? _stepNode;
   ExecutionNode? _bodyNode;
+  bool _continued = false;
 
   @override
   Future<TickResult> doTick(
@@ -40,16 +41,20 @@ class ForLoopExecutionNode extends LazyExecutionNode {
       return TickResult.delegated;
     }
 
-    if (_bodyNode == null) {
-      result ??= _initializationNode!.result;
-      error ??= _initializationNode!.error;
-      _bodyNode = Engine.createExecutionNode(bodyParseTree, thread, scope);
-      return TickResult.delegated;
+    // When CONTINUE fires, skip body and go straight to increment.
+    if (!_continued) {
+      if (_bodyNode == null) {
+        result ??= _initializationNode!.result;
+        error ??= _initializationNode!.error;
+        _bodyNode = Engine.createExecutionNode(bodyParseTree, thread, scope);
+        return TickResult.delegated;
+      }
+
+      result = _bodyNode!.result;
+      error ??= _bodyNode!.error;
     }
 
     if (_targetNode == null) {
-      result = _bodyNode!.result;
-      error ??= _bodyNode!.error;
       _targetNode = Engine.createExecutionNode(targetParseTree, thread, scope);
       return TickResult.delegated;
     }
@@ -98,6 +103,7 @@ class ForLoopExecutionNode extends LazyExecutionNode {
     // because we want to set the variable immediately
     // and restart the loop
 
+    _continued = false;
     _reset();
     return TickResult.iterated;
   }
@@ -148,6 +154,7 @@ class ForLoopExecutionNode extends LazyExecutionNode {
 
   @override
   void continueLoop() {
+    _continued = true;
     _reset();
   }
 

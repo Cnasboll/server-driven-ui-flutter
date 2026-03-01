@@ -439,10 +439,13 @@ class Parser {
       if (parseTree == null && error != null) {
         return (null, error);
       }
+      parseTree = _consumePostfix(
+        tokenConsumer, parseTree!, constantsSet, sourceCode,
+      );
       return (
         ParseTree.withChildren(
           Symbols.unaryPlus,
-          [parseTree!],
+          [parseTree],
           tokenConsumer.flushConsumedTokens(),
           sourceCode: sourceCode,
         ),
@@ -461,10 +464,13 @@ class Parser {
       if (parseTree == null && error != null) {
         return (null, error);
       }
+      parseTree = _consumePostfix(
+        tokenConsumer, parseTree!, constantsSet, sourceCode,
+      );
       return (
         ParseTree.withChildren(
           Symbols.unaryMinus,
-          [parseTree!],
+          [parseTree],
           tokenConsumer.flushConsumedTokens(),
           sourceCode: sourceCode,
         ),
@@ -483,10 +489,16 @@ class Parser {
       if (parseTree == null && error != null) {
         return (null, error);
       }
+      // Consume postfix member access and call/index chains so that
+      // NOT __result.SUCCESS parses as NOT (__result.SUCCESS), not
+      // (NOT __result).SUCCESS.
+      parseTree = _consumePostfix(
+        tokenConsumer, parseTree!, constantsSet, sourceCode,
+      );
       return (
         ParseTree.withChildren(
           Symbols.not,
-          [parseTree!],
+          [parseTree],
           tokenConsumer.flushConsumedTokens(),
           sourceCode: sourceCode,
         ),
@@ -854,6 +866,92 @@ class Parser {
     String currentLexeme = tokenConsumer.peek().lexeme;
 
     return (null, 'Unexpected token "$currentLexeme" when expecting operand.');
+  }
+
+  /// Consume postfix member-access (`.`) chains and call/index brackets
+  /// that follow an operand so they bind tighter than unary prefix operators.
+  /// e.g. `NOT __result.SUCCESS` → `NOT (__result.SUCCESS)`
+  static ParseTree _consumePostfix(
+    TokenConsumer tokenConsumer,
+    ParseTree operand,
+    ConstantsSet constantsSet,
+    String? sourceCode,
+  ) {
+    var result = operand;
+    while (tokenConsumer.hasNext) {
+      // Member access: `.identifier` or `.call(...)`
+      if (tokenConsumer.peek().tokenType == TokenTypes.dot) {
+        tokenConsumer.consume(); // consume the dot
+        if (!tokenConsumer.hasNext) break;
+
+        // Parse the right-hand side (identifier or identifier(...))
+        var (rhs, rhsError) = tryParseOperand(
+          TokenConsumer.fromParent(tokenConsumer),
+          constantsSet,
+          sourceCode,
+          false,
+          false,
+        );
+        if (rhs == null) break;
+
+        // Also consume any brackets on the RHS (function calls on methods)
+        while (tokenConsumer.hasNext) {
+          var (brackets, leftBracket, rightBracket, _) = tryParseBrackets(
+            TokenConsumer.fromParent(tokenConsumer),
+            constantsSet,
+            sourceCode,
+          );
+          if (brackets == null) break;
+          var callToken = Token.parser(
+            TokenTypes.call,
+            leftBracket!.lexeme + rightBracket!.lexeme,
+            leftBracket.startLocation,
+          );
+          rhs = ParseTree(
+            callToken.symbol,
+            rhs!.tokens + brackets.tokens,
+            [rhs, brackets],
+            null,
+            sourceCode,
+          );
+        }
+
+        result = ParseTree(
+          Symbols.memberAccess,
+          tokenConsumer.flushConsumedTokens() + result.tokens + rhs!.tokens,
+          [result, rhs],
+          null,
+          sourceCode,
+        );
+        continue;
+      }
+
+      // Postfix brackets: call (...) or index [...]
+      var (brackets, leftBracket, rightBracket, bracketsError) =
+          tryParseBrackets(
+        TokenConsumer.fromParent(tokenConsumer),
+        constantsSet,
+        sourceCode,
+      );
+      if (brackets != null) {
+        var callToken = Token.parser(
+          TokenTypes.call,
+          leftBracket!.lexeme + rightBracket!.lexeme,
+          leftBracket.startLocation,
+        );
+        result = ParseTree(
+          callToken.symbol,
+          result.tokens + brackets.tokens,
+          [result, brackets],
+          null,
+          sourceCode,
+        );
+        continue;
+      }
+
+      break;
+    }
+    return result;
   }
 
   static (ParseTree?, Token?, Token?, String?) tryParseBrackets(
