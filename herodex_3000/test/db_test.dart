@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:herodex_3000/persistence/sqflite_database_adapter.dart';
 import 'package:uuid/uuid.dart';
 import 'package:hero_common/hero_common.dart';
@@ -8,6 +9,10 @@ import 'package:hero_common/hero_common.dart';
 final DateTime deadline = DateTime.parse("2025-10-28T18:00:00.000000Z");
 
 Future<void> main() async {
+  // Initialize FFI for desktop test environment (sqflite needs a factory).
+  sqfliteFfiInit();
+  databaseFactory = databaseFactoryFfi;
+
   test('DB test', () async {
     var path = "herodex_3000_test.db";
     var file = File(path);

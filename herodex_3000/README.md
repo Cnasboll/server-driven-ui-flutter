@@ -91,29 +91,109 @@ v04/              — Console app (same backend, terminal UI)
 
 ### State Management
 
-All application state lives in **SHQL™ runtime variables**. The `Observer` widget subscribes to variables and rebuilds when they change (via `SET()`). Persistence goes through `SAVE_STATE` / `LOAD_STATE` (SharedPreferences) and `SAVE_PREF` / `FIRESTORE_LOAD_ALL` (Firestore REST cloud sync — pure SHQL™).
+All application state lives in **SHQL™ runtime variables**. The `Observer` widget subscribes to variables and rebuilds when they change (via `SET()` / `PUBLISH()`). Persistence goes through `SAVE_STATE` / `LOAD_STATE` (SharedPreferences) and `SAVE_PREF` / `FIRESTORE_LOAD_ALL` (Firestore REST cloud sync — pure SHQL™).
+
+#### Dart↔SHQL™ Boundary — Platform Primitives Only
+
+SHQL™ drives **all** orchestration. Dart callbacks exist only for operations that require platform access (DB, dialogs, native APIs). No SHQL→Dart→SHQL bounces — if SHQL calls Dart and needs to call SHQL afterwards, SHQL does both calls itself.
+
+**Single source of truth:** `Heroes.heroes` (SHQL map) is the canonical hero collection. No Dart-side object cache exists. SHQL objects are created on the fly from `HeroModel` via `HeroShqlAdapter` when needed.
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│ SHQL™ Runtime (drives all orchestration)                           │
+│                                                                     │
+│  Heroes.RECONCILE_HEROES() ─── loop ──────────────────────────────┐│
+│    │ __hero := heroes map (SHQL owns old objects)                  ││
+│    ├── _RECONCILE_FETCH(id) ──→ Dart: fetch API + diff            ││
+│    │   ←── {found, has_diff, diff_text}                           ││
+│    ├── _RECONCILE_PROMPT(text) ──→ Dart: show dialog              ││
+│    │   ←── 'save'|'skip'|'saveAll'|'cancel'                      ││
+│    ├── _RECONCILE_PERSIST(id) ──→ Dart: persist to DB             ││
+│    │   ←── {new_obj}                                              ││
+│    ├── _RECONCILE_DELETE(id) ──→ Dart: delete from DB             ││
+│    │   ←── (void)                                                 ││
+│    ├── RECONCILE_UPDATE(__hero, new_obj, ...) ─ SHQL state update ││
+│    ├── Cards.CACHE_HERO_CARD(new_obj) ─── SHQL card cache         ││
+│    └── _FINISH_RECONCILE ──→ Dart: cleanup transient state        ││
+│    └── FULL_REBUILD_AND_DISPLAY() ─── SHQL rebuild                ││
+│  ─────────────────────────────────────────────────────────────────┘│
+│                                                                     │
+│  Heroes.DELETE_HERO_FULL(id)                                       │
+│    │ __old := heroes[id]  (SHQL grabs old object)                  │
+│    ├── Cards.REMOVE_CACHED_CARD(id) ─── SHQL                      │
+│    ├── _HERO_DATA_DELETE(id) ──→ Dart: DB delete, returns eid      │
+│    └── ON_HERO_DELETED(__old, eid) ─── SHQL state cleanup          │
+│                                                                     │
+│  HeroEdit.SAVE_AMENDMENTS()                                        │
+│    │ __old := Heroes.heroes[id]  (SHQL grabs old object)           │
+│    ├── BUILD_AMENDMENT() ─── SHQL builds amendment map             │
+│    ├── _HERO_DATA_AMEND(id, amendment) ──→ Dart: apply + DB       │
+│    │   ←── {new_obj, id}                                           │
+│    ├── Heroes.PERSIST_AND_REBUILD(__old, new_obj) ─── SHQL        │
+│    └── Heroes.FINISH_AMEND(id) ─── SHQL nav back                  │
+│                                                                     │
+│  Prefs.__SAVE(key, value)                                           │
+│    ├── Cloud.SAVE_PREF(key, value) ─── SHQL Firestore sync        │
+│    ├── PUBLISH('Prefs.' + key) ─── SHQL Observer notification      │
+│    └── _ON_PREF_CHANGED(key, value) ──→ Dart: ThemeCubit/Firebase  │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+**Dart callback registry** (registered in `app.dart`, called from SHQL):
+
+| Callback | Category | What it does |
+|----------|----------|-------------|
+| `_HERO_DATA_CLEAR` | DB | Clear all hero data |
+| `_HERO_DATA_DELETE(id)` | DB | Delete hero, return `external_id` |
+| `_HERO_DATA_AMEND(id, amendment)` | DB | Apply amendment, return `{new_obj, id}` |
+| `_HERO_DATA_TOGGLE_LOCK(id)` | DB | Toggle lock, return `{locked}` |
+| `_RECONCILE_FETCH(id)` | DB+Net | Fetch online data, diff, return result |
+| `_RECONCILE_PERSIST(id)` | DB | Persist pending hero, return `{new_obj}` |
+| `_RECONCILE_DELETE(id)` | DB | Delete hero from DB |
+| `_INIT_RECONCILE` | Net | Acquire HeroService |
+| `_FINISH_RECONCILE` | Lifecycle | Cleanup transient reconcile state |
+| `_FETCH_HEROES(query)` | Net | Search API, populate search results |
+| `_PERSIST_HERO(eid)` | DB+Net | Save search result hero to DB |
+| `_COMPILE_FILTERS` | Dart lib | Compile all filter predicates |
+| `_COMPILE_QUERY(query)` | Dart lib | Compile single query to lambda |
+| `_BUILD_EDIT_FIELDS(id)` | Dart lib | Build field descriptors from hero model |
+| `_EVAL_PREDICATE(hero, pred, text)` | Dart lib | Eval compiled predicate with fallback |
+| `MATCH(hero, text)` | Dart lib | Text-match hero model fields |
+| `_SHOW_SNACKBAR(msg)` | UI | Show snackbar |
+| `_PROMPT(prompt, default)` | UI | Show text input dialog |
+| `_RECONCILE_PROMPT(text)` | UI | Show reconcile review dialog |
+| `_REVIEW_HERO(hero, cur, total)` | UI | Show hero review dialog |
+| `_ON_PREF_CHANGED(key, value)` | UI | Forward pref changes to ThemeCubit/Firebase/Location |
+| `_SIGN_OUT` | Auth | Sign out + archive prefs |
+| `_PUBLISH_SEARCH_RESULTS` | Search | Refresh search result display |
 
 #### BLoC — ThemeCubit
 
 The one place `flutter_bloc` appears is `ThemeCubit` — a 10-line Cubit that holds the current `ThemeMode`. It exists because the course requires demonstrating the BLoC pattern.
 
-Dark mode state is owned by SHQL™ (`_is_dark_mode`), toggled by SHQL™ (`TOGGLE_DARK_MODE()`), persisted by SHQL™ (`SAVE_PREF`), and the settings UI rebuilds via a SHQL™ `Observer`. The Cubit is needed only because `MaterialApp` lives *above* the YAML widget tree — `Observer` cannot reach it. A one-line Dart listener forwards the SHQL™ variable change to the Cubit:
+Dark mode state is owned by SHQL™ (`Prefs.is_dark_mode`), toggled by SHQL™ (`Prefs.TOGGLE_DARK_MODE()`), persisted by SHQL™ (`Prefs.__SAVE`), and the settings UI rebuilds via `PUBLISH`. `Prefs.__SAVE` calls `_ON_PREF_CHANGED(key, value)` — a single Dart callback that dispatches to `ThemeCubit`, Firebase Analytics/Crashlytics, or `LocationService` based on the key:
 
 ```dart
-_shqlBindings.addListener('_is_dark_mode', () {
-  context.read<ThemeCubit>().set(value ? ThemeMode.dark : ThemeMode.light);
-});
+'_ON_PREF_CHANGED': (key, value) {
+  switch (key) {
+    case 'is_dark_mode':    context.read<ThemeCubit>().set(...);
+    case 'analytics_enabled':  FirebaseService.setAnalyticsEnabled(value);
+    case 'crashlytics_enabled': FirebaseService.setCrashlyticsEnabled(value);
+    case 'location_enabled':   _applyLocation(value);
+  }
+},
 ```
 
-Without the course requirement, a plain `setState` callback from the same listener would do the same job — no `flutter_bloc` dependency needed. The Cubit adds no logic of its own; it is a one-way relay from SHQL™ to `MaterialApp`.
+No Dart listeners — SHQL pushes preference changes to Dart, not the other way around.
 
 | Concern | Owner |
 |---------|-------|
-| Dark mode state | SHQL™ (`_is_dark_mode`) |
-| Persistence | SHQL™ (`SAVE_PREF` / `LOAD_STATE`) |
-| Toggle logic | SHQL™ (`TOGGLE_DARK_MODE()`) |
-| Settings UI rebuild | SHQL™ `Observer` widget |
-| MaterialApp theme rebuild | `ThemeCubit` (course requirement) |
+| Preference state | SHQL™ (`Prefs.is_dark_mode`, etc.) |
+| Persistence | SHQL™ (`Prefs.__SAVE` → `SAVE_STATE` + `Cloud.SAVE_PREF`) |
+| Toggle logic | SHQL™ (`Prefs.TOGGLE_DARK_MODE()`) |
+| Settings UI rebuild | SHQL™ `PUBLISH('Prefs.is_dark_mode')` |
+| MaterialApp theme | `ThemeCubit` (via `_ON_PREF_CHANGED`, course requirement) |
 
 ## Prerequisites
 
@@ -199,14 +279,15 @@ The shared `hero_common` package has 245+ tests covering models, predicates, JSO
 | File | Purpose |
 |---|---|
 | `lib/main.dart` | App entry point (bootstraps Firebase, SharedPreferences, runs app) |
-| `lib/app.dart` | `HeroDexApp` widget — auth gate, SHQL™ wiring, widget/template registry |
+| `lib/app.dart` | `HeroDexApp` widget — auth gate, SHQL™ wiring, Dart callback registry |
+| `lib/core/hero_coordinator.dart` | Dart platform primitives: DB CRUD, reconciliation, edit fields, filters |
 | `lib/core/herodex_widget_registry.dart` | Dart factories for third-party widgets (CachedImage, FlutterMap, TileLayer, MarkerLayer) |
+| `lib/core/services/hero_search_service.dart` | Online hero search + save flow + review dialog |
 | `lib/core/services/firebase_auth_service.dart` | Startup `isSignedIn` check (auth logic is in `auth.shql`) |
 | `lib/core/services/firebase_service.dart` | Firebase Analytics/Crashlytics |
 | `lib/core/services/connectivity_service.dart` | Network monitoring |
 | `lib/core/services/location_service.dart` | GPS location |
-| `lib/core/services/hero_search_service.dart` | Online hero search + save flow + HTTP fetch for SHQL™ |
-| `lib/core/theme/theme_cubit.dart` | Dark/light theme BLoC |
+| `lib/core/theme/theme_cubit.dart` | Dark/light theme BLoC (relay from SHQL™ via `_ON_PREF_CHANGED`) |
 | `lib/persistence/sqflite_database_adapter.dart` | SQLite driver (FFI on desktop, native on mobile) |
 | `assets/shql/*.shql` | 12 SHQL™ scripts: auth, navigation, firestore, preferences, statistics, filters, heroes, hero_detail, hero_cards, search, hero_edit, world |
 | `assets/screens/*.yaml` | SDUI screen definitions (7 screens) |

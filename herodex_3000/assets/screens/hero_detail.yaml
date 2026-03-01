@@ -26,7 +26,7 @@ screen:
             props:
               query: "Heroes.selected_hero"
               builder:
-                type: "shql: IF Heroes.selected_hero <> null AND Heroes.selected_hero.saved_at <> null THEN 'IconButton' ELSE 'SizedBox'"
+                type: "shql: IF Heroes.selected_hero <> null AND Heroes.heroes[Heroes.selected_hero.ID] <> null THEN 'IconButton' ELSE 'SizedBox'"
                 props:
                   icon: "edit"
                   onPressed: "shql: HeroEdit.EDIT_HERO()"
@@ -37,7 +37,7 @@ screen:
             props:
               query: "Heroes.selected_hero"
               builder:
-                type: "shql: IF Heroes.selected_hero <> null AND Heroes.selected_hero.saved_at <> null THEN 'IconButton' ELSE 'SizedBox'"
+                type: "shql: IF Heroes.selected_hero <> null AND Heroes.heroes[Heroes.selected_hero.ID] <> null THEN 'IconButton' ELSE 'SizedBox'"
                 props:
                   icon: "shql: IF Heroes.selected_hero <> null AND Heroes.selected_hero.locked THEN 'lock' ELSE 'lock_open'"
                   onPressed: "shql: _TOGGLE_LOCK_HERO(Heroes.selected_hero.id)"
@@ -48,7 +48,7 @@ screen:
             props:
               query: "Heroes.selected_hero"
               builder:
-                type: "shql: IF Heroes.selected_hero <> null AND Heroes.selected_hero.saved_at <> null THEN 'IconButton' ELSE 'SizedBox'"
+                type: "shql: IF Heroes.selected_hero <> null AND Heroes.heroes[Heroes.selected_hero.ID] <> null THEN 'IconButton' ELSE 'SizedBox'"
                 props:
                   icon: "delete"
                   onPressed: "shql: DELETE_HERO(Heroes.selected_hero.id); Nav.GO_BACK()"

@@ -11,10 +11,11 @@ HeroEdit := OBJECT{
         PUBLISH('HeroEdit.edit_fields');
     END,
 
-    -- Prepare edit form generically from the hero's Field hierarchy (Dart walks the tree)
+    -- Prepare edit form from hero's Field hierarchy (Dart builds field descriptors)
     -- and navigate to the edit screen.
     EDIT_HERO: () => BEGIN
-        _PREPARE_EDIT;
+        __fields := _BUILD_EDIT_FIELDS(Heroes.selected_hero.ID);
+        IF __fields <> null THEN SET_EDIT_FIELDS(__fields);
         Nav.GO_TO('hero_edit');
     END,
 
@@ -55,9 +56,20 @@ HeroEdit := OBJECT{
         RETURN __amendment;
     END,
 
-    -- Submit amendments to native code
+    -- Submit amendments: build amendment map, Dart applies to model + DB,
+    -- SHQL updates state + cards + navigates back.
     SAVE_AMENDMENTS: () => BEGIN
-        _APPLY_AMENDMENT(Heroes.selected_hero.id);
+        __amendment := BUILD_AMENDMENT();
+        IF __amendment = null THEN BEGIN
+            _SHOW_SNACKBAR('No changes made');
+            RETURN;
+        END;
+        __hero_id := Heroes.selected_hero.ID;
+        __result := _HERO_DATA_AMEND(__hero_id, __amendment);
+        IF __result = null THEN RETURN;
+        Heroes.PERSIST_AND_REBUILD(__result.NEW_OBJ);
+        Heroes.FINISH_AMEND(__result.ID);
+        _SHOW_SNACKBAR('Hero amended (locked from reconciliation)');
     END,
 
     -- Generate the edit form dynamically from edit_fields (set by _PREPARE_EDIT).

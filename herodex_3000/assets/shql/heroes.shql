@@ -103,7 +103,6 @@ Heroes := OBJECT{
     __NOTIFY_HERO_STATE: () => BEGIN
         SET_HEROES(heroes);
         SET_TOTAL_HEROES(total_heroes);
-        Filters.SET_FILTER_COUNTS(Filters.filter_counts);
     END,
 
     -- Batch-add multiple heroes. Used during initial load.
@@ -113,40 +112,21 @@ Heroes := OBJECT{
                 ON_HERO_ADDED(__list[__i]);
     END,
 
-    -- Hero added to collection. Updates heroes map, running stats, and filter
-    -- membership in one call. O(filters).
+    -- Hero added to collection. Updates heroes map, running stats, and filter membership.
     ON_HERO_ADDED: (__hero) => BEGIN
         heroes[__hero.ID] := __hero;
         total_heroes := LENGTH(heroes);
         Stats.STATS_HERO_ADDED(__hero);
-        IF LENGTH(Filters.filtered_heroes) > 0 THEN
-            FOR __i := 0 TO LENGTH(Filters.filtered_heroes) - 1 DO BEGIN
-                __predText := Filters.filters[__i].PREDICATE;
-                __fname := Filters.filters[__i].NAME;
-                IF __predText = '' OR __predText = null THEN
-                    Filters.filtered_heroes[__i][__hero.ID] := __hero
-                ELSE BEGIN
-                    __pred := _filter_lambdas[__fname];
-                    __match := _EVAL_PREDICATE(__hero, __pred, __predText);
-                    IF __match THEN
-                        Filters.filtered_heroes[__i][__hero.ID] := __hero;
-                END;
-                Filters.filter_counts[__i] := LENGTH(Filters.filtered_heroes[__i]);
-                DEBUG_LOG('[ON_HERO_ADDED] [' + STRING(__i) + '] "' + __fname + '" count=' + STRING(Filters.filter_counts[__i]));
-            END;
+        Filters.ON_HERO_ADDED(__hero);
         __NOTIFY_HERO_STATE();
     END,
 
-    -- Hero removed from collection. O(filters).
+    -- Hero removed from collection.
     ON_HERO_REMOVED: (__hero) => BEGIN
         MAP_REMOVE(heroes, __hero.ID);
         total_heroes := LENGTH(heroes);
         Stats.STATS_HERO_REMOVED(__hero);
-        IF LENGTH(Filters.filtered_heroes) > 0 THEN
-            FOR __i := 0 TO LENGTH(Filters.filtered_heroes) - 1 DO BEGIN
-                MAP_REMOVE(Filters.filtered_heroes[__i], __hero.ID);
-                Filters.filter_counts[__i] := LENGTH(Filters.filtered_heroes[__i]);
-            END;
+        Filters.ON_HERO_REMOVED(__hero);
         __NOTIFY_HERO_STATE();
     END,
 
@@ -156,18 +136,28 @@ Heroes := OBJECT{
         ON_HERO_ADDED(__new);
     END,
 
-    -- Hero persisted (new or replacement). Null-checks old, updates displayed heroes.
+    -- Hero persisted (new or replacement). Filters updated incrementally by ON_HERO_ADDED/REMOVED.
     ON_HERO_PERSISTED: (__old, __new) => BEGIN
         IF __old <> null THEN ON_HERO_REPLACED(__old, __new)
         ELSE ON_HERO_ADDED(__new);
-        Filters.UPDATE_DISPLAYED_HEROES();
     END,
 
-    -- Full delete lifecycle: remove from state, update displayed, clear selection.
-    ON_HERO_DELETED: (__hero, __eid) => BEGIN
+    -- Full delete lifecycle: remove from state, clear selection.
+    ON_HERO_DELETED: (__hero) => BEGIN
         ON_HERO_REMOVED(__hero);
-        Filters.UPDATE_DISPLAYED_HEROES();
-        CLEAR_SELECTED_IF(__eid);
+        CLEAR_SELECTED_IF(__hero.ID);
+    END,
+
+    -- Complete delete flow: Dart DB delete, SHQL state cleanup — one call from YAML.
+    -- _HERO_DATA_DELETE(id) deletes from DB, returns TRUE/null. SHQL owns both objects and IDs.
+    DELETE_HERO_FULL: (__id) => BEGIN
+        __old := heroes[__id];
+        IF __old = null THEN RETURN;
+        IF _HERO_DATA_DELETE(__id) THEN BEGIN
+            ON_HERO_DELETED(__old);
+            Cards.REMOVE_CACHED_CARD(__id);
+            REBUILD_CARDS();
+        END;
     END,
 
     -- Reconcile delete: conditionally remove hero + card cache + set status + log.
@@ -191,13 +181,8 @@ Heroes := OBJECT{
         heroes := {};
         total_heroes := 0;
         Stats.STATS_CLEAR();
-        IF LENGTH(Filters.filtered_heroes) > 0 THEN
-            FOR __i := 0 TO LENGTH(Filters.filtered_heroes) - 1 DO BEGIN
-                Filters.filtered_heroes[__i] := {};
-                Filters.filter_counts[__i] := 0;
-            END;
+        Filters.ON_CLEAR();
         __NOTIFY_HERO_STATE();
-        Filters.UPDATE_DISPLAYED_HEROES();
         Cards.CLEAR_CARD_CACHE();
         SET_HERO_CARDS([]);
     END,
@@ -206,6 +191,24 @@ Heroes := OBJECT{
     SET_SELECTED_HERO: (hero) => BEGIN
         selected_hero := hero;
         PUBLISH('Heroes.selected_hero');
+    END,
+
+    -- Complete toggle lock flow: Dart DB toggle + SHQL state update — callable from YAML.
+    -- _HERO_DATA_TOGGLE_LOCK(id) does model toggle + DB persist, returns {locked: bool}.
+    TOGGLE_LOCK_FULL: (__id) => BEGIN
+        __result := _HERO_DATA_TOGGLE_LOCK(__id);
+        IF __result = null THEN RETURN;
+        TOGGLE_LOCK(__id, __result.LOCKED);
+        Cards.CACHE_HERO_CARD(heroes[__id]);
+        REBUILD_CARDS();
+        _SHOW_SNACKBAR(IF __result.LOCKED THEN 'Hero locked — reconciliation skipped' ELSE 'Hero unlocked — reconciliation enabled');
+    END,
+
+    -- Toggle lock, re-cache card, rebuild display — internal helper.
+    TOGGLE_LOCK_AND_REBUILD: (__id, __locked) => BEGIN
+        TOGGLE_LOCK(__id, __locked);
+        Cards.CACHE_HERO_CARD(heroes[__id]);
+        REBUILD_CARDS();
     END,
 
     -- Toggle locked state on a hero in the heroes map and selected_hero.
@@ -217,16 +220,16 @@ Heroes := OBJECT{
         END;
     END,
 
-    -- Clear selected hero if it matches the given external_id.
-    CLEAR_SELECTED_IF: (__eid) => BEGIN
-        IF selected_hero <> null AND selected_hero.EXTERNAL_ID = __eid THEN
+    -- Clear selected hero if it matches the given internal ID.
+    CLEAR_SELECTED_IF: (__id) => BEGIN
+        IF selected_hero <> null AND selected_hero.ID = __id THEN
             SET_SELECTED_HERO(null);
     END,
 
     -- Refresh selected hero from heroes map (after save/persist).
-    REFRESH_SELECTED_IF: (__eid) => BEGIN
-        IF selected_hero <> null AND selected_hero.EXTERNAL_ID = __eid THEN
-            SET_SELECTED_HERO(heroes[selected_hero.ID]);
+    REFRESH_SELECTED_IF: (__id) => BEGIN
+        IF selected_hero <> null AND selected_hero.ID = __id THEN
+            SET_SELECTED_HERO(heroes[__id]);
     END,
 
     -- Select hero by ID from the heroes map and set as selected.
@@ -244,21 +247,24 @@ Heroes := OBJECT{
         Nav.GO_TO('hero_detail');
     END,
 
-    -- Save a hero to local database (extracts external_id from SHQL™ object)
-    SAVE_HERO: (hero) => BEGIN
-        _PERSIST_HERO(hero.external_id);
+    -- Clear all data: Dart clears DB, SHQL clears state.
+    CLEAR_ALL_DATA: () => BEGIN
+        _HERO_DATA_CLEAR;
+        ON_HERO_CLEAR();
     END,
-
-    -- Nullary function SHQL™ wrappers.
-    CLEAR_ALL_DATA: () => _CLEAR_ALL_DATA,
     SIGN_OUT: () => BEGIN
         Auth.FIREBASE_SIGN_OUT();
         _SIGN_OUT;
     END,
 
     -- Reconcile all heroes against the online API.
-    -- Dart callbacks: _INIT_RECONCILE, _RECONCILE_FETCH, _RECONCILE_PERSIST,
-    --   _RECONCILE_DELETE, _RECONCILE_PROMPT, _FINISH_RECONCILE, _SHOW_SNACKBAR.
+    -- Dart callbacks:
+    --   _INIT_RECONCILE → bool (acquires HeroService)
+    --   _RECONCILE_FETCH(heroId) → {found, has_diff, diff_text, resolution_logs, updated_hero (opaque)}
+    --   _RECONCILE_PERSIST(opaqueHeroModel) → SHQL Object (persists + maps)
+    --   _RECONCILE_DELETE(heroId) → void (DB delete)
+    --   _RECONCILE_PROMPT(text) → action string
+    --   _FINISH_RECONCILE → void (cleanup)
     RECONCILE_HEROES: () => BEGIN
         IF _INIT_RECONCILE <> TRUE THEN RETURN;
 
@@ -306,8 +312,8 @@ Heroes := OBJECT{
                 END;
 
                 IF __should_delete THEN BEGIN
-                    __old := _RECONCILE_DELETE(__hero.ID);
-                    RECONCILE_DELETE(__old, 'Deleted', __hero.NAME + ': deleted (no longer online)');
+                    _RECONCILE_DELETE(__hero.ID);
+                    RECONCILE_DELETE(__hero, 'Deleted', __hero.NAME + ': deleted (no longer online)');
                     __deleted := __deleted + 1;
                 END ELSE
                     SET_RECONCILE_STATE(null, null, null, 'Kept — skipped by user', null);
@@ -363,9 +369,10 @@ Heroes := OBJECT{
             END;
 
             IF __should_update THEN BEGIN
-                __persisted := _RECONCILE_PERSIST(__hero.ID);
-                IF __persisted <> null THEN
-                    RECONCILE_UPDATE(__persisted.OLD_OBJ, __persisted.NEW_OBJ, 'Updated', __hero.NAME + ': updated');
+                -- Pass opaque HeroModel to Dart → persist + map to SHQL Object
+                __new_obj := _RECONCILE_PERSIST(__result.UPDATED_HERO);
+                IF __new_obj <> null THEN
+                    RECONCILE_UPDATE(__hero, __new_obj, 'Updated', __hero.NAME + ': updated');
                 __updated := __updated + 1;
             END ELSE
                 SET_RECONCILE_STATE(null, null, null, 'Skipped by user', null);
@@ -373,6 +380,7 @@ Heroes := OBJECT{
 
         SET_RECONCILE_STATE(FALSE, FALSE, '', '', null);
         _FINISH_RECONCILE;
+        FULL_REBUILD_AND_DISPLAY();
 
         __parts := STRING(__updated) + ' updated, ' + STRING(__unchanged) + ' unchanged';
         IF __deleted > 0 THEN __parts := __parts + ', ' + STRING(__deleted) + ' deleted';
@@ -383,6 +391,21 @@ Heroes := OBJECT{
     END,
 
     GET_HERO_COUNT: () => LENGTH(heroes),
+
+    -- Persist hero (add/replace), cache card, rebuild display.
+    -- Looks up old from heroes map by ID — caller only provides the new object.
+    PERSIST_AND_REBUILD: (__new) => BEGIN
+        __old := heroes[__new.ID];
+        ON_HERO_PERSISTED(__old, __new);
+        Cards.CACHE_HERO_CARD(__new);
+        REBUILD_CARDS();
+    END,
+
+    -- Full filter rebuild + card rebuild — one call from Dart.
+    FULL_REBUILD_AND_DISPLAY: () => BEGIN
+        Filters.FULL_REBUILD();
+        REBUILD_CARDS();
+    END,
 
     -- Rebuild hero_cards from Cards.card_cache + displayed_heroes.
     REBUILD_CARDS: () => BEGIN

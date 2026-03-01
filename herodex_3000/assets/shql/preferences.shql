@@ -15,10 +15,12 @@ Prefs := OBJECT{
     api_key: LOAD_STATE('api_key', ''),
     api_host: LOAD_STATE('api_host', 'www.superheroapi.com'),
 
-    -- Save to cloud + notify observers. Every setter delegates here.
+    -- Save to cloud + notify observers + push to Dart platform layer.
+    -- _ON_PREF_CHANGED(key, value) handles ThemeCubit, Firebase, location.
     __SAVE: (key, value) => BEGIN
         Cloud.SAVE_PREF(key, value);
         PUBLISH('Prefs.' + key);
+        _ON_PREF_CHANGED(key, value);
     END,
 
     TOGGLE_DARK_MODE: () => BEGIN

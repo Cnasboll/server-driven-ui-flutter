@@ -5,23 +5,25 @@
 -- _filter_lambdas stays global (set by Dart FilterCompiler via setVariable)
 _filter_lambdas := {};
 
+-- Hoisted to global: OBJECT field values are batch-evaluated before assignment,
+-- so inline field refs (filters: LOAD_STATE(..., DEFAULT_FILTERS)) can't see earlier
+-- fields. Lambdas (methods) still resolve DEFAULT_FILTERS via the scope chain.
+_DEFAULT_FILTERS := [
+    OBJECT{name: "Heroes", predicate: "biography.alignment <= good"},
+    OBJECT{name: "Villains", predicate: "biography.alignment > good"},
+    OBJECT{name: "Giants", predicate: "appearance.height.m > Stats.height_avg + 2 * Stats.height_stdev"},
+    OBJECT{name: "Dwarves", predicate: "appearance.height.m < Stats.height_avg - 2 * Stats.height_stdev"},
+    OBJECT{name: "Red Heads", predicate: 'appearance.hair_colour ~ "red"'},
+    OBJECT{name: "Obese", predicate: "appearance.weight.kg / POW(appearance.height.m, 2) >= 30"},
+    OBJECT{name: "Strong Villains", predicate: "biography.alignment > reasonable AND powerstats.strength >= powerstats.intelligence*1.1"},
+    OBJECT{name: "Dumb Villains", predicate: "biography.alignment >= bad AND powerstats.intelligence <= 50"},
+    OBJECT{name: "Non-Males", predicate: "appearance.gender <> male"},
+    OBJECT{name: "Troglodytes", predicate: 'work.base ~ "cave"'}
+];
+
 Filters := OBJECT{
-    -- Named filters (persisted). Each filter is OBJECT{name, predicate}.
-    -- Use RESET_PREDICATES() to restore defaults.
-    -- "Giants" and "Dwarves" demonstrate computed predicates using Stats namespace.
-    DEFAULT_FILTERS: [
-        OBJECT{name: "Heroes", predicate: "biography.alignment <= good"},
-        OBJECT{name: "Villains", predicate: "biography.alignment > good"},
-        OBJECT{name: "Giants", predicate: "appearance.height.m > Stats.height_avg + 2 * Stats.height_stdev"},
-        OBJECT{name: "Dwarves", predicate: "appearance.height.m < Stats.height_avg - 2 * Stats.height_stdev"},
-        OBJECT{name: "Red Heads", predicate: 'appearance.hair_colour ~ "red"'},
-        OBJECT{name: "Obese", predicate: "appearance.weight.kg / POW(appearance.height.m, 2) >= 30"},
-        OBJECT{name: "Strong Villains", predicate: "biography.alignment > reasonable AND powerstats.strength >= powerstats.intelligence*1.1"},
-        OBJECT{name: "Dumb Villains", predicate: "biography.alignment >= bad AND powerstats.intelligence <= 50"},
-        OBJECT{name: "Non-Males", predicate: "appearance.gender <> male"},
-        OBJECT{name: "Troglodytes", predicate: 'work.base ~ "cave"'}
-    ],
-    filters: LOAD_STATE('filters', DEFAULT_FILTERS),
+    DEFAULT_FILTERS: _DEFAULT_FILTERS,
+    filters: LOAD_STATE('filters', _DEFAULT_FILTERS),
     filter_counts: [],
     filtered_heroes: [],
     active_filter_index: -1,
@@ -64,6 +66,59 @@ Filters := OBJECT{
     SET_IS_FILTERING: (value) => BEGIN
         is_filtering := value;
         PUBLISH('Filters.is_filtering');
+    END,
+
+    -- Add hero to matching filter maps + displayed_heroes. Called by Heroes.ON_HERO_ADDED.
+    ON_HERO_ADDED: (__hero) => BEGIN
+        __in_active := FALSE;
+        IF LENGTH(filtered_heroes) > 0 THEN
+            FOR __i := 0 TO LENGTH(filtered_heroes) - 1 DO BEGIN
+                __predText := filters[__i].PREDICATE;
+                __fname := filters[__i].NAME;
+                IF __predText = '' OR __predText = null THEN
+                    filtered_heroes[__i][__hero.ID] := __hero
+                ELSE BEGIN
+                    __pred := _filter_lambdas[__fname];
+                    __match := _EVAL_PREDICATE(__hero, __pred, __predText);
+                    IF __match THEN
+                        filtered_heroes[__i][__hero.ID] := __hero;
+                END;
+                filter_counts[__i] := LENGTH(filtered_heroes[__i]);
+                IF __i = active_filter_index AND filtered_heroes[__i][__hero.ID] <> null THEN
+                    __in_active := TRUE;
+            END;
+        SET_FILTER_COUNTS(filter_counts);
+        -- Update displayed_heroes incrementally (O(1))
+        IF active_filter_index < 0 OR active_filter_index >= LENGTH(filtered_heroes) OR __in_active THEN
+            SET_DISPLAYED_HEROES(displayed_heroes + [__hero]);
+    END,
+
+    -- Remove hero from all filter maps + displayed_heroes. Called by Heroes.ON_HERO_REMOVED.
+    ON_HERO_REMOVED: (__hero) => BEGIN
+        IF LENGTH(filtered_heroes) > 0 THEN
+            FOR __i := 0 TO LENGTH(filtered_heroes) - 1 DO BEGIN
+                MAP_REMOVE(filtered_heroes[__i], __hero.ID);
+                filter_counts[__i] := LENGTH(filtered_heroes[__i]);
+            END;
+        SET_FILTER_COUNTS(filter_counts);
+        -- Remove from displayed_heroes (O(n) on displayed, not all heroes)
+        __new_displayed := [];
+        IF LENGTH(displayed_heroes) > 0 THEN
+            FOR __i := 0 TO LENGTH(displayed_heroes) - 1 DO
+                IF displayed_heroes[__i].ID <> __hero.ID THEN
+                    __new_displayed := __new_displayed + [displayed_heroes[__i]];
+        SET_DISPLAYED_HEROES(__new_displayed);
+    END,
+
+    -- Clear all filter results. Called by Heroes.ON_HERO_CLEAR.
+    ON_CLEAR: () => BEGIN
+        IF LENGTH(filtered_heroes) > 0 THEN
+            FOR __i := 0 TO LENGTH(filtered_heroes) - 1 DO BEGIN
+                filtered_heroes[__i] := {};
+                filter_counts[__i] := 0;
+            END;
+        SET_FILTER_COUNTS(filter_counts);
+        UPDATE_DISPLAYED_HEROES();
     END,
 
     -- Remove a hero from displayed_heroes by ID.
@@ -124,10 +179,11 @@ Filters := OBJECT{
         SET_DISPLAYED_HEROES(MAP_VALUES(__matched));
     END,
 
-    -- Persist filters to cloud and notify observers.
+    -- Persist filters to cloud, notify observers, and rebuild.
     __PERSIST_FILTERS: () => BEGIN
         Cloud.SAVE_PREF('filters', filters);
         SET_FILTERS(filters);
+        Heroes.FULL_REBUILD_AND_DISPLAY();
     END,
 
     -- Apply a filter by index (-1 = All, 0+ = index into filter arrays).
@@ -135,6 +191,7 @@ Filters := OBJECT{
         SET_ACTIVE_FILTER_INDEX(index);
         SET_CURRENT_QUERY('');
         UPDATE_DISPLAYED_HEROES();
+        Heroes.REBUILD_CARDS();
     END,
 
     -- Save or update a named filter.
@@ -196,6 +253,13 @@ Filters := OBJECT{
     APPLY_QUERY: (expression) => BEGIN
         SET_CURRENT_QUERY(expression);
         SET_ACTIVE_FILTER_INDEX(-1);
+        ON_QUERY_CHANGED_AND_REBUILD();
+    END,
+
+    -- Handle query change + rebuild cards — one call from Dart.
+    ON_QUERY_CHANGED_AND_REBUILD: () => BEGIN
+        ON_QUERY_CHANGED();
+        Heroes.REBUILD_CARDS();
     END,
 
     -- Handle query change: compile, filter, manage IS_FILTERING state.

@@ -26,7 +26,7 @@ import 'package:hero_common/managers/hero_data_manager.dart';
 import 'package:hero_common/models/hero_shql_adapter.dart';
 import 'package:hero_common/persistence/hero_repository.dart';
 import 'persistence/sqflite_database_adapter.dart';
-import 'persistence/shql_hero_data_manager.dart';
+import 'package:hero_common/managers/hero_data_managing.dart';
 import 'persistence/filter_compiler.dart';
 import 'core/hero_schema.dart';
 
@@ -43,7 +43,7 @@ class HeroDexApp extends StatefulWidget {
 class _HeroDexAppState extends State<HeroDexApp> {
   late ShqlBindings _shqlBindings;
   late YamlUiEngine _yamlEngine;
-  late ShqlHeroDataManager _heroDataManager;
+  late HeroDataManaging _heroDataManager;
   late HeroCoordinator _coordinator;
   late HeroSearchService _searchService;
   late GoRouter _router;
@@ -56,9 +56,6 @@ class _HeroDexAppState extends State<HeroDexApp> {
   bool _loginReady = false;
   ParseTree? _predCallTree;
   String _loadingStatus = '';
-  int _loadingProgress = 0;
-  int _loadingTotal = 0;
-  String _loadingHeroName = '';
 
   // Route name → YAML asset path
   static const _screens = {
@@ -251,14 +248,17 @@ class _HeroDexAppState extends State<HeroDexApp> {
         _router.go(path);
       },
       nullaryFunctions: {
-        '_CLEAR_ALL_DATA': () async => await _coordinator.clearData(),
+        '_HERO_DATA_CLEAR': () => _coordinator.heroDataClear(),
         '_SIGN_OUT': () async => await _handleSignOut(),
-        '_PREPARE_EDIT': () => _coordinator.prepareEdit(),
         '_COMPILE_FILTERS': () => _coordinator.compileFilters(),
         '_INIT_RECONCILE': () => _coordinator.initReconcile(),
         '_FINISH_RECONCILE': () => _coordinator.finishReconcile(),
       },
       unaryFunctions: {
+        '_BUILD_EDIT_FIELDS': (heroId) {
+          if (heroId is String) return _coordinator.buildEditFields(heroId);
+          return null;
+        },
         '_COMPILE_QUERY': (query) async {
           if (query is String && query.isNotEmpty) {
             return await _coordinator.compileQuery(query);
@@ -267,40 +267,28 @@ class _HeroDexAppState extends State<HeroDexApp> {
         },
         '_FETCH_HEROES': (query) async {
           if (query is String && query.isNotEmpty) {
-            await _searchService.search(query);
+            return await _searchService.fetchHeroes(query);
           }
+          return null;
         },
-        '_PERSIST_HERO': (externalId) async {
-          if (externalId is String && externalId.isNotEmpty) {
-            await _searchService.saveHero(externalId);
-          }
-        },
-        'DELETE_HERO': (heroId) async {
-          if (heroId is String && heroId.isNotEmpty) {
-            await _coordinator.deleteHero(heroId);
-            await _searchService.publishSearchResults();
-          }
-        },
-        '_APPLY_AMENDMENT': (heroId) async {
-          if (heroId is String && heroId.isNotEmpty) {
-            await _coordinator.amendHero(heroId);
-          }
-        },
-        '_TOGGLE_LOCK_HERO': (heroId) async {
-          if (heroId is String && heroId.isNotEmpty) {
-            await _coordinator.toggleLock(heroId);
-          }
+        '_GET_SAVED_ID': (hero) => _searchService.getSavedId(hero),
+        '_SAVE_HERO': (hero) => _searchService.saveHero(hero),
+        '_MAP_HERO': (hero) => _searchService.mapHero(hero),
+        '_HERO_DATA_TOGGLE_LOCK': (heroId) {
+          if (heroId is String) return _coordinator.heroDataToggleLock(heroId);
+          return null;
         },
         '_RECONCILE_FETCH': (heroId) async {
           if (heroId is String) return await _coordinator.reconcileFetch(heroId);
           return null;
         },
-        '_RECONCILE_PERSIST': (heroId) async {
-          if (heroId is String) return await _coordinator.reconcilePersist(heroId);
+        '_RECONCILE_PERSIST': (hero) => _coordinator.reconcilePersist(hero),
+        '_RECONCILE_DELETE': (heroId) {
+          if (heroId is String) _coordinator.reconcileDelete(heroId);
           return null;
         },
-        '_RECONCILE_DELETE': (heroId) {
-          if (heroId is String) return _coordinator.reconcileDelete(heroId);
+        '_HERO_DATA_DELETE': (heroId) {
+          if (heroId is String) return _coordinator.heroDataDelete(heroId);
           return null;
         },
         '_RECONCILE_PROMPT': (text) async =>
@@ -318,6 +306,29 @@ class _HeroDexAppState extends State<HeroDexApp> {
               prompt?.toString() ?? '',
               defaultValue?.toString() ?? '',
             ),
+        '_HERO_DATA_AMEND': (heroId, amendment) async {
+          if (heroId is String && heroId.isNotEmpty) {
+            return await _coordinator.heroDataAmend(heroId, amendment);
+          }
+          return null;
+        },
+        '_ON_PREF_CHANGED': (key, value) {
+          if (key is! String) return null;
+          switch (key) {
+            case 'is_dark_mode':
+              if (value is bool && mounted) {
+                context.read<ThemeCubit>().set(
+                    value ? ThemeMode.dark : ThemeMode.light);
+              }
+            case 'analytics_enabled':
+              if (value is bool) FirebaseService.setAnalyticsEnabled(value);
+            case 'crashlytics_enabled':
+              if (value is bool) FirebaseService.setCrashlyticsEnabled(value);
+            case 'location_enabled':
+              _applyLocation(value == true);
+          }
+          return null;
+        },
       },
       ternaryFunctions: {
         '_REVIEW_HERO': (heroObj, current, total) async {
@@ -346,13 +357,10 @@ class _HeroDexAppState extends State<HeroDexApp> {
       },
     );
 
-    _heroDataManager = ShqlHeroDataManager(
-      HeroDataManager(
-        await HeroRepository.create('herodex_3000.db', SqfliteDriver()),
-        runtime: _shqlBindings.runtime,
-        constantsSet: _shqlBindings.constantsSet,
-      ),
-      _shqlBindings,
+    _heroDataManager = HeroDataManager(
+      await HeroRepository.create('herodex_3000.db', SqfliteDriver()),
+      runtime: _shqlBindings.runtime,
+      constantsSet: _shqlBindings.constantsSet,
     );
 
     final filterCompiler = FilterCompiler(_shqlBindings);
@@ -371,7 +379,6 @@ class _HeroDexAppState extends State<HeroDexApp> {
       heroDataManager: _heroDataManager,
       coordinator: _coordinator,
       navigatorKey: _navigatorKey,
-      onStateChanged: () { if (mounted) setState(() {}); },
     );
 
     // Load SHQL™ libraries (order matters — each file may depend on the previous)
@@ -416,25 +423,18 @@ class _HeroDexAppState extends State<HeroDexApp> {
       WidgetRegistry.loadStaticTemplate(entry.key, yaml);
     }
 
-    // Filter orchestration listeners
-    _shqlBindings.addListener('Filters.filters', () {
-      _coordinator.onFiltersChanged();
-    });
-    // Note: active_filter_index changes are handled by APPLY_FILTER() in SHQL™,
-    // which calls UPDATE_DISPLAYED_HEROES() → SET_DISPLAYED_HEROES(). The
-    // listener below then rebuilds hero_cards from the Dart cache.
-    _shqlBindings.addListener('Filters.displayed_heroes', () {
-      _coordinator.onDisplayedHeroesChanged();
-    });
-    _shqlBindings.addListener('Filters.current_query', () {
-      _coordinator.onQueryChanged();
-    });
+    // Filter and query changes are handled directly in SHQL™:
+    // - __PERSIST_FILTERS() calls FULL_REBUILD_AND_DISPLAY() after mutating filters
+    // - APPLY_QUERY sets current_query, then ON_QUERY_CHANGED_AND_REBUILD() is called
+    //   by the SHQL caller (filter_editor calls APPLY_QUERY then the Dart listener used
+    //   to trigger ON_QUERY_CHANGED). Now SHQL handles this directly.
+    // No Dart listeners needed — SHQL drives the orchestration.
 
     // Initialize hero data (stats are updated per-hero inside initialize),
     // then build filter results. Stats are already correct by the time
     // filters are compiled, so predicates like "Giants" see current avg/stdev.
     if (mounted) setState(() => _loadingStatus = 'Loading heroes...');
-    await _heroDataManager.initialize();
+    await _coordinator.initializeHeroes();
     if (mounted) setState(() => _loadingStatus = 'Building filters...');
     try {
       await _coordinator.rebuildAllFilters();
@@ -442,17 +442,7 @@ class _HeroDexAppState extends State<HeroDexApp> {
       debugPrint('rebuildAllFilters failed at startup: $e');
     }
     if (mounted) setState(() => _loadingStatus = '');
-    await _coordinator.populateHeroCardCache(
-      onProgress: (current, total, heroName) {
-        if (mounted) {
-          setState(() {
-            _loadingProgress = current;
-            _loadingTotal = total;
-            _loadingHeroName = heroName;
-          });
-        }
-      },
-    );
+    await _coordinator.populateHeroCardCache();
 
     // Read all initial preferences in one SHQL™ call (Rule 2: batch reads)
     final initState = _shqlBindings.objectToMap(
@@ -474,42 +464,17 @@ class _HeroDexAppState extends State<HeroDexApp> {
       ],
     );
 
-    // Sync SHQL™ dark mode changes → ThemeCubit
-    _shqlBindings.addListener('Prefs.is_dark_mode', () async {
-      final value = await _shqlBindings.eval('Prefs.is_dark_mode');
-      if (value is bool && mounted) {
-        final cubit = context.read<ThemeCubit>();
-        cubit.set(value ? ThemeMode.dark : ThemeMode.light);
-      }
-    });
-
-    // Apply initial dark mode from restored preferences
+    // Apply initial preferences from restored state.
+    // Ongoing changes are pushed by SHQL™ via _ON_PREF_CHANGED(key, value)
+    // called from Prefs.__SAVE — no listeners needed.
     final initialDarkMode = initState['is_dark_mode'];
     if (initialDarkMode is bool && mounted) {
       context.read<ThemeCubit>().set(initialDarkMode ? ThemeMode.dark : ThemeMode.light);
     }
-
-    // Apply initial Firebase consent and listen for changes
     final analyticsEnabled = initState['analytics_enabled'];
     if (analyticsEnabled is bool) await FirebaseService.setAnalyticsEnabled(analyticsEnabled);
     final crashlyticsEnabled = initState['crashlytics_enabled'];
     if (crashlyticsEnabled is bool) await FirebaseService.setCrashlyticsEnabled(crashlyticsEnabled);
-
-    _shqlBindings.addListener('Prefs.analytics_enabled', () async {
-      final v = await _shqlBindings.eval('Prefs.analytics_enabled');
-      if (v is bool) FirebaseService.setAnalyticsEnabled(v);
-    });
-    _shqlBindings.addListener('Prefs.crashlytics_enabled', () async {
-      final v = await _shqlBindings.eval('Prefs.crashlytics_enabled');
-      if (v is bool) FirebaseService.setCrashlyticsEnabled(v);
-    });
-
-    _shqlBindings.addListener('Prefs.location_enabled', () async {
-      final enabled = await _shqlBindings.eval('Prefs.location_enabled');
-      await _applyLocation(enabled == true);
-    });
-
-    // Apply initial location from restored preferences
     if (initState['location_enabled'] == true) {
       _applyLocation(true);
     }
@@ -561,16 +526,11 @@ class _HeroDexAppState extends State<HeroDexApp> {
   // ---------------------------------------------------------------------------
 
   Future<void> _applyLocation(bool enabled) async {
-    if (enabled) {
-      final desc = await LocationService.getLocationDescription();
-      final coords = await LocationService.getCoordinates();
-      await _shqlBindings.eval('World.SET_LOCATION(__desc, __lat, __lon)',
-          boundValues: {'__desc': desc, '__lat': coords?.$1, '__lon': coords?.$2});
-      if (mounted) setState(() {});
-    } else {
-      await _shqlBindings.eval('World.SET_LOCATION(__desc, null, null)',
-          boundValues: {'__desc': ''});
-    }
+    final desc = enabled ? await LocationService.getLocationDescription() : '';
+    final coords = enabled ? await LocationService.getCoordinates() : null;
+    await _shqlBindings.eval('World.SET_LOCATION(__desc, __lat, __lon)',
+        boundValues: {'__desc': desc, '__lat': coords?.$1, '__lon': coords?.$2});
+    if (enabled && mounted) setState(() {});
   }
 
   void _showSnackBar(String message) {
@@ -704,35 +664,14 @@ class _HeroDexAppState extends State<HeroDexApp> {
     }
 
     if (!_initialized) {
-      final hasProgress = _loadingTotal > 0;
       final progressChildren = <dynamic>[
-        if (hasProgress) ...[
-          {'type': 'Padding', 'props': {
-            'padding': {'left': 48, 'right': 48},
-            'child': {'type': 'LinearProgressIndicator', 'props': {
-              'value': _loadingProgress / _loadingTotal,
-              'backgroundColor': '0x3DFFFFFF',
-              'valueColor': '0xFFFFFFFF',
-              'minHeight': 6,
-              'borderRadius': 3,
-            }},
-          }},
+        {'type': 'CircularProgressIndicator', 'props': {'valueColor': '0xFFFFFFFF'}},
+        if (_loadingStatus.isNotEmpty) ...[
           {'type': 'SizedBox', 'props': {'height': 16}},
           {'type': 'Text', 'props': {
-            'data': _loadingHeroName.isNotEmpty
-                ? '$_loadingHeroName ($_loadingProgress/$_loadingTotal)'
-                : '$_loadingProgress / $_loadingTotal',
+            'data': _loadingStatus,
             'style': {'fontSize': 14, 'color': '0xB3FFFFFF', 'fontFamily': 'Orbitron'},
           }},
-        ] else ...[
-          {'type': 'CircularProgressIndicator', 'props': {'valueColor': '0xFFFFFFFF'}},
-          if (_loadingStatus.isNotEmpty) ...[
-            {'type': 'SizedBox', 'props': {'height': 16}},
-            {'type': 'Text', 'props': {
-              'data': _loadingStatus,
-              'style': {'fontSize': 14, 'color': '0xB3FFFFFF', 'fontFamily': 'Orbitron'},
-            }},
-          ],
         ],
       ];
 

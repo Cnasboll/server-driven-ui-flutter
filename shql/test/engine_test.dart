@@ -1235,6 +1235,53 @@ END;
     });
   });
 
+  group('Cross-object member access', () {
+    test('Object B method can access Object A members via global', () async {
+      expect(
+        await Engine.execute('''
+          A := OBJECT{
+            x: 10,
+            count: 0,
+            SET_COUNT: (v) => BEGIN count := v; END
+          };
+          B := OBJECT{
+            notify: () => BEGIN
+              A.SET_COUNT(A.x + 5);
+            END
+          };
+          B.notify();
+          A.count
+        '''),
+        15,
+      );
+    });
+
+    test('Field name colliding with global name (case-insensitive) from external scope', () async {
+      // Filters object has a field "filters" which uppercases to FILTERS
+      // The global "Filters" also uppercases to FILTERS
+      // From a DIFFERENT object's method, "Filters" should resolve to the global (the Object)
+      expect(
+        await Engine.execute('''
+          Filters := OBJECT{
+            filters: [10, 20, 30],
+            filter_counts: [],
+            SET_FILTER_COUNTS: (value) => BEGIN
+              filter_counts := value;
+            END
+          };
+          Heroes := OBJECT{
+            notify: () => BEGIN
+              Filters.SET_FILTER_COUNTS(Filters.filter_counts);
+            END
+          };
+          Heroes.notify();
+          Filters.filter_counts
+        '''),
+        [],
+      );
+    });
+  });
+
   group('Null value handling', () {
     test('Should distinguish between undefined and null variables', () async {
       expect(await Engine.execute('x := null; x'), null);

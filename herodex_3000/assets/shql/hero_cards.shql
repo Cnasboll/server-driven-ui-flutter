@@ -195,7 +195,7 @@ Cards := OBJECT{
         FOR i := 0 TO LENGTH(heroes) - 1 DO BEGIN
             hero := heroes[i];
             __onTap := "Heroes.SELECT_HERO(" + source + "[" + STRING(i) + "])";
-            __onDelete := IF deletable THEN "DELETE_HERO('" + hero.id + "')" ELSE null;
+            __onDelete := IF deletable THEN "Heroes.DELETE_HERO_FULL('" + hero.id + "')" ELSE null;
             result := result + [__MAKE_HERO_CARD_TREE(hero, __onTap, __onDelete, FALSE, null)];
         END;
         RETURN result;
@@ -233,8 +233,8 @@ Cards := OBJECT{
     -- Generate a single saved hero card widget tree.
     GENERATE_SINGLE_HERO_CARD: (__hero) => BEGIN
         __onTap := "Heroes.SELECT_HERO(Heroes.heroes['" + __hero.ID + "'])";
-        __onDelete := "DELETE_HERO('" + __hero.ID + "')";
-        __onToggleLock := "_TOGGLE_LOCK_HERO('" + __hero.ID + "')";
+        __onDelete := "Heroes.DELETE_HERO_FULL('" + __hero.ID + "')";
+        __onToggleLock := "Heroes.TOGGLE_LOCK_FULL('" + __hero.ID + "')";
         RETURN __MAKE_HERO_CARD_TREE(__hero, __onTap, __onDelete, __hero.LOCKED, __onToggleLock);
     END,
 
@@ -246,6 +246,13 @@ Cards := OBJECT{
     -- Generate + cache a single hero card.
     CACHE_HERO_CARD: (__hero) => BEGIN
         card_cache[__hero.ID] := GENERATE_SINGLE_HERO_CARD(__hero);
+    END,
+
+    -- Batch-cache a list of hero cards (avoids eval-per-hero from Dart).
+    CACHE_HERO_CARDS: (__heroes) => BEGIN
+        IF __heroes <> null AND LENGTH(__heroes) > 0 THEN
+            FOR __i := 0 TO LENGTH(__heroes) - 1 DO
+                card_cache[__heroes[__i].ID] := GENERATE_SINGLE_HERO_CARD(__heroes[__i]);
     END,
 
     -- Remove a hero from the card cache.

@@ -2,6 +2,7 @@ import 'package:shql/engine/cancellation_token.dart';
 import 'package:shql/engine/engine.dart';
 import 'package:shql/execution/execution_node.dart';
 import 'package:shql/execution/identifier_exeuction_node.dart';
+import 'package:shql/execution/lambdas/call_execution_node.dart';
 import 'package:shql/execution/lazy_execution_node.dart';
 import 'package:shql/execution/runtime/execution_context.dart';
 import 'package:shql/execution/runtime/runtime.dart';
@@ -72,15 +73,25 @@ class MemberAccessExecutionNode extends LazyExecutionNode {
 
       // Right side can be either an identifier or any other expression (like a call)
       // For identifiers, we use the rightScope to look up the member
-      // For other expressions, we execute them in the rightScope
       if (rightChild.symbol == Symbols.identifier) {
         _rightNode = IdentifierExecutionNode(
           rightChild,
           thread: thread,
           scope: rightScope,
         );
+      } else if (rightChild.symbol == Symbols.call) {
+        // Method call via member access (e.g. obj.method(args)):
+        // The method name is resolved in rightScope (the object's scope),
+        // but arguments must be evaluated in the caller's scope to prevent
+        // object fields from shadowing outer variables.
+        _rightNode = CallExecutionNode(
+          rightChild,
+          thread: thread,
+          scope: rightScope,
+          argumentScope: scope,
+        );
       } else {
-        // For non-identifier expressions (like method calls), create execution node with rightScope
+        // For other expressions, use rightScope
         _rightNode = Engine.createExecutionNode(rightChild, thread, rightScope);
         if (_rightNode == null) {
           error = RuntimeError.fromParseTree(

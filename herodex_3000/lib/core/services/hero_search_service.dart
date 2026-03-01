@@ -9,67 +9,60 @@ import 'package:hero_common/value_types/weight.dart';
 import 'package:server_driven_ui/server_driven_ui.dart';
 
 import '../../widgets/conflict_resolver_dialog.dart';
-import '../../persistence/shql_hero_data_manager.dart';
+import 'package:hero_common/managers/hero_data_managing.dart';
 import '../hero_coordinator.dart';
 
-/// Manages online hero search, API response caching, and the save-review flow.
+/// Dart platform primitives for the hero search workflow.
 ///
-/// This is separate from [HeroCoordinator] because search is a transient
-/// workflow with its own state (_searchCache, _searchResults) that is not
-/// part of the local hero data lifecycle.
+/// SHQL™ drives the loop. This class provides the callbacks SHQL calls:
+/// - `_FETCH_HEROES(query)` → API fetch + parse → list of opaque HeroModels
+/// - `_GET_SAVED_ID(model)` → returns internal ID if already saved, else null
+/// - `_SAVE_HERO(model)` → persist to DB + create SHQL Object
+/// - `_MAP_HERO(model)` → create SHQL Object without persisting
+/// - `_REVIEW_HERO(model, current, total)` → show review dialog → action string
 class HeroSearchService {
   HeroSearchService({
     required ShqlBindings shqlBindings,
-    required ShqlHeroDataManager heroDataManager,
+    required HeroDataManaging heroDataManager,
     required HeroCoordinator coordinator,
     required GlobalKey<NavigatorState> navigatorKey,
-    required VoidCallback onStateChanged,
   })  : _shqlBindings = shqlBindings,
         _heroDataManager = heroDataManager,
         _coordinator = coordinator,
-        _navigatorKey = navigatorKey,
-        _onStateChanged = onStateChanged;
+        _navigatorKey = navigatorKey;
 
   final ShqlBindings _shqlBindings;
-  final ShqlHeroDataManager _heroDataManager;
+  final HeroDataManaging _heroDataManager;
   final HeroCoordinator _coordinator;
   final GlobalKey<NavigatorState> _navigatorKey;
-  final VoidCallback _onStateChanged;
 
   /// API response cache — same query on the same day returns cached JSON.
   final Map<String, Map<String, dynamic>> _searchCache = {};
-
-  /// Transient API search results keyed by externalId.
-  final Map<String, HeroModel> _searchResults = {};
 
   String _cacheKey(String query) {
     final today = DateTime.now().toIso8601String().substring(0, 10);
     return '${query.toLowerCase()}|$today';
   }
 
-  /// Get a search result by externalId (for SHQL™ _PERSIST_HERO callback).
-  HeroModel? getSearchResult(String externalId) => _searchResults[externalId];
-
-  Future<void> clearSearchResults() async {
-    _searchResults.clear();
-    await _shqlBindings.eval('Search.SET_SEARCH_STATE(__r, null, null)',
-        boundValues: {'__r': <dynamic>[]});
+  void _pruneCache() {
+    final today = DateTime.now().toIso8601String().substring(0, 10);
+    _searchCache.removeWhere((key, _) => !key.endsWith(today));
   }
 
   // ---------------------------------------------------------------------------
-  // Search flow
+  // _FETCH_HEROES: API fetch + parse → opaque HeroModel list
   // ---------------------------------------------------------------------------
 
-  Future<void> search(String query) async {
+  /// Returns {success, results: [HeroModel...], error}.
+  /// HeroModels are opaque to SHQL — passed to other callbacks for inspection.
+  Future<dynamic> fetchHeroes(String query) async {
     try {
       final heroService = await _coordinator.getHeroService();
       if (heroService == null) {
-        await _shqlBindings.eval('Search.SET_SEARCH_STATE(__r, FALSE, null)',
-            boundValues: {'__r': <dynamic>[]});
-        _onStateChanged();
-        return;
+        return _errorResult('No API credentials configured');
       }
 
+      _pruneCache();
       final key = _cacheKey(query);
       var data = _searchCache[key];
       if (data == null) {
@@ -79,16 +72,11 @@ class HeroSearchService {
         }
       }
       if (data == null || data['response'] != 'success') {
-        await _shqlBindings.eval('Search.SET_SEARCH_STATE(__r, FALSE, __s)',
-            boundValues: {
-              '__r': <dynamic>[],
-              '__s': data?['error']?.toString() ?? 'No results found for "$query"',
-            });
-        _onStateChanged();
-        return;
+        return _errorResult(
+          data?['error']?.toString() ?? 'No results found for "$query"',
+        );
       }
 
-      // Set up conflict resolvers for weight/height ambiguity (like v04)
       final previousHeightResolver = Height.conflictResolver;
       final previousWeightResolver = Weight.conflictResolver;
       Height.conflictResolver = FlutterConflictResolver<Height>(
@@ -107,88 +95,57 @@ class HeroSearchService {
           debugPrint('Search parse failure: $f');
         }
 
-        _searchResults.clear();
-        for (final hero in searchResponse.results) {
-          _searchResults[hero.externalId] = hero;
-        }
-        await publishSearchResults(loading: false);
-        _onStateChanged();
-        // SHQL™ SAVE_SEARCH_HEROES() handles the save dialog loop after _FETCH_HEROES returns.
+        return _shqlBindings.mapToObject({
+          'success': true,
+          'results': searchResponse.results,
+          'error': null,
+        });
       } finally {
         Height.conflictResolver = previousHeightResolver;
         Weight.conflictResolver = previousWeightResolver;
       }
     } catch (e) {
       debugPrint('Search error: $e');
-      await _shqlBindings.eval('Search.SET_SEARCH_STATE(__r, FALSE, __s)',
-          boundValues: {'__r': <dynamic>[], '__s': 'Search failed: $e'});
-      _onStateChanged();
+      return _errorResult('Search failed: $e');
     }
   }
 
+  dynamic _errorResult(String message) => _shqlBindings.mapToObject({
+    'success': false,
+    'results': <dynamic>[],
+    'error': message,
+  });
+
   // ---------------------------------------------------------------------------
-  // Save hero from search results
+  // Callbacks operating on opaque HeroModels
   // ---------------------------------------------------------------------------
 
-  Future<void> saveHero(String externalId) async {
-    final heroModel = _searchResults[externalId];
-    if (heroModel == null) {
-      debugPrint('Hero model not found for externalId: $externalId');
-      return;
-    }
+  /// Returns the internal ID if this hero is already saved, null otherwise.
+  dynamic getSavedId(dynamic hero) {
+    if (hero is! HeroModel) return null;
+    return _heroDataManager.getByExternalId(hero.externalId)?.id;
+  }
 
-    await _coordinator.persistHero(heroModel);
-    await publishSearchResults();
+  /// Persist to DB and return SHQL Object.
+  dynamic saveHero(dynamic hero) {
+    if (hero is! HeroModel) return null;
+    _heroDataManager.persist(hero);
+    return HeroShqlAdapter.heroToShqlObject(hero, _shqlBindings.identifiers);
+  }
 
-    // Update selected hero if it matches — reuse the instance from Heroes.heroes.
-    try {
-      await _shqlBindings.eval('Heroes.REFRESH_SELECTED_IF(__eid)',
-          boundValues: {'__eid': externalId});
-    } catch (_) {}
-
-    _onStateChanged();
+  /// Create SHQL Object without persisting (for display of skipped heroes).
+  dynamic mapHero(dynamic hero) {
+    if (hero is! HeroModel) return null;
+    return HeroShqlAdapter.heroToShqlObject(hero, _shqlBindings.identifiers);
   }
 
   // ---------------------------------------------------------------------------
-  // Publish search results to SHQL™
+  // Review dialog (platform boundary)
   // ---------------------------------------------------------------------------
 
-  Future<void> publishSearchResults({bool? loading}) async {
-    if (_searchResults.isEmpty) {
-      await _shqlBindings.eval('Search.SET_SEARCH_STATE(__r, __l, null)',
-          boundValues: {'__r': <dynamic>[], '__l': loading});
-      return;
-    }
-    final objects = <dynamic>[];
-    for (final entry in _searchResults.entries) {
-      final saved = _heroDataManager.getByExternalId(entry.key);
-      if (saved != null) {
-        objects.add(HeroShqlAdapter.heroToDisplayObject(
-          saved, _shqlBindings.identifiers, isSaved: true,
-        ));
-        _searchResults[entry.key] = saved;
-      } else {
-        objects.add(HeroShqlAdapter.heroToDisplayObject(
-          entry.value, _shqlBindings.identifiers, isSaved: false,
-        ));
-      }
-    }
-    await _shqlBindings.eval('Search.SET_SEARCH_STATE(__r, __l, null)',
-        boundValues: {'__r': objects, '__l': loading});
-  }
-
-  // ---------------------------------------------------------------------------
-  // Hero review dialog (called from SHQL™ _REVIEW_HERO callback)
-  // ---------------------------------------------------------------------------
-
-  /// Shows a review dialog for a search result hero. Takes a SHQL™ hero object,
-  /// looks up the HeroModel by externalId, and returns an action string
-  /// ('save', 'skip', 'saveAll', 'cancel').
-  Future<String> reviewHero(dynamic heroObj, int current, int total) async {
-    final map = _shqlBindings.objectToMap(heroObj);
-    final externalId = map['external_id']?.toString() ?? '';
-    final hero = _searchResults[externalId];
-    if (hero == null) return 'skip';
+  /// Shows review dialog for an opaque HeroModel. Returns action string.
+  Future<String> reviewHero(dynamic hero, int current, int total) async {
+    if (hero is! HeroModel) return 'skip';
     final action = await _showHeroReviewDialog(hero, current, total);
     return switch (action) {
       ReviewAction.save => 'save',

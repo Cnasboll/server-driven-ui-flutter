@@ -12,9 +12,9 @@ import 'package:hero_common/value_types/value_type.dart';
 /// SystemOfUnits constants and all HeroModel field identifiers into a
 /// [ConstantsSet].
 ///
-/// Use [heroToShqlObject] / [heroToDisplayObject] to turn a [HeroModel] into
-/// an SHQL™ [Object] whose members can be accessed with `.member` syntax in
-/// SHQL™ expressions (e.g. `hero.biography.alignment`).
+/// Use [heroToShqlObject] to turn a [HeroModel] into an SHQL™ [Object] whose
+/// members can be accessed with `.member` syntax in SHQL™ expressions
+/// (e.g. `hero.biography.alignment`).
 class HeroShqlAdapter {
   HeroShqlAdapter._();
 
@@ -95,34 +95,12 @@ class HeroShqlAdapter {
     return obj;
   }
 
-  /// Like [heroToShqlObject] but also sets a `SAVED_AT` member so that SHQL™
-  /// code can distinguish saved heroes from unsaved search results.
-  static Object heroToDisplayObject(
-    HeroModel hero,
-    ConstantsTable<String> identifiers, {
-    required bool isSaved,
-  }) {
-    var obj = heroToShqlObject(hero, identifiers);
-    obj.setVariable(
-      identifiers.include('SAVED_AT'),
-      isSaved ? hero.timestamp.toIso8601String() : null,
-    );
-    obj.setVariable(
-      identifiers.include('LOCKED'),
-      hero.locked,
-    );
-    return obj;
-  }
-
-  /// Converts a list of [HeroModel]s to a list of SHQL™ display Objects.
-  static List<Object> heroesToDisplayList(
+  /// Converts a list of [HeroModel]s to a list of SHQL™ Objects.
+  static List<Object> heroesToShqlList(
     List<HeroModel> heroes,
-    ConstantsTable<String> identifiers, {
-    required bool isSaved,
-  }) {
-    return heroes
-        .map((h) => heroToDisplayObject(h, identifiers, isSaved: isSaved))
-        .toList();
+    ConstantsTable<String> identifiers,
+  ) {
+    return heroes.map((h) => heroToShqlObject(h, identifiers)).toList();
   }
 
   /// Builds a `Map<String, dynamic>` from a [HeroModel] for use as
