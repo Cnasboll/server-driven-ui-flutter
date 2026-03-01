@@ -9,3 +9,4 @@ export 'execution/runtime/runtime.dart';
 export 'execution/runtime/execution_context.dart';
 export 'execution/execution_node.dart';
 export 'execution/runtime_error.dart';
+export 'testing/shql_test_runner.dart';

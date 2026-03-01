@@ -22,9 +22,12 @@ import 'core/theme/theme_cubit.dart';
 import 'widgets/conflict_resolver_dialog.dart' show ReviewAction;
 import 'widgets/dialogs.dart' as dialogs;
 import 'package:hero_common/callbacks.dart';
+import 'package:hero_common/env/env.dart';
 import 'package:hero_common/managers/hero_data_manager.dart';
 import 'package:hero_common/models/hero_shql_adapter.dart';
 import 'package:hero_common/persistence/hero_repository.dart';
+import 'package:hero_common/services/hero_service.dart';
+import 'package:hero_common/services/hero_servicing.dart';
 import 'persistence/sqflite_database_adapter.dart';
 import 'package:hero_common/managers/hero_data_managing.dart';
 import 'persistence/filter_compiler.dart';
@@ -48,6 +51,7 @@ class _HeroDexAppState extends State<HeroDexApp> {
   late HeroSearchService _searchService;
   late GoRouter _router;
   ConnectivityService? _connectivityService;
+  HeroServicing? _heroService;
   final _scaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();
   final _navigatorKey = GlobalKey<NavigatorState>();
 
@@ -326,6 +330,8 @@ class _HeroDexAppState extends State<HeroDexApp> {
               if (value is bool) FirebaseService.setCrashlyticsEnabled(value);
             case 'location_enabled':
               _applyLocation(value == true);
+            case 'api_key' || 'api_host':
+              _updateHeroService();
           }
           return null;
         },
@@ -524,6 +530,23 @@ class _HeroDexAppState extends State<HeroDexApp> {
   // ---------------------------------------------------------------------------
   // SHQL™ helpers
   // ---------------------------------------------------------------------------
+
+  void _updateHeroService() {
+    final apiKey = widget.prefs.getString('api_key') ?? '';
+    final apiHost = widget.prefs.getString('api_host') ?? 'www.superheroapi.com';
+    if (apiKey.isNotEmpty) {
+      _heroService = HeroService(Env.create(apiKey: apiKey, apiHost: apiHost));
+    } else {
+      _heroService = null;
+    }
+  }
+
+  HeroServicing _getHeroService() {
+    if (_heroService == null) {
+      _updateHeroService();
+    }
+    return _heroService!;
+  }
 
   Future<void> _applyLocation(bool enabled) async {
     final desc = enabled ? await LocationService.getLocationDescription() : '';

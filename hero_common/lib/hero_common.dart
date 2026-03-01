@@ -58,6 +58,9 @@ export 'utils/ascii_art.dart';
 export 'utils/enum_parsing.dart';
 export 'utils/json_parsing.dart';
 
+// Testing
+export 'testing/testing.dart';
+
 // Value types
 export 'value_types/conflict_resolver.dart';
 export 'value_types/height.dart';

@@ -1,9 +1,8 @@
 import 'package:flutter/foundation.dart';
-import 'package:hero_common/env/env.dart';
 import 'package:hero_common/managers/hero_data_managing.dart';
 import 'package:hero_common/models/hero_model.dart';
 import 'package:hero_common/models/hero_shql_adapter.dart';
-import 'package:hero_common/services/hero_service.dart';
+import 'package:hero_common/services/hero_servicing.dart';
 import 'package:hero_common/value_types/conflict_resolver.dart';
 import 'package:hero_common/value_types/height.dart';
 import 'package:hero_common/value_types/weight.dart';
@@ -28,12 +27,14 @@ class HeroCoordinator {
   HeroCoordinator({
     required ShqlBindings shqlBindings,
     required HeroDataManaging heroDataManager,
+    required HeroServicing Function() heroServiceFactory,
     required FilterCompiler filterCompiler,
     required ReconcilePromptCallback showReconcileDialog,
     required SnackBarCallback showSnackBar,
     required VoidCallback onStateChanged,
   })  : _shqlBindings = shqlBindings,
         _heroDataManager = heroDataManager,
+        _heroServiceFactory = heroServiceFactory,
         _filterCompiler = filterCompiler,
         _showReconcileDialog = showReconcileDialog,
         _showSnackBar = showSnackBar,
@@ -41,6 +42,7 @@ class HeroCoordinator {
 
   final ShqlBindings _shqlBindings;
   final HeroDataManaging _heroDataManager;
+  final HeroServicing Function() _heroServiceFactory;
   final FilterCompiler _filterCompiler;
   final ReconcilePromptCallback _showReconcileDialog;
   final SnackBarCallback _showSnackBar;
@@ -49,10 +51,7 @@ class HeroCoordinator {
   // Public access to the data manager (for search service)
   HeroDataManaging get heroDataManager => _heroDataManager;
 
-  // Transient state for reconciliation — stores the HeroService for the
-  // duration of the reconciliation loop. Updated HeroModels are returned as
-  // opaque values in the fetch result — SHQL holds them and passes to persist.
-  HeroService? _reconcileService;
+  // Transient state for reconciliation timestamp.
   DateTime? _reconcileTimestamp;
 
   /// Creates a SHQL™ object from a HeroModel.
@@ -118,15 +117,13 @@ class HeroCoordinator {
   // Reconciliation callbacks (called from SHQL™ RECONCILE_HEROES loop)
   // ---------------------------------------------------------------------------
 
-  /// _INIT_RECONCILE callback: acquires HeroService (may prompt for API key).
-  /// Returns true if ready, false/null if no service.
+  /// _INIT_RECONCILE callback: prepares for reconciliation loop.
+  /// Returns true if ready, false if no heroes to reconcile.
   Future<bool> initReconcile() async {
     if (_heroDataManager.heroes.isEmpty) {
       _showSnackBar('No saved heroes to reconcile');
       return false;
     }
-    _reconcileService = await getHeroService();
-    if (_reconcileService == null) return false;
     _reconcileTimestamp = DateTime.timestamp();
     return true;
   }
@@ -135,9 +132,9 @@ class HeroCoordinator {
   /// applies with auto-resolvers, diffs. Returns result OBJECT or null.
   Future<dynamic> reconcileFetch(String heroId) async {
     final hero = _heroDataManager.getById(heroId);
-    if (hero == null || _reconcileService == null) return null;
+    if (hero == null) return null;
 
-    final onlineJson = await _reconcileService!.getById(hero.externalId);
+    final onlineJson = await _heroServiceFactory().getById(hero.externalId);
     String? error;
     if (onlineJson != null) error = onlineJson['error'] as String?;
 
@@ -217,7 +214,6 @@ class HeroCoordinator {
   /// _FINISH_RECONCILE callback: cleans up transient Dart reconciliation state.
   /// SHQL handles the rebuild (FULL_REBUILD_AND_DISPLAY) itself after calling this.
   void finishReconcile() {
-    _reconcileService = null;
     _reconcileTimestamp = null;
   }
 
@@ -328,20 +324,6 @@ class HeroCoordinator {
   /// compile→rebuild→display pipeline, then rebuilds hero cards from cache.
   Future<void> rebuildAllFilters() async {
     await _shqlBindings.eval('Heroes.FULL_REBUILD_AND_DISPLAY()');
-  }
-
-  // ---------------------------------------------------------------------------
-  // Hero service
-  // ---------------------------------------------------------------------------
-
-  Future<HeroService?> getHeroService() async {
-    final result = await _shqlBindings.eval('Prefs.GET_API_CREDENTIALS()');
-    if (result == null) return null;
-    final creds = _shqlBindings.objectToMap(result);
-    return HeroService(Env.create(
-      apiKey: creds['api_key'].toString(),
-      apiHost: creds['api_host'].toString(),
-    ));
   }
 
   /// Look up a HeroModel from an SHQL™ hero object and text-match against it.

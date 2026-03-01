@@ -4,10 +4,11 @@ import 'dart:io';
 import 'package:hero_common/services/hero_servicing.dart';
 
 class MockHeroService implements HeroServicing {
-  MockHeroService() : _jsonByHeroId = getJsonByHeroId();
+  MockHeroService([String directory = 'test/heroes'])
+      : _jsonByHeroId = _loadJsonByHeroId(directory);
 
-  static Map<String, String> getJsonByHeroId() {
-    final dir = Directory('test/heroes');
+  static Map<String, String> _loadJsonByHeroId(String directory) {
+    final dir = Directory(directory);
     final List<FileSystemEntity> entities = dir.listSync().toList();
     Map<String, String> jsonByHeroId = {};
     for (var entity in entities) {

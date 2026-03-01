@@ -4,13 +4,13 @@ import 'package:flutter/material.dart';
 import 'package:hero_common/models/hero_model.dart';
 import 'package:hero_common/models/hero_shql_adapter.dart';
 import 'package:hero_common/models/search_response_model.dart';
+import 'package:hero_common/services/hero_servicing.dart';
 import 'package:hero_common/value_types/height.dart';
 import 'package:hero_common/value_types/weight.dart';
 import 'package:server_driven_ui/server_driven_ui.dart';
 
 import '../../widgets/conflict_resolver_dialog.dart';
 import 'package:hero_common/managers/hero_data_managing.dart';
-import '../hero_coordinator.dart';
 
 /// Dart platform primitives for the hero search workflow.
 ///
@@ -24,16 +24,16 @@ class HeroSearchService {
   HeroSearchService({
     required ShqlBindings shqlBindings,
     required HeroDataManaging heroDataManager,
-    required HeroCoordinator coordinator,
+    required HeroServicing Function() heroServiceFactory,
     required GlobalKey<NavigatorState> navigatorKey,
   })  : _shqlBindings = shqlBindings,
         _heroDataManager = heroDataManager,
-        _coordinator = coordinator,
+        _heroServiceFactory = heroServiceFactory,
         _navigatorKey = navigatorKey;
 
   final ShqlBindings _shqlBindings;
   final HeroDataManaging _heroDataManager;
-  final HeroCoordinator _coordinator;
+  final HeroServicing Function() _heroServiceFactory;
   final GlobalKey<NavigatorState> _navigatorKey;
 
   /// API response cache — same query on the same day returns cached JSON.
@@ -57,16 +57,11 @@ class HeroSearchService {
   /// HeroModels are opaque to SHQL — passed to other callbacks for inspection.
   Future<dynamic> fetchHeroes(String query) async {
     try {
-      final heroService = await _coordinator.getHeroService();
-      if (heroService == null) {
-        return _errorResult('No API credentials configured');
-      }
-
       _pruneCache();
       final key = _cacheKey(query);
       var data = _searchCache[key];
       if (data == null) {
-        data = await heroService.search(query);
+        data = await _heroServiceFactory().search(query);
         if (data != null && data['response'] == 'success') {
           _searchCache[key] = data;
         }

@@ -1,0 +1,29 @@
+-- ============================================
+-- SHQL™ Test Primitives
+-- ============================================
+-- Assertion functions for writing tests in SHQL™.
+-- Each delegates to a Dart callback registered by ShqlTestRunner.
+--
+-- Expression-based assertions take a STRING expression as first arg.
+-- The Dart side evaluates it and includes the expression text in errors.
+--
+-- Usage:
+--   EXPECT("Heroes.total_heroes", 1)
+--   ASSERT("Nav.CAN_GO_BACK()")
+--   ASSERT_CALLED('SAVE_STATE')
+-- ============================================
+
+-- Expression-based: first arg is a string, evaluated by Dart
+EXPECT(expr, expected)         := __EXPECT(expr, expected);
+ASSERT(expr)                   := __ASSERT(expr);
+ASSERT_FALSE(expr)             := __ASSERT_FALSE(expr);
+
+-- Direct value assertions: first arg is already evaluated
+EXPECT_EQ(actual, expected, label) := __EXPECT_EQ(actual, expected, label);
+ASSERT_TRUE(condition, label)      := __ASSERT_TRUE(condition, label);
+
+-- Side-effect verification
+ASSERT_CALLED(name)            := __ASSERT_CALLED(name);
+ASSERT_NOT_CALLED(name)        := __ASSERT_NOT_CALLED(name);
+ASSERT_CALL_COUNT(name, count) := __ASSERT_CALL_COUNT(name, count);
+CLEAR_CALL_LOG()               := __CLEAR_CALL_LOG;
