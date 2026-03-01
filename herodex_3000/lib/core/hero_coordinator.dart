@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:hero_common/managers/hero_data_managing.dart';
 import 'package:hero_common/models/hero_model.dart';
 import 'package:hero_common/models/hero_shql_adapter.dart';
+import 'package:hero_common/models/search_response_model.dart';
 import 'package:hero_common/services/hero_servicing.dart';
 import 'package:hero_common/value_types/conflict_resolver.dart';
 import 'package:hero_common/value_types/height.dart';
@@ -16,6 +17,7 @@ import '../persistence/filter_compiler.dart';
 
 /// Callback typedefs for UI interactions that the coordinator delegates to.
 typedef ReconcilePromptCallback = Future<ReviewAction> Function(String prompt);
+typedef ReviewHeroCallback = Future<ReviewAction> Function(dynamic hero, int current, int total);
 typedef SnackBarCallback = void Function(String message);
 
 /// Coordinates hero CRUD operations and filter orchestration.
@@ -30,6 +32,7 @@ class HeroCoordinator {
     required HeroServicing? Function() heroServiceFactory,
     required FilterCompiler filterCompiler,
     required ReconcilePromptCallback showReconcileDialog,
+    required ReviewHeroCallback showReviewHeroDialog,
     required SnackBarCallback showSnackBar,
     required VoidCallback onStateChanged,
   })  : _shqlBindings = shqlBindings,
@@ -37,6 +40,7 @@ class HeroCoordinator {
         _heroServiceFactory = heroServiceFactory,
         _filterCompiler = filterCompiler,
         _showReconcileDialog = showReconcileDialog,
+        _showReviewHeroDialog = showReviewHeroDialog,
         _showSnackBar = showSnackBar,
         _onStateChanged = onStateChanged;
 
@@ -45,14 +49,15 @@ class HeroCoordinator {
   final HeroServicing? Function() _heroServiceFactory;
   final FilterCompiler _filterCompiler;
   final ReconcilePromptCallback _showReconcileDialog;
+  final ReviewHeroCallback _showReviewHeroDialog;
   final SnackBarCallback _showSnackBar;
   final VoidCallback _onStateChanged;
 
-  // Public access to the data manager (for search service)
-  HeroDataManaging get heroDataManager => _heroDataManager;
-
   // Transient state for reconciliation timestamp.
   DateTime? _reconcileTimestamp;
+
+  /// API response cache — same query on the same day returns cached JSON.
+  final Map<String, Map<String, dynamic>> _searchCache = {};
 
   /// Creates a SHQL™ object from a HeroModel.
   dynamic _createHeroObject(HeroModel hero) =>
@@ -175,6 +180,7 @@ class HeroCoordinator {
 
       return _shqlBindings.mapToObject({
         'found': true,
+        'apply_error': null,
         'has_diff': hasDiff,
         'diff_text': sb.toString(),
         'resolution_logs': resolutionLogs,
@@ -187,11 +193,17 @@ class HeroCoordinator {
     }
   }
 
-  /// _RECONCILE_PERSIST callback: takes opaque HeroModel from SHQL, persists
-  /// to DB, returns SHQL Object. Same pattern as _SAVE_HERO in search.
-  dynamic reconcilePersist(dynamic hero) {
+  /// Persist a HeroModel to DB and return a SHQL™ Object.
+  /// Used by _PERSIST_HERO callback (search and reconciliation).
+  dynamic persistAndMap(dynamic hero) {
     if (hero is! HeroModel) return null;
     _heroDataManager.persist(hero);
+    return _createHeroObject(hero);
+  }
+
+  /// Create SHQL™ Object without persisting (for display of skipped heroes).
+  dynamic mapHero(dynamic hero) {
+    if (hero is! HeroModel) return null;
     return _createHeroObject(hero);
   }
 
@@ -228,6 +240,107 @@ class HeroCoordinator {
     _heroDataManager.clear();
     _onStateChanged();
   }
+
+  // ---------------------------------------------------------------------------
+  // Search
+  // ---------------------------------------------------------------------------
+
+  String _cacheKey(String query) {
+    final today = DateTime.now().toIso8601String().substring(0, 10);
+    return '${query.toLowerCase()}|$today';
+  }
+
+  void _pruneCache() {
+    final today = DateTime.now().toIso8601String().substring(0, 10);
+    _searchCache.removeWhere((key, _) => !key.endsWith(today));
+  }
+
+  /// _SEARCH_HEROES callback: API fetch + parse → opaque HeroModel list.
+  /// Returns {success, results: [HeroModel...], error}.
+  Future<dynamic> searchHeroes(String query) async {
+    try {
+      final heroService = _heroServiceFactory();
+      if (heroService == null) {
+        return _errorResult('No API credentials configured');
+      }
+
+      _pruneCache();
+      final key = _cacheKey(query);
+      var data = _searchCache[key];
+      if (data == null) {
+        data = await heroService.search(query);
+        if (data != null && data['response'] == 'success') {
+          _searchCache[key] = data;
+        }
+      }
+      if (data == null || data['response'] != 'success') {
+        return _errorResult(
+          data?['error']?.toString() ?? 'No results found for "$query"',
+        );
+      }
+
+      final previousHeightResolver = Height.conflictResolver;
+      final previousWeightResolver = Weight.conflictResolver;
+      if (searchHeightConflictResolver != null) {
+        Height.conflictResolver = searchHeightConflictResolver!;
+      }
+      if (searchWeightConflictResolver != null) {
+        Weight.conflictResolver = searchWeightConflictResolver!;
+      }
+
+      try {
+        final failures = <String>[];
+        final searchResponse = await SearchResponseModel.fromJson(
+          _heroDataManager, data, DateTime.timestamp(), failures,
+        );
+        for (final f in failures) {
+          debugPrint('Search parse failure: $f');
+        }
+
+        return _shqlBindings.mapToObject({
+          'success': true,
+          'results': searchResponse.results,
+          'error': null,
+        });
+      } finally {
+        Height.conflictResolver = previousHeightResolver;
+        Weight.conflictResolver = previousWeightResolver;
+      }
+    } catch (e) {
+      debugPrint('Search error: $e');
+      return _errorResult('Search failed: $e');
+    }
+  }
+
+  dynamic _errorResult(String message) => _shqlBindings.mapToObject({
+    'success': false,
+    'results': <dynamic>[],
+    'error': message,
+  });
+
+  /// Returns the internal ID if this hero is already saved, null otherwise.
+  dynamic getSavedId(dynamic hero) {
+    if (hero is! HeroModel) return null;
+    return _heroDataManager.getByExternalId(hero.externalId)?.id;
+  }
+
+  /// Shows review dialog for an opaque HeroModel. Returns action string.
+  Future<String> reviewHero(dynamic hero, int current, int total) async {
+    if (hero is! HeroModel) return 'skip';
+    final action = await _showReviewHeroDialog(hero, current, total);
+    return switch (action) {
+      ReviewAction.save => 'save',
+      ReviewAction.skip => 'skip',
+      ReviewAction.saveAll => 'saveAll',
+      ReviewAction.cancel => 'cancel',
+    };
+  }
+
+  /// Conflict resolvers for height/weight parsing during search.
+  /// Set by app.dart after construction (FlutterConflictResolver with dialog UI).
+  /// Null in tests — search parsing uses default (first-provided-value) resolver.
+  ConflictResolver<Height>? searchHeightConflictResolver;
+  ConflictResolver<Weight>? searchWeightConflictResolver;
 
   // ---------------------------------------------------------------------------
   // Edit form preparation

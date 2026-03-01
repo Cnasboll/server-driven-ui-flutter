@@ -109,7 +109,7 @@ SHQL™ drives **all** orchestration. Dart callbacks exist only for operations t
 │    │   ←── {found, has_diff, diff_text}                           ││
 │    ├── _RECONCILE_PROMPT(text) ──→ Dart: show dialog              ││
 │    │   ←── 'save'|'skip'|'saveAll'|'cancel'                      ││
-│    ├── _RECONCILE_PERSIST(id) ──→ Dart: persist to DB             ││
+│    ├── _PERSIST_HERO(model) ──→ Dart: persist to DB               ││
 │    │   ←── {new_obj}                                              ││
 │    ├── _RECONCILE_DELETE(id) ──→ Dart: delete from DB             ││
 │    │   ←── (void)                                                 ││
@@ -149,12 +149,11 @@ SHQL™ drives **all** orchestration. Dart callbacks exist only for operations t
 | `_HERO_DATA_AMEND(id, amendment)` | DB | Apply amendment, return `{new_obj, id}` |
 | `_HERO_DATA_TOGGLE_LOCK(id)` | DB | Toggle lock, return `{locked}` |
 | `_RECONCILE_FETCH(id)` | DB+Net | Fetch online data, diff, return result |
-| `_RECONCILE_PERSIST(id)` | DB | Persist pending hero, return `{new_obj}` |
+| `_PERSIST_HERO(model)` | DB | Persist opaque HeroModel, return SHQL Object |
 | `_RECONCILE_DELETE(id)` | DB | Delete hero from DB |
 | `_INIT_RECONCILE` | Net | Acquire HeroService |
 | `_FINISH_RECONCILE` | Lifecycle | Cleanup transient reconcile state |
-| `_FETCH_HEROES(query)` | Net | Search API, populate search results |
-| `_PERSIST_HERO(eid)` | DB+Net | Save search result hero to DB |
+| `_SEARCH_HEROES(query)` | Net | Search API, return opaque HeroModel list |
 | `_COMPILE_FILTERS` | Dart lib | Compile all filter predicates |
 | `_COMPILE_QUERY(query)` | Dart lib | Compile single query to lambda |
 | `_BUILD_EDIT_FIELDS(id)` | Dart lib | Build field descriptors from hero model |
@@ -280,9 +279,8 @@ The shared `hero_common` package has 245+ tests covering models, predicates, JSO
 |---|---|
 | `lib/main.dart` | App entry point (bootstraps Firebase, SharedPreferences, runs app) |
 | `lib/app.dart` | `HeroDexApp` widget — auth gate, SHQL™ wiring, Dart callback registry |
-| `lib/core/hero_coordinator.dart` | Dart platform primitives: DB CRUD, reconciliation, edit fields, filters |
+| `lib/core/hero_coordinator.dart` | Dart platform primitives: DB CRUD, reconciliation, search, edit fields, filters |
 | `lib/core/herodex_widget_registry.dart` | Dart factories for third-party widgets (CachedImage, FlutterMap, TileLayer, MarkerLayer) |
-| `lib/core/services/hero_search_service.dart` | Online hero search + save flow + review dialog |
 | `lib/core/services/firebase_auth_service.dart` | Startup `isSignedIn` check (auth logic is in `auth.shql`) |
 | `lib/core/services/firebase_service.dart` | Firebase Analytics/Crashlytics |
 | `lib/core/services/connectivity_service.dart` | Network monitoring |

@@ -17,13 +17,17 @@ import 'package:shql/parser/constants_set.dart';
 /// import 'package:shql/testing/shql_test_runner.dart';
 ///
 /// void main() {
-///   test('navigation', () async {
-///     final r = ShqlTestRunner.withExpect(expect);
-///     await r.setUp();
-///     await r.loadFile('assets/shql/navigation.shql');
-///     await r.eval(r"""
+///   late ShqlTestRunner h;
+///   setUp(() async {
+///     h = ShqlTestRunner.withExpect(expect);
+///     await h.setUp();
+///     await h.loadFile('assets/shql/navigation.shql');
+///   });
+///
+///   test('GO_TO pushes route', () async {
+///     await h.test(r"""
 ///       Nav.GO_TO('heroes');
-///       EXPECT("Nav.navigation_stack[LENGTH(Nav.navigation_stack) - 1]", 'heroes');
+///       ASSERT_CONTAINS(Nav.navigation_stack, 'heroes');
 ///     """);
 ///   });
 /// }
@@ -92,9 +96,9 @@ class ShqlTestRunner {
     );
   }
 
-  /// Execute SHQL code (may contain EXPECT/ASSERT calls).
-  Future<dynamic> eval(String expr, {Map<String, dynamic>? boundValues}) =>
-      _exec(expr, boundValues: boundValues);
+  /// Execute SHQL™ code (may contain EXPECT/ASSERT calls).
+  Future<dynamic> test(String code, {Map<String, dynamic>? boundValues}) =>
+      _exec(code, boundValues: boundValues);
 
   /// Load and execute a `.shql` file.
   Future<void> loadFile(String path) async {

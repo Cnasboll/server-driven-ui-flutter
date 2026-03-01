@@ -157,7 +157,7 @@ Heroes := OBJECT{
     RECONCILE_UPDATE: (__old, __opaque, __status, __log_msg) => BEGIN
         ON_HERO_REMOVED(__old);
         Cards.REMOVE_CACHED_CARD(__old.ID);
-        __new := _RECONCILE_PERSIST(__opaque);
+        __new := _PERSIST_HERO(__opaque);
         IF __new <> null THEN BEGIN
             ON_HERO_ADDED(__new);
             Cards.CACHE_HERO_CARD(__new);
@@ -243,7 +243,7 @@ Heroes := OBJECT{
     -- Dart callbacks:
     --   _INIT_RECONCILE → bool (acquires HeroService)
     --   _RECONCILE_FETCH(heroId) → {found, has_diff, diff_text, resolution_logs, updated_hero (opaque)}
-    --   _RECONCILE_PERSIST(opaqueHeroModel) → SHQL Object (persists + maps)
+    --   _PERSIST_HERO(opaqueHeroModel) → SHQL Object (persists + maps)
     --   _RECONCILE_DELETE(heroId) → void (DB delete)
     --   _RECONCILE_PROMPT(text) → action string
     --   _FINISH_RECONCILE → void (cleanup)
@@ -372,7 +372,7 @@ Heroes := OBJECT{
     GET_HERO_COUNT: () => LENGTH(heroes),
 
     -- Add newly saved hero to SHQL state, cache card, rebuild display.
-    -- Used by search after _SAVE_HERO persists to Dart/DB.
+    -- Used by search after _PERSIST_HERO persists to Dart/DB.
     PERSIST_AND_REBUILD: (__new) => BEGIN
         __old := heroes[__new.ID];
         IF __old <> null THEN ON_HERO_REMOVED(__old);

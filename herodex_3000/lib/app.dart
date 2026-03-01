@@ -11,7 +11,6 @@ import 'package:server_driven_ui/server_driven_ui.dart';
 
 import 'core/herodex_widget_registry.dart';
 import 'core/hero_coordinator.dart';
-import 'core/services/hero_search_service.dart';
 import 'core/services/http_client.dart' as http_client;
 import 'core/services/connectivity_service.dart';
 import 'core/services/firebase_auth_service.dart';
@@ -19,7 +18,9 @@ import 'core/services/firebase_service.dart';
 import 'core/services/location_service.dart';
 import 'core/theme/app_theme.dart';
 import 'core/theme/theme_cubit.dart';
-import 'widgets/conflict_resolver_dialog.dart' show ReviewAction;
+import 'package:hero_common/value_types/height.dart';
+import 'package:hero_common/value_types/weight.dart';
+import 'widgets/conflict_resolver_dialog.dart';
 import 'widgets/dialogs.dart' as dialogs;
 import 'package:hero_common/callbacks.dart';
 import 'package:hero_common/env/env.dart';
@@ -48,7 +49,6 @@ class _HeroDexAppState extends State<HeroDexApp> {
   late YamlUiEngine _yamlEngine;
   late HeroDataManaging _heroDataManager;
   late HeroCoordinator _coordinator;
-  late HeroSearchService _searchService;
   late GoRouter _router;
   ConnectivityService? _connectivityService;
   HeroServicing? _heroService;
@@ -269,15 +269,15 @@ class _HeroDexAppState extends State<HeroDexApp> {
           }
           return null;
         },
-        '_FETCH_HEROES': (query) async {
+        '_SEARCH_HEROES': (query) async {
           if (query is String && query.isNotEmpty) {
-            return await _searchService.fetchHeroes(query);
+            return await _coordinator.searchHeroes(query);
           }
           return null;
         },
-        '_GET_SAVED_ID': (hero) => _searchService.getSavedId(hero),
-        '_SAVE_HERO': (hero) => _searchService.saveHero(hero),
-        '_MAP_HERO': (hero) => _searchService.mapHero(hero),
+        '_GET_SAVED_ID': (hero) => _coordinator.getSavedId(hero),
+        '_PERSIST_HERO': (hero) => _coordinator.persistAndMap(hero),
+        '_MAP_HERO': (hero) => _coordinator.mapHero(hero),
         '_HERO_DATA_TOGGLE_LOCK': (heroId) {
           if (heroId is String) return _coordinator.heroDataToggleLock(heroId);
           return null;
@@ -286,7 +286,6 @@ class _HeroDexAppState extends State<HeroDexApp> {
           if (heroId is String) return await _coordinator.reconcileFetch(heroId);
           return null;
         },
-        '_RECONCILE_PERSIST': (hero) => _coordinator.reconcilePersist(hero),
         '_RECONCILE_DELETE': (heroId) {
           if (heroId is String) _coordinator.reconcileDelete(heroId);
           return null;
@@ -340,7 +339,7 @@ class _HeroDexAppState extends State<HeroDexApp> {
         '_REVIEW_HERO': (heroObj, current, total) async {
           final c = (current is int) ? current : int.tryParse(current.toString()) ?? 1;
           final t = (total is int) ? total : int.tryParse(total.toString()) ?? 1;
-          return await _searchService.reviewHero(heroObj, c, t);
+          return await _coordinator.reviewHero(heroObj, c, t);
         },
         '_EVAL_PREDICATE': (hero, pred, predicateText) async {
           final text = (predicateText is String) ? predicateText : '';
@@ -377,15 +376,16 @@ class _HeroDexAppState extends State<HeroDexApp> {
       heroServiceFactory: _getHeroService,
       filterCompiler: filterCompiler,
       showReconcileDialog: _showReconcileDialog,
+      showReviewHeroDialog: (hero, current, total) =>
+          dialogs.showHeroReviewDialog(_navigatorKey, hero, current, total),
       showSnackBar: _showSnackBar,
       onStateChanged: () { if (mounted) setState(() {}); },
     );
-
-    _searchService = HeroSearchService(
-      shqlBindings: _shqlBindings,
-      heroDataManager: _heroDataManager,
-      heroServiceFactory: _getHeroService,
-      navigatorKey: _navigatorKey,
+    _coordinator.searchHeightConflictResolver = FlutterConflictResolver<Height>(
+      (name, v, cv) => showConflictDialog(_navigatorKey, name, v, cv),
+    );
+    _coordinator.searchWeightConflictResolver = FlutterConflictResolver<Weight>(
+      (name, v, cv) => showConflictDialog(_navigatorKey, name, v, cv),
     );
 
     // Load SHQL™ libraries (order matters — each file may depend on the previous)

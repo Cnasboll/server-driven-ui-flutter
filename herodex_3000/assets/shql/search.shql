@@ -2,9 +2,9 @@
 -- Hero Search
 -- ============================================
 -- Dart callbacks (opaque HeroModel pattern):
---   _FETCH_HEROES(query) → {success, results: [opaque HeroModel...], error}
+--   _SEARCH_HEROES(query) → {success, results: [opaque HeroModel...], error}
 --   _GET_SAVED_ID(model) → internal ID if already saved, else null
---   _SAVE_HERO(model) → persist to DB + return SHQL Object
+--   _PERSIST_HERO(model) → persist to DB + return SHQL Object
 --   _MAP_HERO(model) → create SHQL Object without persisting
 --   _REVIEW_HERO(model, current, total) → action string
 Search := OBJECT{
@@ -42,8 +42,8 @@ Search := OBJECT{
     END,
 
     -- Search for heroes via API, then prompt to save unsaved results.
-    -- HeroModels returned by _FETCH_HEROES are opaque — SHQL holds them and
-    -- passes to _GET_SAVED_ID, _SAVE_HERO, _MAP_HERO, _REVIEW_HERO.
+    -- HeroModels returned by _SEARCH_HEROES are opaque — SHQL holds them and
+    -- passes to _GET_SAVED_ID, _PERSIST_HERO, _MAP_HERO, _REVIEW_HERO.
     SEARCH_HEROES: (query) => BEGIN
         IF LENGTH(query) < 2 THEN BEGIN
             SET_SEARCH_RESULTS([]);
@@ -60,7 +60,7 @@ Search := OBJECT{
         END;
 
         -- Call Dart to fetch + parse heroes (returns opaque HeroModels)
-        __result := _FETCH_HEROES(query);
+        __result := _SEARCH_HEROES(query);
 
         IF __result = null OR NOT __result.SUCCESS THEN BEGIN
             SET_SEARCH_STATE([], FALSE, IF __result <> null THEN __result.ERROR ELSE null);
@@ -127,7 +127,7 @@ Search := OBJECT{
             END;
 
             -- save or saveAll: persist + map (once)
-            __new_obj := _SAVE_HERO(__model);
+            __new_obj := _PERSIST_HERO(__model);
             IF __new_obj <> null THEN BEGIN
                 Heroes.PERSIST_AND_REBUILD(__new_obj);
                 __display := __display + [__new_obj];
