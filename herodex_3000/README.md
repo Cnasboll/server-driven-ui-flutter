@@ -72,7 +72,7 @@ Key SHQL™ patterns:
 ```
 herodex_3000/     — Flutter mobile app (this package)
   assets/screens/ — YAML screen definitions (7 screens)
-  assets/widgets/ — YAML widget templates (17 templates)
+  assets/widgets/ — YAML widget templates (19 templates)
   assets/shql/    — SHQL™ business logic + widget tree generation
 server_driven_ui/ — SDUI framework (YamlUiEngine, WidgetRegistry, ShqlBindings)
 shql/             — SHQL™ language engine (parser, runtime, execution)
@@ -109,12 +109,10 @@ SHQL™ drives **all** orchestration. Dart callbacks exist only for operations t
 │    │   ←── {found, has_diff, diff_text}                           ││
 │    ├── _RECONCILE_PROMPT(text) ──→ Dart: show dialog              ││
 │    │   ←── 'save'|'skip'|'saveAll'|'cancel'                      ││
-│    ├── _PERSIST_HERO(model) ──→ Dart: persist to DB               ││
-│    │   ←── {new_obj}                                              ││
-│    ├── _RECONCILE_DELETE(id) ──→ Dart: delete from DB             ││
-│    │   ←── (void)                                                 ││
-│    ├── RECONCILE_UPDATE(__hero, new_obj, ...) ─ SHQL state update ││
-│    ├── Cards.CACHE_HERO_CARD(new_obj) ─── SHQL card cache         ││
+│    ├── RECONCILE_UPDATE(hero, new_obj, ...) ─ SHQL state update   ││
+│    │   └── _PERSIST_HERO(model) ──→ Dart: persist to DB           ││
+│    ├── RECONCILE_DELETE(hero, status, msg) ─ SHQL state cleanup   ││
+│    │   └── _HERO_DELETE(id) ──→ Dart: DB delete                   ││
 │    └── _FINISH_RECONCILE ──→ Dart: cleanup transient state        ││
 │    └── FULL_REBUILD_AND_DISPLAY() ─── SHQL rebuild                ││
 │  ─────────────────────────────────────────────────────────────────┘│
@@ -123,14 +121,19 @@ SHQL™ drives **all** orchestration. Dart callbacks exist only for operations t
 │    │ __old := heroes[id]  (SHQL grabs old object)                  │
 │    ├── ON_HERO_REMOVED(__old) ─── SHQL state cleanup               │
 │    ├── Cards.REMOVE_CACHED_CARD(id) ─── SHQL                      │
-│    └── _HERO_DATA_DELETE(id) ──→ Dart: DB delete                   │
+│    ├── REBUILD_CARDS() ─── SHQL                                    │
+│    └── _HERO_DELETE(id) ──→ Dart: DB delete                        │
 │                                                                     │
 │  HeroEdit.SAVE_AMENDMENTS()                                        │
 │    │ __old := Heroes.heroes[id]  (SHQL grabs old object)           │
 │    ├── BUILD_AMENDMENT() ─── SHQL builds amendment map             │
-│    ├── _HERO_DATA_AMEND(id, amendment) ──→ Dart: apply + DB       │
+│    ├── ON_HERO_REMOVED(__old) ─── SHQL (remove old state)          │
+│    ├── Cards.REMOVE_CACHED_CARD(id) ─── SHQL                      │
+│    ├── _HERO_AMEND(id, amendment) ──→ Dart: apply + DB             │
 │    │   ←── {new_obj, id}                                           │
-│    ├── Heroes.PERSIST_AND_REBUILD(__old, new_obj) ─── SHQL        │
+│    ├── ON_HERO_ADDED(new_obj) ─── SHQL (add new state)             │
+│    ├── Cards.CACHE_HERO_CARD(new_obj) ─── SHQL card cache          │
+│    ├── REBUILD_CARDS() ─── SHQL                                    │
 │    └── Heroes.FINISH_AMEND(id) ─── SHQL nav back                  │
 │                                                                     │
 │  Prefs.__SAVE(key, value)                                           │
@@ -144,13 +147,12 @@ SHQL™ drives **all** orchestration. Dart callbacks exist only for operations t
 
 | Callback | Category | What it does |
 |----------|----------|-------------|
-| `_HERO_DATA_CLEAR` | DB | Clear all hero data |
-| `_HERO_DATA_DELETE(id)` | DB | Delete hero, return `external_id` |
-| `_HERO_DATA_AMEND(id, amendment)` | DB | Apply amendment, return `{new_obj, id}` |
-| `_HERO_DATA_TOGGLE_LOCK(id)` | DB | Toggle lock, return `{locked}` |
+| `_HERO_CLEAR` | DB | Clear all hero data |
+| `_HERO_DELETE(id)` | DB | Delete hero, return `external_id` |
+| `_HERO_AMEND(id, amendment)` | DB | Apply amendment, return `{new_obj, id}` |
+| `_HERO_TOGGLE_LOCK(id)` | DB | Toggle lock, return `{locked}` |
 | `_RECONCILE_FETCH(id)` | DB+Net | Fetch online data, diff, return result |
 | `_PERSIST_HERO(model)` | DB | Persist opaque HeroModel, return SHQL Object |
-| `_RECONCILE_DELETE(id)` | DB | Delete hero from DB |
 | `_INIT_RECONCILE` | Net | Acquire HeroService |
 | `_FINISH_RECONCILE` | Lifecycle | Cleanup transient reconcile state |
 | `_SEARCH_HEROES(query)` | Net | Search API, return opaque HeroModel list |
@@ -289,7 +291,7 @@ The shared `hero_common` package has 245+ tests covering models, predicates, JSO
 | `lib/persistence/sqflite_database_adapter.dart` | SQLite driver (FFI on desktop, native on mobile) |
 | `assets/shql/*.shql` | 12 SHQL™ scripts: auth, navigation, firestore, preferences, statistics, filters, heroes, hero_detail, hero_cards, search, hero_edit, world |
 | `assets/screens/*.yaml` | SDUI screen definitions (7 screens) |
-| `assets/widgets/*.yaml` | Reusable YAML widget templates (17 templates including login, dialogs, cards) |
+| `assets/widgets/*.yaml` | Reusable YAML widget templates (19 templates including login, dialogs, cards) |
 
 ## API
 

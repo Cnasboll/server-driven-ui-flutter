@@ -408,7 +408,6 @@ Heroes := OBJECT{
     END,
 
     -- Full startup: add heroes, compile+rebuild filters, populate card cache.
-    -- Single entry point replacing 3 consecutive Dart evals at startup.
     STARTUP: (__list) => BEGIN
         ON_HEROES_ADDED(__list);
         Filters.FULL_REBUILD();

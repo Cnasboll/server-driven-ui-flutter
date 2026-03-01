@@ -117,13 +117,17 @@ class ShqlBindings {
   bool isShqlObject(dynamic value) => value is Object;
 
   /// Convert an SHQL™ [Object] to a `Map<String, dynamic>`.
-  /// Only includes variable members (not user functions).
+  /// Only includes variable members (not user functions or self-references).
   Map<String, dynamic> objectToMap(dynamic obj) {
     if (obj is! Object) return {};
     final map = <String, dynamic>{};
     for (final entry in obj.variables.entries) {
       final name = _constantsSet.identifiers.constants[entry.key];
-      map[name.toLowerCase()] = entry.value.value;
+      final value = entry.value.value;
+      // Skip THIS self-reference (injected by ObjectLiteralNode) to avoid
+      // circular references when serializing.
+      if (value is Object && identical(value, obj)) continue;
+      map[name.toLowerCase()] = value;
     }
     return map;
   }
