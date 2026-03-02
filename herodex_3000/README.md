@@ -1,8 +1,8 @@
 # HeroDex 3000
 
-A superhero tracking app written entirely in **YAML** and **SHQL™** — not Dart.
+A superhero tracking app built in **YAML** and **SHQL™**.
 
-Every screen, every dialog, every reusable widget is a YAML template. All business logic — filtering, searching, statistics, dynamic widget tree generation — is SHQL™. Flutter is the rendering engine underneath, but the application itself is written in a language layer above it. Dart appears only in the framework interpreter (`server_driven_ui/`, `shql/`) and at the boundary with third-party native libraries (`CachedNetworkImage`, `FlutterMap`).
+Every screen, every dialog, every reusable widget is a YAML template. All business logic — filtering, searching, statistics, dynamic widget tree generation — is SHQL™. Flutter is the rendering engine underneath, but the application itself is written in a language layer above it. Dart appears only in the framework interpreter (`server_driven_ui/`, `shql/`) and in four thin widget factories at the boundary with third-party rendering libraries (`CachedNetworkImage`, `FlutterMap`, `TileLayer`, `MarkerLayer`).
 
 ## Architecture
 
@@ -54,7 +54,7 @@ SHQL™ needs native Dart callbacks only for platform operations (displaying a d
 It runs inside a `Runtime` with a `ConstantsSet` (interned identifiers).
 
 - **`shql/`** — The language engine: parser, tokenizer, execution nodes, runtime
-- **`assets/shql/`** — 12 cohesive SHQL™ scripts, each owning one concern: `auth` (Firebase Auth), `navigation` (route stack), `firestore` (Firestore sync), `preferences` (theme/onboarding/API config), `statistics` (running totals), `filters` (predicates & CRUD), `heroes` (collection state), `hero_detail` (detail view), `hero_cards` (card generation), `search` (API search), `hero_edit` (edit form), `world` (weather/map/war status)
+- **`assets/shql/`** — 12 cohesive SHQL™ scripts, each owning one concern: `auth` (Firebase Auth), `navigation` (route stack), `firestore` (Firestore sync), `preferences` (theme/onboarding/API config), `statistics` (lazy cached stats), `filters` (predicates & CRUD), `heroes` (collection state), `hero_detail` (detail view), `hero_cards` (card generation), `search` (API search), `hero_edit` (edit form), `world` (weather/map/war status)
 - **`shql/assets/stdlib.shql`** — Standard library (SET, LOAD_STATE, SAVE_STATE, etc.)
 
 Key SHQL™ patterns:
@@ -186,7 +186,10 @@ _ON_PREF_CHANGED: (key, value) => BEGIN
     IF key = 'is_dark_mode' THEN _SET_DARK_MODE(value)              -- → Dart: ThemeCubit
     ELSE IF key = 'analytics_enabled' THEN _SET_ANALYTICS(value)    -- → Dart: Firebase
     ELSE IF key = 'crashlytics_enabled' THEN _SET_CRASHLYTICS(value)
-    ELSE IF key = 'location_enabled' THEN _GET_LOCATION(value)      -- → Dart: GPS
+    ELSE IF key = 'location_enabled' THEN BEGIN
+        __loc := _GET_LOCATION(value);                               -- → Dart: GPS
+        World.SET_LOCATION(__loc.DESCRIPTION, __loc.LATITUDE, __loc.LONGITUDE);
+    END
     ELSE IF key = 'api_key' OR key = 'api_host' THEN _REFRESH_HERO_SERVICE(null);
 END,
 ```
@@ -257,7 +260,7 @@ You can also set the API key later in **Settings > API Configuration**.
 | **API response caching** | Same-day dedup: identical search queries return cached results |
 | **Location services** | `LocationService` with `geolocator` + `permission_handler` |
 | **Filter predicates** | User-defined SHQL™ predicates (Heroes, Villains, Giants + custom) |
-| **Statistical functions** | `Stats.height_avg`, `Stats.height_stdev` etc. — running O(1) statistics for computed filter predicates |
+| **Statistical functions** | `Stats.AVG_HEIGHT()`, `Stats.STDEV_HEIGHT()` etc. — lazily cached statistics invalidated on hero mutations and recomputed on first accessor call |
 | **Hero amendments** | Edit hero stats/biography, locks from reconciliation |
 | **Reconciliation** | Sync saved heroes with online API, diff-based updates |
 | **Search history** | Persisted search history with ActionChip replay |
@@ -273,13 +276,13 @@ flutter test
 ```
 
 Tests cover:
-- Full SHQL™ orchestration: 262 tests covering all SHQL™ scripts, Dart callbacks, YAML expression coverage, reconciliation, filters, amendments, search (`shql_orchestration_test.dart`)
+- Full SHQL™ orchestration: 285 tests covering all SHQL™ scripts, Dart callbacks, YAML expression coverage, reconciliation, filters, amendments, search (`shql_orchestration_test.dart`)
 - Database operations (`db_test.dart`)
 - Connectivity service (`connectivity_service_test.dart`)
 - SHQL™-generated hero card widget trees (`hero_card_test.dart`)
 - Splash screen rendering (`widget_test.dart`)
 
-The shared packages have 340+ tests: `shql/` engine (272 tests covering parser, tokenizer, runtime, execution) and `hero_common/` (70 tests covering models, predicates, JSON parsing, sorting, amendments).
+The shared packages have 350+ tests: `shql/` engine (282 tests covering parser, tokenizer, runtime, execution) and `hero_common/` (70 tests covering models, predicates, JSON parsing, sorting, amendments).
 
 ## Key Files
 
