@@ -123,6 +123,7 @@ screen:
                                 hintText: "Your superheroapi.com API key"
                                 border: "outline"
                                 prefixIcon: "vpn_key"
+                              onChanged: "shql: Prefs.SET_API_KEY(value)"
                               onSubmitted: "shql: Prefs.SET_API_KEY(value)"
 
                       - type: SizedBox
@@ -139,6 +140,7 @@ screen:
                               decoration:
                                 hintText: "www.superheroapi.com"
                                 border: "outline"
+                              onChanged: "shql: Prefs.SET_API_HOST(value)"
                               onSubmitted: "shql: Prefs.SET_API_HOST(value)"
 
                       - type: SizedBox

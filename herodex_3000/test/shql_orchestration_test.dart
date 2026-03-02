@@ -2822,7 +2822,9 @@ void main() {
   const onboardingExprs = [
     'Prefs.api_key',
     'Prefs.SET_API_KEY(value)',
+    'Prefs.SET_API_KEY(value)',
     'Prefs.api_host',
+    'Prefs.SET_API_HOST(value)',
     'Prefs.SET_API_HOST(value)',
     'Prefs.analytics_enabled',
     'Prefs.SET_ANALYTICS_CONSENT(value)',

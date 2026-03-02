@@ -453,9 +453,14 @@ class HeroCoordinator {
 
   /// Full startup: loads all heroes from DB, adds them to SHQL™ state,
   /// compiles and rebuilds filters, populates card cache — one SHQL™ eval.
+  /// Always compiles filters even with an empty DB so that filter lambdas
+  /// are ready when the first hero is saved via search.
   Future<void> startup() async {
     final allHeroes = _heroDataManager.heroes;
-    if (allHeroes.isEmpty) return;
+    if (allHeroes.isEmpty) {
+      await _shqlBindings.eval('Filters.FULL_REBUILD()');
+      return;
+    }
     final objects = HeroShqlAdapter.heroesToShqlList(
       allHeroes, _shqlBindings.identifiers,
     );
