@@ -428,6 +428,7 @@ class HeroModel extends Amendable<HeroModel> {
     "Locked",
     "Whether the hero is locked and not synchronized with the server",
     sqliteGetter: (h) => h.locked ? 1 : 0,
+    shqlGetter: (h) => h.locked,
     assignedBySystem: true,
     comparable: false,
   );

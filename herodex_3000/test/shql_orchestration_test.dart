@@ -659,6 +659,60 @@ void main() {
       expect(heroDataManager.heroes, hasLength(1));
     });
 
+    test('RECONCILE_HEROES skips locked heroes (amendment sets lock)',
+        () async {
+      // Add Batman, then amend via Dart to lock him
+      final batman = await addHero('69');
+      final hero = heroDataManager.getById(batman.id)!;
+      final amended = await hero.amendWith({'name': 'Batman (Amended)'});
+      heroDataManager.persist(amended);
+      expect(amended.locked, true);
+
+      // Replace the SHQL object with one built from the amended (locked) model
+      final lockedObj = HeroShqlAdapter.heroToShqlObject(
+          amended, shqlBindings.identifiers);
+      await h.test(r'''
+        Heroes.ON_HERO_REMOVED(Heroes.heroes[__id]);
+        Heroes.ON_HERO_ADDED(__locked);
+        Cards.CACHE_HERO_CARD(__locked);
+        EXPECT(Heroes.heroes[__id].LOCKED, TRUE)
+      ''', boundValues: {'__id': batman.id, '__locked': lockedObj});
+
+      // Now reconcile — Batman has a diff online but is locked
+      h.mockUnary('_RECONCILE_FETCH', (heroId) async {
+        return shqlBindings.mapToObject({
+          'found': true,
+          'apply_error': null,
+          'has_diff': true,
+          'diff_text': 'Name: Batman → Batman (Online)',
+          'resolution_logs': <dynamic>[],
+          'conflict_count': 0,
+          'updated_hero': heroDataManager.getById(batman.id),
+        });
+      });
+
+      await h.test(r'''
+        CLEAR_CALL_LOG();
+        Heroes.RECONCILE_HEROES();
+
+        -- Hero still exists and is unchanged (reconciliation skipped it)
+        EXPECT(Heroes.total_heroes, 1);
+        ASSERT(Heroes.heroes[__id] <> null);
+
+        -- _PERSIST_HERO should NOT have been called (hero was skipped)
+        ASSERT_NOT_CALLED('_PERSIST_HERO');
+
+        -- Reconcile state cleaned up
+        ASSERT(NOT Heroes.reconcile_active);
+
+        -- Summary should mention locked skip
+        ASSERT_CALLED('_SHOW_SNACKBAR')
+      ''', boundValues: {'__id': batman.id});
+
+      // DB: hero name still amended, not overwritten by reconciliation
+      expect(heroDataManager.getById(batman.id)!.name, 'Batman (Amended)');
+    });
+
     test('ABORT_RECONCILE sets aborted flag and snackbar says "aborted"',
         () async {
       await addHero('69');
