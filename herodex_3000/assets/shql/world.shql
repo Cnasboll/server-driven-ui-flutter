@@ -19,10 +19,31 @@ World := OBJECT{
     END,
 
     -- Set location description and optionally coordinates in one call.
+    -- Persists coords so INIT_LOCATION can restore them on cold start.
     SET_LOCATION: (__desc, __lat, __lon) => BEGIN
         SET_LOCATION_DESCRIPTION(__desc);
-        IF __lat <> null AND __lon <> null THEN
+        IF __lat <> null AND __lon <> null THEN BEGIN
             SET_USER_COORDINATES(__lat, __lon);
+            SAVE_STATE('world_latitude', __lat);
+            SAVE_STATE('world_longitude', __lon);
+            SAVE_STATE('world_location_desc', __desc);
+        END;
+    END,
+
+    -- Called at startup instead of replaying _ON_PREF_CHANGED('location_enabled').
+    -- Restores persisted coords if available; fetches fresh only on first consent.
+    INIT_LOCATION: (__enabled) => BEGIN
+        IF NOT __enabled THEN RETURN;
+        __lat := LOAD_STATE('world_latitude', null);
+        __lon := LOAD_STATE('world_longitude', null);
+        __desc := LOAD_STATE('world_location_desc', '');
+        IF __lat <> null AND __lon <> null THEN BEGIN
+            SET_LOCATION(__desc, __lat, __lon);
+            RETURN;
+        END;
+        -- No persisted coords — first time consent given. Fetch fresh.
+        __loc := _GET_LOCATION(TRUE);
+        SET_LOCATION(__loc.DESCRIPTION, __loc.LATITUDE, __loc.LONGITUDE);
     END,
 
     -- Generate the complete battle map widget tree (FlutterMap + markers).

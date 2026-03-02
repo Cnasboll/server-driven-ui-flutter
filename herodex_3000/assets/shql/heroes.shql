@@ -97,9 +97,7 @@ Heroes := OBJECT{
     -- Abort an in-progress reconciliation (checked each iteration by Dart)
     ABORT_RECONCILE: () => SET_RECONCILE_ABORTED(TRUE),
 
-    -- Notify YAML Observers that watch hero/filter/stats variables.
-    -- Stats.total_fighting_power is already published by Stats.SET_TOTAL_FIGHTING_POWER
-    -- called from DERIVE_STATS inside STATS_HERO_ADDED/REMOVED.
+    -- Notify YAML Observers that watch hero count variables.
     __NOTIFY_HERO_STATE: () => BEGIN
         SET_HEROES(heroes);
         SET_TOTAL_HEROES(total_heroes);
@@ -112,20 +110,21 @@ Heroes := OBJECT{
                 ON_HERO_ADDED(__list[__i]);
     END,
 
-    -- Hero added to collection. Updates heroes map and running stats.
-    -- Filter maps are rebuilt at the end of each top-level operation.
+    -- Hero added to collection. Invalidates stats cache — recomputed lazily
+    -- on next filter rebuild. Filter maps are rebuilt at the end of each
+    -- top-level operation.
     ON_HERO_ADDED: (__hero) => BEGIN
         heroes[__hero.ID] := __hero;
         total_heroes := LENGTH(heroes);
-        Stats.STATS_HERO_ADDED(__hero);
+        Stats.INVALIDATE();
         __NOTIFY_HERO_STATE();
     END,
 
-    -- Hero removed from collection. Updates heroes map and running stats.
+    -- Hero removed from collection. Invalidates stats cache.
     ON_HERO_REMOVED: (__hero) => BEGIN
         MAP_REMOVE(heroes, __hero.ID);
         total_heroes := LENGTH(heroes);
-        Stats.STATS_HERO_REMOVED(__hero);
+        Stats.INVALIDATE();
         __NOTIFY_HERO_STATE();
     END,
 
@@ -165,12 +164,12 @@ Heroes := OBJECT{
         SET_STATUS_AND_LOG(__status, __log_msg, FALSE, FALSE);
     END,
 
-    -- Clear all heroes. Resets heroes map, stats, and card cache.
+    -- Clear all heroes. Resets heroes map, invalidates stats cache, and card cache.
     -- Filter maps are rebuilt by the caller (e.g. CLEAR_ALL_DATA).
     ON_HERO_CLEAR: () => BEGIN
         heroes := {};
         total_heroes := 0;
-        Stats.STATS_CLEAR();
+        Stats.INVALIDATE();
         __NOTIFY_HERO_STATE();
         Cards.CLEAR_CARD_CACHE();
         SET_HERO_CARDS([]);
@@ -182,13 +181,15 @@ Heroes := OBJECT{
         PUBLISH('Heroes.selected_hero');
     END,
 
-    -- Toggle lock: Dart DB toggle + SHQL state update + card rebuild.
+    -- Toggle lock: Dart DB toggle + SHQL state update + filter + card rebuild.
     -- _HERO_TOGGLE_LOCK(id) does model toggle + DB persist, returns {locked: bool}.
+    -- Filter rebuild is required: a "locked" predicate filter must reflect the change.
     TOGGLE_LOCK: (__id) => BEGIN
         __result := _HERO_TOGGLE_LOCK(__id);
         IF __result = null THEN RETURN;
         __SET_LOCKED(__id, __result.LOCKED);
         Cards.CACHE_HERO_CARD(heroes[__id]);
+        Filters.REBUILD_ALL_FILTERS();
         REBUILD_CARDS();
         _SHOW_SNACKBAR(IF __result.LOCKED THEN 'Hero locked — reconciliation skipped' ELSE 'Hero unlocked — reconciliation enabled');
     END,
@@ -390,17 +391,6 @@ Heroes := OBJECT{
     RECONCILE_CURRENT_LABEL: () => 'Reconciling: ' + reconcile_current,
     RECONCILE_LOG_TYPE: () => IF LENGTH(reconcile_log) > 0 THEN 'ListView' ELSE 'Center',
     HERO_COUNT_LABEL: () => STRING(GET_HERO_COUNT()) + ' characters registered',
-
-    -- Add newly saved hero to SHQL state, cache card, rebuild display.
-    -- Used by search after _PERSIST_HERO persists to Dart/DB.
-    PERSIST_AND_REBUILD: (__new) => BEGIN
-        __old := heroes[__new.ID];
-        IF __old <> null THEN ON_HERO_REMOVED(__old);
-        ON_HERO_ADDED(__new);
-        Cards.CACHE_HERO_CARD(__new);
-        Filters.REBUILD_ALL_FILTERS();
-        REBUILD_CARDS();
-    END,
 
     -- Full filter rebuild + card rebuild — one call from Dart.
     FULL_REBUILD_AND_DISPLAY: () => BEGIN

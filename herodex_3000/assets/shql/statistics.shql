@@ -1,78 +1,67 @@
 -- ============================================
 -- Hero Statistics
 -- ============================================
--- Running totals for O(1) avg/stdev derivation
+-- All stats are lazily cached: null = invalid, recomputed on first accessor
+-- call after INVALIDATE(). INVALIDATE() is called on every hero mutation —
+-- it is cheap (three null assignments) and safe to call in loops.
+-- Stats are a pure compute layer: no PUBLISH, no eager maintenance.
+-- UI Observers watch hero-level events (Heroes.total_heroes, Heroes.heroes)
+-- and call stat accessors as expressions to get fresh values.
+
+-- Capture STATS() before Stats := OBJECT{} shadows it.
+-- SHQL identifiers are case-insensitive: STATS === Stats, so the assignment
+-- below would overwrite the STATS stdlib function.  We keep a private alias.
+_STATS_FN := STATS;
+
 Stats := OBJECT{
-    height_total: 0,
-    height_sq_total: 0,
-    height_count: 0,
-    weight_total: 0,
-    weight_sq_total: 0,
-    weight_count: 0,
+    -- Cached stats objects (null = invalid, recomputed lazily on first access).
+    _height_stats: null,
+    _weight_stats: null,
+    _power_stats:  null,
 
-    -- Running total: sum of strength across all heroes
-    total_fighting_power: 0,
-
-    -- Derived statistics (recomputed from running totals via DERIVE_STATS)
-    height_avg: 0,
-    height_stdev: 0,
-    weight_avg: 0,
-    weight_stdev: 0,
-
-    SET_TOTAL_FIGHTING_POWER: (value) => BEGIN
-        total_fighting_power := value;
-        PUBLISH('Stats.total_fighting_power');
+    -- Invalidate all caches. Call after any hero mutation.
+    INVALIDATE: () => BEGIN
+        _height_stats := null;
+        _weight_stats := null;
+        _power_stats  := null;
     END,
 
-    -- Derive avg and stdev from running totals. O(1).
-    -- avg = total/count, stdev = sqrt(E[X²] - E[X]²)
-    DERIVE_STATS: () => BEGIN
-        height_avg := IF height_count = 0 THEN 0 ELSE height_total / height_count;
-        __hvar := IF height_count = 0 THEN 0 ELSE height_sq_total / height_count - height_avg * height_avg;
-        height_stdev := IF __hvar <= 0 THEN 0 ELSE POW(__hvar, 0.5);
-        weight_avg := IF weight_count = 0 THEN 0 ELSE weight_total / weight_count;
-        __wvar := IF weight_count = 0 THEN 0 ELSE weight_sq_total / weight_count - weight_avg * weight_avg;
-        weight_stdev := IF __wvar <= 0 THEN 0 ELSE POW(__wvar, 0.5);
-        SET_TOTAL_FIGHTING_POWER(total_fighting_power);
+    -- Lazy height stats — two-pass via STATS().
+    _ENSURE_HEIGHT: () => BEGIN
+        IF _height_stats <> null THEN RETURN;
+        _height_stats := _STATS_FN(MAP_VALUES(Heroes.heroes), h => HEIGHT_M(h, null));
     END,
 
-    -- Adjust running totals by sign (+1 = add, -1 = remove). O(1).
-    __ADJUST: (__hero, __sign) => BEGIN
-        __ht := HEIGHT_M(__hero, null);
-        IF __ht <> null THEN BEGIN
-            height_total := height_total + __sign * __ht;
-            height_sq_total := height_sq_total + __sign * __ht * __ht;
-            height_count := height_count + __sign;
-        END;
-        __wt := WEIGHT_KG(__hero, null);
-        IF __wt <> null THEN BEGIN
-            weight_total := weight_total + __sign * __wt;
-            weight_sq_total := weight_sq_total + __sign * __wt * __wt;
-            weight_count := weight_count + __sign;
-        END;
-        total_fighting_power := total_fighting_power + __sign * POWERSTATS(__hero, p => p.strength, 0);
-        DERIVE_STATS();
+    -- Lazy weight stats — two-pass via STATS().
+    _ENSURE_WEIGHT: () => BEGIN
+        IF _weight_stats <> null THEN RETURN;
+        _weight_stats := _STATS_FN(MAP_VALUES(Heroes.heroes), h => WEIGHT_KG(h, null));
     END,
 
-    STATS_HERO_ADDED: (__hero) => __ADJUST(__hero, 1),
-    STATS_HERO_REMOVED: (__hero) => __ADJUST(__hero, -1),
-
-    -- Incremental: hero replaced (amend/update). O(1).
-    STATS_HERO_REPLACED: (__old, __new) => BEGIN
-        STATS_HERO_REMOVED(__old);
-        STATS_HERO_ADDED(__new);
+    -- Lazy fighting power — single-pass SUM().
+    _ENSURE_POWER: () => BEGIN
+        IF _power_stats <> null THEN RETURN;
+        _power_stats := OBJECT{
+            total: SUM(MAP_VALUES(Heroes.heroes), h => POWERSTATS(h, p => p.strength, 0))
+        };
     END,
 
-    -- Reset all running totals to zero. For clear-all-data.
-    STATS_CLEAR: () => BEGIN
-        height_total := 0;
-        height_sq_total := 0;
-        height_count := 0;
-        weight_total := 0;
-        weight_sq_total := 0;
-        weight_count := 0;
-        total_fighting_power := 0;
-        DERIVE_STATS();
-    END
+    -- Height accessors.
+    AVG_HEIGHT:   () => BEGIN _ENSURE_HEIGHT(); RETURN _height_stats.AVG;   END,
+    STDEV_HEIGHT: () => BEGIN _ENSURE_HEIGHT(); RETURN _height_stats.STDEV; END,
+    MIN_HEIGHT:   () => BEGIN _ENSURE_HEIGHT(); RETURN _height_stats.MIN;   END,
+    MAX_HEIGHT:   () => BEGIN _ENSURE_HEIGHT(); RETURN _height_stats.MAX;   END,
+    COUNT_HEIGHT: () => BEGIN _ENSURE_HEIGHT(); RETURN _height_stats.COUNT; END,
+    SUM_HEIGHT:   () => BEGIN _ENSURE_HEIGHT(); RETURN _height_stats.SUM;   END,
+
+    -- Weight accessors.
+    AVG_WEIGHT:   () => BEGIN _ENSURE_WEIGHT(); RETURN _weight_stats.AVG;   END,
+    STDEV_WEIGHT: () => BEGIN _ENSURE_WEIGHT(); RETURN _weight_stats.STDEV; END,
+    MIN_WEIGHT:   () => BEGIN _ENSURE_WEIGHT(); RETURN _weight_stats.MIN;   END,
+    MAX_WEIGHT:   () => BEGIN _ENSURE_WEIGHT(); RETURN _weight_stats.MAX;   END,
+    COUNT_WEIGHT: () => BEGIN _ENSURE_WEIGHT(); RETURN _weight_stats.COUNT; END,
+    SUM_WEIGHT:   () => BEGIN _ENSURE_WEIGHT(); RETURN _weight_stats.SUM;   END,
+
+    -- Total fighting power accessor.
+    TOTAL_FIGHTING_POWER: () => BEGIN _ENSURE_POWER(); RETURN _power_stats.TOTAL; END
 };
-

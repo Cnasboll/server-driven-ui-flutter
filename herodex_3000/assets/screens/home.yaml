@@ -123,11 +123,11 @@ screen:
                   content:
                     type: Observer
                     props:
-                      query: "Stats.total_fighting_power"
+                      query: "Stats"
                       builder:
                         type: AnimatedNumber
                         props:
-                          value: "shql: Stats.total_fighting_power"
+                          value: "shql: Stats.TOTAL_FIGHTING_POWER()"
                           fontSize: 36
                           fontWeight: "bold"
                           color: "0xFFFF9800"

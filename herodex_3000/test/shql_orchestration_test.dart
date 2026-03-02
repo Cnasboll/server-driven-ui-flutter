@@ -347,8 +347,8 @@ void main() {
       await h.test(r'''
         EXPECT(Heroes.total_heroes, 1);
         ASSERT(Heroes.heroes[__id] <> null);
-        ASSERT(Stats.height_count > 0);
-        ASSERT(Stats.total_fighting_power > 0);
+        ASSERT(Stats.COUNT_HEIGHT() > 0);
+        ASSERT(Stats.TOTAL_FIGHTING_POWER() > 0);
         ASSERT(Cards.card_cache[__id] <> null)
       ''', boundValues: {'__id': batman.id});
     });
@@ -361,8 +361,8 @@ void main() {
         Heroes.DELETE_HERO(__id);
         EXPECT(Heroes.total_heroes, 0);
         ASSERT(Heroes.heroes[__id] = null);
-        EXPECT(Stats.height_count, 0);
-        EXPECT(Stats.total_fighting_power, 0);
+        EXPECT(Stats.COUNT_HEIGHT(), 0);
+        EXPECT(Stats.TOTAL_FIGHTING_POWER(), 0);
         EXPECT(LENGTH(Filters.displayed_heroes), 0);
         ASSERT(Cards.card_cache[__id] = null);
         ASSERT_CALLED('_HERO_DELETE')
@@ -396,8 +396,8 @@ void main() {
         Heroes.ON_HERO_CLEAR();
         EXPECT(Heroes.total_heroes, 0);
         EXPECT(LENGTH(Heroes.heroes), 0);
-        EXPECT(Stats.height_count, 0);
-        EXPECT(Stats.total_fighting_power, 0)
+        EXPECT(Stats.COUNT_HEIGHT(), 0);
+        EXPECT(Stats.TOTAL_FIGHTING_POWER(), 0)
       ''');
     });
 
@@ -433,8 +433,8 @@ void main() {
       await addHero('644'); // Superman (has weight conflict — resolved by test)
       await h.test(r'''
         EXPECT(Heroes.total_heroes, 2);
-        ASSERT(Stats.height_count >= 2);
-        ASSERT(Stats.total_fighting_power > 0);
+        ASSERT(Stats.COUNT_HEIGHT() >= 2);
+        ASSERT(Stats.TOTAL_FIGHTING_POWER() > 0);
         Filters.REBUILD_ALL_FILTERS();
         EXPECT(LENGTH(Filters.displayed_heroes), 2)
       ''');
@@ -457,7 +457,7 @@ void main() {
       await h.test(r'''
         Heroes.ON_HEROES_ADDED([__h1, __h2]);
         EXPECT(Heroes.total_heroes, 2);
-        ASSERT(Stats.height_count >= 2);
+        ASSERT(Stats.COUNT_HEIGHT() >= 2);
         Filters.REBUILD_ALL_FILTERS();
         EXPECT(LENGTH(Filters.displayed_heroes), 2)
       ''', boundValues: {'__h1': hero1.obj, '__h2': hero2.obj});
@@ -493,8 +493,8 @@ void main() {
         Heroes.CLEAR_ALL_DATA();
         EXPECT(Heroes.total_heroes, 0);
         EXPECT(LENGTH(Heroes.heroes), 0);
-        EXPECT(Stats.height_count, 0);
-        EXPECT(Stats.total_fighting_power, 0);
+        EXPECT(Stats.COUNT_HEIGHT(), 0);
+        EXPECT(Stats.TOTAL_FIGHTING_POWER(), 0);
         EXPECT(LENGTH(Heroes.hero_cards), 0)
       ''');
       expect(heroDataManager.heroes, isEmpty);
@@ -606,7 +606,7 @@ void main() {
         EXPECT(Heroes.total_heroes, 0);
         ASSERT(Heroes.heroes[__id] = null);
         ASSERT(Cards.card_cache[__id] = null);
-        EXPECT(Stats.height_count, 0)
+        EXPECT(Stats.COUNT_HEIGHT(), 0)
       ''', boundValues: {'__id': batman.id});
     });
 
@@ -867,7 +867,7 @@ void main() {
         ASSERT('1 saved' IN Search.search_summary);
 
         -- Stats updated
-        ASSERT(Stats.height_count > 0);
+        ASSERT(Stats.COUNT_HEIGHT() > 0);
 
         -- Filters updated
         EXPECT(LENGTH(Filters.displayed_heroes), 1);
@@ -928,7 +928,7 @@ void main() {
         ASSERT_CALL_COUNT('_PERSIST_HERO', 2);
 
         -- Stats grew
-        ASSERT(Stats.height_count >= 2);
+        ASSERT(Stats.COUNT_HEIGHT() >= 2);
 
         -- Filters grew
         EXPECT(LENGTH(Filters.displayed_heroes), 2)
@@ -1027,7 +1027,7 @@ void main() {
 
         EXPECT(Heroes.total_heroes, 3);
         ASSERT('3 saved' IN Search.search_summary);
-        ASSERT(Stats.height_count >= 3);
+        ASSERT(Stats.COUNT_HEIGHT() >= 3);
         EXPECT(LENGTH(Filters.displayed_heroes), 3);
         ASSERT(LENGTH(Cards.card_cache) >= 3)
       ''');
@@ -1055,8 +1055,8 @@ void main() {
       await h.test(r'''
         Filters.FULL_REBUILD();
         EXPECT(Heroes.total_heroes, 5);
-        ASSERT(Stats.height_avg > 0);
-        ASSERT(Stats.height_stdev > 0);
+        ASSERT(Stats.AVG_HEIGHT() > 0);
+        ASSERT(Stats.STDEV_HEIGHT() > 0);
 
         -- Giants filter (index 2): nobody in it yet — all normal-height heroes
         EXPECT(Filters.GET_FILTER_COUNT(2), 0)
@@ -1076,8 +1076,8 @@ void main() {
         ASSERT(Filters.GET_FILTER_COUNT(2) >= 1);
 
         -- Height stats should be positive
-        ASSERT(Stats.height_avg > 0);
-        ASSERT(Stats.height_stdev > 0)
+        ASSERT(Stats.AVG_HEIGHT() > 0);
+        ASSERT(Stats.STDEV_HEIGHT() > 0)
       ''');
 
       expect(heroDataManager.heroes, hasLength(6));
@@ -1887,11 +1887,12 @@ void main() {
         __route := Prefs.APPLY_INIT_STATE();
         EXPECT(__route, 'onboarding')
       ''');
-      // Verify _ON_PREF_CHANGED was called for each preference
+      // Verify _ON_PREF_CHANGED was called for non-location prefs
+      // (location uses World.INIT_LOCATION, not _ON_PREF_CHANGED, on cold start)
       expect(prefChanges, contains('is_dark_mode=true'));
       expect(prefChanges, contains('analytics_enabled=true'));
       expect(prefChanges, contains('crashlytics_enabled=false'));
-      expect(prefChanges, contains('location_enabled=false'));
+      expect(prefChanges, isNot(contains('location_enabled=false')));
 
       await h.test(r'''
         Prefs.COMPLETE_ONBOARDING();
@@ -1959,85 +1960,86 @@ void main() {
       });
     }
 
-    test('STATS_HERO_ADDED updates running totals', () async {
+    test('ON_HERO_ADDED invalidates cache; lazy accessors compute fresh', () async {
       final hero =
           makeStatsHero('h1', 'Batman', heightM: 1.88, weightKg: 95.0, strength: 80);
       await h.test(r'''
-        Stats.STATS_HERO_ADDED(__h);
-        EXPECT(Stats.height_count, 1);
-        EXPECT(Stats.weight_count, 1);
-        EXPECT(Stats.total_fighting_power, 80);
-        EXPECT(Stats.height_total, 1.88)
+        Heroes.ON_HERO_ADDED(__h);
+        EXPECT(Stats.COUNT_HEIGHT(), 1);
+        EXPECT(Stats.COUNT_WEIGHT(), 1);
+        EXPECT(Stats.TOTAL_FIGHTING_POWER(), 80);
+        EXPECT(Stats.SUM_HEIGHT(), 1.88)
       ''', boundValues: {'__h': hero});
     });
 
-    test('DERIVE_STATS computes avg and stdev', () async {
+    test('lazy accessors compute avg and stdev from heroes map', () async {
       final h1 =
           makeStatsHero('h1', 'Hero1', heightM: 1.80, weightKg: 80.0, strength: 50);
       final h2 =
           makeStatsHero('h2', 'Hero2', heightM: 2.00, weightKg: 100.0, strength: 70);
 
       await h.test(r'''
-        Stats.STATS_HERO_ADDED(__h1);
-        Stats.STATS_HERO_ADDED(__h2);
-        EXPECT(Stats.total_fighting_power, 120);
-        ASSERT(Stats.height_avg > 1.89);
-        ASSERT(Stats.height_avg < 1.91);
-        ASSERT(Stats.height_stdev > 0)
+        Heroes.ON_HERO_ADDED(__h1);
+        Heroes.ON_HERO_ADDED(__h2);
+        EXPECT(Stats.TOTAL_FIGHTING_POWER(), 120);
+        ASSERT(Stats.AVG_HEIGHT() > 1.89);
+        ASSERT(Stats.AVG_HEIGHT() < 1.91);
+        ASSERT(Stats.STDEV_HEIGHT() > 0)
       ''', boundValues: {'__h1': h1, '__h2': h2});
     });
 
-    test('STATS_HERO_REMOVED decrements totals', () async {
+    test('ON_HERO_REMOVED removes hero from stats', () async {
       final hero =
           makeStatsHero('h1', 'Batman', heightM: 1.88, weightKg: 95.0, strength: 80);
       await h.test(r'''
-        Stats.STATS_HERO_ADDED(__h);
-        Stats.STATS_HERO_REMOVED(__h);
-        EXPECT(Stats.height_count, 0);
-        EXPECT(Stats.total_fighting_power, 0);
-        EXPECT(Stats.height_avg, 0)
+        Heroes.ON_HERO_ADDED(__h);
+        Heroes.ON_HERO_REMOVED(__h);
+        EXPECT(Stats.COUNT_HEIGHT(), 0);
+        EXPECT(Stats.TOTAL_FIGHTING_POWER(), 0);
+        EXPECT(Stats.AVG_HEIGHT(), 0)
       ''', boundValues: {'__h': hero});
     });
 
-    test('STATS_HERO_REPLACED is equivalent to remove + add', () async {
+    test('INVALIDATE + re-add gives correct stats', () async {
       final oldHero =
           makeStatsHero('h1', 'OldHero', heightM: 1.80, weightKg: 80.0, strength: 50);
       final newHero =
           makeStatsHero('h1', 'NewHero', heightM: 2.00, weightKg: 100.0, strength: 90);
 
       await h.test(r'''
-        Stats.STATS_HERO_ADDED(__old);
-        Stats.STATS_HERO_REPLACED(__old, __new);
-        EXPECT(Stats.height_count, 1);
-        EXPECT(Stats.total_fighting_power, 90);
-        ASSERT(Stats.height_avg > 1.99);
-        ASSERT(Stats.height_avg < 2.01)
+        Heroes.ON_HERO_ADDED(__old);
+        Heroes.ON_HERO_REMOVED(__old);
+        Heroes.ON_HERO_ADDED(__new);
+        EXPECT(Stats.COUNT_HEIGHT(), 1);
+        EXPECT(Stats.TOTAL_FIGHTING_POWER(), 90);
+        ASSERT(Stats.AVG_HEIGHT() > 1.99);
+        ASSERT(Stats.AVG_HEIGHT() < 2.01)
       ''', boundValues: {'__old': oldHero, '__new': newHero});
     });
 
-    test('STATS_CLEAR resets everything to zero', () async {
+    test('ON_HERO_CLEAR resets all stats to zero', () async {
       final hero =
           makeStatsHero('h1', 'Batman', heightM: 1.88, weightKg: 95.0, strength: 80);
       await h.test(r'''
-        Stats.STATS_HERO_ADDED(__h);
-        Stats.STATS_CLEAR();
-        EXPECT(Stats.height_count, 0);
-        EXPECT(Stats.height_total, 0);
-        EXPECT(Stats.weight_count, 0);
-        EXPECT(Stats.weight_total, 0);
-        EXPECT(Stats.total_fighting_power, 0);
-        EXPECT(Stats.height_avg, 0);
-        EXPECT(Stats.height_stdev, 0)
+        Heroes.ON_HERO_ADDED(__h);
+        Heroes.ON_HERO_CLEAR();
+        EXPECT(Stats.COUNT_HEIGHT(), 0);
+        EXPECT(Stats.SUM_HEIGHT(), 0);
+        EXPECT(Stats.COUNT_WEIGHT(), 0);
+        EXPECT(Stats.SUM_WEIGHT(), 0);
+        EXPECT(Stats.TOTAL_FIGHTING_POWER(), 0);
+        EXPECT(Stats.AVG_HEIGHT(), 0);
+        EXPECT(Stats.STDEV_HEIGHT(), 0)
       ''', boundValues: {'__h': hero});
     });
 
-    test('STATS_HERO_ADDED ignores null height/weight', () async {
+    test('hero with no height/weight excluded from height/weight stats', () async {
       final hero = makeStatsHero('h1', 'NoAppearance', strength: 50);
       await h.test(r'''
-        Stats.STATS_HERO_ADDED(__h);
-        EXPECT(Stats.height_count, 0);
-        EXPECT(Stats.weight_count, 0);
-        EXPECT(Stats.total_fighting_power, 50)
+        Heroes.ON_HERO_ADDED(__h);
+        EXPECT(Stats.COUNT_HEIGHT(), 0);
+        EXPECT(Stats.COUNT_WEIGHT(), 0);
+        EXPECT(Stats.TOTAL_FIGHTING_POWER(), 50)
       ''', boundValues: {'__h': hero});
     });
   });
@@ -2826,7 +2828,7 @@ void main() {
     'World.weather_description',
     'World.WEATHER_WIND_LABEL()',
     "Nav.GO_TO('heroes')",
-    'Stats.total_fighting_power',
+    'Stats.TOTAL_FIGHTING_POWER()',
     'World.GENERATE_BATTLE_MAP()',
     'Heroes.HERO_COUNT_LABEL()',
     'Nav.TAB_NAV(0, value)',
@@ -3135,7 +3137,7 @@ void main() {
     test('home.yaml: total_fighting_power observed', () async {
       final hero = await _persistFixtureHero(
           mockService, heroDataManager, shqlBindings, '69');
-      final expr = homeExprs[8]; // Stats.total_fighting_power
+      final expr = homeExprs[8]; // Stats.TOTAL_FIGHTING_POWER()
       await h.test('''
         Heroes.ON_HERO_ADDED(__h);
         ASSERT($expr > 0)

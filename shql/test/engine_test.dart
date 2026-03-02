@@ -1837,4 +1837,89 @@ GENERATE_SAVED_HEROES_CARDS()
       );
     });
   });
+
+  group('STATS() stdlib function', () {
+    late Runtime runtime;
+    late ConstantsSet constantsSet;
+
+    setUp(() async {
+      constantsSet = Runtime.prepareConstantsSet();
+      runtime = Runtime.prepareRuntime(constantsSet);
+      final stdlibCode = await File('assets/stdlib.shql').readAsString();
+      await Engine.execute(stdlibCode, runtime: runtime, constantsSet: constantsSet);
+    });
+
+    Future<dynamic> eval(String code) =>
+        Engine.execute(code, runtime: runtime, constantsSet: constantsSet);
+
+    test('returns zero object for empty list', () async {
+      final ok = await eval(r'''
+        __s := STATS([], x => x);
+        __s.COUNT = 0 AND __s.AVG = 0 AND __s.STDEV = 0 AND __s.SUM = 0
+      ''');
+      expect(ok, true);
+    });
+
+    test('avg of single value equals that value', () async {
+      expect(await eval('STATS([42], x => x).AVG'), 42);
+    });
+
+    test('stdev of single value is zero', () async {
+      expect(await eval('STATS([42], x => x).STDEV'), 0);
+    });
+
+    test('avg, sum, count of [2, 4, 6]', () async {
+      final ok = await eval(r'''
+        __s := STATS([2, 4, 6], x => x);
+        __s.AVG > 3.999 AND __s.AVG < 4.001 AND
+        __s.SUM > 11.999 AND __s.SUM < 12.001 AND
+        __s.COUNT = 3
+      ''');
+      expect(ok, true);
+    });
+
+    test('min and max of [2, 4, 6]', () async {
+      final ok = await eval(r'''
+        __s := STATS([2, 4, 6], x => x);
+        __s.MIN > 1.999 AND __s.MIN < 2.001 AND
+        __s.MAX > 5.999 AND __s.MAX < 6.001
+      ''');
+      expect(ok, true);
+    });
+
+    test('population stdev of [2, 4, 6] is sqrt(8/3)', () async {
+      final stdev = await eval('STATS([2, 4, 6], x => x).STDEV');
+      expect(stdev, closeTo(1.6329931618554521, 0.00001));
+    });
+
+    test('nulls are excluded from all calculations', () async {
+      final ok = await eval(r'''
+        __items := [OBJECT{v: 10}, OBJECT{v: null}, OBJECT{v: 20}];
+        __s := STATS(__items, x => x.V);
+        __s.AVG > 14.999 AND __s.AVG < 15.001 AND __s.COUNT = 2
+      ''');
+      expect(ok, true);
+    });
+
+    test('stdev of identical values is zero', () async {
+      expect(await eval('STATS([5, 5, 5, 5], x => x).STDEV'), 0);
+    });
+
+    test('accessor lambda extracts nested field', () async {
+      final avg = await eval(r'''
+        __people := [OBJECT{height: 1.6}, OBJECT{height: 1.8}, OBJECT{height: 2.0}];
+        STATS(__people, p => p.HEIGHT).AVG
+      ''');
+      expect(avg, closeTo(1.8, 0.0001));
+    });
+
+    test('all-null list returns zero count and zero avg', () async {
+      final ok = await eval(r'''
+        __items := [OBJECT{v: null}, OBJECT{v: null}];
+        __s := STATS(__items, x => x.V);
+        __s.COUNT = 0 AND __s.AVG = 0
+      ''');
+      expect(ok, true);
+    });
+  });
 }

@@ -131,13 +131,23 @@ Search := OBJECT{
                 END;
             END;
 
-            -- save or saveAll: persist + map (once)
+            -- save or saveAll: persist + add to SHQL state + cache card.
+            -- Filter/card rebuild is deferred to after the loop.
             __new_obj := _PERSIST_HERO(__model);
             IF __new_obj <> null THEN BEGIN
-                Heroes.PERSIST_AND_REBUILD(__new_obj);
+                __old := Heroes.heroes[__new_obj.ID];
+                IF __old <> null THEN Heroes.ON_HERO_REMOVED(__old);
+                Heroes.ON_HERO_ADDED(__new_obj);
+                Cards.CACHE_HERO_CARD(__new_obj);
                 __display := __display + [__new_obj];
             END;
             __save_count := __save_count + 1;
+        END;
+
+        -- One rebuild after the loop — not one per save.
+        IF __save_count > 0 THEN BEGIN
+            Filters.REBUILD_ALL_FILTERS();
+            Heroes.REBUILD_CARDS();
         END;
 
         SET_SEARCH_RESULTS(__display);
