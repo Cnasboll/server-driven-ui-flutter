@@ -11,14 +11,15 @@ _filter_lambdas := {};
 _DEFAULT_FILTERS := [
     OBJECT{name: "Heroes", predicate: "biography.alignment <= good"},
     OBJECT{name: "Villains", predicate: "biography.alignment > good"},
-    OBJECT{name: "Giants", predicate: "appearance.height.m > Stats.height_avg + 2 * Stats.height_stdev"},
-    OBJECT{name: "Dwarves", predicate: "appearance.height.m < Stats.height_avg - 2 * Stats.height_stdev"},
+    OBJECT{name: "Giants", predicate: "appearance.height.m > Stats.AVG_HEIGHT() + 2 * Stats.STDEV_HEIGHT()"},
+    OBJECT{name: "Dwarves", predicate: "appearance.height.m < Stats.AVG_HEIGHT() - 2 * Stats.STDEV_HEIGHT()"},
     OBJECT{name: "Red Heads", predicate: 'appearance.hair_colour ~ "red"'},
     OBJECT{name: "Obese", predicate: "appearance.weight.kg / POW(appearance.height.m, 2) >= 30"},
     OBJECT{name: "Strong Villains", predicate: "biography.alignment > reasonable AND powerstats.strength >= powerstats.intelligence*1.1"},
     OBJECT{name: "Dumb Villains", predicate: "biography.alignment >= bad AND powerstats.intelligence <= 50"},
     OBJECT{name: "Non-Males", predicate: "appearance.gender <> male"},
-    OBJECT{name: "Troglodytes", predicate: 'work.base ~ "cave"'}
+    OBJECT{name: "Troglodytes", predicate: 'work.base ~ "cave"'},
+    OBJECT{name: "Locked", predicate: "locked"}
 ];
 
 Filters := OBJECT{
@@ -82,23 +83,34 @@ Filters := OBJECT{
     END,
 
     -- Rebuild all filter result maps from scratch.
+    -- Stats are lazy: AVG_HEIGHT(), STDEV_HEIGHT() etc. compute on first call
+    -- and cache until INVALIDATE(). Results are built into locals and swapped
+    -- in atomically. PUBLISH('Stats') at the end fires Observers (e.g. total
+    -- fighting power) which then call their stat accessors lazily.
     REBUILD_ALL_FILTERS: () => BEGIN
         __hero_list := MAP_VALUES(Heroes.heroes);
-        filtered_heroes := [];
-        filter_counts := [];
+        __new_filtered := [];
+        __new_counts := [];
         DEBUG_LOG('[REBUILD] start: ' + STRING(LENGTH(filters)) + ' filters, ' + STRING(LENGTH(__hero_list)) + ' heroes');
+        IF LENGTH(filters) > 0 THEN
         FOR __i := 0 TO LENGTH(filters) - 1 DO BEGIN
             __predText := filters[__i].PREDICATE;
             __fname := filters[__i].NAME;
             __pred := IF __predText = '' OR __predText = null THEN null ELSE _filter_lambdas[__fname];
             DEBUG_LOG('[REBUILD]   [' + STRING(__i) + '] name="' + __fname + '" pred=' + IF __pred <> null THEN 'lambda' ELSE 'NULL' + ' predText="' + __predText + '"');
             __result := APPLY_PREDICATE(__hero_list, __pred, __predText);
-            filtered_heroes := filtered_heroes + [__result];
-            filter_counts := filter_counts + [LENGTH(__result)];
+            __new_filtered := __new_filtered + [__result];
+            __new_counts := __new_counts + [LENGTH(__result)];
             DEBUG_LOG('[REBUILD]   [' + STRING(__i) + '] name="' + __fname + '" count=' + STRING(LENGTH(__result)));
         END;
+        -- Atomic swap: publish only once both arrays are fully built.
+        filtered_heroes := __new_filtered;
+        filter_counts := __new_counts;
         SET_FILTER_COUNTS(filter_counts);
         UPDATE_DISPLAYED_HEROES();
+        -- Signal stat Observers (e.g. total fighting power). Lazy accessors
+        -- compute on demand when the Observer expression is evaluated.
+        PUBLISH('Stats');
         DEBUG_LOG('[REBUILD] done: counts=' + STRING(filter_counts));
     END,
 

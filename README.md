@@ -4,7 +4,7 @@ An abstraction layer on top of Flutter where applications are written in **YAML*
 
 YAML defines what the UI *looks like* — structure, layout, styling, composition. SHQL™ defines what the UI *does* — state, logic, data flow, navigation. Dart and Flutter serve as the runtime substrate: they render widgets, talk to SQLite, call Firebase, and handle platform I/O. You don't program *in* Flutter — Flutter is the engine underneath.
 
-The flagship app, **HeroDex 3000**, has zero Dart widget code. Every screen, every dialog, every reusable component is a YAML template. All business logic — filtering, searching, statistics, dynamic widget tree generation — is SHQL™. Dart appears only in the framework interpreter and at genuine third-party library boundaries (e.g. `CachedNetworkImage`, `FlutterMap`).
+The flagship app, **HeroDex 3000**, has its screens, dialogs, and reusable widgets defined as YAML templates and its business logic written in SHQL™. All business logic — filtering, searching, statistics, dynamic widget tree generation — is SHQL™. Dart appears only in the framework interpreter and at genuine third-party library boundaries (e.g. `CachedNetworkImage`, `FlutterMap`, `TileLayer`, `MarkerLayer`).
 
 ## The two layers
 
@@ -126,7 +126,7 @@ cd ../awesome_calculator && flutter run
 ## Testing
 
 ```bash
-# SHQL™ engine (272 tests — parser, tokenizer, runtime, execution)
+# SHQL™ engine (282 tests — parser, tokenizer, runtime, execution)
 cd shql && dart test
 
 # Shared models, predicates (70 tests)
@@ -135,7 +135,7 @@ cd hero_common && dart test
 # Console app (SQL generation, hero service, JSON parsing)
 cd v04 && dart test
 
-# Flutter app (262 orchestration tests + DB, connectivity, hero cards)
+# Flutter app (285 tests — orchestration, DB, connectivity, hero cards)
 cd herodex_3000 && flutter test
 ```
 

@@ -95,12 +95,15 @@ Prefs := OBJECT{
     END,
 
     -- Apply all initial preferences by calling _ON_PREF_CHANGED for each.
+    -- Location is handled separately via World.INIT_LOCATION — replaying
+    -- _ON_PREF_CHANGED('location_enabled', ...) on every cold start would
+    -- trigger a GPS fetch even when the consent has not changed.
     -- Returns the initial route ('home' or 'onboarding').
     APPLY_INIT_STATE: () => BEGIN
         _ON_PREF_CHANGED('is_dark_mode', is_dark_mode);
         _ON_PREF_CHANGED('analytics_enabled', analytics_enabled);
         _ON_PREF_CHANGED('crashlytics_enabled', crashlytics_enabled);
-        _ON_PREF_CHANGED('location_enabled', location_enabled);
+        World.INIT_LOCATION(location_enabled);
         RETURN IF onboarding_completed THEN 'home' ELSE 'onboarding';
     END,
 

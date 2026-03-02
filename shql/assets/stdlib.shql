@@ -121,6 +121,49 @@ STDEV(list, extractor) := BEGIN
     RETURN IF count = 0 THEN 0 ELSE POW(sum_sq / count, 0.5);
 END;
 
+-- Compute descriptive statistics for values extracted from a list.
+-- Two-pass algorithm: pass 1 derives mean; pass 2 derives variance from mean.
+-- Null values (accessor returns null) are excluded from all calculations.
+-- Returns OBJECT{avg, stdev, min, max, count, sum}.
+-- Usage: STATS(heroes, h => HEIGHT_M(h, null))
+-- NOTE: name STATS must not be imported at the same time as a global variable named Stats
+-- (SHQL identifiers are case-insensitive: STATS == Stats would cause a collision).
+-- Callers inside files that define a Stats global must capture this function first:
+--   _STATS_FN := STATS;   <-- before Stats := OBJECT{...}
+STATS(list, accessor) := BEGIN
+    IF LENGTH(list) = 0 THEN
+        RETURN OBJECT{avg: 0, stdev: 0, min: null, max: null, count: 0, sum: 0};
+    __count := 0;
+    __sum := 0;
+    __min := null;
+    __max := null;
+    -- Pass 1: sum, count, min, max
+    FOR __i := 0 TO LENGTH(list) - 1 DO BEGIN
+        __v := accessor(list[__i]);
+        IF __v <> null THEN BEGIN
+            __count := __count + 1;
+            __sum := __sum + __v;
+            IF __min = null OR __v < __min THEN __min := __v;
+            IF __max = null OR __v > __max THEN __max := __v;
+        END;
+    END;
+    IF __count = 0 THEN
+        RETURN OBJECT{avg: 0, stdev: 0, min: null, max: null, count: 0, sum: 0};
+    __avg := __sum / __count;
+    -- Pass 2: variance (squared deviations from mean — numerically stable)
+    __sq_dev := 0;
+    FOR __i := 0 TO LENGTH(list) - 1 DO BEGIN
+        __v := accessor(list[__i]);
+        IF __v <> null THEN BEGIN
+            __diff := __v - __avg;
+            __sq_dev := __sq_dev + __diff * __diff;
+        END;
+    END;
+    __variance := __sq_dev / __count;
+    __stdev := IF __variance <= 0 THEN 0 ELSE POW(__variance, 0.5);
+    RETURN OBJECT{avg: __avg, stdev: __stdev, min: __min, max: __max, count: __count, sum: __sum};
+END;
+
 -- Plot a function
 PLOT(f, x1, x2) := BEGIN
     x_vector := [];
