@@ -153,12 +153,11 @@ class _HeroDexAppState extends State<HeroDexApp> {
       println: (msg) => debugPrint(msg),
     );
 
-    // Restore per-user preferences: first from local archive ({uid}_{key}),
-    // then fill gaps from Firestore cloud. Runs before SHQL™ boots.
+    // Restore per-user preferences from local archive ({uid}_{key}).
+    // Cloud gaps are filled later by Cloud.SEED_FROM_CLOUD() after SHQL™ boots.
     final authUid = widget.prefs.getString('_auth_uid');
-    final authToken = widget.prefs.getString('_auth_id_token');
 
-    // 1. Restore from local archive (saved on sign-out)
+    // Restore from local archive (saved on sign-out)
     debugPrint('[Restore] authUid=$authUid');
     if (authUid != null && authUid.isNotEmpty) {
       for (final key in _syncedKeys) {
@@ -182,60 +181,6 @@ class _HeroDexAppState extends State<HeroDexApp> {
             await widget.prefs.setStringList(key, archived);
           }
         }
-      }
-    }
-
-    // 2. Fill remaining gaps from Firestore cloud (for cross-device sync)
-    if (authUid != null && authToken != null) {
-      try {
-        final firestoreUrl =
-          'https://firestore.googleapis.com/v1/projects/server-driven-ui-flutter'
-          '/databases/(default)/documents/preferences/$authUid';
-        var token = authToken;
-        var cloudData = await http_client.httpFetchAuth(firestoreUrl, token);
-        // If token expired, try refreshing via the secure token API
-        if (cloudData == null) {
-          final refreshToken = widget.prefs.getString('_auth_refresh_token');
-          debugPrint('[CloudPrefs] Token failed, refreshToken=${refreshToken != null && refreshToken.isNotEmpty ? "present (${refreshToken.length} chars)" : "MISSING"}');
-          if (refreshToken != null && refreshToken.isNotEmpty) {
-            final refreshResult = await http_client.httpPost(
-              'https://securetoken.googleapis.com/v1/token?key=AIzaSyAi3vFRB12aGVJjTiqIBOpRazJr43kvSkA',
-              {'grant_type': 'refresh_token', 'refresh_token': refreshToken},
-            );
-            debugPrint('[CloudPrefs] Refresh response status: ${refreshResult['status']}');
-            if (refreshResult['status'] == 200) {
-              final body = refreshResult['body'] as Map<String, dynamic>?;
-              if (body != null) {
-                final newToken = body['id_token'] as String?;
-                final newRefresh = body['refresh_token'] as String?;
-                debugPrint('[CloudPrefs] Got new token: ${newToken != null ? "yes (${newToken.length} chars)" : "NO"}');
-                if (newToken != null) {
-                  await widget.prefs.setString('_auth_id_token', newToken);
-                  token = newToken;
-                }
-                if (newRefresh != null) {
-                  await widget.prefs.setString('_auth_refresh_token', newRefresh);
-                }
-                cloudData = await http_client.httpFetchAuth(firestoreUrl, token);
-                debugPrint('[CloudPrefs] Retry result: ${cloudData != null ? "success" : "still failed"}');
-              }
-            }
-          }
-        }
-        final fields = (cloudData is Map) ? cloudData['fields'] as Map<String, dynamic>? : null;
-        if (fields != null) {
-          for (final entry in fields.entries) {
-            if (widget.prefs.get(entry.key) != null) continue;
-            final fv = entry.value as Map<String, dynamic>;
-            if (fv.containsKey('booleanValue')) {
-              await widget.prefs.setBool(entry.key, fv['booleanValue'] as bool);
-            } else if (fv.containsKey('stringValue')) {
-              await widget.prefs.setString(entry.key, fv['stringValue'] as String);
-            }
-          }
-        }
-      } catch (e) {
-        debugPrint('Cloud prefs seed failed: $e');
       }
     }
 
@@ -470,6 +415,10 @@ class _HeroDexAppState extends State<HeroDexApp> {
     await _coordinator.startup();
     lap('startup');
     if (mounted) setState(() => _loadingStatus = '');
+
+    // Fill any local gaps from Firestore cloud (cross-device sync).
+    await _shqlBindings.eval('Cloud.SEED_FROM_CLOUD()');
+    lap('Cloud.SEED_FROM_CLOUD');
 
     // Apply initial preferences via SHQL™ (calls _ON_PREF_CHANGED for each)
     // and determine initial route in one call.

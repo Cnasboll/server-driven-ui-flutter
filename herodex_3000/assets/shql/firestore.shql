@@ -100,6 +100,30 @@ Cloud := OBJECT{
     SAVE_PREF: (key, value) => BEGIN
         SAVE_STATE(key, value);
         SAVE(key, value);
+    END,
+
+    -- Seed local state from Firestore cloud (for cross-device sync).
+    -- Only fills keys not already set locally. Updates Prefs fields in memory
+    -- so APPLY_INIT_STATE sees cloud values without a re-load.
+    SEED_FROM_CLOUD: () => BEGIN
+        __cloud := LOAD_ALL();
+        IF LENGTH(__cloud) = 0 THEN RETURN;
+        FOR __i := 0 TO LENGTH(SYNCED_KEYS) - 1 DO BEGIN
+            __key := SYNCED_KEYS[__i];
+            __cloud_val := __cloud[__key];
+            IF __cloud_val = null THEN CONTINUE;
+            __local_val := LOAD_STATE(__key, null);
+            IF __local_val <> null THEN CONTINUE;
+            SAVE_STATE(__key, __cloud_val);
+            -- Update the in-memory Prefs field so APPLY_INIT_STATE sees it.
+            IF __key = 'is_dark_mode' THEN Prefs.is_dark_mode := __cloud_val
+            ELSE IF __key = 'api_key' THEN Prefs.api_key := __cloud_val
+            ELSE IF __key = 'api_host' THEN Prefs.api_host := __cloud_val
+            ELSE IF __key = 'onboarding_completed' THEN Prefs.onboarding_completed := __cloud_val
+            ELSE IF __key = 'analytics_enabled' THEN Prefs.analytics_enabled := __cloud_val
+            ELSE IF __key = 'crashlytics_enabled' THEN Prefs.crashlytics_enabled := __cloud_val
+            ELSE IF __key = 'location_enabled' THEN Prefs.location_enabled := __cloud_val;
+        END;
     END
 };
 
