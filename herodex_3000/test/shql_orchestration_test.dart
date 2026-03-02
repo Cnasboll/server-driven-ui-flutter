@@ -341,15 +341,13 @@ void main() {
       return (id: hero.id, name: hero.name);
     }
 
-    test('ON_HERO_ADDED updates heroes map, stats, filters, card cache',
-        () async {
+    test('ON_HERO_ADDED updates heroes map, stats, card cache', () async {
       final batman = await addHero('69');
       await h.test(r'''
         EXPECT(Heroes.total_heroes, 1);
         ASSERT(Heroes.heroes[__id] <> null);
         ASSERT(Stats.height_count > 0);
         ASSERT(Stats.total_fighting_power > 0);
-        EXPECT(LENGTH(Filters.displayed_heroes), 1);
         ASSERT(Cards.card_cache[__id] <> null)
       ''', boundValues: {'__id': batman.id});
     });
@@ -429,13 +427,14 @@ void main() {
       ''', boundValues: {'__id': batman.id});
     });
 
-    test('two heroes: stats accumulate, filters grow', () async {
+    test('two heroes: stats accumulate, rebuild populates filters', () async {
       await addHero('69'); // Batman
       await addHero('644'); // Superman (has weight conflict — resolved by test)
       await h.test(r'''
         EXPECT(Heroes.total_heroes, 2);
         ASSERT(Stats.height_count >= 2);
         ASSERT(Stats.total_fighting_power > 0);
+        Filters.REBUILD_ALL_FILTERS();
         EXPECT(LENGTH(Filters.displayed_heroes), 2)
       ''');
     });
@@ -458,6 +457,7 @@ void main() {
         Heroes.ON_HEROES_ADDED([__h1, __h2]);
         EXPECT(Heroes.total_heroes, 2);
         ASSERT(Stats.height_count >= 2);
+        Filters.REBUILD_ALL_FILTERS();
         EXPECT(LENGTH(Filters.displayed_heroes), 2)
       ''', boundValues: {'__h1': hero1.obj, '__h2': hero2.obj});
     });
@@ -2087,29 +2087,49 @@ void main() {
       ''');
     });
 
-    test('ON_HERO_ADDED adds hero to displayed_heroes', () async {
-      final hero = h.makeObject({'id': 'h1', 'name': 'Batman'});
+    test('REBUILD_ALL_FILTERS populates displayed_heroes from hero map', () async {
+      final appearance = h.makeObject({
+        'height': h.makeObject({'m': 1.88}),
+        'weight': h.makeObject({'kg': 95.0}),
+      });
+      final powerstats = h.makeObject({'strength': 80});
+      final hero = h.makeObject({
+        'id': 'h1',
+        'name': 'Batman',
+        'appearance': appearance,
+        'powerstats': powerstats,
+      });
       await h.test(r'''
+        Heroes.ON_HERO_ADDED(__h);
         Filters.REBUILD_ALL_FILTERS();
-        Filters.ON_HERO_ADDED(__h);
         ASSERT(LENGTH(Filters.displayed_heroes) > 0)
       ''', boundValues: {'__h': hero});
     });
 
-    test('ON_HERO_REMOVED removes hero from displayed_heroes', () async {
-      final hero = h.makeObject({'id': 'h1', 'name': 'Batman'});
+    test('REBUILD_ALL_FILTERS reflects removals', () async {
+      final appearance = h.makeObject({
+        'height': h.makeObject({'m': 1.88}),
+        'weight': h.makeObject({'kg': 95.0}),
+      });
+      final powerstats = h.makeObject({'strength': 80});
+      final hero = h.makeObject({
+        'id': 'h1',
+        'name': 'Batman',
+        'appearance': appearance,
+        'powerstats': powerstats,
+      });
       await h.test(r'''
+        Heroes.ON_HERO_ADDED(__h);
         Filters.REBUILD_ALL_FILTERS();
-        Filters.ON_HERO_ADDED(__h);
-        Filters.ON_HERO_REMOVED(__h);
+        Heroes.ON_HERO_REMOVED(__h);
+        Filters.REBUILD_ALL_FILTERS();
         EXPECT(LENGTH(Filters.displayed_heroes), 0)
       ''', boundValues: {'__h': hero});
     });
 
-    test('ON_CLEAR empties all filter results', () async {
+    test('REBUILD_ALL_FILTERS on empty heroes clears counts', () async {
       await h.test(r'''
         Filters.REBUILD_ALL_FILTERS();
-        Filters.ON_CLEAR();
         IF LENGTH(Filters.filter_counts) > 0 THEN
             FOR __i := 0 TO LENGTH(Filters.filter_counts) - 1 DO
                 EXPECT(Filters.filter_counts[__i], 0)
@@ -2152,13 +2172,25 @@ void main() {
       ''');
     });
 
-    test('REMOVE_FROM_DISPLAYED removes hero by ID', () async {
-      final hero = h.makeObject({'id': 'h1', 'name': 'Batman'});
+    test('UPDATE_DISPLAYED_HEROES reflects hero removal after rebuild',
+        () async {
+      final appearance = h.makeObject({
+        'height': h.makeObject({'m': 1.88}),
+        'weight': h.makeObject({'kg': 95.0}),
+      });
+      final powerstats = h.makeObject({'strength': 80});
+      final hero = h.makeObject({
+        'id': 'h1',
+        'name': 'Batman',
+        'appearance': appearance,
+        'powerstats': powerstats,
+      });
       await h.test(r'''
+        Heroes.ON_HERO_ADDED(__h);
         Filters.REBUILD_ALL_FILTERS();
-        Filters.ON_HERO_ADDED(__h);
         ASSERT(LENGTH(Filters.displayed_heroes) > 0);
-        Filters.REMOVE_FROM_DISPLAYED('h1');
+        Heroes.ON_HERO_REMOVED(__h);
+        Filters.REBUILD_ALL_FILTERS();
         EXPECT(LENGTH(Filters.displayed_heroes), 0)
       ''', boundValues: {'__h': hero});
     });

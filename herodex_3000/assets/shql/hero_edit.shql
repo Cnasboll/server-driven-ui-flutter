@@ -75,6 +75,7 @@ HeroEdit := OBJECT{
         -- SHQL add (back on stack)
         Heroes.ON_HERO_ADDED(__result.NEW_OBJ);
         Cards.CACHE_HERO_CARD(__result.NEW_OBJ);
+        Filters.REBUILD_ALL_FILTERS();
         Heroes.REBUILD_CARDS();
         Heroes.FINISH_AMEND(__result.ID);
         _SHOW_SNACKBAR('Hero amended (locked from reconciliation)');

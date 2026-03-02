@@ -112,21 +112,20 @@ Heroes := OBJECT{
                 ON_HERO_ADDED(__list[__i]);
     END,
 
-    -- Hero added to collection. Updates heroes map, running stats, and filter membership.
+    -- Hero added to collection. Updates heroes map and running stats.
+    -- Filter maps are rebuilt at the end of each top-level operation.
     ON_HERO_ADDED: (__hero) => BEGIN
         heroes[__hero.ID] := __hero;
         total_heroes := LENGTH(heroes);
         Stats.STATS_HERO_ADDED(__hero);
-        Filters.ON_HERO_ADDED(__hero);
         __NOTIFY_HERO_STATE();
     END,
 
-    -- Hero removed from collection.
+    -- Hero removed from collection. Updates heroes map and running stats.
     ON_HERO_REMOVED: (__hero) => BEGIN
         MAP_REMOVE(heroes, __hero.ID);
         total_heroes := LENGTH(heroes);
         Stats.STATS_HERO_REMOVED(__hero);
-        Filters.ON_HERO_REMOVED(__hero);
         __NOTIFY_HERO_STATE();
     END,
 
@@ -139,8 +138,9 @@ Heroes := OBJECT{
         ON_HERO_REMOVED(__old);
         CLEAR_SELECTED_IF(__id);
         Cards.REMOVE_CACHED_CARD(__id);
-        REBUILD_CARDS();
         _HERO_DELETE(__id);
+        Filters.REBUILD_ALL_FILTERS();
+        REBUILD_CARDS();
     END,
 
     -- Reconcile delete: remove from SHQL + card cache, then status + log.
@@ -165,12 +165,12 @@ Heroes := OBJECT{
         SET_STATUS_AND_LOG(__status, __log_msg, FALSE, FALSE);
     END,
 
-    -- Clear all heroes. Resets heroes map, stats, filter results, displayed heroes, and card cache.
+    -- Clear all heroes. Resets heroes map, stats, and card cache.
+    -- Filter maps are rebuilt by the caller (e.g. CLEAR_ALL_DATA).
     ON_HERO_CLEAR: () => BEGIN
         heroes := {};
         total_heroes := 0;
         Stats.STATS_CLEAR();
-        Filters.ON_CLEAR();
         __NOTIFY_HERO_STATE();
         Cards.CLEAR_CARD_CACHE();
         SET_HERO_CARDS([]);
@@ -398,6 +398,7 @@ Heroes := OBJECT{
         IF __old <> null THEN ON_HERO_REMOVED(__old);
         ON_HERO_ADDED(__new);
         Cards.CACHE_HERO_CARD(__new);
+        Filters.REBUILD_ALL_FILTERS();
         REBUILD_CARDS();
     END,
 
