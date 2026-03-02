@@ -18,7 +18,8 @@ _DEFAULT_FILTERS := [
     OBJECT{name: "Strong Villains", predicate: "biography.alignment > reasonable AND powerstats.strength >= powerstats.intelligence*1.1"},
     OBJECT{name: "Dumb Villains", predicate: "biography.alignment >= bad AND powerstats.intelligence <= 50"},
     OBJECT{name: "Non-Males", predicate: "appearance.gender <> male"},
-    OBJECT{name: "Troglodytes", predicate: 'work.base ~ "cave"'}
+    OBJECT{name: "Troglodytes", predicate: 'work.base ~ "cave"'},
+    OBJECT{name: "Locked", predicate: "locked"}
 ];
 
 Filters := OBJECT{

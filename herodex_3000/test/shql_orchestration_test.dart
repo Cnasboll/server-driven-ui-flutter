@@ -2142,7 +2142,7 @@ void main() {
       await h.test(r'''
         Filters.DELETE_FILTER(0);
         Filters.RESET_PREDICATES();
-        EXPECT(LENGTH(Filters.filters), 10);
+        EXPECT(LENGTH(Filters.filters), 11);
         EXPECT(Filters.active_filter_index, -1)
       ''');
     });
