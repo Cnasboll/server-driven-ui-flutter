@@ -73,7 +73,7 @@ hero_common/          — Shared Dart package (no platform dependencies)
 
 herodex_3000/         — Flutter mobile app (SDUI showcase)
   assets/screens/       7 YAML screen definitions
-  assets/widgets/       17 YAML widget templates (login, cards, dialogs, nav, etc.)
+  assets/widgets/       19 YAML widget templates (login, cards, dialogs, nav, etc.)
   assets/shql/          12 SHQL™ scripts: auth, navigation, firestore, preferences,
                         statistics, filters, heroes, hero_detail, hero_cards,
                         search, hero_edit, world (weather/map/war status)
@@ -126,13 +126,16 @@ cd ../awesome_calculator && flutter run
 ## Testing
 
 ```bash
-# Shared models, predicates, SHQL™ engine (245+ tests)
+# SHQL™ engine (272 tests — parser, tokenizer, runtime, execution)
+cd shql && dart test
+
+# Shared models, predicates (70 tests)
 cd hero_common && dart test
 
 # Console app (SQL generation, hero service, JSON parsing)
 cd v04 && dart test
 
-# Flutter app (DB, connectivity, hero cards, splash)
+# Flutter app (262 orchestration tests + DB, connectivity, hero cards)
 cd herodex_3000 && flutter test
 ```
 
