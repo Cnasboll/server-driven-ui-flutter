@@ -92,7 +92,8 @@ void _registerNoOpCallbacks(ShqlTestRunner h) {
   h.runtime.setBinaryFunction('_HERO_AMEND', (ctx, c, a, b) => null);
   h.runtime.setBinaryFunction('POST', (ctx, c, a, b) =>
       <String, dynamic>{'status': 0});
-  h.runtime.setBinaryFunction('FETCH_AUTH', (ctx, c, a, b) => null);
+  h.runtime.setBinaryFunction('FETCH_AUTH', (ctx, c, a, b) =>
+      <String, dynamic>{'status': 0, 'body': null});
 
   // Ternary
   h.runtime.setTernaryFunction('_REVIEW_HERO', (ctx, c, a, b, d) => null);
@@ -1667,10 +1668,13 @@ void main() {
 
       h.runtime.setBinaryFunction('FETCH_AUTH', (ctx, caller, url, token) {
         return <String, dynamic>{
-          'fields': <String, dynamic>{
-            'is_dark_mode': <String, dynamic>{'booleanValue': true},
-            'api_key': <String, dynamic>{'stringValue': 'mykey'},
-            'unknown_key': <String, dynamic>{'stringValue': 'ignored'},
+          'status': 200,
+          'body': <String, dynamic>{
+            'fields': <String, dynamic>{
+              'is_dark_mode': <String, dynamic>{'booleanValue': true},
+              'api_key': <String, dynamic>{'stringValue': 'mykey'},
+              'unknown_key': <String, dynamic>{'stringValue': 'ignored'},
+            }
           }
         };
       });

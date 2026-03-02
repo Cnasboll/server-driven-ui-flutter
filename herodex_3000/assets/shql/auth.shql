@@ -28,7 +28,9 @@ Auth := OBJECT{
         RETURN __FIREBASE_ERROR_MSG(__msg);
     END,
 
-    -- Persist auth session from successful response
+    -- Persist auth session from successful response.
+    -- Cloud.auth_uid is initialized from LOAD_STATE when firestore.shql loads,
+    -- so we only need to SAVE_STATE here (no Cloud reference needed at login).
     __FIREBASE_PERSIST_SESSION: (body) => BEGIN
         __token := body["idToken"];
         __email := body["email"];
@@ -36,10 +38,7 @@ Auth := OBJECT{
         __refresh := body["refreshToken"];
         IF __token <> null THEN SAVE_STATE('_auth_id_token', __token);
         IF __email <> null THEN SAVE_STATE('_auth_email', __email);
-        IF __uid <> null THEN BEGIN
-            SAVE_STATE('_auth_uid', __uid);
-            Cloud.SET_AUTH_UID(__uid);
-        END;
+        IF __uid <> null THEN SAVE_STATE('_auth_uid', __uid);
         IF __refresh <> null THEN SAVE_STATE('_auth_refresh_token', __refresh);
     END,
 

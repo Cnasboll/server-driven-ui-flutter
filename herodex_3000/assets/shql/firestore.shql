@@ -71,20 +71,19 @@ Cloud := OBJECT{
     END,
 
     -- Load all synced preferences from Firestore.
-    -- Auto-refreshes the token if the first attempt fails.
+    -- Retries with a refreshed token only on 401 (expired token).
     LOAD_ALL: () => BEGIN
         IF auth_uid = '' THEN RETURN {};
         __token := __TOKEN();
         IF __token = '' THEN RETURN {};
         __response := FETCH_AUTH(__DOC_URL(), __token);
-        -- If null, token may be expired — try refresh once
-        IF __response = null THEN BEGIN
+        IF __response["status"] = 401 THEN BEGIN
             __token := Auth.FIREBASE_REFRESH_TOKEN();
             IF __token = '' THEN RETURN {};
             __response := FETCH_AUTH(__DOC_URL(), __token);
-            IF __response = null THEN RETURN {};
         END;
-        __fields := __response["fields"];
+        IF __response["status"] <> 200 THEN RETURN {};
+        __fields := __response["body"]["fields"];
         IF __fields = null THEN RETURN {};
         __result := {};
         FOR __i := 0 TO LENGTH(SYNCED_KEYS) - 1 DO BEGIN
