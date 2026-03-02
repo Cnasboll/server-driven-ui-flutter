@@ -1,47 +1,52 @@
 -- ============================================
 -- Navigation
 -- ============================================
-_tab_routes := ['home', 'online', 'heroes', 'settings'];
-_navigation_stack := LOAD_STATE('navigation_stack', ['home']);
+Nav := OBJECT{
+    tab_routes: ['home', 'online', 'heroes', 'settings'],
+    navigation_stack: LOAD_STATE('navigation_stack', ['home']),
 
-TAB_NAV(current, idx) := IF idx <> current THEN GO_TO(_tab_routes[idx]);
+    SET_NAVIGATION_STACK: (stack) => BEGIN
+        navigation_stack := stack;
+        PUBLISH('Nav.navigation_stack');
+    END,
 
-PUSH_ROUTE(route) := BEGIN
-    IF LENGTH(_navigation_stack) = 0 THEN
-        _navigation_stack := [route]
-    ELSE BEGIN
-        current_route := _navigation_stack[LENGTH(_navigation_stack) - 1];
-        IF current_route <> route THEN BEGIN
-            IF route IN _navigation_stack THEN
-                _navigation_stack := SLICE(_navigation_stack, 0, INDEX_OF(_navigation_stack, route))
-            ELSE
-                _navigation_stack := _navigation_stack + [route];
+    TAB_NAV: (current, idx) => IF idx <> current THEN GO_TO(tab_routes[idx]),
+
+    PUSH_ROUTE: (route) => BEGIN
+        IF LENGTH(navigation_stack) = 0 THEN
+            SET_NAVIGATION_STACK([route])
+        ELSE BEGIN
+            current_route := navigation_stack[LENGTH(navigation_stack) - 1];
+            IF current_route <> route THEN BEGIN
+                IF route IN navigation_stack THEN
+                    SET_NAVIGATION_STACK(SLICE(navigation_stack, 0, INDEX_OF(navigation_stack, route)))
+                ELSE
+                    SET_NAVIGATION_STACK(navigation_stack + [route]);
+            END;
         END;
-    END;
-    SET('_navigation_stack', _navigation_stack);
-    SAVE_STATE('navigation_stack', _navigation_stack);
-    RETURN _navigation_stack;
-END;
+        SAVE_STATE('navigation_stack', navigation_stack);
+        RETURN navigation_stack;
+    END,
 
-POP_ROUTE() := BEGIN
-    IF LENGTH(_navigation_stack) > 1 THEN BEGIN
-        _navigation_stack := SLICE(_navigation_stack, 0, LENGTH(_navigation_stack) - 2);
-        SET('_navigation_stack', _navigation_stack);
-        SAVE_STATE('navigation_stack', _navigation_stack);
-        RETURN _navigation_stack[LENGTH(_navigation_stack) - 1];
-    END ELSE
-        RETURN 'home';
-END;
+    POP_ROUTE: () => BEGIN
+        IF LENGTH(navigation_stack) > 1 THEN BEGIN
+            SET_NAVIGATION_STACK(SLICE(navigation_stack, 0, LENGTH(navigation_stack) - 2));
+            SAVE_STATE('navigation_stack', navigation_stack);
+            RETURN navigation_stack[LENGTH(navigation_stack) - 1];
+        END ELSE
+            RETURN 'home';
+    END,
 
-GO_BACK() := BEGIN
-    previous_route := POP_ROUTE();
-    NAVIGATE(previous_route);
-    RETURN previous_route;
-END;
+    GO_BACK: () => BEGIN
+        previous_route := POP_ROUTE();
+        NAVIGATE(previous_route);
+        RETURN previous_route;
+    END,
 
-GO_TO(route) := BEGIN
-    PUSH_ROUTE(route);
-    NAVIGATE(route);
-END;
+    GO_TO: (route) => BEGIN
+        PUSH_ROUTE(route);
+        NAVIGATE(route);
+    END,
 
-CAN_GO_BACK() := LENGTH(_navigation_stack) > 1;
+    CAN_GO_BACK: () => LENGTH(navigation_stack) > 1
+};

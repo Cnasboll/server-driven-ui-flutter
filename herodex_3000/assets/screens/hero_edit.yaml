@@ -60,12 +60,12 @@ screen:
                   # Dynamic edit form (generated from _edit_fields by GENERATE_EDIT_FORM)
                   - type: Observer
                     props:
-                      query: "_edit_fields"
+                      query: "HeroEdit.edit_fields"
                       builder:
                         type: Column
                         props:
                           crossAxisAlignment: "stretch"
-                          children: "shql: GENERATE_EDIT_FORM()"
+                          children: "shql: HeroEdit.GENERATE_EDIT_FORM()"
 
                   - type: SizedBox
                     props:
@@ -78,7 +78,7 @@ screen:
                         type: Text
                         props:
                           data: "Save Changes"
-                      onPressed: "shql: SAVE_AMENDMENTS()"
+                      onPressed: "shql: HeroEdit.SAVE_AMENDMENTS()"
 
                   - type: SizedBox
                     props:

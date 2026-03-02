@@ -1,71 +1,125 @@
 -- ============================================
--- Theme
+-- Preferences
 -- ============================================
-_is_dark_mode := LOAD_STATE('is_dark_mode', FALSE);
+Prefs := OBJECT{
+    -- Theme
+    is_dark_mode: LOAD_STATE('is_dark_mode', FALSE),
 
-TOGGLE_DARK_MODE() := BEGIN
-    _is_dark_mode := NOT _is_dark_mode;
-    SAVE_PREF('is_dark_mode', _is_dark_mode);
-    SET('_is_dark_mode', _is_dark_mode);
-END;
+    -- Onboarding
+    analytics_enabled: LOAD_STATE('analytics_enabled', FALSE),
+    crashlytics_enabled: LOAD_STATE('crashlytics_enabled', FALSE),
+    location_enabled: LOAD_STATE('location_enabled', FALSE),
+    onboarding_completed: LOAD_STATE('onboarding_completed', FALSE),
 
-SET_DARK_MODE(enabled) := BEGIN
-    _is_dark_mode := enabled;
-    SAVE_PREF('is_dark_mode', enabled);
-    SET('_is_dark_mode', enabled);
-END;
+    -- API Configuration
+    api_key: LOAD_STATE('api_key', ''),
+    api_host: LOAD_STATE('api_host', 'www.superheroapi.com'),
 
--- ============================================
--- Onboarding
--- ============================================
-_analytics_enabled := LOAD_STATE('analytics_enabled', FALSE);
-_crashlytics_enabled := LOAD_STATE('crashlytics_enabled', FALSE);
-_location_enabled := LOAD_STATE('location_enabled', FALSE);
-_onboarding_completed := LOAD_STATE('onboarding_completed', FALSE);
+    -- Dispatch platform side-effects for a preference change.
+    -- Each case calls a registered Dart callback for the platform boundary.
+    _ON_PREF_CHANGED: (key, value) => BEGIN
+        IF key = 'is_dark_mode' THEN _SET_DARK_MODE(value)
+        ELSE IF key = 'analytics_enabled' THEN _SET_ANALYTICS(value)
+        ELSE IF key = 'crashlytics_enabled' THEN _SET_CRASHLYTICS(value)
+        ELSE IF key = 'location_enabled' THEN BEGIN
+            __loc := _GET_LOCATION(value);
+            World.SET_LOCATION(__loc.DESCRIPTION, __loc.LATITUDE, __loc.LONGITUDE);
+        END
+        ELSE IF key = 'api_key' OR key = 'api_host' THEN _REFRESH_HERO_SERVICE(null);
+    END,
 
-SET_ANALYTICS_CONSENT(enabled) := BEGIN
-    _analytics_enabled := enabled;
-    SAVE_PREF('analytics_enabled', enabled);
-END;
+    -- Save to cloud + notify observers + push to Dart platform layer.
+    __SAVE: (key, value) => BEGIN
+        Cloud.SAVE_PREF(key, value);
+        PUBLISH('Prefs.' + key);
+        _ON_PREF_CHANGED(key, value);
+    END,
 
-SET_CRASHLYTICS_CONSENT(enabled) := BEGIN
-    _crashlytics_enabled := enabled;
-    SAVE_PREF('crashlytics_enabled', enabled);
-END;
+    TOGGLE_DARK_MODE: () => BEGIN
+        is_dark_mode := NOT is_dark_mode;
+        __SAVE('is_dark_mode', is_dark_mode);
+    END,
 
-SET_LOCATION_CONSENT(enabled) := BEGIN
-    _location_enabled := enabled;
-    SAVE_PREF('location_enabled', enabled);
-    SET('_location_enabled', enabled);
-END;
+    SET_DARK_MODE: (enabled) => BEGIN
+        is_dark_mode := enabled;
+        __SAVE('is_dark_mode', enabled);
+    END,
 
-COMPLETE_ONBOARDING() := BEGIN
-    _onboarding_completed := TRUE;
-    SAVE_PREF('onboarding_completed', TRUE);
-END;
+    SET_ANALYTICS_CONSENT: (enabled) => BEGIN
+        analytics_enabled := enabled;
+        __SAVE('analytics_enabled', enabled);
+    END,
 
-IS_ONBOARDING_COMPLETED() := _onboarding_completed;
+    SET_CRASHLYTICS_CONSENT: (enabled) => BEGIN
+        crashlytics_enabled := enabled;
+        __SAVE('crashlytics_enabled', enabled);
+    END,
 
-RESET_ONBOARDING() := BEGIN
-    _onboarding_completed := FALSE;
-    SAVE_PREF('onboarding_completed', FALSE);
-    GO_TO('onboarding');
-END;
+    SET_LOCATION_CONSENT: (enabled) => BEGIN
+        location_enabled := enabled;
+        __SAVE('location_enabled', enabled);
+    END,
 
--- ============================================
--- API Configuration
--- ============================================
-_api_key := LOAD_STATE('api_key', '');
-_api_host := LOAD_STATE('api_host', 'www.superheroapi.com');
+    COMPLETE_ONBOARDING: () => BEGIN
+        onboarding_completed := TRUE;
+        __SAVE('onboarding_completed', TRUE);
+    END,
 
-SET_API_KEY(key) := BEGIN
-    _api_key := key;
-    SAVE_PREF('api_key', key);
-    SET('_api_key', key);
-END;
+    -- Complete onboarding and navigate to home screen.
+    FINISH_ONBOARDING: () => BEGIN
+        COMPLETE_ONBOARDING();
+        Nav.GO_TO('home');
+    END,
 
-SET_API_HOST(host) := BEGIN
-    _api_host := host;
-    SAVE_PREF('api_host', host);
-    SET('_api_host', host);
-END;
+    -- UI helpers for YAML templates.
+    DARK_MODE_ICON: () => IF is_dark_mode THEN 'light_mode' ELSE 'dark_mode',
+    DARK_MODE_SETTINGS_ICON: () => IF is_dark_mode THEN 'dark_mode' ELSE 'light_mode',
+    INITIAL_ROUTE: () => IF onboarding_completed THEN 'home' ELSE 'onboarding',
+
+    IS_ONBOARDING_COMPLETED: () => onboarding_completed,
+
+    RESET_ONBOARDING: () => BEGIN
+        onboarding_completed := FALSE;
+        __SAVE('onboarding_completed', FALSE);
+        Nav.GO_TO('onboarding');
+    END,
+
+    SET_API_KEY: (key) => BEGIN
+        api_key := key;
+        __SAVE('api_key', key);
+    END,
+
+    SET_API_HOST: (host) => BEGIN
+        api_host := host;
+        __SAVE('api_host', host);
+    END,
+
+    -- Apply all initial preferences by calling _ON_PREF_CHANGED for each.
+    -- Returns the initial route ('home' or 'onboarding').
+    APPLY_INIT_STATE: () => BEGIN
+        _ON_PREF_CHANGED('is_dark_mode', is_dark_mode);
+        _ON_PREF_CHANGED('analytics_enabled', analytics_enabled);
+        _ON_PREF_CHANGED('crashlytics_enabled', crashlytics_enabled);
+        _ON_PREF_CHANGED('location_enabled', location_enabled);
+        RETURN IF onboarding_completed THEN 'home' ELSE 'onboarding';
+    END,
+
+    -- Ensure API credentials are set, prompting the user if needed.
+    -- Returns OBJECT{api_key, api_host} or null if the user cancelled.
+    GET_API_CREDENTIALS: () => BEGIN
+        __key := api_key;
+        IF __key = null OR __key = '' OR __key = 'null' THEN BEGIN
+            __key := _PROMPT('Enter your API key:', '');
+            IF __key = null OR __key = '' THEN RETURN null;
+            SET_API_KEY(__key);
+        END;
+        __host := api_host;
+        __default := 'www.superheroapi.com';
+        IF __host = null OR __host = '' OR __host = 'null' THEN BEGIN
+            __entered := _PROMPT('Enter API host or press enter to accept default ("' + __default + '"):', __default);
+            __host := IF __entered <> null AND __entered <> '' THEN __entered ELSE __default;
+            SET_API_HOST(__host);
+        END;
+        RETURN OBJECT{api_key: __key, api_host: __host};
+    END
+};

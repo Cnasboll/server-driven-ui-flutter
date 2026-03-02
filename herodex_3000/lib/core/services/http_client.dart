@@ -57,21 +57,22 @@ Future<dynamic> httpPatch(String url, dynamic body) async {
   }
 }
 
-/// HTTP GET with Bearer token — returns parsed JSON or null.
+/// HTTP GET with Bearer token — returns `{'status': statusCode, 'body': parsedJson}`.
 Future<dynamic> httpFetchAuth(String url, String token) async {
   try {
     final response = await http.get(
       Uri.parse(url),
       headers: {'Authorization': 'Bearer $token'},
     );
-    if (response.statusCode == 200) {
-      return jsonDecode(response.body);
-    }
-    debugPrint('FetchAuth ${response.statusCode}: ${response.body}');
-    return null;
+    return {
+      'status': response.statusCode,
+      'body': response.statusCode == 200 && response.body.isNotEmpty
+          ? jsonDecode(response.body)
+          : null,
+    };
   } catch (e) {
     debugPrint('FetchAuth error: $e');
-    return null;
+    return {'status': 0, 'body': null};
   }
 }
 

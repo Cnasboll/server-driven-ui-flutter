@@ -15,7 +15,13 @@ import 'package:shql/execution/runtime_error.dart';
 import 'package:shql/tokenizer/token.dart';
 
 class CallExecutionNode extends LazyExecutionNode {
-  CallExecutionNode(super.node, {required super.thread, required super.scope});
+  /// Optional scope for evaluating arguments separately from the callable.
+  /// When a call is made via member access (e.g. `Filters.method(arg)`),
+  /// the callable is resolved in the object's scope but arguments should
+  /// be evaluated in the caller's scope to avoid field-name shadowing.
+  final Scope? argumentScope;
+
+  CallExecutionNode(super.node, {required super.thread, required super.scope, this.argumentScope});
 
   @override
   Future<TickResult> doTick(
@@ -48,7 +54,7 @@ class CallExecutionNode extends LazyExecutionNode {
       _argumentsNode = Engine.createExecutionNode(
         node.children[1],
         thread,
-        scope,
+        argumentScope ?? scope,
       );
       return TickResult.delegated;
     }

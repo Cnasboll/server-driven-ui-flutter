@@ -484,6 +484,98 @@ void main() {
     );
   });
 
+  test('FOR CONTINUE with IF', () async {
+    expect(
+      await Engine.execute(r'''
+        __test() := BEGIN
+          __result := [];
+          FOR __i := 0 TO 2 DO BEGIN
+            IF __i = 1 THEN CONTINUE;
+            __result := __result + [__i];
+          END;
+          RETURN __result;
+        END;
+        __test()
+      '''),
+      [0, 2],
+    );
+  });
+
+  test('FOR CONTINUE with nested IF-ELSE IF', () async {
+    expect(
+      await Engine.execute(r'''
+        __test() := BEGIN
+          __result := [];
+          FOR __i := 0 TO 2 DO BEGIN
+            IF __i = 0 THEN __result := __result + ['zero']
+            ELSE IF __i = 1 THEN BEGIN
+              __result := __result + ['skip'];
+              CONTINUE;
+            END
+            ELSE __result := __result + ['two'];
+            __result := __result + ['after'];
+          END;
+          RETURN __result;
+        END;
+        __test()
+      '''),
+      ['zero', 'after', 'skip', 'two', 'after'],
+    );
+  });
+
+  test('FOR CONTINUE inside nested IF-THEN-BEGIN-END', () async {
+    expect(
+      await Engine.execute(r'''
+        __test() := BEGIN
+          __result := [];
+          __flag := TRUE;
+          FOR __i := 0 TO 2 DO BEGIN
+            IF __flag THEN BEGIN
+              IF __i = 1 THEN BEGIN
+                __result := __result + ['skip'];
+                CONTINUE;
+              END;
+            END;
+            __result := __result + [__i];
+          END;
+          RETURN __result;
+        END;
+        __test()
+      '''),
+      [0, 'skip', 2],
+    );
+  });
+
+  test('FOR CONTINUE with nested ELSE IF BREAK pattern', () async {
+    var (runtime, constantsSet) = await _loadStdLib();
+    expect(
+      await Engine.execute(r'''
+        __test() := BEGIN
+          __result := [];
+          __flag := TRUE;
+          __action := 'skip';
+          FOR __i := 0 TO 2 DO BEGIN
+            IF __flag THEN BEGIN
+              IF __action = 'saveAll' THEN __result := __result + ['saveAll']
+              ELSE IF __action = 'cancel' THEN BEGIN
+                __result := __result + ['cancel'];
+                BREAK;
+              END
+              ELSE IF __action <> 'save' THEN BEGIN
+                __result := __result + ['skipped'];
+                CONTINUE;
+              END;
+            END;
+            __result := __result + ['after:' + STRING(__i)];
+          END;
+          RETURN __result;
+        END;
+        __test()
+      ''', runtime: runtime, constantsSet: constantsSet),
+      ['skipped', 'skipped', 'skipped'],
+    );
+  });
+
   test("Test repeat until", () async {
     expect(
       (await Engine.execute("x := 0; REPEAT x := x + 1 UNTIL x = 10; x")),
@@ -1151,6 +1243,133 @@ END;
           obj.getCount()
           '''),
         1,
+      );
+    });
+  });
+
+  group('THIS self-reference in OBJECT', () {
+    test('THIS resolves to the object itself', () async {
+      // getThis() returns THIS, and we verify it has the same field x
+      expect(
+        await Engine.execute('''
+          obj := OBJECT{x: 10, getThis: () => THIS};
+          obj.getThis().x
+        '''),
+        10,
+      );
+    });
+
+    test('THIS.field works for dot access', () async {
+      expect(
+        await Engine.execute('''
+          obj := OBJECT{x: 42, getX: () => THIS.x};
+          obj.getX()
+        '''),
+        42,
+      );
+    });
+
+    test('THIS enables fluent/builder pattern', () async {
+      expect(
+        await Engine.execute('''
+          builder := OBJECT{
+            value: 0,
+            setValue: (v) => BEGIN value := v; RETURN THIS; END
+          };
+          builder.setValue(99).value
+        '''),
+        99,
+      );
+    });
+
+    test('Nested objects have independent THIS', () async {
+      expect(
+        await Engine.execute('''
+          outer := OBJECT{
+            name: "outer",
+            inner: OBJECT{
+              name: "inner",
+              getName: () => THIS.name
+            },
+            getName: () => THIS.name
+          };
+          outer.inner.getName()
+        '''),
+        'inner',
+      );
+
+      expect(
+        await Engine.execute('''
+          outer := OBJECT{
+            name: "outer",
+            inner: OBJECT{
+              name: "inner",
+              getName: () => THIS.name
+            },
+            getName: () => THIS.name
+          };
+          outer.getName()
+        '''),
+        'outer',
+      );
+    });
+
+    test('THIS is mutable (can be reassigned)', () async {
+      // THIS is a variable, not a constant — users CAN reassign it
+      // but that is their choice (like any other variable)
+      expect(
+        await Engine.execute('''
+          obj := OBJECT{x: 10, getX: () => THIS.x};
+          obj.getX()
+        '''),
+        10,
+      );
+    });
+  });
+
+  group('Cross-object member access', () {
+    test('Object B method can access Object A members via global', () async {
+      expect(
+        await Engine.execute('''
+          A := OBJECT{
+            x: 10,
+            count: 0,
+            SET_COUNT: (v) => BEGIN count := v; END
+          };
+          B := OBJECT{
+            notify: () => BEGIN
+              A.SET_COUNT(A.x + 5);
+            END
+          };
+          B.notify();
+          A.count
+        '''),
+        15,
+      );
+    });
+
+    test('Field name colliding with global name (case-insensitive) from external scope', () async {
+      // Filters object has a field "filters" which uppercases to FILTERS
+      // The global "Filters" also uppercases to FILTERS
+      // From a DIFFERENT object's method, "Filters" should resolve to the global (the Object)
+      expect(
+        await Engine.execute('''
+          Filters := OBJECT{
+            filters: [10, 20, 30],
+            filter_counts: [],
+            SET_FILTER_COUNTS: (value) => BEGIN
+              filter_counts := value;
+            END
+          };
+          Heroes := OBJECT{
+            notify: () => BEGIN
+              Filters.SET_FILTER_COUNTS(Filters.filter_counts);
+            END
+          };
+          Heroes.notify();
+          Filters.filter_counts
+        '''),
+        [],
       );
     });
   });

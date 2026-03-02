@@ -6,6 +6,7 @@ import 'package:shql/execution/runtime/runtime.dart';
 import 'package:shql/parser/constants_set.dart';
 import 'package:shql/parser/parse_tree.dart';
 import 'package:shql/parser/parser.dart';
+import 'package:yaml/yaml.dart';
 
 class ShqlBindings {
   late ConstantsSet _constantsSet;
@@ -33,9 +34,10 @@ class ShqlBindings {
     Map<String, Function(dynamic)>? unaryFunctions,
     Map<String, Function(dynamic, dynamic)>? binaryFunctions,
     Map<String, Function(dynamic, dynamic, dynamic)>? ternaryFunctions,
+    Runtime? runtime,
   }) {
     _constantsSet = constantsSet ?? Runtime.prepareConstantsSet();
-    _runtime = Runtime.prepareRuntime(_constantsSet);
+    _runtime = runtime ?? Runtime.prepareRuntime(_constantsSet);
     _runtime.printFunction = printLine;
     _runtime.readlineFunction = readline;
     _runtime.promptFunction = prompt;
@@ -115,13 +117,17 @@ class ShqlBindings {
   bool isShqlObject(dynamic value) => value is Object;
 
   /// Convert an SHQL™ [Object] to a `Map<String, dynamic>`.
-  /// Only includes variable members (not user functions).
+  /// Only includes variable members (not user functions or self-references).
   Map<String, dynamic> objectToMap(dynamic obj) {
     if (obj is! Object) return {};
     final map = <String, dynamic>{};
     for (final entry in obj.variables.entries) {
       final name = _constantsSet.identifiers.constants[entry.key];
-      map[name.toLowerCase()] = entry.value.value;
+      final value = entry.value.value;
+      // Skip THIS self-reference (injected by ObjectLiteralNode) to avoid
+      // circular references when serializing.
+      if (value is Object && identical(value, obj)) continue;
+      map[name.toLowerCase()] = value;
     }
     return map;
   }
@@ -239,6 +245,52 @@ class ShqlBindings {
 
 /// Tiny helpers for YAML DSL parsing:
 bool isShqlRef(dynamic v) => v is String && v.startsWith('shql');
+
+/// Whether [key] is a callback property name (on* with uppercase third char).
+/// Same heuristic used by [WidgetRegistry.substituteProps] and
+/// [YamlUiEngine._resolveNode].
+bool _isCallbackKey(String key) =>
+    key.length > 2 && key.startsWith('on') && key[2] == key[2].toUpperCase();
+
+/// Extract ALL SHQL™ expressions from a YAML string, in document order.
+///
+/// Walks the parsed YAML tree using [isShqlRef] and [parseShql] — the same
+/// functions used at runtime — plus the `on*` callback key heuristic from
+/// [WidgetRegistry.substituteProps].
+///
+/// Returns the raw SHQL™ code strings (without the `shql:` prefix).
+List<String> extractShqlExpressions(String yamlContent) {
+  final data = loadYaml(yamlContent);
+  final exprs = <String>[];
+  _collectShql(data, exprs, null);
+  return exprs;
+}
+
+void _collectShql(dynamic node, List<String> out, String? parentKey) {
+  if (node is String) {
+    if (isShqlRef(node)) {
+      final code = parseShql(node).code;
+      if (code.isNotEmpty) out.add(code);
+    } else if (parentKey != null &&
+        _isCallbackKey(parentKey) &&
+        !node.startsWith('prop:')) {
+      // Bare SHQL™ on callback keys — same as substituteProps auto-prefix
+      out.add(node);
+    }
+    return;
+  }
+  if (node is Map) {
+    for (final entry in node.entries) {
+      _collectShql(entry.value, out, entry.key as String?);
+    }
+    return;
+  }
+  if (node is List) {
+    for (final item in node) {
+      _collectShql(item, out, parentKey);
+    }
+  }
+}
 
 typedef ShqlParseResult = ({String code, bool targeted});
 

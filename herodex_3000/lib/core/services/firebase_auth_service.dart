@@ -2,8 +2,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 /// Firebase Auth startup check.
 ///
-/// Sign-in/sign-up/sign-out are now handled by auth.shql (pure SHQL™).
-/// This class only checks whether a stored auth session exists so the
+/// auth.shql handles sign-in/sign-up/sign-out (pure SHQL™).
+/// This class checks whether a stored auth session exists so the
 /// app can decide whether to show the login screen before SHQL™ boots.
 class FirebaseAuthService {
   FirebaseAuthService._(this._prefs);

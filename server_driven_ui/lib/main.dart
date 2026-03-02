@@ -12,6 +12,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  WidgetRegistry.initStaticBindings();
   final routerSource = await rootBundle.loadString('assets/router.yaml');
   final routes = loadYaml(routerSource)['routes'] as YamlMap;
 
@@ -40,19 +41,22 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(primarySwatch: Colors.blue),
-      home: BlocProvider(
-        create: (context) => ScreenCubit(),
-        child: YamlDrivenScreen(
-          routes: routes,
-          initialRoute: 'main',
-          stdlibSource: stdlibSource,
-          uiSource: uiSource,
+    return WidgetRegistry.buildStatic(context, {
+      'type': 'MaterialApp',
+      'props': {
+        'title': 'Flutter Demo',
+        'theme': ThemeData(primarySwatch: Colors.blue),
+        'home': BlocProvider(
+          create: (context) => ScreenCubit(),
+          child: YamlDrivenScreen(
+            routes: routes,
+            initialRoute: 'main',
+            stdlibSource: stdlibSource,
+            uiSource: uiSource,
+          ),
         ),
-      ),
-    );
+      },
+    }, 'app');
   }
 }
 

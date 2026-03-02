@@ -1,7 +1,5 @@
 import 'package:test/test.dart';
 import 'package:hero_common/hero_common.dart';
-import 'mock_hero_repository.dart';
-import 'mock_hero_service.dart';
 
 HeroDataManager _createManager() {
   final constantsSet = Runtime.prepareConstantsSet();
@@ -16,7 +14,7 @@ HeroDataManager _createManager() {
 
 void main() async {
   test('Can download Batman', () async {
-    var heroService = MockHeroService();
+    var heroService = MockHeroService('../v04/test/heroes');
     var heroDataManager = _createManager();
     await heroService.getById("70").then((batmanJson) async {
       var batman = await heroDataManager.heroFromJson(
@@ -29,7 +27,7 @@ void main() async {
   });
 
   test('Can amend other Batman', () async {
-    var heroService = MockHeroService();
+    var heroService = MockHeroService('../v04/test/heroes');
     var heroDataManager = _createManager();
     await heroService.getById("69").then((batmanJson) async {
       var batman = await heroDataManager.heroFromJson(
@@ -65,7 +63,7 @@ void main() async {
       var weightConflictResolver = Weight.conflictResolver =
           FirstProvidedValueConflictResolver<Weight>();
 
-      var heroService = MockHeroService();
+      var heroService = MockHeroService('../v04/test/heroes');
       var heroDataManager = _createManager();
       List<String> failures = [];
       var timestamp = DateTime.timestamp();

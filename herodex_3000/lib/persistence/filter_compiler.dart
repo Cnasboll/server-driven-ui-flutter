@@ -59,12 +59,12 @@ class FilterCompiler {
     return compileTextMatch(query);
   }
 
-  /// (Re)compile all filter predicates from the current `_filters` SHQL™
+  /// (Re)compile all filter predicates from the current `Filters.filters` SHQL™
   /// variable. Only recompiles predicates that have changed.
   Future<void> compileFilterPredicates() async {
-    final filters = _shqlBindings.getVariable('_filters');
+    final filters = await _shqlBindings.eval('Filters.filters');
     if (filters is! List) {
-      debugPrint('[FilterCompiler] _filters is not a List: ${filters.runtimeType}');
+      debugPrint('[FilterCompiler] Filters.filters is not a List: ${filters.runtimeType}');
       _lambdas.clear();
       _predicateTexts.clear();
       return;

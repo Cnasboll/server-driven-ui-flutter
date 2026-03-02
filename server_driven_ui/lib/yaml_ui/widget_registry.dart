@@ -72,6 +72,7 @@ class WidgetRegistry {
     'ConstrainedBox': _buildConstrainedBox,
     'InkWell': _buildInkWell,
     'Material': _buildMaterial,
+    'MaterialApp': _buildMaterialApp,
     'Dismissible': _buildDismissible,
     'Semantics': _buildSemantics,
     'Tooltip': _buildTooltip,
@@ -232,6 +233,7 @@ class WidgetRegistry {
   /// The [node] is a map like `{'type': 'Text', 'props': {'data': 'Hello'}}`.
   /// Nested children are resolved recursively through the same registry.
   static Widget buildStatic(BuildContext context, dynamic node, [String path = 'static']) {
+    if (!_staticInitialized) initStaticBindings();
     // Pass through pre-built Widget objects unchanged
     if (node is Widget) return node;
     if (node is! Map) {
@@ -885,6 +887,7 @@ class _StatefulTextField extends StatefulWidget {
     this.keyboardType,
     this.buildChild,
     this.path = '',
+    this.debounceMs = 500,
     required this.engine,
     super.key,
   });
@@ -902,6 +905,7 @@ class _StatefulTextField extends StatefulWidget {
   final TextInputType? keyboardType;
   final ChildBuilder? buildChild;
   final String path;
+  final int debounceMs;
   final YamlUiEngine engine;
 
   @override
@@ -921,7 +925,7 @@ class _StatefulTextFieldState extends State<_StatefulTextField> {
     if (widget.externalController == null) {
       _ownController = TextEditingController(text: widget.initialValue);
     }
-    _debouncer = Debouncer(milliseconds: 500);
+    _debouncer = Debouncer(milliseconds: widget.debounceMs);
   }
 
   @override
@@ -1078,6 +1082,7 @@ Widget _buildTextField(
     keyboardType: _resolveKeyboardType(props['keyboardType']),
     buildChild: b,
     path: path,
+    debounceMs: (props['debounceMs'] as num?)?.toInt() ?? 500,
     engine: engine,
   );
 }
@@ -2651,5 +2656,43 @@ Widget _buildTooltip(
     key: key,
     message: message,
     child: childNode != null ? b(childNode, '$path.child') : null,
+  );
+}
+
+Widget _buildMaterialApp(
+  BuildContext context,
+  Map<String, dynamic> props,
+  ChildBuilder b,
+  dynamic child,
+  dynamic children,
+  String path,
+  ShqlBindings shql,
+  Key key,
+  YamlUiEngine engine,
+) {
+  // MaterialApp is a root widget — no explicit key, so Flutter reconciles by
+  // position and preserves internal Router/Navigator state across rebuilds.
+  final routerConfig = props['routerConfig'] as RouterConfig<Object>?;
+  if (routerConfig != null) {
+    return MaterialApp.router(
+      title: props['title'] as String? ?? '',
+      debugShowCheckedModeBanner: props['debugShowCheckedModeBanner'] as bool? ?? true,
+      theme: props['theme'] as ThemeData?,
+      darkTheme: props['darkTheme'] as ThemeData?,
+      themeMode: props['themeMode'] as ThemeMode? ?? ThemeMode.system,
+      routerConfig: routerConfig,
+      scaffoldMessengerKey: props['scaffoldMessengerKey'] as GlobalKey<ScaffoldMessengerState>?,
+      localizationsDelegates: props['localizationsDelegates'] as Iterable<LocalizationsDelegate<dynamic>>?,
+      supportedLocales: props['supportedLocales'] as Iterable<Locale>? ?? const [Locale('en')],
+    );
+  }
+  final homeNode = child ?? props['home'];
+  return MaterialApp(
+    title: props['title'] as String? ?? '',
+    debugShowCheckedModeBanner: props['debugShowCheckedModeBanner'] as bool? ?? true,
+    theme: props['theme'] as ThemeData?,
+    darkTheme: props['darkTheme'] as ThemeData?,
+    themeMode: props['themeMode'] as ThemeMode? ?? ThemeMode.system,
+    home: homeNode != null ? b(homeNode, '$path.home') : null,
   );
 }

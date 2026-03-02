@@ -846,6 +846,18 @@ class Runtime {
     notifyListeners?.call(name);
   }
 
+  /// Notify listeners for a key without writing a global variable.
+  /// Use this when the canonical value lives inside a namespaced OBJECT
+  /// and Observers only need to know that something changed.
+  Future<void> publish(
+    ExecutionContext executionContext,
+    ExecutionNode caller,
+    dynamic name,
+  ) async {
+    if (sandboxed) return;
+    notifyListeners?.call(name);
+  }
+
   Future<void> saveState(
     ExecutionContext executionContext,
     ExecutionNode caller,
@@ -966,6 +978,7 @@ class Runtime {
     setNullaryFunction("READLINE", readLine);
     setBinaryFunction("_DISPLAY_GRAPH", plot);
     setBinaryFunction("SET", set);
+    setUnaryFunction("PUBLISH", publish);
     setBinaryFunction("SAVE_STATE", saveState);
     setBinaryFunction("LOAD_STATE", loadState);
     setNullaryFunction("CLS", cls);
