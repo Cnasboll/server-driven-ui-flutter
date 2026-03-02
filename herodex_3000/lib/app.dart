@@ -58,6 +58,7 @@ class _HeroDexAppState extends State<HeroDexApp> {
   bool _initialized = false;
   bool _authenticated = false;
   bool _loginReady = false;
+  bool _splashReady = false;
   ParseTree? _predCallTree;
   String _loadingStatus = '';
 
@@ -141,6 +142,7 @@ class _HeroDexAppState extends State<HeroDexApp> {
     // Load splash template early so build() can use it while we init.
     final splashYaml = await rootBundle.loadString('assets/widgets/splash_screen.yaml');
     WidgetRegistry.loadStaticTemplate('SplashScreen', splashYaml);
+    if (mounted) setState(() => _splashReady = true);
 
     // Initialize static bindings for dialogs (CLOSE_DIALOG, variable access).
     WidgetRegistry.initStaticBindings();
@@ -621,21 +623,33 @@ class _HeroDexAppState extends State<HeroDexApp> {
         }
 
         if (!_initialized) {
+          // SplashScreen template is loaded async — before it's ready,
+          // show a minimal inline fallback with the same look.
+          final splashHome = _splashReady
+              ? {'type': 'SplashScreen', 'props': {
+                  'loadingStatusWidget': _loadingStatus.isNotEmpty
+                      ? {'type': 'Padding', 'props': {
+                          'padding': 16,
+                          'child': {'type': 'Text', 'props': {
+                            'data': _loadingStatus,
+                            'style': {'fontSize': 14, 'color': '0xB3FFFFFF', 'fontFamily': 'Orbitron'},
+                          }},
+                        }}
+                      : {'type': 'SizedBox', 'props': {}},
+                }}
+              : {'type': 'Scaffold', 'props': {
+                  'backgroundColor': '0xFF1A237E',
+                  'body': {'type': 'Center', 'props': {
+                    'child': {'type': 'CircularProgressIndicator', 'props': {
+                      'valueColor': '0xFFFFFFFF',
+                    }},
+                  }},
+                }};
           return WidgetRegistry.buildStatic(context, {
             'type': 'MaterialApp',
             'props': {
               ...themeProps,
-              'home': {'type': 'SplashScreen', 'props': {
-                'loadingStatusWidget': _loadingStatus.isNotEmpty
-                    ? {'type': 'Padding', 'props': {
-                        'padding': 16,
-                        'child': {'type': 'Text', 'props': {
-                          'data': _loadingStatus,
-                          'style': {'fontSize': 14, 'color': '0xB3FFFFFF', 'fontFamily': 'Orbitron'},
-                        }},
-                      }}
-                    : {'type': 'SizedBox', 'props': {}},
-              }},
+              'home': splashHome,
             },
           }, 'app.splash');
         }
