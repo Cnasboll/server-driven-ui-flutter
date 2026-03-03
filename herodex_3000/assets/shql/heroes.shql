@@ -128,8 +128,8 @@ Heroes := OBJECT{
         __NOTIFY_HERO_STATE();
     END,
 
-    -- Delete hero: remove from SHQL state (heroes, filters, stats), clear selection.
-    -- Stack discipline: SHQL first, then Dart DB — every hero in SHQL
+    -- Delete hero: remove from SHQL™ state (heroes, filters, stats), clear selection.
+    -- Stack discipline: SHQL™ first, then Dart DB — every hero in SHQL™
     -- is backed by HeroDataManager.
     DELETE_HERO: (__id) => BEGIN
         __old := heroes[__id];
@@ -142,7 +142,7 @@ Heroes := OBJECT{
         REBUILD_CARDS();
     END,
 
-    -- Reconcile delete: remove from SHQL + card cache, then status + log.
+    -- Reconcile delete: remove from SHQL™ + card cache, then status + log.
     RECONCILE_DELETE: (__hero, __status, __log_msg) => BEGIN
         IF __hero <> null THEN BEGIN
             ON_HERO_REMOVED(__hero);
@@ -151,8 +151,8 @@ Heroes := OBJECT{
         SET_STATUS_AND_LOG(__status, __log_msg, FALSE, FALSE);
     END,
 
-    -- Reconcile update (auto-amend): SHQL remove → Dart persist → SHQL add.
-    -- Stack discipline: Dart operation sandwiched between SHQL transactions.
+    -- Reconcile update (auto-amend): SHQL™ remove → Dart persist → SHQL™ add.
+    -- Stack discipline: Dart operation sandwiched between SHQL™ transactions.
     RECONCILE_UPDATE: (__old, __opaque, __status, __log_msg) => BEGIN
         ON_HERO_REMOVED(__old);
         Cards.REMOVE_CACHED_CARD(__old.ID);
@@ -181,7 +181,7 @@ Heroes := OBJECT{
         PUBLISH('Heroes.selected_hero');
     END,
 
-    -- Toggle lock: Dart DB toggle + SHQL state update + filter + card rebuild.
+    -- Toggle lock: Dart DB toggle + SHQL™ state update + filter + card rebuild.
     -- _HERO_TOGGLE_LOCK(id) does model toggle + DB persist, returns {locked: bool}.
     -- Filter rebuild is required: a "locked" predicate filter must reflect the change.
     TOGGLE_LOCK: (__id) => BEGIN
@@ -230,7 +230,7 @@ Heroes := OBJECT{
         Nav.GO_TO('hero_detail');
     END,
 
-    -- Clear all data: Dart clears DB, SHQL clears state.
+    -- Clear all data: Dart clears DB, SHQL™ clears state.
     CLEAR_ALL_DATA: () => BEGIN
         _HERO_CLEAR;
         ON_HERO_CLEAR();
@@ -252,7 +252,7 @@ Heroes := OBJECT{
     -- Dart callbacks:
     --   _INIT_RECONCILE → bool (acquires HeroService)
     --   _RECONCILE_FETCH(heroId) → {found, has_diff, diff_text, resolution_logs, updated_hero (opaque)}
-    --   _PERSIST_HERO(opaqueHeroModel) → SHQL Object (persists + maps)
+    --   _PERSIST_HERO(opaqueHeroModel) → SHQL™ Object (persists + maps)
     --   _HERO_DELETE(heroId) → void (DB delete)
     --   _RECONCILE_PROMPT(text) → action string
     --   _FINISH_RECONCILE → void (cleanup)

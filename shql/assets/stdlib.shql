@@ -127,7 +127,7 @@ END;
 -- Returns OBJECT{avg, stdev, min, max, count, sum}.
 -- Usage: STATS(heroes, h => HEIGHT_M(h, null))
 -- NOTE: name STATS must not be imported at the same time as a global variable named Stats
--- (SHQL identifiers are case-insensitive: STATS == Stats would cause a collision).
+-- (SHQL™ identifiers are case-insensitive: STATS == Stats would cause a collision).
 -- Callers inside files that define a Stats global must capture this function first:
 --   _STATS_FN := STATS;   <-- before Stats := OBJECT{...}
 STATS(list, accessor) := BEGIN
@@ -143,8 +143,8 @@ STATS(list, accessor) := BEGIN
         IF __v <> null THEN BEGIN
             __count := __count + 1;
             __sum := __sum + __v;
-            IF __min = null OR __v < __min THEN __min := __v;
-            IF __max = null OR __v > __max THEN __max := __v;
+            __min := NVL(__min, m => MIN(m, __v), __v);
+            __max := NVL(__max, m => MAX(m, __v), __v);
         END;
     END;
     IF __count = 0 THEN

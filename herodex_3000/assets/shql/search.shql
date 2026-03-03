@@ -4,8 +4,8 @@
 -- Dart callbacks (opaque HeroModel pattern):
 --   _SEARCH_HEROES(query) → {success, results: [opaque HeroModel...], error}
 --   _GET_SAVED_ID(model) → internal ID if already saved, else null
---   _PERSIST_HERO(model) → persist to DB + return SHQL Object
---   _MAP_HERO(model) → create SHQL Object without persisting
+--   _PERSIST_HERO(model) → persist to DB + return SHQL™ Object
+--   _MAP_HERO(model) → create SHQL™ Object without persisting
 --   _REVIEW_HERO(model, current, total) → action string
 Search := OBJECT{
     search_results: [],
@@ -47,7 +47,7 @@ Search := OBJECT{
     SUMMARY_TYPE: () => IF LENGTH(search_summary) > 0 THEN 'Padding' ELSE 'SizedBox',
 
     -- Search for heroes via API, then prompt to save unsaved results.
-    -- HeroModels returned by _SEARCH_HEROES are opaque — SHQL holds them and
+    -- HeroModels returned by _SEARCH_HEROES are opaque — SHQL™ holds them and
     -- passes to _GET_SAVED_ID, _PERSIST_HERO, _MAP_HERO, _REVIEW_HERO.
     SEARCH_HEROES: (query) => BEGIN
         IF LENGTH(query) < 2 THEN BEGIN
@@ -131,7 +131,7 @@ Search := OBJECT{
                 END;
             END;
 
-            -- save or saveAll: persist + add to SHQL state + cache card.
+            -- save or saveAll: persist + add to SHQL™ state + cache card.
             -- Filter/card rebuild is deferred to after the loop.
             __new_obj := _PERSIST_HERO(__model);
             IF __new_obj <> null THEN BEGIN

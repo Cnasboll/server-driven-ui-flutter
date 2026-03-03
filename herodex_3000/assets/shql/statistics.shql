@@ -9,7 +9,7 @@
 -- and call stat accessors as expressions to get fresh values.
 
 -- Capture STATS() before Stats := OBJECT{} shadows it.
--- SHQL identifiers are case-insensitive: STATS === Stats, so the assignment
+-- SHQL™ identifiers are case-insensitive: STATS === Stats, so the assignment
 -- below would overwrite the STATS stdlib function.  We keep a private alias.
 _STATS_FN := STATS;
 

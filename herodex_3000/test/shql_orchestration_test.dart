@@ -161,7 +161,7 @@ Future<({dynamic obj, String id, String name})> _persistFixtureHero(
 /// Concrete setup: real HeroCoordinator backed by MockHeroRepository +
 /// MockHeroService (the entire superheroapi.com, cached).
 /// Mocking is pushed to the outermost boundary — only UI dialogs remain mocked.
-/// All SHQL modules are the real production files (no stubs).
+/// All SHQL™ modules are the real production files (no stubs).
 Future<({
   ShqlTestRunner h,
   HeroCoordinator coordinator,
@@ -315,8 +315,8 @@ Future<({
 
 void main() {
   // ═══════════════════════════════════════════════════════════════════
-  // Heroes — concrete HeroCoordinator + real SHQL modules
-  // Each test = one user action → SHQL assertions → Dart DB assertions
+  // Heroes — concrete HeroCoordinator + real SHQL™ modules
+  // Each test = one user action → SHQL™ assertions → Dart DB assertions
   // ═══════════════════════════════════════════════════════════════════
   group('Heroes', () {
     late ShqlTestRunner h;
@@ -353,7 +353,7 @@ void main() {
       ''', boundValues: {'__id': batman.id});
     });
 
-    test('DELETE_HERO removes from SHQL state, stats, filters, card cache, and DB',
+    test('DELETE_HERO removes from SHQL™ state, stats, filters, card cache, and DB',
         () async {
       final batman = await addHero('69');
       await h.test(r'''
@@ -377,7 +377,7 @@ void main() {
       ''');
     });
 
-    test('TOGGLE_LOCK toggles in SHQL state and DB', () async {
+    test('TOGGLE_LOCK toggles in SHQL™ state and DB', () async {
       final batman = await addHero('69');
       await h.test(r'''
         CLEAR_CALL_LOG();
@@ -485,7 +485,7 @@ void main() {
       ''', boundValues: {'__id': batman.id});
     });
 
-    test('CLEAR_ALL_DATA clears DB and SHQL state', () async {
+    test('CLEAR_ALL_DATA clears DB and SHQL™ state', () async {
       await addHero('69');
       await addHero('644');
       await h.test(r'''
@@ -552,7 +552,7 @@ void main() {
   });
 
   // ═══════════════════════════════════════════════════════════════════
-  // Reconciliation — concrete HeroCoordinator + real SHQL modules
+  // Reconciliation — concrete HeroCoordinator + real SHQL™ modules
   // ═══════════════════════════════════════════════════════════════════
   group('Reconciliation', () {
     late ShqlTestRunner h;
@@ -668,7 +668,7 @@ void main() {
       heroDataManager.persist(amended);
       expect(amended.locked, true);
 
-      // Replace the SHQL object with one built from the amended (locked) model
+      // Replace the SHQL™ object with one built from the amended (locked) model
       final lockedObj = HeroShqlAdapter.heroToShqlObject(
           amended, shqlBindings.identifiers);
       await h.test(r'''
@@ -760,7 +760,7 @@ void main() {
     late MockHeroService mockService;
 
     setUp(() async {
-      // Minimal setup — no SHQL files needed for pure Dart parsing
+      // Minimal setup — no SHQL™ files needed for pure Dart parsing
       final s = await _concreteSetUp(shqlFiles: []);
       heroDataManager = s.heroDataManager;
       mockService = s.mockService;
@@ -852,7 +852,7 @@ void main() {
       ''');
     });
 
-    test('search "jubilee" + save: 1 hero saved to DB and SHQL state',
+    test('search "jubilee" + save: 1 hero saved to DB and SHQL™ state',
         () async {
       // User types "jubilee", presses enter, review dialog returns "save"
       h.mockTernary('_REVIEW_HERO', (model, current, total) => 'save');
@@ -860,7 +860,7 @@ void main() {
       await h.test(r'''
         Search.SEARCH_HEROES('jubilee');
 
-        -- SHQL state
+        -- SHQL™ state
         EXPECT(Heroes.total_heroes, 1);
         EXPECT(LENGTH(Search.search_results), 1);
         ASSERT('1 found' IN Search.search_summary);
@@ -1135,7 +1135,7 @@ void main() {
   });
 
   // ═══════════════════════════════════════════════════════════════════
-  // HeroEdit — concrete HeroCoordinator + real SHQL modules
+  // HeroEdit — concrete HeroCoordinator + real SHQL™ modules
   // ═══════════════════════════════════════════════════════════════════
   group('HeroEdit', () {
     late ShqlTestRunner h;
@@ -1175,7 +1175,7 @@ void main() {
       expect(heroDataManager.getById(heroId), isNotNull);
     });
 
-    test('SAVE_AMENDMENTS with real name change updates SHQL state and DB',
+    test('SAVE_AMENDMENTS with real name change updates SHQL™ state and DB',
         () async {
       final heroId = await addAndEditHero('69'); // Batman
 
@@ -1189,7 +1189,7 @@ void main() {
         CLEAR_CALL_LOG();
         HeroEdit.SAVE_AMENDMENTS();
 
-        -- SHQL state updated
+        -- SHQL™ state updated
         ASSERT(Heroes.heroes[__id] <> null);
         EXPECT(Heroes.total_heroes, 1);
         ASSERT_CALLED('_HERO_AMEND');
@@ -1208,7 +1208,7 @@ void main() {
       expect(dbHero.name, 'Batman (Amended)');
     });
 
-    test('SAVE_AMENDMENTS with powerstat change updates SHQL state and DB',
+    test('SAVE_AMENDMENTS with powerstat change updates SHQL™ state and DB',
         () async {
       final heroId = await addAndEditHero('69'); // Batman
 
@@ -1222,7 +1222,7 @@ void main() {
         CLEAR_CALL_LOG();
         HeroEdit.SAVE_AMENDMENTS();
 
-        -- SHQL state updated
+        -- SHQL™ state updated
         ASSERT(Heroes.heroes[__id] <> null);
         ASSERT_CALLED('_HERO_AMEND');
 
@@ -2708,7 +2708,7 @@ void main() {
   // references to non-namespaced identifiers (e.g. `DELETE_HERO` instead of
   // `Heroes.DELETE_HERO`).
 
-  group('YAML SHQL validation', () {
+  group('YAML SHQL™ validation', () {
     late ShqlTestRunner h;
     late HeroDataManager heroDataManager;
     late MockHeroService mockService;
@@ -2797,7 +2797,7 @@ void main() {
 
         if (failures.isNotEmpty) {
           fail(
-            '${failures.length} unresolved SHQL identifier(s):\n'
+            '${failures.length} unresolved SHQL™ identifier(s):\n'
             '${failures.join('\n\n')}',
           );
         }

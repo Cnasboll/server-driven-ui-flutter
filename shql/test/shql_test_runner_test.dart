@@ -199,7 +199,7 @@ void main() {
   });
 
   group('makeObject / readField', () {
-    test('creates SHQL objects usable with EXPECT', () async {
+    test('creates SHQL™ objects usable with EXPECT', () async {
       final hero = r.makeObject({'id': 'h1', 'name': 'Batman'});
       await r.test(r'''
         EXPECT(__h.NAME, 'Batman');
