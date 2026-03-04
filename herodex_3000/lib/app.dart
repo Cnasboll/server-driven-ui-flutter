@@ -74,7 +74,7 @@ class _HeroDexAppState extends State<HeroDexApp> {
   };
 
   // Widget name → YAML asset path (registered in the widget registry)
-  static const _widgetTemplates = {
+  static const _yamlWidgets = {
     'StatChip': 'assets/widgets/stat_chip.yaml',
     'PowerBar': 'assets/widgets/power_bar.yaml',
     'BottomNav': 'assets/widgets/bottom_nav.yaml',
@@ -131,17 +131,17 @@ class _HeroDexAppState extends State<HeroDexApp> {
     final authCode = await rootBundle.loadString('assets/shql/auth.shql');
     await shql.loadProgram(authCode);
 
-    // Load login template on the static registry
+    // Load login screen on the static registry
     final yaml = await rootBundle.loadString('assets/widgets/login_screen.yaml');
-    WidgetRegistry.loadStaticTemplate('LoginScreen', yaml);
+    WidgetRegistry.loadStatic('LoginScreen', yaml);
 
     if (mounted) setState(() => _loginReady = true);
   }
 
   Future<void> _initServices() async {
-    // Load splash template early so build() can use it while we init.
+    // Load splash screen early so build() can use it while we init.
     final splashYaml = await rootBundle.loadString('assets/widgets/splash_screen.yaml');
-    WidgetRegistry.loadStaticTemplate('SplashScreen', splashYaml);
+    WidgetRegistry.loadStatic('SplashScreen', splashYaml);
     if (mounted) setState(() => _splashReady = true);
 
     // Initialize static bindings for dialogs (CLOSE_DIALOG, variable access).
@@ -367,7 +367,7 @@ class _HeroDexAppState extends State<HeroDexApp> {
     );
     await _shqlBindings.loadProgram(stdlibCode);
     lap('stdlib.shql');
-    await _shqlBindings.eval(HeroSchema.generateSchemaScript());
+    await _shqlBindings.loadProgram(HeroSchema.generateSchemaScript());
     lap('HeroSchema');
 
     const shqlFiles = [
@@ -397,15 +397,15 @@ class _HeroDexAppState extends State<HeroDexApp> {
     // imperative Dart screens (HeroCard, etc.) can use buildStatic too.
     registerStaticFactories(heroDexRegistry);
 
-    // Load YAML-defined widget templates into both the engine registry
+    // Load YAML-defined screens and widgets into both the engine registry
     // (for SHQL™-driven screens) and the static registry (for imperative
     // Dart screens like login, splash, and dialogs).
-    for (final entry in _widgetTemplates.entries) {
+    for (final entry in _yamlWidgets.entries) {
       final yaml = await rootBundle.loadString(entry.value);
-      _yamlEngine.loadWidgetTemplate(entry.key, yaml);
-      WidgetRegistry.loadStaticTemplate(entry.key, yaml);
+      _yamlEngine.loadWidget(entry.key, yaml);
+      WidgetRegistry.loadStatic(entry.key, yaml);
     }
-    lap('YAML templates');
+    lap('YAML widgets');
 
     // Filter and query changes are handled in SHQL™:
     // - __PERSIST_FILTERS() calls FULL_REBUILD_AND_DISPLAY() after mutating filters
@@ -418,13 +418,9 @@ class _HeroDexAppState extends State<HeroDexApp> {
     lap('startup');
     if (mounted) setState(() => _loadingStatus = '');
 
-    // Fill any local gaps from Firestore cloud (cross-device sync).
-    await _shqlBindings.eval('Cloud.SEED_FROM_CLOUD()');
-    lap('Cloud.SEED_FROM_CLOUD');
-
-    // Apply initial preferences via SHQL™ (calls _ON_PREF_CHANGED for each)
-    // and determine initial route in one call.
-    final initialRoute = await _shqlBindings.eval('Prefs.APPLY_INIT_STATE()') as String;
+    // Fill cloud gaps then apply initial preferences — one SHQL™ call.
+    final initialRoute = await _shqlBindings.eval('Cloud.SEED_AND_APPLY_STATE()') as String;
+    lap('Cloud.SEED_AND_APPLY_STATE');
 
     _router = GoRouter(
       navigatorKey: _navigatorKey,
@@ -623,7 +619,7 @@ class _HeroDexAppState extends State<HeroDexApp> {
         }
 
         if (!_initialized) {
-          // SplashScreen template is loaded async — before it's ready,
+          // SplashScreen is loaded async — before it's ready,
           // show a minimal inline fallback with the same look.
           final splashHome = _splashReady
               ? {'type': 'SplashScreen', 'props': {

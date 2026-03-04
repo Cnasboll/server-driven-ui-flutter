@@ -6,8 +6,8 @@ import 'package:server_driven_ui/server_driven_ui.dart';
 import 'package:herodex_3000/core/herodex_widget_registry.dart';
 import 'hero_card_test_utils.dart';
 
-/// YAML templates used by the hero card tree.
-const _requiredTemplates = [
+/// YAML widget types used by the hero card tree.
+const _requiredTypes = [
   'HeroCardBody',
   'DismissibleCard',
   'BadgeRow',
@@ -30,11 +30,11 @@ void main() {
     // Initialize static bindings (no platform boundaries needed for tests)
     WidgetRegistry.initStaticBindings();
 
-    // Register YAML templates on the static registry
-    for (final name in _requiredTemplates) {
+    // Register YAML-defined widgets on the static registry
+    for (final name in _requiredTypes) {
       final file = File('assets/widgets/${_camelToSnake(name)}.yaml');
       if (file.existsSync()) {
-        WidgetRegistry.loadStaticTemplate(name, file.readAsStringSync());
+        WidgetRegistry.loadStatic(name, file.readAsStringSync());
       }
     }
     // Register custom Dart factories (HeroCardImage, BattleMap)

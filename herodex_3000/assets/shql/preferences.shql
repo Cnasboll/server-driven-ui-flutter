@@ -71,7 +71,7 @@ Prefs := OBJECT{
         Nav.GO_TO('home');
     END,
 
-    -- UI helpers for YAML templates.
+    -- UI helpers for YAML-defined screens.
     DARK_MODE_ICON: () => IF is_dark_mode THEN 'light_mode' ELSE 'dark_mode',
     DARK_MODE_SETTINGS_ICON: () => IF is_dark_mode THEN 'dark_mode' ELSE 'light_mode',
     INITIAL_ROUTE: () => IF onboarding_completed THEN 'home' ELSE 'onboarding',

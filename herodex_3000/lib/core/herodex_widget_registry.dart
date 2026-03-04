@@ -22,7 +22,7 @@ HeroDexWidgetRegistry createHeroDexWidgetRegistry() {
     // Everything else (Stack, badge, overlays) is SHQL™-generated.
     // -----------------------------------------------------------------------
     'CachedImage':
-        (context, props, buildChild, child, children, path, shql, key, engine) {
+        (context, props, buildChild, child, children, path, shql, key, engine, screenCtx) {
           final imageUrl = props['imageUrl'] as String?;
           final placeholderNode = props['placeholder'];
           final spinnerNode = props['spinner'];
@@ -47,7 +47,7 @@ HeroDexWidgetRegistry createHeroDexWidgetRegistry() {
     // the full widget tree as JSON. Only Dart because they are 3rd-party.
     // -----------------------------------------------------------------------
     'FlutterMap':
-        (context, props, buildChild, child, children, path, shql, key, engine) {
+        (context, props, buildChild, child, children, path, shql, key, engine, screenCtx) {
           final lat = (props['latitude'] as num?)?.toDouble() ?? 0;
           final lon = (props['longitude'] as num?)?.toDouble() ?? 0;
           final zoom = (props['zoom'] as num?)?.toDouble() ?? 10;
@@ -77,7 +77,7 @@ HeroDexWidgetRegistry createHeroDexWidgetRegistry() {
         },
 
     'TileLayer':
-        (context, props, buildChild, child, children, path, shql, key, engine) {
+        (context, props, buildChild, child, children, path, shql, key, engine, screenCtx) {
           return TileLayer(
             key: key,
             urlTemplate: props['urlTemplate'] as String? ??
@@ -88,7 +88,7 @@ HeroDexWidgetRegistry createHeroDexWidgetRegistry() {
         },
 
     'MarkerLayer':
-        (context, props, buildChild, child, children, path, shql, key, engine) {
+        (context, props, buildChild, child, children, path, shql, key, engine, screenCtx) {
           final rawMarkers = props['markers'];
           final markers = <Marker>[];
           if (rawMarkers is List) {
@@ -132,7 +132,7 @@ void registerStaticFactories(AppWidgetRegistry registry) {
 
 /// Extended registry that adds HeroDex custom widgets on top of the basic
 /// framework registry. Uses the generic [AppWidgetRegistry] 3-tier lookup:
-/// custom factories → basic (framework) registry → YAML templates.
+/// custom factories → basic (framework) registry → YAML-defined types.
 class HeroDexWidgetRegistry extends AppWidgetRegistry {
   HeroDexWidgetRegistry(super.basicRegistry, super.customFactories);
 }

@@ -139,7 +139,7 @@ Auth := OBJECT{
         END;
     END,
 
-    -- UI helpers for YAML templates.
+    -- UI helpers for YAML-defined screens.
     LOGIN_TITLE: () => IF LOGIN_IS_REGISTERING THEN 'Create Account' ELSE 'Sign In',
     LOGIN_TOGGLE_TEXT: () => IF LOGIN_IS_REGISTERING THEN 'Already have an account? Sign in' ELSE "Don't have an account? Register",
     LOGIN_ERROR_CHILDREN: () => IF LOGIN_ERROR <> '' THEN [{'type': 'SizedBox', 'props': {'height': 12}}, {'type': 'Text', 'props': {'data': LOGIN_ERROR, 'style': {'color': '0xFFD32F2F', 'fontSize': 13}}}] ELSE [],

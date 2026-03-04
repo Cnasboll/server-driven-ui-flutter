@@ -382,7 +382,7 @@ Heroes := OBJECT{
 
     GET_HERO_COUNT: () => LENGTH(heroes),
 
-    -- UI helpers for YAML templates.
+    -- UI helpers for YAML-defined screens.
     HERO_GRID_TYPE: () => IF LENGTH(hero_cards) = 0 THEN 'Center' ELSE 'GridView',
     SELECTED_HERO_TITLE: () => IF selected_hero <> null THEN selected_hero.NAME ELSE 'Hero Details',
     IS_SAVED_HERO_TYPE: () => IF selected_hero <> null AND heroes[selected_hero.ID] <> null THEN 'IconButton' ELSE 'SizedBox',

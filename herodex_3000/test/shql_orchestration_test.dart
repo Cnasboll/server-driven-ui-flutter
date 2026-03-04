@@ -735,13 +735,8 @@ void main() {
         -- Set aborted BEFORE reconcile starts
         Heroes.SET_RECONCILE_ABORTED(TRUE);
         Heroes.RECONCILE_HEROES();
-
         -- Snackbar should say "aborted"
-        ASSERT_CALLED('_SHOW_SNACKBAR')
-      ''');
-
-      // Verify the snackbar message includes "aborted"
-      await h.test(r'''
+        ASSERT_CALLED('_SHOW_SNACKBAR');
         -- Also test ABORT_RECONCILE function itself
         Heroes.SET_RECONCILE_ABORTED(FALSE);
         Heroes.ABORT_RECONCILE();
@@ -1747,6 +1742,13 @@ void main() {
         EXPECT(LOAD_STATE('is_dark_mode', null), TRUE)
       ''');
     });
+
+    test('SEED_AND_APPLY_STATE returns initial route', () async {
+      await h.test(r'''
+        Prefs.onboarding_completed := TRUE;
+        EXPECT(Cloud.SEED_AND_APPLY_STATE(), 'home')
+      ''');
+    });
   });
 
   // ═══════════════════════════════════════════════════════════════════
@@ -2328,28 +2330,26 @@ void main() {
       ''');
     });
 
-    test('__WMO_DESCRIPTION maps weather codes', () async {
+    test('__WMO_WEATHER maps weather codes to description+icon pairs', () async {
       await h.test(r'''
-        EXPECT(World.__WMO_DESCRIPTION(0), 'Clear sky');
-        EXPECT(World.__WMO_DESCRIPTION(2), 'Partly cloudy');
-        EXPECT(World.__WMO_DESCRIPTION(45), 'Foggy');
-        EXPECT(World.__WMO_DESCRIPTION(55), 'Drizzle');
-        EXPECT(World.__WMO_DESCRIPTION(63), 'Rain');
-        EXPECT(World.__WMO_DESCRIPTION(73), 'Snow');
-        EXPECT(World.__WMO_DESCRIPTION(80), 'Rain showers');
-        EXPECT(World.__WMO_DESCRIPTION(85), 'Snow showers');
-        EXPECT(World.__WMO_DESCRIPTION(95), 'Thunderstorm')
-      ''');
-    });
-
-    test('__WMO_ICON maps weather codes to icons', () async {
-      await h.test(r'''
-        EXPECT(World.__WMO_ICON(0), 'wb_sunny');
-        EXPECT(World.__WMO_ICON(2), 'cloud');
-        EXPECT(World.__WMO_ICON(45), 'foggy');
-        EXPECT(World.__WMO_ICON(55), 'water_drop');
-        EXPECT(World.__WMO_ICON(73), 'ac_unit');
-        EXPECT(World.__WMO_ICON(95), 'flash_on')
+        EXPECT(World.__WMO_WEATHER(0).DESCRIPTION, 'Clear sky');
+        EXPECT(World.__WMO_WEATHER(0).ICON, 'wb_sunny');
+        EXPECT(World.__WMO_WEATHER(2).DESCRIPTION, 'Partly cloudy');
+        EXPECT(World.__WMO_WEATHER(2).ICON, 'cloud');
+        EXPECT(World.__WMO_WEATHER(45).DESCRIPTION, 'Foggy');
+        EXPECT(World.__WMO_WEATHER(45).ICON, 'foggy');
+        EXPECT(World.__WMO_WEATHER(55).DESCRIPTION, 'Drizzle');
+        EXPECT(World.__WMO_WEATHER(55).ICON, 'water_drop');
+        EXPECT(World.__WMO_WEATHER(63).DESCRIPTION, 'Rain');
+        EXPECT(World.__WMO_WEATHER(63).ICON, 'water_drop');
+        EXPECT(World.__WMO_WEATHER(73).DESCRIPTION, 'Snow');
+        EXPECT(World.__WMO_WEATHER(73).ICON, 'ac_unit');
+        EXPECT(World.__WMO_WEATHER(80).DESCRIPTION, 'Rain showers');
+        EXPECT(World.__WMO_WEATHER(80).ICON, 'ac_unit');
+        EXPECT(World.__WMO_WEATHER(85).DESCRIPTION, 'Snow showers');
+        EXPECT(World.__WMO_WEATHER(85).ICON, 'ac_unit');
+        EXPECT(World.__WMO_WEATHER(95).DESCRIPTION, 'Thunderstorm');
+        EXPECT(World.__WMO_WEATHER(95).ICON, 'flash_on')
       ''');
     });
 
@@ -2703,7 +2703,7 @@ void main() {
   // YAML SHQL™ Expression Validation
   // ═══════════════════════════════════════════════════════════════════════════
   //
-  // For every YAML screen/widget template, extract all `shql:` expressions
+  // For every YAML screen and widget, extract all `shql:` expressions
   // and execute them against the fully loaded runtime. This catches stale
   // references to non-namespaced identifiers (e.g. `DELETE_HERO` instead of
   // `Heroes.DELETE_HERO`).
@@ -2750,7 +2750,7 @@ void main() {
       mockService = s.mockService;
       shqlBindings = s.shqlBindings;
 
-      // Framework directive used in dialog widget templates
+      // Framework directive used in YAML-defined dialog screens
       h.runtime.setUnaryFunction('CLOSE_DIALOG', (ctx, c, a) =>
           <String, dynamic>{'__close_dialog__': true, 'value': a});
 
@@ -3018,7 +3018,7 @@ void main() {
       expect(allShqlFromYaml('assets/widgets/conflict_dialog.yaml'), conflictDialogExprs);
     });
 
-    // Widget templates with 0 SHQL™ expressions
+    // YAML widgets with 0 SHQL™ expressions
     for (final path in [
       'assets/widgets/bottom_nav.yaml',
       'assets/widgets/hero_card_body.yaml',
@@ -3579,13 +3579,54 @@ void main() {
     test('screen YAML: TAB_NAV callback via onTap prop', () async {
       final expr = onlineExprs[15]; // Nav.TAB_NAV(1, value)
       await h.test('''
+        value := 0;
         $expr;
-        ASSERT_CONTAINS(Nav.navigation_stack, 'home')
-      ''', boundValues: {'value': 0});
-      await h.test('''
+        ASSERT_CONTAINS(Nav.navigation_stack, 'home');
+        value := 2;
         $expr;
         ASSERT_CONTAINS(Nav.navigation_stack, 'heroes')
-      ''', boundValues: {'value': 2});
+      ''');
+    });
+  });
+
+  // ─── YAML screen local SHQL™ scope ──────────────────────────────────────
+  group('YAML screen local scope', () {
+    late ShqlBindings sb;
+
+    setUp(() {
+      sb = ShqlBindings(onMutated: () {}, saveState: (k, v) async {}, loadState: (k, d) async => d);
+    });
+
+    test('createScreenContext() binds props as direct SHQL™ variables', () async {
+      final ctx = sb.createScreenContext({'label': 'Batman', 'id': '99'});
+      final label = await sb.eval('LABEL', startingScope: ctx.scope);
+      final id = await sb.eval('ID', startingScope: ctx.scope);
+      expect(label, 'Batman');
+      expect(id, '99');
+    });
+
+    test('scope is mutable: SHQL™ write persists across evals on the same context', () async {
+      final ctx = sb.createScreenContext({'checked': false});
+      await sb.eval('CHECKED := NOT CHECKED', startingScope: ctx.scope);
+      final checked = await sb.eval('CHECKED', startingScope: ctx.scope);
+      expect(checked, isTrue);
+    });
+
+    test('nested contexts: child inherits parent props via scope chain', () async {
+      final outer = sb.createScreenContext({'level': 'outer', 'shared': 42});
+      final inner = sb.createScreenContext({'level': 'inner'}, parent: outer);
+      // inner's own prop shadows parent's
+      expect(await sb.eval('LEVEL', startingScope: inner.scope), 'inner');
+      // parent's prop is accessible through the scope chain
+      expect(await sb.eval('SHARED', startingScope: inner.scope), 42);
+    });
+
+    test('sibling contexts are independent', () async {
+      final a = sb.createScreenContext({'x': 1});
+      final b = sb.createScreenContext({'x': 2});
+      await sb.eval('X := 99', startingScope: a.scope);
+      // mutation on a does not affect b
+      expect(await sb.eval('X', startingScope: b.scope), 2);
     });
   });
 }

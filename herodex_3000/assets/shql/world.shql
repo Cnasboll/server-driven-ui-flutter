@@ -103,28 +103,18 @@ World := OBJECT{
         PUBLISH('World.weather');
     END,
 
-    __WMO_DESCRIPTION: (code) => BEGIN
-        IF code = 0 THEN RETURN 'Clear sky';
-        IF code <= 3 THEN RETURN 'Partly cloudy';
-        IF code <= 48 THEN RETURN 'Foggy';
-        IF code <= 57 THEN RETURN 'Drizzle';
-        IF code <= 67 THEN RETURN 'Rain';
-        IF code <= 77 THEN RETURN 'Snow';
-        IF code <= 82 THEN RETURN 'Rain showers';
-        IF code <= 86 THEN RETURN 'Snow showers';
-        IF code >= 95 THEN RETURN 'Thunderstorm';
-        RETURN 'Cloudy';
-    END,
-
-    __WMO_ICON: (code) => BEGIN
-        IF code = 0 THEN RETURN 'wb_sunny';
-        IF code <= 3 THEN RETURN 'cloud';
-        IF code <= 48 THEN RETURN 'foggy';
-        IF code <= 67 THEN RETURN 'water_drop';
-        IF code <= 77 THEN RETURN 'ac_unit';
-        IF code <= 86 THEN RETURN 'ac_unit';
-        IF code >= 95 THEN RETURN 'flash_on';
-        RETURN 'cloud';
+    -- Returns OBJECT{description, icon} for a WMO weather code.
+    __WMO_WEATHER: (code) => BEGIN
+        IF code = 0 THEN RETURN OBJECT{description: 'Clear sky', icon: 'wb_sunny'};
+        IF code <= 3 THEN RETURN OBJECT{description: 'Partly cloudy', icon: 'cloud'};
+        IF code <= 48 THEN RETURN OBJECT{description: 'Foggy', icon: 'foggy'};
+        IF code <= 57 THEN RETURN OBJECT{description: 'Drizzle', icon: 'water_drop'};
+        IF code <= 67 THEN RETURN OBJECT{description: 'Rain', icon: 'water_drop'};
+        IF code <= 77 THEN RETURN OBJECT{description: 'Snow', icon: 'ac_unit'};
+        IF code <= 82 THEN RETURN OBJECT{description: 'Rain showers', icon: 'ac_unit'};
+        IF code <= 86 THEN RETURN OBJECT{description: 'Snow showers', icon: 'ac_unit'};
+        IF code >= 95 THEN RETURN OBJECT{description: 'Thunderstorm', icon: 'flash_on'};
+        RETURN OBJECT{description: 'Cloudy', icon: 'cloud'};
     END,
 
     REFRESH_WEATHER: () => BEGIN
@@ -132,8 +122,8 @@ World := OBJECT{
         __data := FETCH(__url);
         IF __data <> null AND __data["current_weather"] <> null THEN BEGIN
             __current := __data["current_weather"];
-            __code := __current["weathercode"];
-            SET_WEATHER(__current["temperature"], __current["windspeed"], __WMO_DESCRIPTION(__code), __WMO_ICON(__code));
+            __weather := __WMO_WEATHER(__current["weathercode"]);
+            SET_WEATHER(__current["temperature"], __current["windspeed"], __weather.DESCRIPTION, __weather.ICON);
         END;
     END,
 
@@ -147,7 +137,7 @@ World := OBJECT{
         "Morale is high among the defenders"
     ],
 
-    -- UI helpers for YAML templates.
+    -- UI helpers for YAML-defined screens.
     WEATHER_TEMP_LABEL: () => IF weather_temp <> null THEN STRING(ROUND(weather_temp)) + '°C' ELSE 'Loading...',
     WEATHER_WIND_LABEL: () => 'Wind: ' + STRING(ROUND(weather_wind)) + ' km/h',
     LOCATION_LABEL: () => IF LENGTH(location_description) > 0 THEN 'Your location: ' + location_description ELSE '',

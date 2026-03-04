@@ -67,6 +67,7 @@ class Engine {
     ConstantsSet? constantsSet,
     CancellationToken? cancellationToken,
     Map<String, dynamic>? boundValues,
+    Scope? startingScope,
   }) async {
     // print('Executing SHQL™ code:\n$code');
     constantsSet ??= Runtime.prepareConstantsSet();
@@ -79,6 +80,7 @@ class Engine {
       runtime,
       cancellationToken,
       boundValues: boundValues,
+      startingScope: startingScope,
       sourceCode: code,
     );
   }
@@ -106,8 +108,8 @@ class Engine {
     return result.$1;
   }
 
-  static Scope getScope(Runtime runtime, Map<String, dynamic>? boundValues) {
-    var scope = runtime.globalScope;
+  static Scope getScope(Runtime runtime, Map<String, dynamic>? boundValues, {Scope? startingScope}) {
+    var scope = startingScope ?? runtime.globalScope;
     if (boundValues != null) {
       scope = Scope(Object(), constants: scope.constants, parent: scope);
       for (var entry in boundValues.entries) {
@@ -128,8 +130,9 @@ class Engine {
     required Runtime runtime,
     CancellationToken? cancellationToken,
     Map<String, dynamic>? boundValues,
+    Scope? startingScope,
   }) {
-    return _execute(parseTree, runtime, cancellationToken, boundValues: boundValues);
+    return _execute(parseTree, runtime, cancellationToken, boundValues: boundValues, startingScope: startingScope);
   }
 
   static Future<dynamic> _execute(
@@ -137,10 +140,11 @@ class Engine {
     Runtime runtime,
     CancellationToken? cancellationToken, {
     Map<String, dynamic>? boundValues,
+    Scope? startingScope,
     String? sourceCode,
   }) async {
     var executionContext = ExecutionContext(runtime: runtime);
-    Scope scope = getScope(runtime, boundValues);
+    Scope scope = getScope(runtime, boundValues, startingScope: startingScope);
     var executionNode = createExecutionNode(
       parseTree,
       executionContext.mainThread,

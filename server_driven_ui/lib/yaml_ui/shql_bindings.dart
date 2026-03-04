@@ -8,6 +8,25 @@ import 'package:shql/parser/parse_tree.dart';
 import 'package:shql/parser/parser.dart';
 import 'package:yaml/yaml.dart';
 
+/// The SHQL™ execution context for a screen rendered from YAML.
+///
+/// Created by [ShqlBindings.createScreenContext] when a YAML-defined screen
+/// or widget is about to render its subtree.  The context is injected into
+/// every child factory via the `screenCtx` parameter of [ChildBuilder] /
+/// [WidgetFactory] — it flows downward through the build tree exactly as
+/// [ExecutionContext] flows through SHQL™ execution nodes.
+///
+/// Callbacks created during the build close over the injected context and
+/// pass [scope] as `startingScope` when invoking [ShqlBindings.eval] or
+/// [ShqlBindings.call], so they execute within the screen's local scope and
+/// can read/write screen-local variables without touching globals.
+class ScreenContext {
+  /// The SHQL™ [Scope] for this screen — opaque to Dart callers.
+  final dynamic scope;
+
+  const ScreenContext(this.scope);
+}
+
 class ShqlBindings {
   late ConstantsSet _constantsSet;
   late Runtime _runtime;
@@ -100,6 +119,41 @@ class ShqlBindings {
   ConstantsSet get constantsSet => _constantsSet;
   ConstantsTable<String> get identifiers => _runtime.identifiers;
 
+  // ---------------------------------------------------------------------------
+  // YAML screen local scope
+  // ---------------------------------------------------------------------------
+  //
+  // When a YAML screen or widget is rendered, its factory calls
+  // [createScreenContext] to create a SHQL™ child Scope populated with the
+  // screen's props as direct variables.  The [ScreenContext] is injected into
+  // every child factory via the `screenCtx` parameter of [ChildBuilder] /
+  // [WidgetFactory], exactly as ExecutionContext is passed into execution nodes.
+  // Callbacks created during the build close over the injected context and
+  // pass its scope as `startingScope` when invoking [eval] or [call].
+  //
+  // There is no push/pop or shared mutable state — the context flows
+  // down through the widget-build parameter chain.
+
+  /// Create a [ScreenContext] for a YAML screen or widget about to render.
+  ///
+  /// Each entry in [props] becomes a direct variable in the new SHQL™ scope
+  /// (accessible as e.g. `LABEL`, not `__scope.LABEL`).
+  ///
+  /// The new scope's parent is taken from [parent] if provided, otherwise
+  /// [Runtime.globalScope].  Passing the enclosing [ScreenContext] here lets
+  /// nested YAML widgets inherit the outer screen's local variables.
+  ScreenContext createScreenContext(Map<String, dynamic> props, {ScreenContext? parent}) {
+    final parentScope = (parent?.scope as Scope?) ?? _runtime.globalScope;
+    final scope = Scope(Object(), constants: parentScope.constants, parent: parentScope);
+    for (final entry in props.entries) {
+      scope.members.setVariable(
+        _runtime.identifiers.include(entry.key.toUpperCase()),
+        entry.value,
+      );
+    }
+    return ScreenContext(scope);
+  }
+
   dynamic getVariable(String name) {
     var id = _constantsSet.identifiers.include(name.toUpperCase());
     var member = _runtime.globalScope.resolveIdentifier(id);
@@ -189,7 +243,7 @@ class ShqlBindings {
   /// Use with [evalParsed] to avoid re-parsing in hot loops.
   ParseTree parse(String expr) => Parser.parse(expr, _constantsSet, sourceCode: expr);
 
-  Future<dynamic> eval(String expr, {Map<String, dynamic>? boundValues}) async {
+  Future<dynamic> eval(String expr, {Map<String, dynamic>? boundValues, dynamic startingScope}) async {
     try {
       return await Engine.execute(
         expr,
@@ -197,6 +251,7 @@ class ShqlBindings {
         constantsSet: _constantsSet,
         cancellationToken: _cancellationToken,
         boundValues: boundValues,
+        startingScope: startingScope as Scope?,
       );
     } catch (e) {
       // Rethrow the exception to be handled by the FutureBuilder in the UI.
@@ -205,12 +260,13 @@ class ShqlBindings {
   }
 
   /// Execute a pre-parsed [ParseTree], skipping the parse step.
-  Future<dynamic> evalParsed(ParseTree tree, {Map<String, dynamic>? boundValues}) async {
+  Future<dynamic> evalParsed(ParseTree tree, {Map<String, dynamic>? boundValues, dynamic startingScope}) async {
     return await Engine.executeParsed(
       tree,
       runtime: _runtime,
       cancellationToken: _cancellationToken,
       boundValues: boundValues,
+      startingScope: startingScope as Scope?,
     );
   }
 
@@ -218,6 +274,7 @@ class ShqlBindings {
     String code, {
     bool targeted = false,
     Map<String, dynamic>? boundValues,
+    dynamic startingScope,
   }) async {
     try {
       // Strip `shql:` prefix if present (YAML DSL values may include it)
@@ -228,6 +285,7 @@ class ShqlBindings {
         constantsSet: _constantsSet,
         cancellationToken: _cancellationToken,
         boundValues: boundValues,
+        startingScope: startingScope as Scope?,
       );
 
       // If the call was successful and not a targeted update,

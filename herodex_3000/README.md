@@ -2,13 +2,13 @@
 
 A superhero tracking app built in **YAML** and **SHQL™**.
 
-Every screen, every dialog, every reusable widget is a YAML template. All business logic — filtering, searching, statistics, dynamic widget tree generation — is SHQL™. Flutter is the rendering engine underneath, but the application itself is written in a language layer above it. Dart appears only in the framework interpreter (`server_driven_ui/`, `shql/`) and in four thin widget factories at the boundary with third-party rendering libraries (`CachedNetworkImage`, `FlutterMap`, `TileLayer`, `MarkerLayer`).
+Every screen, every dialog, every reusable widget is defined in YAML. All business logic — filtering, searching, statistics, dynamic widget tree generation — is SHQL™. Flutter is the rendering engine underneath, but the application itself is written in a language layer above it. Dart appears only in the framework interpreter (`server_driven_ui/`, `shql/`) and in four thin widget factories at the boundary with third-party rendering libraries (`CachedNetworkImage`, `FlutterMap`, `TileLayer`, `MarkerLayer`).
 
 ## Architecture
 
 ### YAML + SHQL™
 
-The UI is defined in YAML — both full screens and reusable widget templates. Business logic is defined in SHQL™ scripts. At runtime the `YamlUiEngine` resolves `shql:` expressions embedded in the YAML, and the `WidgetRegistry` maps type names to Flutter widgets. Widget templates are composable: a screen YAML references a template by type name and passes props that are substituted at build time. This means the UI can be updated without recompiling the app.
+The UI is defined in YAML — both full screens and reusable widgets. Business logic is defined in SHQL™ scripts. At runtime the `YamlUiEngine` resolves `shql:` expressions embedded in the YAML, and the `WidgetRegistry` maps type names to Flutter widgets. YAML-defined widgets are composable: a screen references another widget by type name and passes props that are substituted at build time. This means the UI can be updated without recompiling the app.
 
 **Screens** (`assets/screens/`):
 ```
@@ -21,7 +21,7 @@ hero_detail.yaml -> Hero detail view
 hero_edit.yaml   -> Hero amendment editor
 ```
 
-**Widget templates** (`assets/widgets/`):
+**YAML widgets** (`assets/widgets/`):
 ```
 login_screen.yaml      -> Login/register screen (pre-auth, static registry)
 bottom_nav.yaml        -> Bottom navigation bar (shared across 5 screens)
@@ -65,14 +65,14 @@ Key SHQL™ patterns:
 - Dynamic widget trees — SHQL™ functions return complete widget tree maps (e.g. `_MAKE_HERO_CARD_TREE` returns a `DismissibleCard > HeroCardBody > [CachedImage, StatChips, ...]` tree; `GENERATE_BATTLE_MAP()` returns a `FlutterMap > [TileLayer, MarkerLayer]` tree)
 - `FETCH(url)` — Built-in HTTP GET + JSON parse (e.g. `REFRESH_WEATHER()` calls Open-Meteo API — zero Dart)
 - `POST(url, body)` / `PATCH(url, body)` — HTTP mutations (e.g. `FIREBASE_SIGN_IN()` POSTs to Identity Toolkit, `FIRESTORE_SAVE()` PATCHes Firestore REST — zero Dart)
-- `prop:` substitution — YAML widget templates use `"prop:name"` placeholders that are resolved to caller-provided values at build time; `on*` callback props are automatically treated as SHQL™ expressions
+- `prop:` substitution — YAML-defined widgets use `"prop:name"` placeholders that are resolved to caller-provided values at build time; `on*` callback props are automatically treated as SHQL™ expressions
 
 ### Mono-repo structure
 
 ```
 herodex_3000/     — Flutter mobile app (this package)
   assets/screens/ — YAML screen definitions (7 screens)
-  assets/widgets/ — YAML widget templates (19 templates)
+  assets/widgets/ — YAML-defined widgets (19 widgets)
   assets/shql/    — SHQL™ business logic + widget tree generation
 server_driven_ui/ — SDUI framework (YamlUiEngine, WidgetRegistry, ShqlBindings)
 shql/             — SHQL™ language engine (parser, runtime, execution)
@@ -244,7 +244,7 @@ You can also set the API key later in **Settings > API Configuration**.
 | **Dark mode** | Toggle via `ThemeCubit`, persisted in SharedPreferences + Firestore |
 | **Onboarding** | First-run screen with API config, filter setup, privacy consent |
 | **Search with debounce** | Debounced text input in FilterEditor (apply mode) and TextField widget |
-| **Swipe to delete** | `DismissibleCard` YAML template wrapping hero cards |
+| **Swipe to delete** | `DismissibleCard` YAML widget wrapping hero cards |
 | **Dynamic scaling** | `LayoutBuilder`-based responsive GridView (2-6 columns based on width) |
 | **Weather** | Live weather via Open-Meteo — pure SHQL™ (`REFRESH_WEATHER()` calls `FETCH()`, parses WMO codes, no Dart service) |
 | **Connectivity indicator** | `ConnectivityService` shows SnackBar on network changes |
@@ -300,7 +300,7 @@ The shared packages have 350+ tests: `shql/` engine (282 tests covering parser, 
 | `lib/persistence/sqflite_database_adapter.dart` | SQLite driver (FFI on desktop, native on mobile) |
 | `assets/shql/*.shql` | 12 SHQL™ scripts: auth, navigation, firestore, preferences, statistics, filters, heroes, hero_detail, hero_cards, search, hero_edit, world |
 | `assets/screens/*.yaml` | SDUI screen definitions (7 screens) |
-| `assets/widgets/*.yaml` | Reusable YAML widget templates (19 templates including login, dialogs, cards) |
+| `assets/widgets/*.yaml` | Reusable YAML-defined widgets (19 including login, dialogs, cards) |
 
 ## API
 

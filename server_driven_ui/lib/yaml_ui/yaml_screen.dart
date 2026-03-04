@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import 'shql_bindings.dart';
 import 'yaml_ui_engine.dart';
 
 /// A widget that renders a YAML screen definition loaded from an asset file.
@@ -18,6 +19,7 @@ class _YamlScreenState extends State<YamlScreen> {
   dynamic _resolvedData;
   bool _isLoading = true;
   String? _error;
+  ScreenContext? _screenCtx;
 
   @override
   void initState() {
@@ -37,6 +39,7 @@ class _YamlScreenState extends State<YamlScreen> {
     setState(() {
       _isLoading = true;
       _error = null;
+      _screenCtx = widget.engine.shql.createScreenContext({});
     });
 
     try {
@@ -79,6 +82,6 @@ class _YamlScreenState extends State<YamlScreen> {
       );
     }
 
-    return widget.engine.build(_resolvedData, context);
+    return widget.engine.build(_resolvedData, context, screenCtx: _screenCtx);
   }
 }

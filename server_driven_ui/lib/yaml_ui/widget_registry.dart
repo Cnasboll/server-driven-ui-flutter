@@ -6,7 +6,7 @@ import 'package:server_driven_ui/yaml_ui/yaml_ui_engine.dart';
 import 'resolvers.dart';
 import 'shql_bindings.dart';
 
-typedef ChildBuilder = Widget Function(dynamic node, String path);
+typedef ChildBuilder = Widget Function(dynamic node, String path, {ScreenContext? screenCtx});
 
 typedef WidgetFactory =
     Widget Function(
@@ -19,6 +19,7 @@ typedef WidgetFactory =
       ShqlBindings shql,
       Key key,
       YamlUiEngine engine,
+      ScreenContext? screenCtx,
     );
 
 class WidgetRegistry {
@@ -80,15 +81,16 @@ class WidgetRegistry {
 
   WidgetFactory? get(String type) => _factories[type];
 
-  /// Register a YAML-defined widget template under [name].
+  /// Register a YAML-defined widget or screen under [name].
   ///
-  /// The [template] is a parsed YAML map (e.g. `{type: Column, props: ...}`).
+  /// The [node] is a parsed YAML map (e.g. `{type: Column, props: ...}`).
   /// Any string value starting with `"prop:"` is substituted with the caller's
   /// props at build time. For example, `"prop:label"` becomes `props['label']`.
-  void registerTemplate(String name, dynamic template) {
-    _factories[name] = (context, props, buildChild, child, children, path, shql, key, engine) {
-      final resolved = substituteProps(template, props);
-      return buildChild(resolved, '$path.$name');
+  void register(String name, dynamic node) {
+    _factories[name] = (context, props, buildChild, child, children, path, shql, key, engine, screenCtx) {
+      final ctx = shql.createScreenContext(props.cast<String, dynamic>(), parent: screenCtx);
+      final resolved = substituteProps(node, props);
+      return buildChild(resolved, '$path.$name', screenCtx: ctx);
     };
   }
 
@@ -131,24 +133,14 @@ class WidgetRegistry {
     required String path,
     required ShqlBindings shql,
     required YamlUiEngine engine,
+    ScreenContext? screenCtx,
   }) {
     final f = _factories[type];
     if (f == null) {
       return _error(context, 'Unknown widget type: $type', 'Path: $path');
     }
-    // Create a key that is unique to the widget's path in the tree.
     final key = ValueKey<String>(path);
-    return f(
-      context,
-      props,
-      buildChild,
-      child,
-      children,
-      path,
-      shql,
-      key,
-      engine,
-    );
+    return f(context, props, buildChild, child, children, path, shql, key, engine, screenCtx);
   }
 
   /// A shared basic registry + lightweight SHQL™ bindings for static widget construction.
@@ -215,15 +207,15 @@ class WidgetRegistry {
     _basicInstance._factories[name] = factory;
   }
 
-  /// Register a YAML-defined widget template on the static registry so it is
+  /// Register a YAML-defined widget or screen on the static registry so it is
   /// available to [buildStatic] (imperative screens, dialogs, etc.).
-  static void registerStaticTemplate(String name, dynamic template) {
-    _basicInstance.registerTemplate(name, template);
+  static void registerStatic(String name, dynamic node) {
+    _basicInstance.register(name, node);
   }
 
-  /// Load and register a YAML template string on the static registry.
-  static void loadStaticTemplate(String name, String yaml) {
-    _staticEngine.loadWidgetTemplate(name, yaml);
+  /// Load and register a YAML-defined widget or screen on the static registry.
+  static void loadStatic(String name, String yaml) {
+    _staticEngine.loadWidget(name, yaml);
   }
 
   /// Build a widget from a YAML-like node spec without requiring a running
@@ -248,12 +240,13 @@ class WidgetRegistry {
       type: type,
       context: context,
       props: props,
-      buildChild: (childNode, childPath) => buildStatic(context, childNode, childPath),
+      buildChild: (childNode, childPath, {ScreenContext? screenCtx}) => buildStatic(context, childNode, childPath),
       child: child,
       children: children,
       path: path,
       shql: _staticShql,
       engine: _staticEngine,
+      screenCtx: null,
     );
   }
 
@@ -272,9 +265,10 @@ class WidgetRegistry {
     String code, {
     bool targeted = false,
     Map<String, dynamic>? boundValues,
+    dynamic startingScope,
   }) {
     shql
-        .call(code, targeted: targeted, boundValues: boundValues)
+        .call(code, targeted: targeted, boundValues: boundValues, startingScope: startingScope)
         .then((result) {
       if (result is Map &&
           result['__close_dialog__'] == true &&
@@ -324,10 +318,10 @@ class WidgetRegistry {
   }
 }
 
-/// A 3-tier widget registry for apps: custom factories → basic widgets → YAML templates.
+/// A 3-tier widget registry for apps: custom factories → basic widgets → YAML-defined types.
 ///
 /// Apps create an instance with their domain-specific widget factories.
-/// The lookup order is: custom → basic (framework) → YAML templates.
+/// The lookup order is: custom → basic (framework) → YAML-defined types.
 class AppWidgetRegistry extends WidgetRegistry {
   final WidgetRegistry _basicRegistry;
   final Map<String, WidgetFactory> _customFactories;
@@ -357,11 +351,12 @@ class AppWidgetRegistry extends WidgetRegistry {
     required String path,
     required ShqlBindings shql,
     required YamlUiEngine engine,
+    ScreenContext? screenCtx,
   }) {
     if (_customFactories.containsKey(type)) {
       final key = ValueKey<String>(path);
       return _customFactories[type]!(
-        context, props, buildChild, child, children, path, shql, key, engine,
+        context, props, buildChild, child, children, path, shql, key, engine, screenCtx,
       );
     }
     if (_basicRegistry.get(type) != null) {
@@ -375,6 +370,7 @@ class AppWidgetRegistry extends WidgetRegistry {
         path: path,
         shql: shql,
         engine: engine,
+        screenCtx: screenCtx,
       );
     }
     return super.build(
@@ -387,6 +383,7 @@ class AppWidgetRegistry extends WidgetRegistry {
       path: path,
       shql: shql,
       engine: engine,
+      screenCtx: screenCtx,
     );
   }
 }
@@ -401,6 +398,7 @@ Widget _buildScaffold(
   ShqlBindings shql,
   Key key,
   YamlUiEngine engine,
+  ScreenContext? screenCtx,
 ) {
   final appBarNode = props['appBar'];
   final bodyNode = props['body'];
@@ -410,11 +408,11 @@ Widget _buildScaffold(
     key: key,
     backgroundColor: bgColor != null ? Resolvers.color(bgColor) : null,
     appBar: appBarNode != null
-        ? b(appBarNode, '$path.props.appBar') as PreferredSizeWidget
+        ? b(appBarNode, '$path.props.appBar', screenCtx: screenCtx) as PreferredSizeWidget
         : null,
-    body: bodyNode != null ? b(bodyNode, '$path.props.body') : null,
+    body: bodyNode != null ? b(bodyNode, '$path.props.body', screenCtx: screenCtx) : null,
     bottomNavigationBar: bottomNavNode != null
-        ? b(bottomNavNode, '$path.props.bottomNavigationBar')
+        ? b(bottomNavNode, '$path.props.bottomNavigationBar', screenCtx: screenCtx)
         : null,
   );
 }
@@ -429,6 +427,7 @@ Widget _buildAppBar(
   ShqlBindings shql,
   Key key,
   YamlUiEngine engine,
+  ScreenContext? screenCtx,
 ) {
   final leadingNode = props['leading'];
   final titleNode = props['title'] ?? child;
@@ -438,13 +437,13 @@ Widget _buildAppBar(
     actions = actionsNode
         .asMap()
         .entries
-        .map((e) => b(e.value, '$path.actions[${e.key}]'))
+        .map((e) => b(e.value, '$path.actions[${e.key}]', screenCtx: screenCtx))
         .toList();
   }
   return AppBar(
     key: key,
-    leading: leadingNode != null ? b(leadingNode, '$path.leading') : null,
-    title: titleNode != null ? b(titleNode, '$path.title') : null,
+    leading: leadingNode != null ? b(leadingNode, '$path.leading', screenCtx: screenCtx) : null,
+    title: titleNode != null ? b(titleNode, '$path.title', screenCtx: screenCtx) : null,
     actions: actions,
   );
 }
@@ -459,10 +458,11 @@ Widget _buildCenter(
   ShqlBindings shql,
   Key key,
   YamlUiEngine engine,
+  ScreenContext? screenCtx,
 ) {
   return Center(
     key: key,
-    child: child != null ? b(child, '$path.child') : null,
+    child: child != null ? b(child, '$path.child', screenCtx: screenCtx) : null,
   );
 }
 
@@ -476,6 +476,7 @@ Widget _buildColumn(
   ShqlBindings shql,
   Key key,
   YamlUiEngine engine,
+  ScreenContext? screenCtx,
 ) {
   if (children != null && children is! List) {
     return WidgetRegistry._error(
@@ -498,7 +499,7 @@ Widget _buildColumn(
     children: childrenList
         .asMap()
         .entries
-        .map((entry) => b(entry.value, '$path.children[${entry.key}]'))
+        .map((entry) => b(entry.value, '$path.children[${entry.key}]', screenCtx: screenCtx))
         .toList(),
   );
 }
@@ -513,6 +514,7 @@ Widget _buildRow(
   ShqlBindings shql,
   Key key,
   YamlUiEngine engine,
+  ScreenContext? screenCtx,
 ) {
   final childrenList = (children is List) ? children : [];
 
@@ -531,7 +533,7 @@ Widget _buildRow(
         : MainAxisSize.max,
     children: [
       for (var i = 0; i < childrenList.length; i++)
-        b(childrenList[i], '$path.children[$i]'),
+        b(childrenList[i], '$path.children[$i]', screenCtx: screenCtx),
     ],
   );
 }
@@ -546,12 +548,13 @@ Widget _buildPadding(
   ShqlBindings shql,
   Key key,
   YamlUiEngine engine,
+  ScreenContext? screenCtx,
 ) {
   final childNode = props['child'] ?? child;
   return Padding(
     key: key,
     padding: Resolvers.edgeInsets(props['padding']),
-    child: childNode != null ? b(childNode, '$path.child') : null,
+    child: childNode != null ? b(childNode, '$path.child', screenCtx: screenCtx) : null,
   );
 }
 
@@ -565,6 +568,7 @@ Widget _buildContainer(
   ShqlBindings shql,
   Key key,
   YamlUiEngine engine,
+  ScreenContext? screenCtx,
 ) {
   final decorationMap = props['decoration'] as Map?;
   final borderMap = decorationMap?['border'] as Map?;
@@ -625,7 +629,7 @@ Widget _buildContainer(
       boxShadow: boxShadow,
       shape: shape,
     ),
-    child: child != null ? b(child, '$path.child') : null,
+    child: child != null ? b(child, '$path.child', screenCtx: screenCtx) : null,
   );
 }
 
@@ -639,6 +643,7 @@ Widget _buildSizedBox(
   ShqlBindings shql,
   Key key,
   YamlUiEngine engine,
+  ScreenContext? screenCtx,
 ) {
   return SizedBox(
     key: key,
@@ -646,7 +651,7 @@ Widget _buildSizedBox(
     height: (props['height'] is num)
         ? (props['height'] as num).toDouble()
         : null,
-    child: child != null ? b(child, '$path.child') : null,
+    child: child != null ? b(child, '$path.child', screenCtx: screenCtx) : null,
   );
 }
 
@@ -660,6 +665,7 @@ Widget _buildSpacer(
   ShqlBindings shql,
   Key key,
   YamlUiEngine engine,
+  ScreenContext? screenCtx,
 ) {
   return Spacer(key: key);
 }
@@ -674,6 +680,7 @@ Widget _buildText(
   ShqlBindings shql,
   Key key,
   YamlUiEngine engine,
+  ScreenContext? screenCtx,
 ) {
   final data = props['data'];
   final style = props['style'] as Map?;
@@ -720,16 +727,17 @@ Widget _buildElevatedButton(
   ShqlBindings shql,
   Key key,
   YamlUiEngine engine,
+  ScreenContext? screenCtx,
 ) {
   final childNode = props['child'] ?? child;
-  final cb = _resolveOnPressed(props['onPressed'], context, shql);
+  final cb = _resolveOnPressed(props['onPressed'], context, shql, screenCtx: screenCtx);
 
   return ElevatedButton(
     key: key,
     onPressed: cb,
     child: childNode != null
-        ? b(childNode, '$path.child')
-        : b({'type': 'Text', 'props': {'data': 'Button'}}, '$path.child'),
+        ? b(childNode, '$path.child', screenCtx: screenCtx)
+        : b({'type': 'Text', 'props': {'data': 'Button'}}, '$path.child', screenCtx: screenCtx),
   );
 }
 
@@ -743,13 +751,14 @@ Widget _buildExpanded(
   ShqlBindings shql,
   Key key,
   YamlUiEngine engine,
+  ScreenContext? screenCtx,
 ) {
   final childNode = props['child'] ?? child;
   return Expanded(
     key: key,
     child: childNode != null
-        ? b(childNode, '$path.child')
-        : b({'type': 'SizedBox', 'props': {}}, '$path.child'),
+        ? b(childNode, '$path.child', screenCtx: screenCtx)
+        : b({'type': 'SizedBox', 'props': {}}, '$path.child', screenCtx: screenCtx),
   );
 }
 
@@ -763,6 +772,7 @@ Widget _buildCard(
   ShqlBindings shql,
   Key key,
   YamlUiEngine engine,
+  ScreenContext? screenCtx,
 ) {
   final childNode = props['child'] ?? child;
   final onTap = props['onTap'];
@@ -771,7 +781,7 @@ Widget _buildCard(
   if (isShqlRef(onTap)) {
     final (:code, :targeted) = parseShql(onTap as String);
     cb = () {
-      WidgetRegistry.callShql(context, shql, code, targeted: targeted);
+      WidgetRegistry.callShql(context, shql, code, targeted: targeted, startingScope: screenCtx?.scope);
     };
   }
 
@@ -803,7 +813,7 @@ Widget _buildCard(
     elevation: (props['elevation'] as num?)?.toDouble(),
     shape: shape,
     clipBehavior: clip ?? Clip.none,
-    child: childNode != null ? b(childNode, '$path.child') : null,
+    child: childNode != null ? b(childNode, '$path.child', screenCtx: screenCtx) : null,
   );
 
   if (cb != null) {
@@ -823,13 +833,14 @@ Widget _buildClipRRect(
   ShqlBindings shql,
   Key key,
   YamlUiEngine engine,
+  ScreenContext? screenCtx,
 ) {
   final childNode = props['child'] ?? child;
   return ClipRRect(
     key: key,
     borderRadius:
         Resolvers.borderRadius(props['borderRadius']) ?? BorderRadius.zero,
-    child: childNode != null ? b(childNode, '$path.child') : null,
+    child: childNode != null ? b(childNode, '$path.child', screenCtx: screenCtx) : null,
   );
 }
 
@@ -843,10 +854,11 @@ Widget _buildImage(
   ShqlBindings shql,
   Key key,
   YamlUiEngine engine,
+  ScreenContext? screenCtx,
 ) {
   final source = (props['source'] ?? props['src']) as String?;
   if (source == null) {
-    return b({'type': 'SizedBox', 'props': {}}, '$path.fallback');
+    return b({'type': 'SizedBox', 'props': {}}, '$path.fallback', screenCtx: screenCtx);
   }
 
   final width = (props['width'] as num?)?.toDouble();
@@ -888,6 +900,7 @@ class _StatefulTextField extends StatefulWidget {
     this.buildChild,
     this.path = '',
     this.debounceMs = 500,
+    this.capturedCtx,
     required this.engine,
     super.key,
   });
@@ -906,6 +919,7 @@ class _StatefulTextField extends StatefulWidget {
   final ChildBuilder? buildChild;
   final String path;
   final int debounceMs;
+  final ScreenContext? capturedCtx;
   final YamlUiEngine engine;
 
   @override
@@ -963,6 +977,7 @@ class _StatefulTextFieldState extends State<_StatefulTextField> {
       prefixIcon = b(
         {'type': 'Icon', 'props': {'icon': prefixIconValue}},
         '${widget.path}.prefixIcon',
+        screenCtx: widget.capturedCtx,
       );
     } else if (prefixIconValue is Widget) {
       prefixIcon = prefixIconValue;
@@ -975,6 +990,7 @@ class _StatefulTextFieldState extends State<_StatefulTextField> {
       suffixIcon = b(
         {'type': 'Icon', 'props': {'icon': suffixIconValue}},
         '${widget.path}.suffixIcon',
+        screenCtx: widget.capturedCtx,
       );
     } else if (suffixIconValue is Widget) {
       suffixIcon = suffixIconValue;
@@ -1001,10 +1017,11 @@ class _StatefulTextFieldState extends State<_StatefulTextField> {
       onChanged: (value) {
         if (isShqlRef(onChanged)) {
           _debouncer.run(() {
-            var boundValues = {'value': value};
             final (:code, :targeted) = parseShql(onChanged as String);
             widget.shql
-                .call(code, targeted: targeted, boundValues: boundValues)
+                .call(code, targeted: targeted,
+                    boundValues: {'value': value},
+                    startingScope: widget.capturedCtx?.scope)
                 .catchError((e) {
                   debugPrint('Error in debounced onChanged: $e');
                 });
@@ -1020,7 +1037,9 @@ class _StatefulTextFieldState extends State<_StatefulTextField> {
         } else if (isShqlRef(onSubmitted)) {
           final (:code, :targeted) = parseShql(onSubmitted as String);
           widget.shql
-              .call(code, targeted: targeted, boundValues: {'value': value})
+              .call(code, targeted: targeted,
+                  boundValues: {'value': value},
+                  startingScope: widget.capturedCtx?.scope)
               .catchError((e) {
                 debugPrint('Error in onSubmitted: $e');
               });
@@ -1066,6 +1085,7 @@ Widget _buildTextField(
   ShqlBindings shql,
   Key key,
   YamlUiEngine engine,
+  ScreenContext? screenCtx,
 ) {
   return _StatefulTextField(
     key: key,
@@ -1083,6 +1103,7 @@ Widget _buildTextField(
     buildChild: b,
     path: path,
     debounceMs: (props['debounceMs'] as num?)?.toInt() ?? 500,
+    capturedCtx: screenCtx,
     engine: engine,
   );
 }
@@ -1097,6 +1118,7 @@ Widget _buildListView(
   ShqlBindings shql,
   Key key,
   YamlUiEngine engine,
+  ScreenContext? screenCtx,
 ) {
   // By the time this factory is called, the engine has already resolved any
   // shql: expression for `children`. We can assume it's a List.
@@ -1113,7 +1135,7 @@ Widget _buildListView(
     key: key,
     itemCount: childrenList.length,
     itemBuilder: (BuildContext context, int i) {
-      return b(childrenList[i], '$path.children[$i]');
+      return b(childrenList[i], '$path.children[$i]', screenCtx: screenCtx);
     },
   );
 }
@@ -1128,6 +1150,7 @@ Widget _buildSingleChildScrollView(
   ShqlBindings shql,
   Key key,
   YamlUiEngine engine,
+  ScreenContext? screenCtx,
 ) {
   if (child == null) {
     return WidgetRegistry._error(
@@ -1141,7 +1164,7 @@ Widget _buildSingleChildScrollView(
   return SingleChildScrollView(
     key: key,
     padding: padding != null ? Resolvers.edgeInsets(padding) : null,
-    child: b(child, '$path.child'),
+    child: b(child, '$path.child', screenCtx: screenCtx),
   );
 }
 
@@ -1155,6 +1178,7 @@ Widget _buildObserver(
   ShqlBindings shql,
   Key key,
   YamlUiEngine engine,
+  ScreenContext? screenCtx,
 ) {
   final query = props['query'] as String?;
   final builder = props['builder'];
@@ -1174,6 +1198,7 @@ Widget _buildObserver(
     buildChild: b,
     path: path,
     engine: engine,
+    capturedCtx: screenCtx,
   );
 }
 
@@ -1185,6 +1210,7 @@ class _Observer extends StatefulWidget {
     required this.buildChild,
     required this.path,
     required this.engine,
+    this.capturedCtx,
     super.key,
   });
 
@@ -1194,6 +1220,7 @@ class _Observer extends StatefulWidget {
   final ChildBuilder buildChild;
   final String path;
   final YamlUiEngine engine;
+  final ScreenContext? capturedCtx;
 
   @override
   State<_Observer> createState() => _ObserverState();
@@ -1220,7 +1247,7 @@ class _ObserverState extends State<_Observer> {
       _subscribeToQueries();
       _resolveBuilder();
     } else if (widget.builder != oldWidget.builder) {
-      // If the builder template itself changes, re-resolve.
+      // If the builder node itself changes, re-resolve.
       _resolveBuilder();
     }
   }
@@ -1333,10 +1360,10 @@ class _ObserverState extends State<_Observer> {
             'props': {'strokeWidth': 2},
           },
         },
-      }, '${widget.path}.loading');
+      }, '${widget.path}.loading', screenCtx: widget.capturedCtx);
     }
     // The state change will naturally cause this to rebuild with new data.
-    return widget.buildChild(_resolvedBuilder, '${widget.path}.builder');
+    return widget.buildChild(_resolvedBuilder, '${widget.path}.builder', screenCtx: widget.capturedCtx);
   }
 }
 
@@ -1350,6 +1377,7 @@ Widget _buildStack(
   ShqlBindings shql,
   Key key,
   YamlUiEngine engine,
+  ScreenContext? screenCtx,
 ) {
   if (children != null && children is! List) {
     return WidgetRegistry._error(
@@ -1375,7 +1403,7 @@ Widget _buildStack(
     children: childrenList
         .asMap()
         .entries
-        .map((entry) => b(entry.value, '$path.children[${entry.key}]'))
+        .map((entry) => b(entry.value, '$path.children[${entry.key}]', screenCtx: screenCtx))
         .toList(),
   );
 }
@@ -1390,6 +1418,7 @@ Widget _buildPositioned(
   ShqlBindings shql,
   Key key,
   YamlUiEngine engine,
+  ScreenContext? screenCtx,
 ) {
   final childNode = props['child'] ?? child;
   return Positioned(
@@ -1399,8 +1428,8 @@ Widget _buildPositioned(
     bottom: (props['bottom'] as num?)?.toDouble(),
     left: (props['left'] as num?)?.toDouble(),
     child: childNode != null
-        ? b(childNode, '$path.child')
-        : b({'type': 'SizedBox', 'props': {}}, '$path.child'),
+        ? b(childNode, '$path.child', screenCtx: screenCtx)
+        : b({'type': 'SizedBox', 'props': {}}, '$path.child', screenCtx: screenCtx),
   );
 }
 
@@ -1414,6 +1443,7 @@ Widget _buildCircularProgressIndicator(
   ShqlBindings shql,
   Key key,
   YamlUiEngine engine,
+  ScreenContext? screenCtx,
 ) {
   final valueColor = props['valueColor'];
   return CircularProgressIndicator(
@@ -1433,6 +1463,7 @@ class _StatefulSwitch extends StatefulWidget {
     required this.shql,
     this.onChanged,
     this.value,
+    this.capturedCtx,
     required this.engine,
     super.key,
   });
@@ -1440,6 +1471,7 @@ class _StatefulSwitch extends StatefulWidget {
   final ShqlBindings shql;
   final String? onChanged;
   final dynamic value;
+  final ScreenContext? capturedCtx;
   final YamlUiEngine engine;
 
   @override
@@ -1522,10 +1554,11 @@ class _StatefulSwitchState extends State<_StatefulSwitch> {
         });
         // Then notify the backend via SHQL™
         if (isShqlRef(onChanged)) {
-          var boundValues = {'value': newValue};
           final (:code, :targeted) = parseShql(onChanged as String);
           widget.shql
-              .call(code, targeted: targeted, boundValues: boundValues)
+              .call(code, targeted: targeted,
+                  boundValues: {'value': newValue},
+                  startingScope: widget.capturedCtx?.scope)
               .catchError((e) {
                 debugPrint('Error in Switch onChanged: $e');
               });
@@ -1545,12 +1578,14 @@ Widget _buildSwitch(
   ShqlBindings shql,
   Key key,
   YamlUiEngine engine,
+  ScreenContext? screenCtx,
 ) {
   return _StatefulSwitch(
     key: key,
     shql: shql,
     onChanged: props['onChanged'] as String?,
     value: props['value'],
+    capturedCtx: screenCtx,
     engine: engine,
   );
 }
@@ -1560,6 +1595,7 @@ class _StatefulCheckbox extends StatefulWidget {
     required this.shql,
     this.onChanged,
     this.value,
+    this.capturedCtx,
     required this.engine,
     super.key,
   });
@@ -1567,6 +1603,7 @@ class _StatefulCheckbox extends StatefulWidget {
   final ShqlBindings shql;
   final String? onChanged;
   final dynamic value;
+  final ScreenContext? capturedCtx;
   final YamlUiEngine engine;
 
   @override
@@ -1644,10 +1681,11 @@ class _StatefulCheckboxState extends State<_StatefulCheckbox> {
           _currentValue = newValue;
         });
         if (isShqlRef(onChanged)) {
-          var boundValues = {'value': newValue};
           final (:code, :targeted) = parseShql(onChanged as String);
           widget.shql
-              .call(code, targeted: targeted, boundValues: boundValues)
+              .call(code, targeted: targeted,
+                  boundValues: {'value': newValue},
+                  startingScope: widget.capturedCtx?.scope)
               .catchError((e) {
                 debugPrint('Error in Checkbox onChanged: $e');
               });
@@ -1667,12 +1705,14 @@ Widget _buildCheckbox(
   ShqlBindings shql,
   Key key,
   YamlUiEngine engine,
+  ScreenContext? screenCtx,
 ) {
   return _StatefulCheckbox(
     key: key,
     shql: shql,
     onChanged: props['onChanged'] as String?,
     value: props['value'],
+    capturedCtx: screenCtx,
     engine: engine,
   );
 }
@@ -1687,6 +1727,7 @@ Widget _buildGridView(
   ShqlBindings shql,
   Key key,
   YamlUiEngine engine,
+  ScreenContext? screenCtx,
 ) {
   if (children is! List) {
     return WidgetRegistry._error(
@@ -1721,7 +1762,7 @@ Widget _buildGridView(
         children: childrenList
             .asMap()
             .entries
-            .map((entry) => b(entry.value, '$path.children[${entry.key}]'))
+            .map((entry) => b(entry.value, '$path.children[${entry.key}]', screenCtx: screenCtx))
             .toList(),
       );
     },
@@ -1738,6 +1779,7 @@ Widget _buildLinearProgressIndicator(
   ShqlBindings shql,
   Key key,
   YamlUiEngine engine,
+  ScreenContext? screenCtx,
 ) {
   final valueColor = props['valueColor'];
   final minHeight = (props['minHeight'] as num?)?.toDouble();
@@ -1767,6 +1809,7 @@ Widget _buildWrap(
   ShqlBindings shql,
   Key key,
   YamlUiEngine engine,
+  ScreenContext? screenCtx,
 ) {
   final childrenList = (children is List) ? children : [];
   return Wrap(
@@ -1776,7 +1819,7 @@ Widget _buildWrap(
     children: childrenList
         .asMap()
         .entries
-        .map((entry) => b(entry.value, '$path.children[${entry.key}]'))
+        .map((entry) => b(entry.value, '$path.children[${entry.key}]', screenCtx: screenCtx))
         .toList(),
   );
 }
@@ -1791,6 +1834,7 @@ Widget _buildDivider(
   ShqlBindings shql,
   Key key,
   YamlUiEngine engine,
+  ScreenContext? screenCtx,
 ) {
   return Divider(
     key: key,
@@ -1810,6 +1854,7 @@ Widget _buildActionChip(
   ShqlBindings shql,
   Key key,
   YamlUiEngine engine,
+  ScreenContext? screenCtx,
 ) {
   final label = props['label']?.toString() ?? '';
   final onPressed = props['onPressed'];
@@ -1817,12 +1862,12 @@ Widget _buildActionChip(
   VoidCallback? cb;
   if (isShqlRef(onPressed)) {
     final (:code, :targeted) = parseShql(onPressed as String);
-    cb = () => WidgetRegistry.callShql(context, shql, code, targeted: targeted);
+    cb = () => WidgetRegistry.callShql(context, shql, code, targeted: targeted, startingScope: screenCtx?.scope);
   }
 
   return ActionChip(
     key: key,
-    label: b({'type': 'Text', 'props': {'data': label}}, '$path.label'),
+    label: b({'type': 'Text', 'props': {'data': label}}, '$path.label', screenCtx: screenCtx),
     onPressed: cb,
   );
 }
@@ -1837,16 +1882,17 @@ Widget _buildTextButton(
   ShqlBindings shql,
   Key key,
   YamlUiEngine engine,
+  ScreenContext? screenCtx,
 ) {
   final childNode = props['child'] ?? child;
-  final cb = _resolveOnPressed(props['onPressed'], context, shql);
+  final cb = _resolveOnPressed(props['onPressed'], context, shql, screenCtx: screenCtx);
 
   return TextButton(
     key: key,
     onPressed: cb,
     child: childNode != null
-        ? b(childNode, '$path.child')
-        : b({'type': 'Text', 'props': {'data': 'Button'}}, '$path.child'),
+        ? b(childNode, '$path.child', screenCtx: screenCtx)
+        : b({'type': 'Text', 'props': {'data': 'Button'}}, '$path.child', screenCtx: screenCtx),
   );
 }
 
@@ -1860,16 +1906,17 @@ Widget _buildOutlinedButton(
   ShqlBindings shql,
   Key key,
   YamlUiEngine engine,
+  ScreenContext? screenCtx,
 ) {
   final childNode = props['child'] ?? child;
-  final cb = _resolveOnPressed(props['onPressed'], context, shql);
+  final cb = _resolveOnPressed(props['onPressed'], context, shql, screenCtx: screenCtx);
 
   return OutlinedButton(
     key: key,
     onPressed: cb,
     child: childNode != null
-        ? b(childNode, '$path.child')
-        : b({'type': 'Text', 'props': {'data': 'Button'}}, '$path.child'),
+        ? b(childNode, '$path.child', screenCtx: screenCtx)
+        : b({'type': 'Text', 'props': {'data': 'Button'}}, '$path.child', screenCtx: screenCtx),
   );
 }
 
@@ -1883,6 +1930,7 @@ Widget _buildFilterChip(
   ShqlBindings shql,
   Key key,
   YamlUiEngine engine,
+  ScreenContext? screenCtx,
 ) {
   final label = props['label']?.toString() ?? '';
   final selected = props['selected'] == true;
@@ -1891,12 +1939,12 @@ Widget _buildFilterChip(
   void Function(bool)? cb;
   if (isShqlRef(onSelected)) {
     final (:code, :targeted) = parseShql(onSelected as String);
-    cb = (_) => WidgetRegistry.callShql(context, shql, code, targeted: targeted);
+    cb = (_) => WidgetRegistry.callShql(context, shql, code, targeted: targeted, startingScope: screenCtx?.scope);
   }
 
   return FilterChip(
     key: key,
-    label: b({'type': 'Text', 'props': {'data': label}}, '$path.label'),
+    label: b({'type': 'Text', 'props': {'data': label}}, '$path.label', screenCtx: screenCtx),
     selected: selected,
     onSelected: cb,
   );
@@ -1914,6 +1962,7 @@ Widget _buildDropdownButton(
   ShqlBindings shql,
   Key key,
   YamlUiEngine engine,
+  ScreenContext? screenCtx,
 ) {
   return _StatefulDropdown(
     key: key,
@@ -1922,6 +1971,7 @@ Widget _buildDropdownButton(
     value: props['value'],
     onChanged: props['onChanged'] as String?,
     hint: props['hint'] as String?,
+    capturedCtx: screenCtx,
     engine: engine,
   );
 }
@@ -1933,6 +1983,7 @@ class _StatefulDropdown extends StatefulWidget {
     this.value,
     this.onChanged,
     this.hint,
+    this.capturedCtx,
     required this.engine,
     super.key,
   });
@@ -1942,6 +1993,7 @@ class _StatefulDropdown extends StatefulWidget {
   final dynamic value;
   final String? onChanged;
   final String? hint;
+  final ScreenContext? capturedCtx;
   final YamlUiEngine engine;
 
   @override
@@ -2071,6 +2123,7 @@ class _StatefulDropdownState extends State<_StatefulDropdown> {
             widget.onChanged!,
             targeted: true,
             boundValues: {'value': value},
+            startingScope: widget.capturedCtx?.scope,
           );
         }
       },
@@ -2092,6 +2145,7 @@ Widget _buildIcon(
   ShqlBindings shql,
   Key key,
   YamlUiEngine engine,
+  ScreenContext? screenCtx,
 ) {
   final iconName = props['icon'] as String? ?? 'help_outline';
   final size = (props['size'] as num?)?.toDouble();
@@ -2113,6 +2167,7 @@ Widget _buildIconButton(
   ShqlBindings shql,
   Key key,
   YamlUiEngine engine,
+  ScreenContext? screenCtx,
 ) {
   final iconName = props['icon'] as String?;
   final onPressed = props['onPressed'];
@@ -2121,7 +2176,7 @@ Widget _buildIconButton(
   if (onPressed is VoidCallback) {
     cb = onPressed;
   } else if (onPressed is String && isShqlRef('shql: $onPressed')) {
-    cb = () => WidgetRegistry.callShql(context, shql, onPressed);
+    cb = () => WidgetRegistry.callShql(context, shql, onPressed, startingScope: screenCtx?.scope);
   }
 
   return IconButton(
@@ -2129,6 +2184,7 @@ Widget _buildIconButton(
     icon: b(
       {'type': 'Icon', 'props': {'icon': iconName ?? 'help_outline'}},
       '$path.icon',
+      screenCtx: screenCtx,
     ),
     onPressed: cb,
   );
@@ -2148,13 +2204,14 @@ Widget _buildSafeArea(
   ShqlBindings shql,
   Key key,
   YamlUiEngine engine,
+  ScreenContext? screenCtx,
 ) {
   final childNode = props['child'] ?? child;
   return SafeArea(
     key: key,
     child: childNode != null
-        ? b(childNode, '$path.child')
-        : b({'type': 'SizedBox', 'props': {}}, '$path.child'),
+        ? b(childNode, '$path.child', screenCtx: screenCtx)
+        : b({'type': 'SizedBox', 'props': {}}, '$path.child', screenCtx: screenCtx),
   );
 }
 
@@ -2172,6 +2229,7 @@ Widget _buildListTile(
   ShqlBindings shql,
   Key key,
   YamlUiEngine engine,
+  ScreenContext? screenCtx,
 ) {
   final leadingNode = props['leading'];
   final titleNode = props['title'];
@@ -2182,16 +2240,16 @@ Widget _buildListTile(
   VoidCallback? cb;
   if (onTap != null && isShqlRef(onTap)) {
     final (:code, :targeted) = parseShql(onTap);
-    cb = () => WidgetRegistry.callShql(context, shql, code, targeted: targeted);
+    cb = () => WidgetRegistry.callShql(context, shql, code, targeted: targeted, startingScope: screenCtx?.scope);
   }
 
   return ListTile(
     key: key,
     dense: props['dense'] as bool? ?? false,
-    leading: leadingNode != null ? b(leadingNode, '$path.leading') : null,
-    title: titleNode != null ? b(titleNode, '$path.title') : null,
-    subtitle: subtitleNode != null ? b(subtitleNode, '$path.subtitle') : null,
-    trailing: trailingNode != null ? b(trailingNode, '$path.trailing') : null,
+    leading: leadingNode != null ? b(leadingNode, '$path.leading', screenCtx: screenCtx) : null,
+    title: titleNode != null ? b(titleNode, '$path.title', screenCtx: screenCtx) : null,
+    subtitle: subtitleNode != null ? b(subtitleNode, '$path.subtitle', screenCtx: screenCtx) : null,
+    trailing: trailingNode != null ? b(trailingNode, '$path.trailing', screenCtx: screenCtx) : null,
     onTap: cb,
   );
 }
@@ -2210,6 +2268,7 @@ Widget _buildBottomNavigationBar(
   ShqlBindings shql,
   Key key,
   YamlUiEngine engine,
+  ScreenContext? screenCtx,
 ) {
   final items = props['items'] as List? ?? [];
   final currentIndex = props['currentIndex'] as int? ?? 0;
@@ -2222,6 +2281,7 @@ Widget _buildBottomNavigationBar(
         ? (index) {
             WidgetRegistry.callShql(
               context, shql, onTap.replaceAll('value', '$index'),
+              startingScope: screenCtx?.scope,
             );
           }
         : null,
@@ -2231,6 +2291,7 @@ Widget _buildBottomNavigationBar(
         icon: b(
           {'type': 'Icon', 'props': {'icon': map['icon'] as String? ?? 'help'}},
           '$path.items[${entry.key}].icon',
+          screenCtx: screenCtx,
         ),
         label: map['label'] as String? ?? '',
       );
@@ -2252,6 +2313,7 @@ Widget _buildAnimatedNumber(
   ShqlBindings shql,
   Key key,
   YamlUiEngine engine,
+  ScreenContext? screenCtx,
 ) {
   final rawValue = props['value'];
   final value = rawValue is num
@@ -2278,12 +2340,14 @@ Widget _buildAnimatedNumber(
 VoidCallback? _resolveOnPressed(
   dynamic onPressed,
   BuildContext context,
-  ShqlBindings shql,
-) {
+  ShqlBindings shql, {
+  ScreenContext? screenCtx,
+}) {
   if (onPressed is VoidCallback) return onPressed;
   if (isShqlRef(onPressed)) {
     final (:code, :targeted) = parseShql(onPressed as String);
-    return () => WidgetRegistry.callShql(context, shql, code, targeted: targeted);
+    return () => WidgetRegistry.callShql(context, shql, code,
+        targeted: targeted, startingScope: screenCtx?.scope);
   }
   return null;
 }
@@ -2298,16 +2362,17 @@ Widget _buildFilledButton(
   ShqlBindings shql,
   Key key,
   YamlUiEngine engine,
+  ScreenContext? screenCtx,
 ) {
   final childNode = props['child'] ?? child;
-  final cb = _resolveOnPressed(props['onPressed'], context, shql);
+  final cb = _resolveOnPressed(props['onPressed'], context, shql, screenCtx: screenCtx);
 
   return FilledButton(
     key: key,
     onPressed: cb,
     child: childNode != null
-        ? b(childNode, '$path.child')
-        : b({'type': 'Text', 'props': {'data': 'Button'}}, '$path.child'),
+        ? b(childNode, '$path.child', screenCtx: screenCtx)
+        : b({'type': 'Text', 'props': {'data': 'Button'}}, '$path.child', screenCtx: screenCtx),
   );
 }
 
@@ -2321,6 +2386,7 @@ Widget _buildAlertDialog(
   ShqlBindings shql,
   Key key,
   YamlUiEngine engine,
+  ScreenContext? screenCtx,
 ) {
   final titleNode = props['title'];
   final contentNode = props['content'] ?? child;
@@ -2329,7 +2395,7 @@ Widget _buildAlertDialog(
   final List<Widget> actions = [];
   if (actionsRaw is List) {
     for (var i = 0; i < actionsRaw.length; i++) {
-      actions.add(b(actionsRaw[i], '$path.actions[$i]'));
+      actions.add(b(actionsRaw[i], '$path.actions[$i]', screenCtx: screenCtx));
     }
   }
 
@@ -2345,8 +2411,8 @@ Widget _buildAlertDialog(
 
   return AlertDialog(
     key: key,
-    title: titleNode != null ? b(titleNode, '$path.title') : null,
-    content: contentNode != null ? b(contentNode, '$path.content') : null,
+    title: titleNode != null ? b(titleNode, '$path.title', screenCtx: screenCtx) : null,
+    content: contentNode != null ? b(contentNode, '$path.content', screenCtx: screenCtx) : null,
     actions: actions.isEmpty ? null : actions,
     actionsAlignment: alignment,
   );
@@ -2362,6 +2428,7 @@ Widget _buildCheckboxListTile(
   ShqlBindings shql,
   Key key,
   YamlUiEngine engine,
+  ScreenContext? screenCtx,
 ) {
   final titleNode = props['title'];
   final contentPadding = props['contentPadding'];
@@ -2371,8 +2438,9 @@ Widget _buildCheckboxListTile(
     shql: shql,
     onChanged: props['onChanged'] as String?,
     value: props['value'],
-    title: titleNode != null ? b(titleNode, '$path.title') : null,
+    title: titleNode != null ? b(titleNode, '$path.title', screenCtx: screenCtx) : null,
     contentPadding: contentPadding != null ? Resolvers.edgeInsets(contentPadding) : null,
+    capturedCtx: screenCtx,
     engine: engine,
   );
 }
@@ -2384,6 +2452,7 @@ class _StatefulCheckboxListTile extends StatefulWidget {
     this.value,
     this.title,
     this.contentPadding,
+    this.capturedCtx,
     required this.engine,
     super.key,
   });
@@ -2393,6 +2462,7 @@ class _StatefulCheckboxListTile extends StatefulWidget {
   final dynamic value;
   final Widget? title;
   final EdgeInsetsGeometry? contentPadding;
+  final ScreenContext? capturedCtx;
   final YamlUiEngine engine;
 
   @override
@@ -2474,10 +2544,11 @@ class _StatefulCheckboxListTileState
           _currentValue = newValue;
         });
         if (isShqlRef(onChanged)) {
-          var boundValues = {'value': newValue};
           final (:code, :targeted) = parseShql(onChanged as String);
           widget.shql
-              .call(code, targeted: targeted, boundValues: boundValues)
+              .call(code, targeted: targeted,
+                  boundValues: {'value': newValue},
+                  startingScope: widget.capturedCtx?.scope)
               .catchError((e) {
                 debugPrint('Error in CheckboxListTile onChanged: $e');
               });
@@ -2497,6 +2568,7 @@ Widget _buildConstrainedBox(
   ShqlBindings shql,
   Key key,
   YamlUiEngine engine,
+  ScreenContext? screenCtx,
 ) {
   final childNode = props['child'] ?? child;
   final maxWidth = (props['maxWidth'] as num?)?.toDouble() ?? double.infinity;
@@ -2512,7 +2584,7 @@ Widget _buildConstrainedBox(
       minWidth: minWidth,
       minHeight: minHeight,
     ),
-    child: childNode != null ? b(childNode, '$path.child') : null,
+    child: childNode != null ? b(childNode, '$path.child', screenCtx: screenCtx) : null,
   );
 }
 
@@ -2526,9 +2598,10 @@ Widget _buildInkWell(
   ShqlBindings shql,
   Key key,
   YamlUiEngine engine,
+  ScreenContext? screenCtx,
 ) {
   final childNode = props['child'] ?? child;
-  final cb = _resolveOnPressed(props['onTap'], context, shql);
+  final cb = _resolveOnPressed(props['onTap'], context, shql, screenCtx: screenCtx);
   final borderRadiusVal = (props['borderRadius'] as num?)?.toDouble();
 
   return InkWell(
@@ -2537,7 +2610,7 @@ Widget _buildInkWell(
     borderRadius: borderRadiusVal != null
         ? BorderRadius.circular(borderRadiusVal)
         : null,
-    child: childNode != null ? b(childNode, '$path.child') : null,
+    child: childNode != null ? b(childNode, '$path.child', screenCtx: screenCtx) : null,
   );
 }
 
@@ -2551,6 +2624,7 @@ Widget _buildMaterial(
   ShqlBindings shql,
   Key key,
   YamlUiEngine engine,
+  ScreenContext? screenCtx,
 ) {
   final childNode = props['child'] ?? child;
   final color = props['color'];
@@ -2562,7 +2636,7 @@ Widget _buildMaterial(
     borderRadius: borderRadiusVal != null
         ? BorderRadius.circular(borderRadiusVal)
         : null,
-    child: childNode != null ? b(childNode, '$path.child') : null,
+    child: childNode != null ? b(childNode, '$path.child', screenCtx: screenCtx) : null,
   );
 }
 
@@ -2576,6 +2650,7 @@ Widget _buildDismissible(
   ShqlBindings shql,
   Key key,
   YamlUiEngine engine,
+  ScreenContext? screenCtx,
 ) {
   final childNode = props['child'] ?? child;
   final backgroundNode = props['background'];
@@ -2594,7 +2669,7 @@ Widget _buildDismissible(
   } else if (isShqlRef(onDismissed)) {
     final (:code, :targeted) = parseShql(onDismissed as String);
     confirm = (_) async {
-      shql.call(code, targeted: targeted);
+      shql.call(code, targeted: targeted, startingScope: screenCtx?.scope);
       return false;
     };
   }
@@ -2607,10 +2682,10 @@ Widget _buildDismissible(
   return Dismissible(
     key: key,
     direction: direction,
-    background: backgroundNode != null ? b(backgroundNode, '$path.background') : null,
+    background: backgroundNode != null ? b(backgroundNode, '$path.background', screenCtx: screenCtx) : null,
     confirmDismiss: confirm,
     child: childNode != null
-        ? b(childNode, '$path.child')
+        ? b(childNode, '$path.child', screenCtx: screenCtx)
         : const SizedBox.shrink(),
   );
 }
@@ -2625,6 +2700,7 @@ Widget _buildSemantics(
   ShqlBindings shql,
   Key key,
   YamlUiEngine engine,
+  ScreenContext? screenCtx,
 ) {
   final childNode = props['child'] ?? child;
   final label = props['label']?.toString();
@@ -2634,7 +2710,7 @@ Widget _buildSemantics(
     key: key,
     label: label,
     button: button,
-    child: childNode != null ? b(childNode, '$path.child') : null,
+    child: childNode != null ? b(childNode, '$path.child', screenCtx: screenCtx) : null,
   );
 }
 
@@ -2648,6 +2724,7 @@ Widget _buildTooltip(
   ShqlBindings shql,
   Key key,
   YamlUiEngine engine,
+  ScreenContext? screenCtx,
 ) {
   final childNode = props['child'] ?? child;
   final message = props['message']?.toString() ?? '';
@@ -2655,7 +2732,7 @@ Widget _buildTooltip(
   return Tooltip(
     key: key,
     message: message,
-    child: childNode != null ? b(childNode, '$path.child') : null,
+    child: childNode != null ? b(childNode, '$path.child', screenCtx: screenCtx) : null,
   );
 }
 
@@ -2669,6 +2746,7 @@ Widget _buildMaterialApp(
   ShqlBindings shql,
   Key key,
   YamlUiEngine engine,
+  ScreenContext? screenCtx,
 ) {
   // MaterialApp is a root widget — no explicit key, so Flutter reconciles by
   // position and preserves internal Router/Navigator state across rebuilds.
@@ -2693,6 +2771,6 @@ Widget _buildMaterialApp(
     theme: props['theme'] as ThemeData?,
     darkTheme: props['darkTheme'] as ThemeData?,
     themeMode: props['themeMode'] as ThemeMode? ?? ThemeMode.system,
-    home: homeNode != null ? b(homeNode, '$path.home') : null,
+    home: homeNode != null ? b(homeNode, '$path.home', screenCtx: screenCtx) : null,
   );
 }

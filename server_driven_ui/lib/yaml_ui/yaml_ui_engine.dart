@@ -37,23 +37,23 @@ class YamlUiEngine {
     return _resolveNode(widgetNode);
   }
 
-  /// Loads a YAML widget template and registers it in the widget registry
-  /// under [name]. The template can use `"prop:xyz"` placeholders that are
-  /// substituted with the caller's props at build time.
-  void loadWidgetTemplate(String name, String yaml) {
+  /// Loads a YAML-defined widget or screen and registers it in the widget
+  /// registry under [name]. Any `"prop:xyz"` placeholders in the YAML node
+  /// are substituted with the caller's props at build time.
+  void loadWidget(String name, String yaml) {
     final data = loadYaml(yaml);
-    final template = (data is YamlMap && data.containsKey('widget'))
+    final node = (data is YamlMap && data.containsKey('widget'))
         ? data['widget']
         : data;
-    registry.registerTemplate(name, template);
+    registry.register(name, node);
   }
 
   /// Synchronously builds the widget tree from a fully resolved data structure.
-  Widget build(dynamic resolvedData, BuildContext context) {
-    return _buildWidget(resolvedData, context, 'screen');
+  Widget build(dynamic resolvedData, BuildContext context, {ScreenContext? screenCtx}) {
+    return _buildWidget(resolvedData, context, 'screen', screenCtx: screenCtx);
   }
 
-  Widget _buildWidget(dynamic node, BuildContext context, String path) {
+  Widget _buildWidget(dynamic node, BuildContext context, String path, {ScreenContext? screenCtx}) {
     if (node is Widget) return node;
     if (node is Map && node.containsKey('type')) {
       final type = node['type'] as String;
@@ -65,12 +65,14 @@ class YamlUiEngine {
         type: type,
         context: context,
         props: Map<String, dynamic>.from(props),
-        buildChild: (node, childPath) => _buildWidget(node, context, childPath),
+        buildChild: (node, childPath, {ScreenContext? screenCtx}) =>
+            _buildWidget(node, context, childPath, screenCtx: screenCtx),
         child: child,
         children: children,
         path: path,
         shql: shql,
         engine: this,
+        screenCtx: screenCtx,
       );
     }
 

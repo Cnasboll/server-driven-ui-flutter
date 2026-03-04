@@ -101,6 +101,13 @@ Cloud := OBJECT{
         SAVE(key, value);
     END,
 
+    -- Seed from cloud then apply initial prefs — one SHQL™ call from Dart.
+    -- Returns the initial route ('home' or 'onboarding').
+    SEED_AND_APPLY_STATE: () => BEGIN
+        SEED_FROM_CLOUD();
+        RETURN Prefs.APPLY_INIT_STATE();
+    END,
+
     -- Seed local state from Firestore cloud (for cross-device sync).
     -- Only fills keys not already set locally. Updates Prefs fields in memory
     -- so APPLY_INIT_STATE sees cloud values without a re-load.

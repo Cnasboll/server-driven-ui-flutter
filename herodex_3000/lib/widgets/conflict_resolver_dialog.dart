@@ -16,7 +16,7 @@ Widget _b(BuildContext c, Map<String, dynamic> node, String p) =>
 ///
 /// Uses SHQL™ variables for dialog state:
 ///   _CONFLICT_VALUE1_ID, _CONFLICT_VALUE2_ID — unit identifiers returned by CLOSE_DIALOG
-///   _APPLY_TO_ALL — checkbox state, toggled by SET() in the YAML template
+///   _APPLY_TO_ALL — checkbox state, toggled by SET() in the YAML screen
 Future<({SystemOfUnits? choice, bool applyToAll})?> showConflictDialog<T extends ValueType<T>>(
   GlobalKey<NavigatorState> navigatorKey,
   String valueTypeName,
@@ -32,7 +32,7 @@ Future<({SystemOfUnits? choice, bool applyToAll})?> showConflictDialog<T extends
       return;
     }
 
-    // Initialize SHQL™ variables for the ConflictDialog template
+    // Initialize SHQL™ variables for the ConflictDialog screen
     final shql = WidgetRegistry.staticShql;
     shql.setVariable('_CONFLICT_VALUE1_ID', value.systemOfUnits.name);
     shql.setVariable('_CONFLICT_VALUE2_ID', conflictingValue.systemOfUnits.name);

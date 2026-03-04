@@ -10,7 +10,7 @@ Widget _b(BuildContext c, Map<String, dynamic> node, String p) =>
     WidgetRegistry.buildStatic(c, node, 'dialog.$p');
 
 /// Shows a text-input dialog over the current navigator overlay.
-/// Uses the PromptDialog YAML template with SHQL™ CLOSE_DIALOG directive.
+/// Uses the PromptDialog YAML screen with SHQL™ CLOSE_DIALOG directive.
 Future<String> showPromptDialog(
   GlobalKey<NavigatorState> navigatorKey,
   GlobalKey<ScaffoldMessengerState> messengerKey,
@@ -54,7 +54,7 @@ Future<String> showPromptDialog(
 }
 
 /// Shows a yes/no confirmation dialog.
-/// Uses the YesNoDialog YAML template with SHQL™ CLOSE_DIALOG directive.
+/// Uses the YesNoDialog YAML screen with SHQL™ CLOSE_DIALOG directive.
 Future<bool> showYesNoDialog(
   GlobalKey<NavigatorState> navigatorKey,
   String prompt,
@@ -87,7 +87,7 @@ Future<bool> showYesNoDialog(
 }
 
 /// Shows a reconcile action dialog (Accept / Skip / Accept All / Abort).
-/// Uses the ReconcileDialog YAML template with SHQL™ CLOSE_DIALOG directive.
+/// Uses the ReconcileDialog YAML screen with SHQL™ CLOSE_DIALOG directive.
 Future<ReviewAction> showReconcileDialog(
   GlobalKey<NavigatorState> navigatorKey,
   String prompt,

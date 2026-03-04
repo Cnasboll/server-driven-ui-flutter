@@ -17,6 +17,7 @@ Widget buildFilterEditor(
   ShqlBindings shql,
   Key key,
   YamlUiEngine engine,
+  ScreenContext? screenCtx,
 ) {
   final mode = props['mode']?.toString() ?? 'manage';
   final onSelect = props['onSelect']?.toString();

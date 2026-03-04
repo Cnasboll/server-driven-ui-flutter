@@ -221,13 +221,11 @@ Cards := OBJECT{
                 }
             }];
 
-        -- If filter/query is active but no heroes match, show an appropriate message
-        IF LENGTH(Filters.displayed_heroes) = 0 AND (Filters.active_filter_index >= 0 OR NOT (IS_NULL_OR_WHITESPACE(Filters.current_query))) THEN BEGIN
-            __empty_msg := IF NOT (IS_NULL_OR_WHITESPACE(Filters.current_query)) THEN 'No heroes match "' + Filters.current_query + '"' ELSE 'No heroes match this filter';
-            RETURN [{"type": "Center", "child": {"type": "Text", "props": {"data": __empty_msg, "style": {"fontSize": 16, "color": "0xFF757575"}}}}];
-        END;
-
-        RETURN GENERATE_HERO_CARDS(Filters.displayed_heroes, '_displayed_heroes', TRUE);
+        -- Delegate to Filters.GET_DISPLAY_STATE for filter/query empty-state handling.
+        __display := Filters.GET_DISPLAY_STATE();
+        IF __display.EMPTY_CARD <> null THEN
+            RETURN [__display.EMPTY_CARD];
+        RETURN GENERATE_HERO_CARDS(__display.HEROES, '_displayed_heroes', TRUE);
     END,
 
     -- Generate a single saved hero card widget tree.

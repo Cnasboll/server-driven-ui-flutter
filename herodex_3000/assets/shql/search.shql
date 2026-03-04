@@ -41,7 +41,7 @@ Search := OBJECT{
         IF __summary <> null THEN SET_SEARCH_SUMMARY(__summary);
     END,
 
-    -- UI helpers for YAML templates.
+    -- UI helpers for YAML-defined screens.
     LOADING_TYPE: () => IF is_loading THEN 'LinearProgressIndicator' ELSE 'SizedBox',
     LOADING_HEIGHT: () => IF is_loading THEN null ELSE 0,
     SUMMARY_TYPE: () => IF LENGTH(search_summary) > 0 THEN 'Padding' ELSE 'SizedBox',
