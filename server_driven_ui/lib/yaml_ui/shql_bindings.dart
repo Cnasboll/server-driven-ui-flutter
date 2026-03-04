@@ -18,15 +18,19 @@ import 'package:yaml/yaml.dart';
 /// widget tree for one screen.  Callbacks pass it as `startingScope` to
 /// [ShqlBindings.eval] / [ShqlBindings.call].
 ///
-/// [map] — a plain Dart [Map] representing *this* widget node inside the
-/// widget tree.  The root map is stored as `_SCREEN` in [scope]; each
-/// registered child widget adds its own map as a member of the parent map,
-/// so the tree is: `_SCREEN['MY_WIDGET']['CHILD_WIDGET']`.
+/// [map] — a plain Dart [Map] representing *this* widget node.  The root map
+/// is stored as `_SCREEN` in [scope]; child widget maps are attached under
+/// their key in the parent map.
+///
+/// [parent] — the immediate parent node's map (`null` at the screen root).
+/// Exposed as `_PARENT` alongside `_SELF` in bound variables when SHQL
+/// callbacks execute — it is never stored inside [map].
 class ScreenContext {
   final dynamic scope;
   final Map<String, dynamic> map;
+  final Map<String, dynamic>? parent;
 
-  const ScreenContext(this.scope, this.map);
+  const ScreenContext(this.scope, this.map, {this.parent});
 }
 
 class ShqlBindings {
@@ -146,7 +150,7 @@ class ShqlBindings {
   /// tree; registered child widgets attach their own maps under it.
   ScreenContext createScreenContext(Map<String, dynamic> props) {
     final scope = Scope(Object(), constants: _runtime.globalScope.constants, parent: _runtime.globalScope);
-    final screenMap = <String, dynamic>{'_PARENT': null};
+    final screenMap = <String, dynamic>{};
     for (final entry in props.entries) {
       scope.members.setVariable(
         _runtime.identifiers.include(entry.key.toUpperCase()),

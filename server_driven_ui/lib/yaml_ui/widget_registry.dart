@@ -103,10 +103,10 @@ class WidgetRegistry {
       final mapKey = props['_key'] is String
           ? (props['_key'] as String).toUpperCase()
           : path;
-      final widgetMap = <String, dynamic>{'_PARENT': screenCtx.map};
+      final widgetMap = <String, dynamic>{};
       screenCtx.map[mapKey] = widgetMap;
       return buildChild(resolved, '$path.$name',
-          screenCtx: ScreenContext(screenCtx.scope, widgetMap));
+          screenCtx: ScreenContext(screenCtx.scope, widgetMap, parent: screenCtx.map));
     };
   }
 
@@ -285,6 +285,7 @@ class WidgetRegistry {
   }) {
     final merged = <String, dynamic>{
       if (screenCtx != null) '_SELF': screenCtx.map,
+      if (screenCtx?.parent != null) '_PARENT': screenCtx!.parent,
       ...?boundValues,
     };
     shql
@@ -1042,7 +1043,7 @@ class _StatefulTextFieldState extends State<_StatefulTextField> {
             final (:code, :targeted) = parseShql(onChanged as String);
             widget.shql
                 .call(code, targeted: targeted,
-                    boundValues: {'value': value, '_SELF': widget.capturedCtx?.map},
+                    boundValues: {'value': value, '_SELF': widget.capturedCtx?.map, if (widget.capturedCtx?.parent != null) '_PARENT': widget.capturedCtx!.parent},
                     startingScope: widget.capturedCtx?.scope)
                 .catchError((e) {
                   debugPrint('Error in debounced onChanged: $e');
@@ -1579,7 +1580,7 @@ class _StatefulSwitchState extends State<_StatefulSwitch> {
           final (:code, :targeted) = parseShql(onChanged as String);
           widget.shql
               .call(code, targeted: targeted,
-                  boundValues: {'value': newValue, '_SELF': widget.capturedCtx?.map},
+                  boundValues: {'value': newValue, '_SELF': widget.capturedCtx?.map, if (widget.capturedCtx?.parent != null) '_PARENT': widget.capturedCtx!.parent},
                   startingScope: widget.capturedCtx?.scope)
               .catchError((e) {
                 debugPrint('Error in Switch onChanged: $e');
@@ -1706,7 +1707,7 @@ class _StatefulCheckboxState extends State<_StatefulCheckbox> {
           final (:code, :targeted) = parseShql(onChanged as String);
           widget.shql
               .call(code, targeted: targeted,
-                  boundValues: {'value': newValue, '_SELF': widget.capturedCtx?.map},
+                  boundValues: {'value': newValue, '_SELF': widget.capturedCtx?.map, if (widget.capturedCtx?.parent != null) '_PARENT': widget.capturedCtx!.parent},
                   startingScope: widget.capturedCtx?.scope)
               .catchError((e) {
                 debugPrint('Error in Checkbox onChanged: $e');
@@ -2144,7 +2145,7 @@ class _StatefulDropdownState extends State<_StatefulDropdown> {
           widget.shql.call(
             widget.onChanged!,
             targeted: true,
-            boundValues: {'value': value, '_SELF': widget.capturedCtx?.map},
+            boundValues: {'value': value, '_SELF': widget.capturedCtx?.map, if (widget.capturedCtx?.parent != null) '_PARENT': widget.capturedCtx!.parent},
             startingScope: widget.capturedCtx?.scope,
           );
         }
@@ -2569,7 +2570,7 @@ class _StatefulCheckboxListTileState
           final (:code, :targeted) = parseShql(onChanged as String);
           widget.shql
               .call(code, targeted: targeted,
-                  boundValues: {'value': newValue, '_SELF': widget.capturedCtx?.map},
+                  boundValues: {'value': newValue, '_SELF': widget.capturedCtx?.map, if (widget.capturedCtx?.parent != null) '_PARENT': widget.capturedCtx!.parent},
                   startingScope: widget.capturedCtx?.scope)
               .catchError((e) {
                 debugPrint('Error in CheckboxListTile onChanged: $e');
@@ -2692,7 +2693,10 @@ Widget _buildDismissible(
     final (:code, :targeted) = parseShql(onDismissed as String);
     confirm = (_) async {
       shql.call(code, targeted: targeted,
-          boundValues: screenCtx != null ? {'_SELF': screenCtx.map} : null,
+          boundValues: screenCtx != null ? {
+            '_SELF': screenCtx.map,
+            if (screenCtx.parent != null) '_PARENT': screenCtx.parent,
+          } : null,
           startingScope: screenCtx?.scope);
       return false;
     };
