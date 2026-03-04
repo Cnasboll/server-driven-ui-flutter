@@ -133,12 +133,20 @@ class ShqlBindings {
 
   /// Create the root [ScreenContext] for a YAML screen.
   ///
-  /// Props become direct scope variables (e.g. `LABEL`).  `_SCREEN` and
-  /// `_SELF` both point to the screen's SHQL™ Object.  `_SELF._PARENT` is
-  /// null at the root.
-  ScreenContext createScreenContext(Map<String, dynamic> props) {
-    final screenObj = Object();
-    screenObj.setVariable(_runtime.identifiers.include('_PARENT'), null);
+  /// [constructorCode] is an optional SHQL™ expression that returns a SHQL™
+  /// Object to use as `_SELF`. When omitted, a blank Object with `_PARENT: null`
+  /// is created in Dart.
+  Future<ScreenContext> createScreenContext(
+    Map<String, dynamic> props, {
+    String? constructorCode,
+  }) async {
+    final Object screenObj;
+    if (constructorCode != null) {
+      screenObj = await eval(constructorCode) as Object;
+    } else {
+      screenObj = Object();
+      screenObj.setVariable(_runtime.identifiers.include('_PARENT'), null);
+    }
     final scopeVars = <String, dynamic>{
       for (final e in props.entries) e.key: e.value,
       '_SCREEN': screenObj,
@@ -150,12 +158,25 @@ class ShqlBindings {
 
   /// Create a child [ScreenContext] for a registered YAML widget.
   ///
-  /// `_SELF` is a scope variable pointing to the widget's SHQL™ Object.
-  /// `_SELF._PARENT` is a member of that Object pointing to the parent's Object,
-  /// making the widget tree walkable upward.
-  ScreenContext createWidgetContext(ScreenContext parent, String key) {
-    final widgetObj = Object();
-    widgetObj.setVariable(_runtime.identifiers.include('_PARENT'), parent.self);
+  /// When [constructorCode] is provided it is evaluated with `_PARENT` bound to
+  /// the parent's Object and the returned SHQL™ Object becomes `_SELF`.
+  /// When omitted, a blank Object with `_PARENT` set is created in Dart.
+  Future<ScreenContext> createWidgetContext(
+    ScreenContext parent,
+    String key, {
+    String? constructorCode,
+  }) async {
+    final Object widgetObj;
+    if (constructorCode != null) {
+      widgetObj = await eval(
+        constructorCode,
+        boundValues: {'_PARENT': parent.self},
+        startingScope: parent.scope,
+      ) as Object;
+    } else {
+      widgetObj = Object();
+      widgetObj.setVariable(_runtime.identifiers.include('_PARENT'), parent.self);
+    }
     (parent.self as Object).setVariable(_runtime.identifiers.include(key.toUpperCase()), widgetObj);
     final scope = Engine.getScope(_runtime, {'_SELF': widgetObj}, startingScope: parent.scope as Scope);
     return ScreenContext(scope, widgetObj);

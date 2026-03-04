@@ -103,8 +103,13 @@ class WidgetRegistry {
       final widgetKey = props['_key'] is String
           ? (props['_key'] as String).toUpperCase()
           : path;
-      return buildChild(resolved, '$path.$name',
-          screenCtx: shql.createWidgetContext(screenCtx, widgetKey));
+      final constructorCode = props['constructor'] as String?;
+      return FutureBuilder<ScreenContext>(
+        future: shql.createWidgetContext(screenCtx, widgetKey, constructorCode: constructorCode),
+        builder: (_, snap) => snap.hasData
+            ? buildChild(resolved, '$path.$name', screenCtx: snap.data)
+            : const SizedBox.shrink(),
+      );
     };
   }
 
@@ -2787,3 +2792,4 @@ Widget _buildMaterialApp(
     home: homeNode != null ? b(homeNode, '$path.home', screenCtx: screenCtx) : null,
   );
 }
+

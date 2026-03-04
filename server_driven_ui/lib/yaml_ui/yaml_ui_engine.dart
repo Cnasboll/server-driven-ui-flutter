@@ -37,6 +37,16 @@ class YamlUiEngine {
     return _resolveNode(widgetNode);
   }
 
+  /// Extract the `constructor:` expression from a YAML string, if present.
+  String? extractConstructor(String yaml) {
+    final data = loadYaml(yaml);
+    if (data is! YamlMap) return null;
+    final screenNode = data.containsKey('screen') ? data['screen'] : data;
+    if (screenNode is! YamlMap) return null;
+    final raw = screenNode['constructor'];
+    return raw is String ? raw : null;
+  }
+
   /// Loads a YAML-defined widget or screen and registers it in the widget
   /// registry under [name]. Any `"prop:xyz"` placeholders in the YAML node
   /// are substituted with the caller's props at build time.

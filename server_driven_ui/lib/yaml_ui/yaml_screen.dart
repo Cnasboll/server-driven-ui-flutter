@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-
 import 'shql_bindings.dart';
 import 'yaml_ui_engine.dart';
 
@@ -39,14 +38,16 @@ class _YamlScreenState extends State<YamlScreen> {
     setState(() {
       _isLoading = true;
       _error = null;
-      _screenCtx = widget.engine.shql.createScreenContext({});
     });
 
     try {
       final yamlContent = await rootBundle.loadString(widget.yamlAsset);
+      final constructorCode = widget.engine.extractConstructor(yamlContent);
+      final screenCtx = await widget.engine.shql.createScreenContext({}, constructorCode: constructorCode);
       final resolved = await widget.engine.resolve(yamlContent);
       if (mounted) {
         setState(() {
+          _screenCtx = screenCtx;
           _resolvedData = resolved;
           _isLoading = false;
         });
