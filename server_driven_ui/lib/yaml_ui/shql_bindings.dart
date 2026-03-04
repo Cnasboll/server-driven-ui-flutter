@@ -10,27 +10,23 @@ import 'package:yaml/yaml.dart';
 
 /// The SHQL™ execution context for a node in a YAML-rendered widget tree.
 ///
-/// Created by [ShqlBindings.createScreenContext] for the root screen; every
-/// registered YAML widget then receives a new context wrapping the same [scope]
-/// but pointing to its own [map] node in the widget tree.
+/// Each screen gets a root [ScreenContext] from [ShqlBindings.createScreenContext].
+/// Each registered YAML widget gets its own child [ScreenContext] from
+/// [ShqlBindings.createWidgetContext].
 ///
-/// [scope] — a SHQL™ [Scope] child of globalScope, shared by the entire
-/// widget tree for one screen.  Callbacks pass it as `startingScope` to
-/// [ShqlBindings.eval] / [ShqlBindings.call].
+/// [scope] — a SHQL™ child [Scope] that permanently holds `_SELF` (this
+/// widget's SHQL Object).  Callbacks pass it as `startingScope` so state
+/// written during a callback persists across future calls for this widget.
+/// `_SCREEN` is reachable by walking up the scope chain to the root.
 ///
-/// [map] — a plain Dart [Map] representing *this* widget node.  The root map
-/// is stored as `_SCREEN` in [scope]; child widget maps are attached under
-/// their key in the parent map.
-///
-/// [parent] — the immediate parent node's map (`null` at the screen root).
-/// Exposed as `_PARENT` alongside `_SELF` in bound variables when SHQL
-/// callbacks execute — it is never stored inside [map].
+/// [self] — the SHQL™ [Object] (from runtime.dart) representing this widget.
+/// `_SELF._PARENT` holds the parent widget's Object, making the widget tree
+/// walkable upward: `_SELF._PARENT._PARENT...`
 class ScreenContext {
   final dynamic scope;
-  final Map<String, dynamic> map;
-  final Map<String, dynamic>? parent;
+  final dynamic self; // SHQL™ Object — class Object in runtime.dart
 
-  const ScreenContext(this.scope, this.map, {this.parent});
+  const ScreenContext(this.scope, this.self);
 }
 
 class ShqlBindings {
@@ -126,40 +122,45 @@ class ShqlBindings {
   ConstantsTable<String> get identifiers => _runtime.identifiers;
 
   // ---------------------------------------------------------------------------
-  // YAML screen local scope
+  // YAML screen / widget scope
   // ---------------------------------------------------------------------------
   //
-  // When a YAML screen is rendered, [createScreenContext] creates one flat
-  // SHQL™ Scope rooted at globalScope and pre-populated with the screen's
-  // props as direct variables.  The [ScreenContext] is injected into every
-  // child factory via the `screenCtx` parameter of [ChildBuilder] /
-  // [WidgetFactory], exactly as ExecutionContext flows through execution nodes.
-  // Callbacks close over the context and pass its scope as `startingScope`
-  // when invoking [eval] or [call].
-  //
-  // One screen = one scope.  Widget namespacing is done via SHQL™ Objects
-  // stored inside that scope, not by chaining child contexts.
+  // Each YAML screen gets a root ScreenContext (scope + _SELF Object).
+  // Each registered YAML widget gets a child ScreenContext whose scope is a
+  // child of the parent's scope, with _SELF bound to a fresh SHQL™ Object.
+  // _SELF._PARENT holds the parent's Object, making the widget tree walkable
+  // upward.  Callbacks use startingScope: ctx.scope — no boundValues needed.
 
-  /// Create a [ScreenContext] for a YAML screen about to render.
+  /// Create the root [ScreenContext] for a YAML screen.
   ///
-  /// Each entry in [props] becomes a direct variable in the new SHQL™ scope
-  /// (accessible as e.g. `LABEL`, not `__scope.LABEL`).
-  ///
-  /// Every screen gets exactly one flat scope rooted at [Runtime.globalScope].
-  /// A root map (`_SCREEN`) is stored in the scope as the top of the widget
-  /// tree; registered child widgets attach their own maps under it.
+  /// Props become direct scope variables (e.g. `LABEL`).  `_SCREEN` and
+  /// `_SELF` both point to the screen's SHQL™ Object.  `_SELF._PARENT` is
+  /// null at the root.
   ScreenContext createScreenContext(Map<String, dynamic> props) {
-    final scope = Scope(Object(), constants: _runtime.globalScope.constants, parent: _runtime.globalScope);
-    final screenMap = <String, dynamic>{};
-    for (final entry in props.entries) {
-      scope.members.setVariable(
-        _runtime.identifiers.include(entry.key.toUpperCase()),
-        entry.value,
-      );
-    }
-    scope.members.setVariable(_runtime.identifiers.include('_SCREEN'), screenMap);
-    return ScreenContext(scope, screenMap);
+    final screenObj = Object();
+    screenObj.setVariable(_runtime.identifiers.include('_PARENT'), null);
+    final scopeVars = <String, dynamic>{
+      for (final e in props.entries) e.key: e.value,
+      '_SCREEN': screenObj,
+      '_SELF': screenObj,
+    };
+    final scope = Engine.getScope(_runtime, scopeVars, startingScope: _runtime.globalScope);
+    return ScreenContext(scope, screenObj);
   }
+
+  /// Create a child [ScreenContext] for a registered YAML widget.
+  ///
+  /// `_SELF` is a scope variable pointing to the widget's SHQL™ Object.
+  /// `_SELF._PARENT` is a member of that Object pointing to the parent's Object,
+  /// making the widget tree walkable upward.
+  ScreenContext createWidgetContext(ScreenContext parent, String key) {
+    final widgetObj = Object();
+    widgetObj.setVariable(_runtime.identifiers.include('_PARENT'), parent.self);
+    (parent.self as Object).setVariable(_runtime.identifiers.include(key.toUpperCase()), widgetObj);
+    final scope = Engine.getScope(_runtime, {'_SELF': widgetObj}, startingScope: parent.scope as Scope);
+    return ScreenContext(scope, widgetObj);
+  }
+
 
   dynamic getVariable(String name) {
     var id = _constantsSet.identifiers.include(name.toUpperCase());
