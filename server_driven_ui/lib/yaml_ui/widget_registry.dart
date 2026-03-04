@@ -103,7 +103,7 @@ class WidgetRegistry {
       final mapKey = props['_key'] is String
           ? (props['_key'] as String).toUpperCase()
           : path;
-      final widgetMap = <String, dynamic>{};
+      final widgetMap = <String, dynamic>{'_PARENT': screenCtx.map};
       screenCtx.map[mapKey] = widgetMap;
       return buildChild(resolved, '$path.$name',
           screenCtx: ScreenContext(screenCtx.scope, widgetMap));
@@ -281,10 +281,16 @@ class WidgetRegistry {
     String code, {
     bool targeted = false,
     Map<String, dynamic>? boundValues,
-    dynamic startingScope,
+    ScreenContext? screenCtx,
   }) {
+    final merged = <String, dynamic>{
+      if (screenCtx != null) '_SELF': screenCtx.map,
+      ...?boundValues,
+    };
     shql
-        .call(code, targeted: targeted, boundValues: boundValues, startingScope: startingScope)
+        .call(code, targeted: targeted,
+            boundValues: merged.isEmpty ? null : merged,
+            startingScope: screenCtx?.scope)
         .then((result) {
       if (result is Map &&
           result['__close_dialog__'] == true &&
@@ -797,7 +803,7 @@ Widget _buildCard(
   if (isShqlRef(onTap)) {
     final (:code, :targeted) = parseShql(onTap as String);
     cb = () {
-      WidgetRegistry.callShql(context, shql, code, targeted: targeted, startingScope: screenCtx?.scope);
+      WidgetRegistry.callShql(context, shql, code, targeted: targeted, screenCtx: screenCtx);
     };
   }
 
@@ -1036,7 +1042,7 @@ class _StatefulTextFieldState extends State<_StatefulTextField> {
             final (:code, :targeted) = parseShql(onChanged as String);
             widget.shql
                 .call(code, targeted: targeted,
-                    boundValues: {'value': value},
+                    boundValues: {'value': value, '_SELF': widget.capturedCtx?.map},
                     startingScope: widget.capturedCtx?.scope)
                 .catchError((e) {
                   debugPrint('Error in debounced onChanged: $e');
@@ -1054,7 +1060,7 @@ class _StatefulTextFieldState extends State<_StatefulTextField> {
           final (:code, :targeted) = parseShql(onSubmitted as String);
           widget.shql
               .call(code, targeted: targeted,
-                  boundValues: {'value': value},
+                  boundValues: {'value': value, '_SELF': widget.capturedCtx?.map},
                   startingScope: widget.capturedCtx?.scope)
               .catchError((e) {
                 debugPrint('Error in onSubmitted: $e');
@@ -1573,7 +1579,7 @@ class _StatefulSwitchState extends State<_StatefulSwitch> {
           final (:code, :targeted) = parseShql(onChanged as String);
           widget.shql
               .call(code, targeted: targeted,
-                  boundValues: {'value': newValue},
+                  boundValues: {'value': newValue, '_SELF': widget.capturedCtx?.map},
                   startingScope: widget.capturedCtx?.scope)
               .catchError((e) {
                 debugPrint('Error in Switch onChanged: $e');
@@ -1700,7 +1706,7 @@ class _StatefulCheckboxState extends State<_StatefulCheckbox> {
           final (:code, :targeted) = parseShql(onChanged as String);
           widget.shql
               .call(code, targeted: targeted,
-                  boundValues: {'value': newValue},
+                  boundValues: {'value': newValue, '_SELF': widget.capturedCtx?.map},
                   startingScope: widget.capturedCtx?.scope)
               .catchError((e) {
                 debugPrint('Error in Checkbox onChanged: $e');
@@ -1878,7 +1884,7 @@ Widget _buildActionChip(
   VoidCallback? cb;
   if (isShqlRef(onPressed)) {
     final (:code, :targeted) = parseShql(onPressed as String);
-    cb = () => WidgetRegistry.callShql(context, shql, code, targeted: targeted, startingScope: screenCtx?.scope);
+    cb = () => WidgetRegistry.callShql(context, shql, code, targeted: targeted, screenCtx: screenCtx);
   }
 
   return ActionChip(
@@ -1955,7 +1961,7 @@ Widget _buildFilterChip(
   void Function(bool)? cb;
   if (isShqlRef(onSelected)) {
     final (:code, :targeted) = parseShql(onSelected as String);
-    cb = (_) => WidgetRegistry.callShql(context, shql, code, targeted: targeted, startingScope: screenCtx?.scope);
+    cb = (_) => WidgetRegistry.callShql(context, shql, code, targeted: targeted, screenCtx: screenCtx);
   }
 
   return FilterChip(
@@ -2138,7 +2144,7 @@ class _StatefulDropdownState extends State<_StatefulDropdown> {
           widget.shql.call(
             widget.onChanged!,
             targeted: true,
-            boundValues: {'value': value},
+            boundValues: {'value': value, '_SELF': widget.capturedCtx?.map},
             startingScope: widget.capturedCtx?.scope,
           );
         }
@@ -2192,7 +2198,7 @@ Widget _buildIconButton(
   if (onPressed is VoidCallback) {
     cb = onPressed;
   } else if (onPressed is String && isShqlRef('shql: $onPressed')) {
-    cb = () => WidgetRegistry.callShql(context, shql, onPressed, startingScope: screenCtx?.scope);
+    cb = () => WidgetRegistry.callShql(context, shql, onPressed, screenCtx: screenCtx);
   }
 
   return IconButton(
@@ -2256,7 +2262,7 @@ Widget _buildListTile(
   VoidCallback? cb;
   if (onTap != null && isShqlRef(onTap)) {
     final (:code, :targeted) = parseShql(onTap);
-    cb = () => WidgetRegistry.callShql(context, shql, code, targeted: targeted, startingScope: screenCtx?.scope);
+    cb = () => WidgetRegistry.callShql(context, shql, code, targeted: targeted, screenCtx: screenCtx);
   }
 
   return ListTile(
@@ -2297,7 +2303,7 @@ Widget _buildBottomNavigationBar(
         ? (index) {
             WidgetRegistry.callShql(
               context, shql, onTap.replaceAll('value', '$index'),
-              startingScope: screenCtx?.scope,
+              screenCtx: screenCtx,
             );
           }
         : null,
@@ -2363,7 +2369,7 @@ VoidCallback? _resolveOnPressed(
   if (isShqlRef(onPressed)) {
     final (:code, :targeted) = parseShql(onPressed as String);
     return () => WidgetRegistry.callShql(context, shql, code,
-        targeted: targeted, startingScope: screenCtx?.scope);
+        targeted: targeted, screenCtx: screenCtx);
   }
   return null;
 }
@@ -2563,7 +2569,7 @@ class _StatefulCheckboxListTileState
           final (:code, :targeted) = parseShql(onChanged as String);
           widget.shql
               .call(code, targeted: targeted,
-                  boundValues: {'value': newValue},
+                  boundValues: {'value': newValue, '_SELF': widget.capturedCtx?.map},
                   startingScope: widget.capturedCtx?.scope)
               .catchError((e) {
                 debugPrint('Error in CheckboxListTile onChanged: $e');
@@ -2685,7 +2691,9 @@ Widget _buildDismissible(
   } else if (isShqlRef(onDismissed)) {
     final (:code, :targeted) = parseShql(onDismissed as String);
     confirm = (_) async {
-      shql.call(code, targeted: targeted, startingScope: screenCtx?.scope);
+      shql.call(code, targeted: targeted,
+          boundValues: screenCtx != null ? {'_SELF': screenCtx.map} : null,
+          startingScope: screenCtx?.scope);
       return false;
     };
   }

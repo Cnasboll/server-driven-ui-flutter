@@ -146,7 +146,7 @@ class ShqlBindings {
   /// tree; registered child widgets attach their own maps under it.
   ScreenContext createScreenContext(Map<String, dynamic> props) {
     final scope = Scope(Object(), constants: _runtime.globalScope.constants, parent: _runtime.globalScope);
-    final screenMap = <String, dynamic>{};
+    final screenMap = <String, dynamic>{'_PARENT': null};
     for (final entry in props.entries) {
       scope.members.setVariable(
         _runtime.identifiers.include(entry.key.toUpperCase()),
