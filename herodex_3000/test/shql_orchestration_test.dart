@@ -3591,42 +3591,28 @@ void main() {
 
   // ─── YAML screen local SHQL™ scope ──────────────────────────────────────
   group('YAML screen local scope', () {
-    late ShqlBindings sb;
+    late ShqlTestRunner sh;
 
-    setUp(() {
-      sb = ShqlBindings(onMutated: () {}, saveState: (k, v) async {}, loadState: (k, d) async => d);
+    setUp(() async {
+      sh = _createRunner();
+      await sh.setUp(stdlibPath: _stdlibPath, testLibPath: _testLibPath);
     });
 
     test('createScreenContext() binds props as direct SHQL™ variables', () async {
-      final ctx = sb.createScreenContext({'label': 'Batman', 'id': '99'});
-      final label = await sb.eval('LABEL', startingScope: ctx.scope);
-      final id = await sb.eval('ID', startingScope: ctx.scope);
-      expect(label, 'Batman');
-      expect(id, '99');
+      final scope = sh.createScope({'label': 'Batman', 'id': '99'});
+      await sh.test('EXPECT(LABEL, "Batman"); EXPECT(ID, "99")', startingScope: scope);
     });
 
-    test('scope is mutable: SHQL™ write persists across evals on the same context', () async {
-      final ctx = sb.createScreenContext({'checked': false});
-      await sb.eval('CHECKED := NOT CHECKED', startingScope: ctx.scope);
-      final checked = await sb.eval('CHECKED', startingScope: ctx.scope);
-      expect(checked, isTrue);
+    test('scope is mutable: SHQL™ write persists on the same context', () async {
+      final scope = sh.createScope({'checked': false});
+      await sh.test('CHECKED := NOT CHECKED; EXPECT(CHECKED, TRUE)', startingScope: scope);
     });
 
-    test('nested contexts: child inherits parent props via scope chain', () async {
-      final outer = sb.createScreenContext({'level': 'outer', 'shared': 42});
-      final inner = sb.createScreenContext({'level': 'inner'}, parent: outer);
-      // inner's own prop shadows parent's
-      expect(await sb.eval('LEVEL', startingScope: inner.scope), 'inner');
-      // parent's prop is accessible through the scope chain
-      expect(await sb.eval('SHARED', startingScope: inner.scope), 42);
-    });
-
-    test('sibling contexts are independent', () async {
-      final a = sb.createScreenContext({'x': 1});
-      final b = sb.createScreenContext({'x': 2});
-      await sb.eval('X := 99', startingScope: a.scope);
-      // mutation on a does not affect b
-      expect(await sb.eval('X', startingScope: b.scope), 2);
+    test('sibling scopes are independent', () async {
+      final a = sh.createScope({'x': 1});
+      final b = sh.createScope({'x': 2});
+      await sh.test('X := 99', startingScope: a);
+      await sh.test('EXPECT(X, 2)', startingScope: b);
     });
   });
 }

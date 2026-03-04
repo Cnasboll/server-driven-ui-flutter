@@ -87,18 +87,38 @@ class ShqlTestRunner {
 
   // ─── Execution ─────────────────────────────────────────────────────
 
-  Future<dynamic> _exec(String code, {Map<String, dynamic>? boundValues}) {
+  Future<dynamic> _exec(String code, {Map<String, dynamic>? boundValues, Scope? startingScope}) {
     return Engine.execute(
       code,
       runtime: runtime,
       constantsSet: constantsSet,
       boundValues: boundValues,
+      startingScope: startingScope,
     );
   }
 
   /// Execute SHQL™ code (may contain EXPECT/ASSERT calls).
-  Future<dynamic> test(String code, {Map<String, dynamic>? boundValues}) =>
-      _exec(code, boundValues: boundValues);
+  ///
+  /// Pass [startingScope] (created via [createScope]) to execute the code
+  /// within a specific scope — e.g. a screen-local scope from [ScreenContext].
+  Future<dynamic> test(String code, {Map<String, dynamic>? boundValues, Scope? startingScope}) =>
+      _exec(code, boundValues: boundValues, startingScope: startingScope);
+
+  /// Create a flat SHQL™ scope pre-populated with [props].
+  ///
+  /// The scope is a direct child of [runtime.globalScope] so all global
+  /// functions and variables remain accessible.  Use as [startingScope] in
+  /// [test] to simulate the per-screen SHQL™ scope injected by [YamlScreen].
+  Scope createScope(Map<String, dynamic> props) {
+    final scope = Scope(Object(), constants: runtime.globalScope.constants, parent: runtime.globalScope);
+    for (final entry in props.entries) {
+      scope.members.setVariable(
+        constantsSet.identifiers.include(entry.key.toUpperCase()),
+        entry.value,
+      );
+    }
+    return scope;
+  }
 
   /// Load and execute a `.shql` file.
   Future<void> loadFile(String path) async {

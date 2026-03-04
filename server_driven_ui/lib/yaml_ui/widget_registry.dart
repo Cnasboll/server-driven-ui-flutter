@@ -86,11 +86,27 @@ class WidgetRegistry {
   /// The [node] is a parsed YAML map (e.g. `{type: Column, props: ...}`).
   /// Any string value starting with `"prop:"` is substituted with the caller's
   /// props at build time. For example, `"prop:label"` becomes `props['label']`.
+  ///
+  /// When a [ScreenContext] is present, a child map is created for this widget
+  /// and attached to the parent map, building the widget tree:
+  /// `_SCREEN['MY_WIDGET']['CHILD']...`.
+  ///
+  /// The map key is `props['_key']` (uppercased) when provided, otherwise
+  /// [path] — which is always unique, guaranteeing no collisions when the
+  /// same widget type appears multiple times under the same parent.
   void register(String name, dynamic node) {
     _factories[name] = (context, props, buildChild, child, children, path, shql, key, engine, screenCtx) {
-      final ctx = shql.createScreenContext(props.cast<String, dynamic>(), parent: screenCtx);
       final resolved = substituteProps(node, props);
-      return buildChild(resolved, '$path.$name', screenCtx: ctx);
+      if (screenCtx == null) {
+        return buildChild(resolved, '$path.$name', screenCtx: null);
+      }
+      final mapKey = props['_key'] is String
+          ? (props['_key'] as String).toUpperCase()
+          : path;
+      final widgetMap = <String, dynamic>{};
+      screenCtx.map[mapKey] = widgetMap;
+      return buildChild(resolved, '$path.$name',
+          screenCtx: ScreenContext(screenCtx.scope, widgetMap));
     };
   }
 
