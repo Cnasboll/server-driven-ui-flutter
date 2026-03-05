@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:shql/bytecode/bytecode.dart';
 import 'package:shql/bytecode/bytecode_interpreter.dart';
 import 'package:shql/bytecode/bytecode_parser.dart';
@@ -607,6 +609,131 @@ void main() {
     get_member 3
     ret
 '''), 99);
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  // Native functions
+  // -------------------------------------------------------------------------
+
+  /// Build an interpreter with [natives] pre-registered and run [src].
+  Future<dynamic> runNative(
+    String src,
+    Map<String, dynamic Function(List<dynamic>)> natives, [
+    List<dynamic> args = const [],
+  ]) {
+    final prog = BytecodeParser.fromSource(src).parse();
+    final interp = BytecodeInterpreter(prog, rt);
+    for (final e in natives.entries) {
+      interp.registerNative(e.key, e.value);
+    }
+    return interp.execute('main', args);
+  }
+
+  group('BytecodeInterpreter — native functions', () {
+    test('unary: sqrt(9) = 3.0', () async {
+      expect(
+        await runNative(
+          '''
+.chunk main:
+  .constants:
+    0: sqrt
+    1: 9
+  .code:
+    load_var 0
+    push_const 1
+    call 1
+    ret
+''',
+          {'sqrt': (args) => sqrt(args[0] as num)},
+        ),
+        3.0,
+      );
+    });
+
+    test('binary: max(3, 7) = 7', () async {
+      expect(
+        await runNative(
+          '''
+.chunk main:
+  .constants:
+    0: maxFn
+    1: 3
+    2: 7
+  .code:
+    load_var 0
+    push_const 1
+    push_const 2
+    call 2
+    ret
+''',
+          {'maxFn': (args) => max(args[0] as num, args[1] as num)},
+        ),
+        7,
+      );
+    });
+
+    test('ternary: substring("hello", 1, 4) = "ell"', () async {
+      expect(
+        await runNative(
+          '''
+.chunk main:
+  .constants:
+    0: substr
+    1: "hello"
+    2: 1
+    3: 4
+  .code:
+    load_var 0
+    push_const 1
+    push_const 2
+    push_const 3
+    call 3
+    ret
+''',
+          {'substr': (args) => (args[0] as String).substring(args[1] as int, args[2] as int)},
+        ),
+        'ell',
+      );
+    });
+
+    test('native result used in arithmetic', () async {
+      // sqrt(16) + 1 = 5.0
+      expect(
+        await runNative(
+          '''
+.chunk main:
+  .constants:
+    0: sqrt
+    1: 16
+    2: 1
+  .code:
+    load_var 0
+    push_const 1
+    call 1
+    push_const 2
+    add
+    ret
+''',
+          {'sqrt': (args) => sqrt(args[0] as num)},
+        ),
+        5.0,
+      );
+    });
+
+    test('throws when calling non-callable', () async {
+      expect(
+        () => run('''
+.chunk main:
+  .constants:
+    0: 42
+  .code:
+    push_const 0
+    call 0
+    ret
+'''),
+        throwsA(isA<BytecodeRuntimeError>()),
+      );
     });
   });
 }

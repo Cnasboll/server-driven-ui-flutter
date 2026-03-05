@@ -25,7 +25,7 @@ class BytecodeRuntimeError implements Exception {
 }
 
 // ---------------------------------------------------------------------------
-// Callable wrapper for bytecode closures
+// Callable wrappers
 // ---------------------------------------------------------------------------
 
 /// A compiled function that can be pushed onto the value stack and invoked
@@ -41,6 +41,14 @@ class BytecodeCallable {
   String toString() => 'BytecodeCallable(${chunk.name})';
 }
 
+/// A native Dart function registered via [BytecodeInterpreter.registerNative].
+/// The wrapped function receives the positional arguments as a plain [List].
+class _NativeCallable {
+  final dynamic Function(List<dynamic> args) fn;
+
+  _NativeCallable(this.fn);
+}
+
 // ---------------------------------------------------------------------------
 // Interpreter
 // ---------------------------------------------------------------------------
@@ -48,8 +56,15 @@ class BytecodeCallable {
 class BytecodeInterpreter {
   final BytecodeProgram program;
   final Runtime runtime;
+  final Map<int, dynamic Function(List<dynamic>)> _nativeFunctions = {};
 
   BytecodeInterpreter(this.program, this.runtime);
+
+  /// Register a native Dart function callable from bytecode via [Opcode.call].
+  /// [name] is case-insensitive (uppercased to match SHQL identifier semantics).
+  void registerNative(String name, dynamic Function(List<dynamic> args) fn) {
+    _nativeFunctions[runtime.identifiers.include(name.toUpperCase())] = fn;
+  }
 
   /// Execute the named chunk (default: `"main"`) with optional positional [args].
   /// Execution begins in a child scope of [Runtime.globalScope].
@@ -91,7 +106,12 @@ class BytecodeInterpreter {
         case Opcode.loadVar:
           final id = _id(chunk, instr.operand);
           final (raw, _, _) = scope.resolveIdentifier(id);
-          stack.add(_unwrap(raw));
+          if (raw != null) {
+            stack.add(_unwrap(raw));
+          } else {
+            final native = _nativeFunctions[id];
+            stack.add(native != null ? _NativeCallable(native) : null);
+          }
 
         case Opcode.storeVar:
           final id = _id(chunk, instr.operand);
@@ -283,6 +303,9 @@ class BytecodeInterpreter {
   Future<dynamic> _call(dynamic callable, List<dynamic> args) async {
     if (callable is BytecodeCallable) {
       return _run(callable.chunk, args, callable.capturedScope);
+    }
+    if (callable is _NativeCallable) {
+      return callable.fn(args);
     }
     throw BytecodeRuntimeError('Cannot call $callable');
   }
