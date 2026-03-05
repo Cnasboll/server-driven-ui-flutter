@@ -126,6 +126,11 @@ enum TokenTypes {
   assignment,
   lambda,
   call,
+  /// A dot-prefixed identifier: `.chunk`, `.constants`, `.loop_start`, etc.
+  /// Used exclusively by the bytecode parser — not produced by the SHQL
+  /// state machine.  Bytecode tokenisation merges a [dot] token immediately
+  /// followed by an [identifier] token into a single [directive] token.
+  directive,
 }
 
 enum Keywords {
@@ -519,6 +524,7 @@ class Token {
       TokenTypes.assignment: ":=",
       TokenTypes.lambda: "=>",
       TokenTypes.call: "()",
+      TokenTypes.directive: ".directive",
     };
   }
 
