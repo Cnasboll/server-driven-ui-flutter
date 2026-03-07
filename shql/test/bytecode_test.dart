@@ -613,6 +613,92 @@ void main() {
   });
 
   // -------------------------------------------------------------------------
+  // First-class functions via if-expression
+  // -------------------------------------------------------------------------
+
+  // SHQL source:
+  //   f1(x) := POW(x, 2);
+  //   f2(x) := x * 2;
+  //   choice := INTEGER(READLINE);
+  //   f := IF choice = 0 THEN f1 ELSE f2;
+  //   result := f(42);
+  const firstClassSrc = '''
+.chunk main:
+  .constants:
+    0: readline
+    1: integer
+    2: choice
+    3: 0
+    4: .f1
+    5: .f2
+    6: f
+    7: 42
+    8: result
+  .code:
+    load_var 1
+    load_var 0
+    call 0
+    call 1
+    store_var 2
+    load_var 2
+    push_const 3
+    cmp_eq
+    jump_false .else
+    make_closure 4
+    jump .end
+  .else:
+    make_closure 5
+  .end:
+    store_var 6
+    load_var 6
+    push_const 7
+    call 1
+    store_var 8
+    load_var 8
+    ret
+
+.chunk f1:
+  .params:
+    x
+  .constants:
+    0: pow
+    1: x
+    2: 2
+  .code:
+    load_var 0
+    load_var 1
+    push_const 2
+    call 2
+    ret
+
+.chunk f2:
+  .params:
+    x
+  .constants:
+    0: x
+    1: 2
+  .code:
+    load_var 0
+    push_const 1
+    mul
+    ret
+''';
+
+  group('BytecodeInterpreter — first-class functions via if-expression', () {
+    for (final (input, expected) in [('0', 1764), ('1', 84)]) {
+      test('READLINE=$input → ${input == '0' ? 'f1' : 'f2'}(42) = $expected',
+          () async {
+        final prog = BytecodeParser.fromSource(firstClassSrc).parse();
+        final interp = BytecodeInterpreter(prog, rt);
+        interp.registerNative('readline', (_) => input);
+        interp.registerNative('integer', (args) => int.parse(args[0] as String));
+        interp.registerNative('pow', (args) => pow(args[0] as num, args[1] as num).toInt());
+        expect(await interp.execute('main'), expected);
+      });
+    }
+  });
+
+  // -------------------------------------------------------------------------
   // Native functions
   // -------------------------------------------------------------------------
 
