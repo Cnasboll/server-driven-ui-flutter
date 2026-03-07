@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:shql/bytecode/bytecode.dart';
+import 'package:shql/bytecode/bytecode_codec.dart';
 import 'package:shql/bytecode/bytecode_interpreter.dart';
 import 'package:shql/bytecode/bytecode_parser.dart';
 import 'package:shql/execution/runtime/runtime.dart';
@@ -822,5 +823,149 @@ void main() {
         throwsA(isA<BytecodeRuntimeError>()),
       );
     });
+  });
+
+  // -------------------------------------------------------------------------
+  // Codec round-trips
+  //
+  // For each program: text → parse → encode → decode → disassemble → parse
+  // → encode again.  The two byte arrays must be identical, proving a 1-1
+  // mapping between the text format and the binary format (comments aside).
+  // -------------------------------------------------------------------------
+
+  /// Encode [src] to bytes, decode back, re-encode, assert both byte arrays
+  /// are equal, then disassemble the decoded program, re-parse, re-encode and
+  /// assert that third encoding also matches.
+  void roundTrip(String description, String src) {
+    test(description, () {
+      final program = BytecodeParser.fromSource(src).parse();
+
+      // binary round-trip
+      final bytes1 = BytecodeEncoder.encode(program);
+      final decoded = BytecodeDecoder.decode(bytes1);
+      final bytes2 = BytecodeEncoder.encode(decoded);
+      expect(bytes2, bytes1, reason: 'binary round-trip');
+
+      // text round-trip (via disassembler → re-parse → re-encode)
+      final text = BytecodeDisassembler.disassemble(decoded);
+      final bytes3 = BytecodeEncoder.encode(BytecodeParser.fromSource(text).parse());
+      expect(bytes3, bytes1, reason: 'text round-trip');
+    });
+  }
+
+  group('Codec — round-trips', () {
+    // SHQL: RESULT := 42
+    roundTrip('minimal: push constant and return', '''
+.chunk main:
+  .constants:
+    0: 42
+  .code:
+    push_const 0
+    ret
+''');
+
+    // SHQL: RESULT := (2 + 3) * 4
+    roundTrip('arithmetic with multiple constants', '''
+.chunk main:
+  .constants:
+    0: 2
+    1: 3
+    2: 4
+  .code:
+    push_const 0
+    push_const 1
+    add
+    push_const 2
+    mul
+    ret
+''');
+
+    // SHQL: negative constant and float
+    roundTrip('negative integer and float constant', '''
+.chunk main:
+  .constants:
+    0: -7
+    1: 3.14
+  .code:
+    push_const 0
+    push_const 1
+    add
+    ret
+''');
+
+    // SHQL: string constant and make_object / get_member
+    roundTrip('string constants and SHQL Object', '''
+.chunk main:
+  .constants:
+    0: "name"
+    1: "Alice"
+    2: name
+  .code:
+    push_const 0
+    push_const 1
+    make_object 1
+    get_member 2
+    ret
+''');
+
+    // SHQL: IF condition THEN ... ELSE ... (forward jumps)
+    roundTrip('conditional with forward jumps', '''
+.chunk main:
+  .constants:
+    0: 0
+    1: 99
+    2: 42
+  .code:
+    push_const 0
+    jump_false 4
+    push_const 1
+    jump 5
+    push_const 2
+    ret
+''');
+
+    // SHQL: f1(x) := POW(x, 2)  /  f2(x) := x * 2  / first-class function
+    roundTrip('first-class functions via if-expression', firstClassSrc);
+
+    // SHQL: GCD recursive
+    roundTrip('recursive GCD chunks', '''
+.chunk main:
+  .constants:
+    0: .gcd
+    1: 48
+    2: 18
+  .code:
+    push_const 0
+    push_const 1
+    push_const 2
+    call 2
+    ret
+
+.chunk gcd:
+  .params:
+    a
+    b
+  .constants:
+    0: b
+    1: 0
+    2: a
+    3: .gcd
+    4: a
+    5: b
+  .code:
+    load_var 0
+    push_const 1
+    cmp_eq
+    jump_false 5
+    load_var 2
+    ret
+    push_const 3
+    load_var 5
+    load_var 4
+    load_var 5
+    mod
+    call 2
+    ret
+''');
   });
 }

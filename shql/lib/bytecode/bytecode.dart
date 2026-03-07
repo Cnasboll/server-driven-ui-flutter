@@ -99,7 +99,30 @@ enum Opcode {
   makeList,
 
   /// Pop `operand * 2` items (key, value pairs) and push a [Map].
-  makeObject,
+  makeObject;
+
+  /// Whether this opcode carries an integer operand in the instruction stream.
+  bool get hasOperand => switch (this) {
+    Opcode.pushConst ||
+    Opcode.loadVar ||
+    Opcode.storeVar ||
+    Opcode.jump ||
+    Opcode.jumpFalse ||
+    Opcode.jumpTrue ||
+    Opcode.call ||
+    Opcode.makeClosure ||
+    Opcode.getMember ||
+    Opcode.setMember ||
+    Opcode.makeList ||
+    Opcode.makeObject => true,
+    _ => false,
+  };
+
+  /// The canonical lowercase snake_case mnemonic used in text bytecode.
+  String get mnemonic => name.replaceAllMapped(
+    RegExp(r'[A-Z]'),
+    (m) => '_${m.group(0)!.toLowerCase()}',
+  );
 }
 
 // ---------------------------------------------------------------------------

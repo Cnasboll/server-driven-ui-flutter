@@ -253,7 +253,7 @@ class BytecodeParser {
       _advance();
       final opcode = _parseOpcode(tok.lexeme);
 
-      if (_opcodeHasOperand(opcode)) {
+      if (opcode.hasOperand) {
         final operandTok = _peek();
         if (operandTok == null) {
           throw BytecodeParseError('Expected operand for opcode "${tok.lexeme}"');
@@ -337,22 +337,6 @@ class BytecodeParser {
       _ => throw BytecodeParseError('Unknown opcode: "$name"'),
     };
   }
-
-  static bool _opcodeHasOperand(Opcode op) => switch (op) {
-    Opcode.pushConst ||
-    Opcode.loadVar ||
-    Opcode.storeVar ||
-    Opcode.jump ||
-    Opcode.jumpFalse ||
-    Opcode.jumpTrue ||
-    Opcode.call ||
-    Opcode.makeClosure ||
-    Opcode.getMember ||
-    Opcode.setMember ||
-    Opcode.makeList ||
-    Opcode.makeObject => true,
-    _ => false,
-  };
 
   // ---- Helpers ------------------------------------------------------------
 
