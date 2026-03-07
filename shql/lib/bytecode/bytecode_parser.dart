@@ -6,9 +6,9 @@
 ///
 /// Tokenisation is performed by the standard SHQL™ [Tokenizer] with a
 /// lightweight post-processing step that merges consecutive [TokenTypes.dot]
-/// + [TokenTypes.identifier] tokens into a single [TokenTypes.directive] token
-/// (e.g., `.chunk`, `.loop_start`).  This keeps the existing SHQL™ state
-/// machine untouched.
+/// + [TokenTypes.identifier] token pairs into a single [_BcTok] flagged as a
+/// directive (e.g. `.chunk`, `.loop_start`).  This keeps the existing SHQL™
+/// state machine and [TokenTypes] enum untouched.
 library;
 
 import 'package:shql/bytecode/bytecode.dart';
@@ -32,28 +32,37 @@ class BytecodeParseError implements Exception {
 // Bytecode tokeniser (post-processor)
 // ---------------------------------------------------------------------------
 
+/// A single token in the bytecode text format, produced by [tokenizeBytecode].
+///
+/// * [isDirective] — true when this token represents a dot-prefixed name
+///   (`.chunk`, `.done`, etc.) formed by merging a [TokenTypes.dot] token
+///   with the following [TokenTypes.identifier] token.
+/// * [type] — the underlying SHQL™ [TokenTypes]; for directive tokens this is
+///   [TokenTypes.dot] (the first token of the merged pair).
+/// * [lexeme] — the raw text; for directives this includes the leading dot
+///   (e.g. `'.chunk'`).
+typedef BcToken = ({bool isDirective, TokenTypes type, String lexeme});
+
 /// Runs the SHQL™ [Tokenizer] on [source], then merges every
-/// `dot` + `identifier` pair into a single [TokenTypes.directive] token.
-List<Token> tokenizeBytecode(String source) {
+/// `dot` + `identifier` pair into a single [BcToken] with [BcToken.isDirective]
+/// set to `true`.
+List<BcToken> tokenizeBytecode(String source) {
   final raw = Tokenizer.tokenize(source).toList();
-  final result = <Token>[];
+  final result = <BcToken>[];
   var i = 0;
   while (i < raw.length) {
     final tok = raw[i];
     if (tok.tokenType == TokenTypes.dot &&
         i + 1 < raw.length &&
         raw[i + 1].tokenType == TokenTypes.identifier) {
-      final next = raw[i + 1];
-      result.add(
-        Token.parser(
-          TokenTypes.directive,
-          '.${next.lexeme}',
-          tok.startLocation,
-        ),
-      );
+      result.add((
+        isDirective: true,
+        type: TokenTypes.dot,
+        lexeme: '.${raw[i + 1].lexeme}',
+      ));
       i += 2;
     } else {
-      result.add(tok);
+      result.add((isDirective: false, type: tok.tokenType, lexeme: tok.lexeme));
       i++;
     }
   }
@@ -65,7 +74,7 @@ List<Token> tokenizeBytecode(String source) {
 // ---------------------------------------------------------------------------
 
 class BytecodeParser {
-  final List<Token> _tokens;
+  final List<BcToken> _tokens;
   int _pos = 0;
 
   BytecodeParser._(this._tokens);
@@ -101,7 +110,7 @@ class BytecodeParser {
     while (_pos < _tokens.length) {
       final tok = _peek();
       if (tok == null) break;
-      if (!_isDirective(tok)) break;
+      if (!tok.isDirective) break;
       if (tok.lexeme == '.chunk') break; // next chunk starts
 
       _advance();
@@ -136,7 +145,7 @@ class BytecodeParser {
       final tok = _peek();
       if (tok == null) break;
       if (_endsSection(tok)) break;
-      if (tok.tokenType != TokenTypes.integerLiteral) break;
+      if (tok.type != TokenTypes.integerLiteral) break;
       _advance(); // consume index (order is implicit, index ignored)
       _expectTokenType(TokenTypes.colon);
       result.add(_parseConstantValue());
@@ -148,7 +157,12 @@ class BytecodeParser {
     final tok = _advance();
     if (tok == null) throw BytecodeParseError('Expected constant value, got EOF');
 
-    switch (tok.tokenType) {
+    if (tok.isDirective) {
+      // .chunkName → ChunkRef (strip leading dot)
+      return ChunkRef(tok.lexeme.substring(1));
+    }
+
+    switch (tok.type) {
       case TokenTypes.integerLiteral:
         return int.parse(tok.lexeme);
       case TokenTypes.floatLiteral:
@@ -160,17 +174,14 @@ class BytecodeParser {
       case TokenTypes.identifier:
         // Bare word → identifier name (for loadVar / storeVar operands)
         return tok.lexeme;
-      case TokenTypes.directive:
-        // .chunkName → ChunkRef (strip leading dot)
-        return ChunkRef(tok.lexeme.substring(1));
       case TokenTypes.sub:
         // Negative number
         final num = _advance();
         if (num == null) throw BytecodeParseError('Expected number after "-"');
-        if (num.tokenType == TokenTypes.integerLiteral) {
+        if (num.type == TokenTypes.integerLiteral) {
           return -int.parse(num.lexeme);
         }
-        if (num.tokenType == TokenTypes.floatLiteral) {
+        if (num.type == TokenTypes.floatLiteral) {
           return -double.parse(num.lexeme);
         }
         throw BytecodeParseError(
@@ -178,7 +189,7 @@ class BytecodeParser {
         );
       default:
         throw BytecodeParseError(
-          'Unexpected constant value "${tok.lexeme}" (${tok.tokenType})',
+          'Unexpected constant value "${tok.lexeme}" (${tok.type})',
         );
     }
   }
@@ -191,7 +202,7 @@ class BytecodeParser {
       final tok = _peek();
       if (tok == null) break;
       if (_endsSection(tok)) break;
-      if (tok.tokenType != TokenTypes.identifier) break;
+      if (tok.isDirective || tok.type != TokenTypes.identifier) break;
       result.add(_advance()!.lexeme);
     }
     return result;
@@ -218,10 +229,10 @@ class BytecodeParser {
       if (_endsSection(tok)) break;
 
       // Directive at this position is either a label definition or an error
-      if (_isDirective(tok)) {
+      if (tok.isDirective) {
         _advance();
         final next = _peek();
-        if (next != null && next.tokenType == TokenTypes.colon) {
+        if (next != null && next.type == TokenTypes.colon) {
           _advance(); // consume ':'
           labels[tok.lexeme] = instructions.length;
           resolveFixups(tok.lexeme);
@@ -234,9 +245,9 @@ class BytecodeParser {
       }
 
       // Must be an opcode (identifier token, which includes SHQL keywords)
-      if (tok.tokenType != TokenTypes.identifier) {
+      if (tok.type != TokenTypes.identifier) {
         throw BytecodeParseError(
-          'Expected opcode, got "${tok.lexeme}" (${tok.tokenType})',
+          'Expected opcode, got "${tok.lexeme}" (${tok.type})',
         );
       }
       _advance();
@@ -248,7 +259,7 @@ class BytecodeParser {
           throw BytecodeParseError('Expected operand for opcode "${tok.lexeme}"');
         }
 
-        if (_isDirective(operandTok)) {
+        if (operandTok.isDirective) {
           // Jump / closure target: .label_name
           _advance();
           final label = operandTok.lexeme;
@@ -258,13 +269,13 @@ class BytecodeParser {
             fixups.add((instructions.length, label));
             instructions.add(Instruction(opcode, -1)); // placeholder
           }
-        } else if (operandTok.tokenType == TokenTypes.integerLiteral) {
+        } else if (operandTok.type == TokenTypes.integerLiteral) {
           _advance();
           instructions.add(Instruction(opcode, int.parse(operandTok.lexeme)));
-        } else if (operandTok.tokenType == TokenTypes.sub) {
+        } else if (operandTok.type == TokenTypes.sub) {
           _advance();
           final num = _advance();
-          if (num == null || num.tokenType != TokenTypes.integerLiteral) {
+          if (num == null || num.type != TokenTypes.integerLiteral) {
             throw BytecodeParseError('Expected integer after "-" in operand');
           }
           instructions.add(Instruction(opcode, -int.parse(num.lexeme)));
@@ -345,21 +356,17 @@ class BytecodeParser {
 
   // ---- Helpers ------------------------------------------------------------
 
-  bool _endsSection(Token tok) {
-    if (!_isDirective(tok)) return false;
+  bool _endsSection(BcToken tok) {
+    if (!tok.isDirective) return false;
     return tok.lexeme == '.chunk' ||
         tok.lexeme == '.constants' ||
         tok.lexeme == '.params' ||
         tok.lexeme == '.code';
   }
 
-  bool _isDirective(Token tok) => tok.tokenType == TokenTypes.directive;
-
   void _expectDirective(String expected) {
     final tok = _advance();
-    if (tok == null ||
-        tok.tokenType != TokenTypes.directive ||
-        tok.lexeme != expected) {
+    if (tok == null || !tok.isDirective || tok.lexeme != expected) {
       throw BytecodeParseError(
         'Expected "$expected", got "${tok?.lexeme ?? "EOF"}"',
       );
@@ -368,7 +375,7 @@ class BytecodeParser {
 
   String _expectIdentifier() {
     final tok = _advance();
-    if (tok == null || tok.tokenType != TokenTypes.identifier) {
+    if (tok == null || tok.isDirective || tok.type != TokenTypes.identifier) {
       throw BytecodeParseError(
         'Expected identifier, got "${tok?.lexeme ?? "EOF"}"',
       );
@@ -378,14 +385,14 @@ class BytecodeParser {
 
   void _expectTokenType(TokenTypes type) {
     final tok = _advance();
-    if (tok == null || tok.tokenType != type) {
+    if (tok == null || tok.isDirective || tok.type != type) {
       throw BytecodeParseError(
         'Expected ${type.name}, got "${tok?.lexeme ?? "EOF"}"',
       );
     }
   }
 
-  Token? _peek() => _pos < _tokens.length ? _tokens[_pos] : null;
+  BcToken? _peek() => _pos < _tokens.length ? _tokens[_pos] : null;
 
-  Token? _advance() => _pos < _tokens.length ? _tokens[_pos++] : null;
+  BcToken? _advance() => _pos < _tokens.length ? _tokens[_pos++] : null;
 }

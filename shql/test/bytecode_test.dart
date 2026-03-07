@@ -19,21 +19,22 @@ void main() {
     test('merges dot + identifier into directive', () {
       final tokens = tokenizeBytecode('.chunk');
       expect(tokens, hasLength(1));
-      expect(tokens.first.tokenType, TokenTypes.directive);
+      expect(tokens.first.isDirective, isTrue);
       expect(tokens.first.lexeme, '.chunk');
     });
 
     test('float literal does not produce a directive', () {
       final tokens = tokenizeBytecode('3.14');
       expect(tokens, hasLength(1));
-      expect(tokens.first.tokenType, TokenTypes.floatLiteral);
+      expect(tokens.first.isDirective, isFalse);
+      expect(tokens.first.type, TokenTypes.floatLiteral);
     });
 
     test('multiple directives in one line', () {
       final tokens = tokenizeBytecode('.chunk main .constants .code');
       expect(
         tokens
-            .where((t) => t.tokenType == TokenTypes.directive)
+            .where((t) => t.isDirective)
             .map((t) => t.lexeme)
             .toList(),
         ['.chunk', '.constants', '.code'],
