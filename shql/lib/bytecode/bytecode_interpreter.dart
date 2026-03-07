@@ -1,18 +1,22 @@
 /// Stack-based interpreter for the SHQL™ bytecode VM.
 ///
+/// The execution model uses an explicit call stack of [BytecodeFrame]s inside
+/// each [BytecodeThread], replacing the old recursive-async approach.
+/// This makes preemption trivial: [BytecodeInterpreter.tick] executes at most
+/// [quantum] instructions per thread, so [BytecodeExecutionContext] can
+/// interleave multiple threads in a cooperative round-robin.
+///
 /// Variables are stored in the same [Scope] / [Object] chain used by the
 /// existing execution-node runtime, and identifier names are interned via
 /// [Runtime.identifiers] so that bytecode and traditional SHQL™ programs
-/// share the same identifier space.  This is the foundation that will allow
-/// the bytecode compiler to replace [ExecutionNode]s while keeping the
-/// [Runtime] and [Scope] infrastructure intact.
+/// share the same identifier space.
 library;
 
 import 'package:shql/bytecode/bytecode.dart';
 import 'package:shql/execution/runtime/runtime.dart';
 
 // ---------------------------------------------------------------------------
-// Public errors
+// Errors
 // ---------------------------------------------------------------------------
 
 class BytecodeRuntimeError implements Exception {
@@ -28,9 +32,8 @@ class BytecodeRuntimeError implements Exception {
 // Callable wrappers
 // ---------------------------------------------------------------------------
 
-/// A compiled function that can be pushed onto the value stack and invoked
-/// via [Opcode.call].  Holds the chunk to execute and the [Scope] captured
-/// at the point of [Opcode.makeClosure] / [Opcode.pushConst] for a [ChunkRef].
+/// A compiled closure pushed onto the value stack by [Opcode.makeClosure] or
+/// [Opcode.pushConst] with a [ChunkRef] constant.
 class BytecodeCallable {
   final BytecodeChunk chunk;
   final Scope capturedScope;
@@ -42,11 +45,47 @@ class BytecodeCallable {
 }
 
 /// A native Dart function registered via [BytecodeInterpreter.registerNative].
-/// The wrapped function receives the positional arguments as a plain [List].
 class _NativeCallable {
   final dynamic Function(List<dynamic> args) fn;
 
   _NativeCallable(this.fn);
+}
+
+// ---------------------------------------------------------------------------
+// Execution frame and thread
+// ---------------------------------------------------------------------------
+
+/// One activation record on a [BytecodeThread]'s call stack.
+class BytecodeFrame {
+  final BytecodeChunk chunk;
+  int pc;
+  final List<dynamic> stack;
+  Scope scope; // mutable: push_scope / pop_scope update it in place
+
+  BytecodeFrame({
+    required this.chunk,
+    required this.pc,
+    required this.stack,
+    required this.scope,
+  });
+}
+
+/// A cooperative thread in the bytecode VM.
+///
+/// Each thread owns an explicit call stack of [BytecodeFrame]s.
+/// [BytecodeInterpreter.tick] advances the thread by at most [quantum]
+/// instructions.  When [isRunning] becomes false the thread has either
+/// completed ([result] is set) or faulted ([error] is set).
+class BytecodeThread {
+  final List<BytecodeFrame> callStack;
+  dynamic result;
+  BytecodeRuntimeError? error;
+
+  BytecodeThread({required BytecodeFrame initialFrame})
+      : callStack = [initialFrame];
+
+  bool get isRunning => callStack.isNotEmpty;
+  BytecodeFrame get currentFrame => callStack.last;
 }
 
 // ---------------------------------------------------------------------------
@@ -61,265 +100,307 @@ class BytecodeInterpreter {
   BytecodeInterpreter(this.program, this.runtime);
 
   /// Register a native Dart function callable from bytecode via [Opcode.call].
-  /// [name] is case-insensitive (uppercased to match SHQL identifier semantics).
+  /// [name] is case-insensitive (uppercased to match SHQL™ identifier semantics).
   void registerNative(String name, dynamic Function(List<dynamic> args) fn) {
     _nativeFunctions[runtime.identifiers.include(name.toUpperCase())] = fn;
   }
 
-  /// Execute the named chunk (default: `"main"`) with optional positional [args].
-  /// Execution begins in a child scope of [Runtime.globalScope].
+  /// Create a new [BytecodeThread] ready to run [chunkName] with [args].
+  BytecodeThread createThread(
+    String chunkName, [
+    List<dynamic> args = const [],
+  ]) {
+    return BytecodeThread(
+      initialFrame: _makeFrame(program[chunkName], args, runtime.globalScope),
+    );
+  }
+
+  /// Convenience: run [chunkName] to completion on a single thread.
+  /// Backward-compatible with the old async API; pure computation never yields.
   Future<dynamic> execute([
     String chunkName = 'main',
     List<dynamic> args = const [],
   ]) {
-    return _run(program[chunkName], args, runtime.globalScope);
+    final thread = createThread(chunkName, args);
+    while (thread.isRunning) {
+      _tickOne(thread);
+    }
+    if (thread.error != null) throw thread.error!;
+    return Future.value(thread.result);
   }
 
-  Future<dynamic> _run(
+  /// Execute at most [quantum] instructions of [thread].
+  void tick(BytecodeThread thread, [int quantum = 100]) {
+    var remaining = quantum;
+    while (thread.isRunning && remaining > 0) {
+      _tickOne(thread);
+      remaining--;
+    }
+  }
+
+  // ---- Frame construction --------------------------------------------------
+
+  BytecodeFrame _makeFrame(
     BytecodeChunk chunk,
     List<dynamic> args,
     Scope parentScope,
-  ) async {
-    final stack = <dynamic>[];
-
-    // Each call frame gets its own scope child, just as ExecutionNodes do.
-    var scope = Scope(Object(), parent: parentScope);
-
-    // Bind named parameters into the new scope.
+  ) {
+    final scope = Scope(Object(), parent: parentScope);
     for (var i = 0; i < chunk.params.length && i < args.length; i++) {
       final id = runtime.identifiers.include(chunk.params[i].toUpperCase());
       scope.setVariable(id, args[i]);
     }
+    return BytecodeFrame(chunk: chunk, pc: 0, stack: [], scope: scope);
+  }
 
-    int pc = 0;
-    while (pc < chunk.code.length) {
-      final instr = chunk.code[pc++];
+  // ---- Single-instruction dispatch ----------------------------------------
 
-      switch (instr.op) {
-        // ---- Stack / variables -------------------------------------------
+  void _tickOne(BytecodeThread thread) {
+    try {
+      _dispatch(thread);
+    } catch (e) {
+      thread.error =
+          e is BytecodeRuntimeError ? e : BytecodeRuntimeError('$e');
+      thread.callStack.clear(); // terminate thread on error
+    }
+  }
 
-        case Opcode.pushConst:
-          final c = chunk.constants[instr.operand];
-          // ChunkRef constants auto-close over the current scope.
-          stack.add(c is ChunkRef ? BytecodeCallable(program[c.name], scope) : c);
+  void _dispatch(BytecodeThread thread) {
+    final frame = thread.currentFrame;
 
-        case Opcode.loadVar:
-          final id = _id(chunk, instr.operand);
-          final (raw, _, _) = scope.resolveIdentifier(id);
-          if (raw != null) {
-            stack.add(_unwrap(raw));
-          } else {
-            final native = _nativeFunctions[id];
-            stack.add(native != null ? _NativeCallable(native) : null);
-          }
+    // Implicit return past end of chunk
+    if (frame.pc >= frame.chunk.code.length) {
+      _doRet(thread, frame.stack.isEmpty ? null : frame.stack.last);
+      return;
+    }
 
-        case Opcode.storeVar:
-          final id = _id(chunk, instr.operand);
-          scope.setVariable(id, stack.removeLast());
+    final instr = frame.chunk.code[frame.pc++];
+    final stack = frame.stack;
 
-        case Opcode.pop:
-          stack.removeLast();
+    switch (instr.op) {
+      // ---- Stack / variables -----------------------------------------------
 
-        // ---- Arithmetic -------------------------------------------------
+      case Opcode.pushConst:
+        final c = frame.chunk.constants[instr.operand];
+        stack.add(
+          c is ChunkRef ? BytecodeCallable(program[c.name], frame.scope) : c,
+        );
 
-        case Opcode.add:
-          final b = stack.removeLast(), a = stack.removeLast();
-          stack.add(a + b);
+      case Opcode.loadVar:
+        final id = _id(frame.chunk, instr.operand);
+        final (raw, _, _) = frame.scope.resolveIdentifier(id);
+        if (raw != null) {
+          stack.add(_unwrap(raw));
+        } else {
+          final native = _nativeFunctions[id];
+          stack.add(native != null ? _NativeCallable(native) : null);
+        }
 
-        case Opcode.sub:
-          final b = stack.removeLast(), a = stack.removeLast();
-          stack.add(a - b);
+      case Opcode.storeVar:
+        final id = _id(frame.chunk, instr.operand);
+        frame.scope.setVariable(id, stack.removeLast());
 
-        case Opcode.mul:
-          final b = stack.removeLast(), a = stack.removeLast();
-          stack.add(a * b);
+      case Opcode.pop:
+        stack.removeLast();
 
-        case Opcode.div:
-          final b = stack.removeLast(), a = stack.removeLast();
-          stack.add(a / b);
+      // ---- Arithmetic ------------------------------------------------------
 
-        case Opcode.mod:
-          final b = stack.removeLast(), a = stack.removeLast();
-          stack.add(a % b);
+      case Opcode.add:
+        final b = stack.removeLast(), a = stack.removeLast();
+        stack.add(a + b);
 
-        case Opcode.neg:
-          stack.add(-(stack.removeLast() as num));
+      case Opcode.sub:
+        final b = stack.removeLast(), a = stack.removeLast();
+        stack.add(a - b);
 
-        // ---- Comparison -------------------------------------------------
+      case Opcode.mul:
+        final b = stack.removeLast(), a = stack.removeLast();
+        stack.add(a * b);
 
-        case Opcode.cmpEq:
-          final b = stack.removeLast(), a = stack.removeLast();
-          stack.add(a == b);
+      case Opcode.div:
+        final b = stack.removeLast(), a = stack.removeLast();
+        stack.add(a / b);
 
-        case Opcode.cmpNeq:
-          final b = stack.removeLast(), a = stack.removeLast();
-          stack.add(a != b);
+      case Opcode.mod:
+        final b = stack.removeLast(), a = stack.removeLast();
+        stack.add(a % b);
 
-        case Opcode.cmpLt:
-          final b = stack.removeLast(), a = stack.removeLast();
-          stack.add((a as num) < (b as num));
+      case Opcode.neg:
+        stack.add(-(stack.removeLast() as num));
 
-        case Opcode.cmpLte:
-          final b = stack.removeLast(), a = stack.removeLast();
-          stack.add((a as num) <= (b as num));
+      // ---- Comparison ------------------------------------------------------
 
-        case Opcode.cmpGt:
-          final b = stack.removeLast(), a = stack.removeLast();
-          stack.add((a as num) > (b as num));
+      case Opcode.cmpEq:
+        final b = stack.removeLast(), a = stack.removeLast();
+        stack.add(a == b);
 
-        case Opcode.cmpGte:
-          final b = stack.removeLast(), a = stack.removeLast();
-          stack.add((a as num) >= (b as num));
+      case Opcode.cmpNeq:
+        final b = stack.removeLast(), a = stack.removeLast();
+        stack.add(a != b);
 
-        // ---- Logic ------------------------------------------------------
+      case Opcode.cmpLt:
+        final b = stack.removeLast(), a = stack.removeLast();
+        stack.add((a as num) < (b as num));
 
-        case Opcode.logAnd:
-          final b = stack.removeLast(), a = stack.removeLast();
-          stack.add(_truthy(a) && _truthy(b));
+      case Opcode.cmpLte:
+        final b = stack.removeLast(), a = stack.removeLast();
+        stack.add((a as num) <= (b as num));
 
-        case Opcode.logOr:
-          final b = stack.removeLast(), a = stack.removeLast();
-          stack.add(_truthy(a) || _truthy(b));
+      case Opcode.cmpGt:
+        final b = stack.removeLast(), a = stack.removeLast();
+        stack.add((a as num) > (b as num));
 
-        case Opcode.logNot:
-          stack.add(!_truthy(stack.removeLast()));
+      case Opcode.cmpGte:
+        final b = stack.removeLast(), a = stack.removeLast();
+        stack.add((a as num) >= (b as num));
 
-        // ---- Control flow -----------------------------------------------
+      // ---- Logic -----------------------------------------------------------
 
-        case Opcode.jump:
-          pc = instr.operand;
+      case Opcode.logAnd:
+        final b = stack.removeLast(), a = stack.removeLast();
+        stack.add(_truthy(a) && _truthy(b));
 
-        case Opcode.jumpFalse:
-          if (!_truthy(stack.removeLast())) pc = instr.operand;
+      case Opcode.logOr:
+        final b = stack.removeLast(), a = stack.removeLast();
+        stack.add(_truthy(a) || _truthy(b));
 
-        case Opcode.jumpTrue:
-          if (_truthy(stack.removeLast())) pc = instr.operand;
+      case Opcode.logNot:
+        stack.add(!_truthy(stack.removeLast()));
 
-        // ---- Scope ------------------------------------------------------
+      // ---- Control flow ----------------------------------------------------
 
-        /// A BEGIN/END block simply pushes a new child scope.  break/continue
-        /// emit the required pop_scope instructions before their jump so scope
-        /// depth is always resolved at compile time — no runtime scope counting
-        /// is needed.
-        case Opcode.pushScope:
-          scope = Scope(Object(), parent: scope);
+      case Opcode.jump:
+        frame.pc = instr.operand;
 
-        case Opcode.popScope:
-          scope = scope.parent ?? scope;
+      case Opcode.jumpFalse:
+        if (!_truthy(stack.removeLast())) frame.pc = instr.operand;
 
-        // ---- Functions / closures ---------------------------------------
+      case Opcode.jumpTrue:
+        if (_truthy(stack.removeLast())) frame.pc = instr.operand;
 
-        case Opcode.call:
-          final argCount = instr.operand;
-          final callArgs = List<dynamic>.filled(argCount, null);
-          for (var i = argCount - 1; i >= 0; i--) {
-            callArgs[i] = stack.removeLast();
-          }
-          final callable = stack.removeLast();
-          stack.add(await _call(callable, callArgs));
+      // ---- Scope -----------------------------------------------------------
 
-        case Opcode.makeClosure:
-          final ref = chunk.constants[instr.operand];
-          final name = ref is ChunkRef ? ref.name : ref as String;
-          stack.add(BytecodeCallable(program[name], scope));
+      case Opcode.pushScope:
+        frame.scope = Scope(Object(), parent: frame.scope);
 
-        case Opcode.ret:
-          return stack.isEmpty ? null : stack.removeLast();
+      case Opcode.popScope:
+        frame.scope = frame.scope.parent ?? frame.scope;
 
-        // ---- Object / list access ---------------------------------------
+      // ---- Functions / closures -------------------------------------------
 
-        case Opcode.getMember:
-          final id = _id(chunk, instr.operand);
-          final obj = stack.removeLast();
-          if (obj is Object) {
-            stack.add(_unwrap(obj.resolveIdentifier(id)));
-          } else {
-            throw BytecodeRuntimeError(
-              'get_member: expected SHQL Object, got $obj',
-            );
-          }
+      case Opcode.call:
+        final argCount = instr.operand;
+        final callArgs = List<dynamic>.filled(argCount, null);
+        for (var i = argCount - 1; i >= 0; i--) {
+          callArgs[i] = stack.removeLast();
+        }
+        final callable = stack.removeLast();
+        if (callable is BytecodeCallable) {
+          // Push a new frame — no recursion, no Future allocation
+          thread.callStack.add(
+            _makeFrame(callable.chunk, callArgs, callable.capturedScope),
+          );
+        } else if (callable is _NativeCallable) {
+          stack.add(callable.fn(callArgs));
+        } else {
+          throw BytecodeRuntimeError('Cannot call $callable');
+        }
 
-        case Opcode.setMember:
-          final id = _id(chunk, instr.operand);
-          final value = stack.removeLast();
-          final obj = stack.removeLast();
-          if (obj is Object) {
-            obj.setVariable(id, value);
-            stack.add(value);
-          } else {
-            throw BytecodeRuntimeError(
-              'set_member: expected SHQL Object, got $obj',
-            );
-          }
+      case Opcode.makeClosure:
+        final ref = frame.chunk.constants[instr.operand];
+        final name = ref is ChunkRef ? ref.name : ref as String;
+        stack.add(BytecodeCallable(program[name], frame.scope));
 
-        case Opcode.getIndex:
-          final idx = stack.removeLast();
-          final container = stack.removeLast();
-          if (container is List) {
-            stack.add(container[idx as int]);
-          } else {
-            throw BytecodeRuntimeError('get_index: cannot index $container');
-          }
+      case Opcode.ret:
+        _doRet(thread, stack.isEmpty ? null : stack.removeLast());
 
-        case Opcode.setIndex:
-          final value = stack.removeLast();
-          final idx = stack.removeLast();
-          final container = stack.removeLast();
-          if (container is List) {
-            container[idx as int] = value;
-          } else {
-            throw BytecodeRuntimeError('set_index: cannot index $container');
-          }
+      // ---- Object / list access -------------------------------------------
+
+      case Opcode.getMember:
+        final id = _id(frame.chunk, instr.operand);
+        final obj = stack.removeLast();
+        if (obj is Object) {
+          stack.add(_unwrap(obj.resolveIdentifier(id)));
+        } else {
+          throw BytecodeRuntimeError(
+            'get_member: expected SHQL Object, got $obj',
+          );
+        }
+
+      case Opcode.setMember:
+        final id = _id(frame.chunk, instr.operand);
+        final value = stack.removeLast();
+        final obj = stack.removeLast();
+        if (obj is Object) {
+          obj.setVariable(id, value);
           stack.add(value);
+        } else {
+          throw BytecodeRuntimeError(
+            'set_member: expected SHQL Object, got $obj',
+          );
+        }
 
-        case Opcode.makeList:
-          final count = instr.operand;
-          final items = List<dynamic>.filled(count, null);
-          for (var i = count - 1; i >= 0; i--) {
-            items[i] = stack.removeLast();
-          }
-          stack.add(items);
+      case Opcode.getIndex:
+        final idx = stack.removeLast();
+        final container = stack.removeLast();
+        if (container is List) {
+          stack.add(container[idx as int]);
+        } else {
+          throw BytecodeRuntimeError('get_index: cannot index $container');
+        }
 
-        case Opcode.makeObject:
-          final pairCount = instr.operand;
-          final obj = Object();
-          final pairs = List<dynamic>.filled(pairCount * 2, null);
-          for (var i = pairCount * 2 - 1; i >= 0; i--) {
-            pairs[i] = stack.removeLast();
-          }
-          for (var i = 0; i < pairCount; i++) {
-            final key = pairs[i * 2] as String;
-            final id = runtime.identifiers.include(key.toUpperCase());
-            obj.setVariable(id, pairs[i * 2 + 1]);
-          }
-          stack.add(obj);
-      }
+      case Opcode.setIndex:
+        final value = stack.removeLast();
+        final idx = stack.removeLast();
+        final container = stack.removeLast();
+        if (container is List) {
+          container[idx as int] = value;
+        } else {
+          throw BytecodeRuntimeError('set_index: cannot index $container');
+        }
+        stack.add(value);
+
+      case Opcode.makeList:
+        final count = instr.operand;
+        final items = List<dynamic>.filled(count, null);
+        for (var i = count - 1; i >= 0; i--) {
+          items[i] = stack.removeLast();
+        }
+        stack.add(items);
+
+      case Opcode.makeObject:
+        final pairCount = instr.operand;
+        final obj = Object();
+        final pairs = List<dynamic>.filled(pairCount * 2, null);
+        for (var i = pairCount * 2 - 1; i >= 0; i--) {
+          pairs[i] = stack.removeLast();
+        }
+        for (var i = 0; i < pairCount; i++) {
+          final key = pairs[i * 2] as String;
+          final id = runtime.identifiers.include(key.toUpperCase());
+          obj.setVariable(id, pairs[i * 2 + 1]);
+        }
+        stack.add(obj);
     }
-
-    // Implicit return: top of stack, or null if empty.
-    return stack.isEmpty ? null : stack.last;
   }
 
-  Future<dynamic> _call(dynamic callable, List<dynamic> args) async {
-    if (callable is BytecodeCallable) {
-      return _run(callable.chunk, args, callable.capturedScope);
+  // ---- Helpers -------------------------------------------------------------
+
+  void _doRet(BytecodeThread thread, dynamic value) {
+    thread.callStack.removeLast();
+    if (thread.callStack.isEmpty) {
+      thread.result = value;
+    } else {
+      thread.callStack.last.stack.add(value); // push into caller's frame
     }
-    if (callable is _NativeCallable) {
-      return callable.fn(args);
-    }
-    throw BytecodeRuntimeError('Cannot call $callable');
   }
 
-  /// Resolve the constant at [index] as an identifier integer ID.
-  /// The constant must be a [String] (the identifier name).
   int _id(BytecodeChunk chunk, int index) {
     final name = chunk.constants[index] as String;
     return runtime.identifiers.include(name.toUpperCase());
   }
 
-  /// Unwrap a [Variable] wrapper, pass everything else through unchanged.
-  static dynamic _unwrap(dynamic raw) =>
-      raw is Variable ? raw.value : raw;
+  static dynamic _unwrap(dynamic raw) => raw is Variable ? raw.value : raw;
 
   static bool _truthy(dynamic value) {
     if (value == null) return false;

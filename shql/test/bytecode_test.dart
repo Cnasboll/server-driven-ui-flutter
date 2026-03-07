@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:shql/bytecode/bytecode.dart';
 import 'package:shql/bytecode/bytecode_codec.dart';
+import 'package:shql/bytecode/bytecode_execution_context.dart';
 import 'package:shql/bytecode/bytecode_interpreter.dart';
 import 'package:shql/bytecode/bytecode_parser.dart';
 import 'package:shql/execution/runtime/runtime.dart';
@@ -967,5 +968,219 @@ void main() {
     call 2
     ret
 ''');
+  });
+
+  // -------------------------------------------------------------------------
+  // Cooperative threading via BytecodeExecutionContext
+  // -------------------------------------------------------------------------
+
+  /// Build a [BytecodeExecutionContext] from [src] using the shared runtime.
+  BytecodeExecutionContext makeCtx(String src) {
+    final prog = BytecodeParser.fromSource(src).parse();
+    return BytecodeExecutionContext(BytecodeInterpreter(prog, rt));
+  }
+
+  group('BytecodeExecutionContext — cooperative threading', () {
+    test('single thread runs to completion via context', () async {
+      final ctx = makeCtx('''
+.chunk main:
+  .constants:
+    0: 99
+  .code:
+    push_const 0
+    ret
+''');
+      final t = ctx.spawn('main');
+      await ctx.runToCompletion();
+      expect(t.result, 99);
+      expect(t.error, isNull);
+      expect(ctx.hasRunningThreads, isFalse);
+    });
+
+    test('two threads interleave and both complete correctly (quantum=1)', () async {
+      // chunk sumChunk: sum 1+2+3+4+5 = 15 via a loop (~25 instructions)
+      // chunk mulChunk: 6 * 7 = 42 (immediate arithmetic)
+      // quantum=1 forces one instruction per thread per round — maximum interleaving.
+      final ctx = makeCtx('''
+.chunk sumChunk:
+  .constants:
+    0: 0
+    1: iVar
+    2: totVar
+    3: 1
+    4: 5
+  .code:
+    push_const 0
+    store_var 1
+    push_const 0
+    store_var 2
+  .loop:
+    load_var 1
+    push_const 4
+    cmp_lt
+    jump_false .done
+    load_var 1
+    push_const 3
+    add
+    store_var 1
+    load_var 2
+    load_var 1
+    add
+    store_var 2
+    jump .loop
+  .done:
+    load_var 2
+    ret
+
+.chunk mulChunk:
+  .constants:
+    0: 6
+    1: 7
+  .code:
+    push_const 0
+    push_const 1
+    mul
+    ret
+''');
+      final tA = ctx.spawn('sumChunk');
+      final tB = ctx.spawn('mulChunk');
+      await ctx.runToCompletion(1);
+      expect(tA.result, 15, reason: 'sum 1..5');
+      expect(tB.result, 42, reason: '6 * 7');
+      expect(tA.error, isNull);
+      expect(tB.error, isNull);
+    });
+
+    test('five threads each return a distinct constant (quantum=1)', () async {
+      // One program with 5 independent chunks, each returning index * 10.
+      final src = StringBuffer();
+      for (var i = 0; i < 5; i++) {
+        src.writeln('.chunk c$i:');
+        src.writeln('  .constants:');
+        src.writeln('    0: ${i * 10}');
+        src.writeln('  .code:');
+        src.writeln('    push_const 0');
+        src.writeln('    ret');
+      }
+      final ctx = makeCtx(src.toString());
+      final threads = [for (var i = 0; i < 5; i++) ctx.spawn('c$i')];
+      await ctx.runToCompletion(1);
+      for (var i = 0; i < 5; i++) {
+        expect(threads[i].result, i * 10, reason: 'thread c$i');
+        expect(threads[i].error, isNull);
+      }
+    });
+
+    test('faulted thread is stopped; sibling thread completes normally', () async {
+      // faultyChunk tries to call an integer — BytecodeRuntimeError is raised.
+      // goodChunk just returns 7.
+      // The error must not propagate to the sibling.
+      final ctx = makeCtx('''
+.chunk faultyChunk:
+  .constants:
+    0: 42
+  .code:
+    push_const 0
+    call 0
+    ret
+
+.chunk goodChunk:
+  .constants:
+    0: 7
+  .code:
+    push_const 0
+    ret
+''');
+      final bad = ctx.spawn('faultyChunk');
+      final good = ctx.spawn('goodChunk');
+      await ctx.runToCompletion();
+      expect(bad.error, isA<BytecodeRuntimeError>());
+      expect(bad.isRunning, isFalse);
+      expect(good.result, 7);
+      expect(good.error, isNull);
+      expect(ctx.hasRunningThreads, isFalse);
+    });
+
+    test('recursive GCD runs concurrently with a loop (quantum=1)', () async {
+      // Stress test: deeply recursive chunk (GCD) vs a tight loop (sum),
+      // both interleaved one instruction at a time.
+      final ctx = makeCtx('''
+.chunk gcdMain:
+  .constants:
+    0: .gcd
+    1: 48
+    2: 18
+  .code:
+    push_const 0
+    push_const 1
+    push_const 2
+    call 2
+    ret
+
+.chunk gcd:
+  .params:
+    a
+    b
+  .constants:
+    0: b
+    1: 0
+    2: a
+    3: .gcd
+    4: a
+    5: b
+  .code:
+    load_var 0
+    push_const 1
+    cmp_eq
+    jump_false .recurse
+    load_var 2
+    ret
+  .recurse:
+    push_const 3
+    load_var 5
+    load_var 4
+    load_var 5
+    mod
+    call 2
+    ret
+
+.chunk sumMain:
+  .constants:
+    0: 0
+    1: iV
+    2: totV
+    3: 1
+    4: 10
+  .code:
+    push_const 0
+    store_var 1
+    push_const 0
+    store_var 2
+  .loop:
+    load_var 1
+    push_const 4
+    cmp_lte
+    jump_false .done
+    load_var 2
+    load_var 1
+    add
+    store_var 2
+    load_var 1
+    push_const 3
+    add
+    store_var 1
+    jump .loop
+  .done:
+    load_var 2
+    ret
+''');
+      final tGcd = ctx.spawn('gcdMain');
+      final tSum = ctx.spawn('sumMain');
+      await ctx.runToCompletion(1);
+      expect(tGcd.result, 6, reason: 'GCD(48,18)=6');
+      expect(tSum.result, 55, reason: 'sum 1..10=55');
+      expect(tGcd.error, isNull);
+      expect(tSum.error, isNull);
+    });
   });
 }
