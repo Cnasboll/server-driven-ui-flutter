@@ -88,6 +88,18 @@ void main() {
         expect(await evalBytecodeWithStdlib(src), expected));
   }
 
+  // Expression tested via Engine.evalExpr / BytecodeInterpreter.evalExpr —
+  // stops at the first backward jump (loop) instead of running forever.
+  // No stdlib dimension needed yet (only one such test exists).
+  void shqlTestExprStdlib(String name, String src, dynamic expected) {
+    test('$name [engine]', () async {
+      final (runtime, cs) = await _loadStdLib();
+      expect(await Engine.evalExpr(src, runtime: runtime, constantsSet: cs), expected);
+    });
+    test('$name [bytecode]', () async =>
+        expect(await BytecodeInterpreter.evalExpr(src), expected));
+  }
+
   test('Parse addition', () {
     var v = Tokenizer.tokenize('10+2').toList();
     var constantsSet = ConstantsSet();
@@ -101,59 +113,16 @@ void main() {
 
   shqlTest('Execute addition', '10+2', 12);
   shqlTest('Execute addition and multiplication', '10+13*37+1', 492);
-
-  // engine-only: implicit multiplication (bytecode doesn't support implicit multiplication)
-  test('Execute implicit constant multiplication with parenthesis', () async {
-    expect(await evalEngine('ANSWER(2)'), 84);
-  });
-
-  // engine-only: implicit multiplication
-  test(
-    'Execute implicit constant multiplication with parenthesis first',
-    () async {
-      expect(await evalEngine('(2)ANSWER'), 84);
-    },
-  );
-
-  // engine-only: implicit multiplication
-  test(
-    'Execute implicit constant multiplication with constant within parenthesis first',
-    () async {
-      expect(await evalEngine('(ANSWER)2'), 84);
-    },
-  );
-
-  // engine-only: implicit multiplication
-  test('Execute implicit multiplication with parenthesis', () async {
-    expect(await evalEngine('2(3)'), 6);
-  });
-
+  shqlTest('Execute implicit constant multiplication with parenthesis', 'ANSWER(2)', 84);
+  shqlTest('Execute implicit constant multiplication with parenthesis first', '(2)ANSWER', 84);
+  shqlTest('Execute implicit constant multiplication with constant within parenthesis first', '(ANSWER)2', 84);
+  shqlTest('Execute implicit multiplication with parenthesis', '2(3)', 6);
   shqlTest('Execute addition and multiplication with parenthesis', '10+13*(37+1)', 504);
-
-  // engine-only: implicit multiplication
-  test(
-    'Execute addition and implicit multiplication with parenthesis',
-    () async {
-      expect(await evalEngine('10+13(37+1)'), 504);
-    },
-  );
-
+  shqlTest('Execute addition and implicit multiplication with parenthesis', '10+13(37+1)', 504);
   shqlTest('Execute addition, multiplication and subtraction', '10+13*37-1', 490);
-
-  // engine-only: implicit multiplication
-  test('Execute addition, implicit multiplication and subtraction', () async {
-    expect(await evalEngine('10+13(37)-1'), 490);
-  });
-
+  shqlTest('Execute addition, implicit multiplication and subtraction', '10+13(37)-1', 490);
   shqlTest('Execute addition, multiplication, subtraction and division', '10+13*37/2-1', 249.5);
-
-  // engine-only: implicit multiplication
-  test(
-    'Execute addition, implicit multiplication, subtraction and division',
-    () async {
-      expect(await evalEngine('10+13(37)/2-1'), 249.5);
-    },
-  );
+  shqlTest('Execute addition, implicit multiplication, subtraction and division', '10+13(37)/2-1', 249.5);
 
   shqlTest('Execute modulus', '9%2', 1);
   shqlTest('Execute equality true', '5*2 = 2+8', true);
@@ -161,114 +130,28 @@ void main() {
   shqlTest('Execute not equal true', '5*2 <> 1+8', true);
   shqlTest('Execute not equal true with exclamation equals', '5*2 != 1+8', true);
 
-  // engine-only: multiple unrelated expects
-  test('Evaluate match true', () async {
-    expect(await evalEngine('"Super Man" ~  r"Super\\s*Man"'), true);
-    expect(await evalEngine('"Superman" ~  r"Super\\s*Man"'), true);
-    expect(await evalEngine('"Batman" ~  "batman"'), true);
-  });
+  shqlTest('Evaluate match — Superman regex', '"Super Man" ~  r"Super\\s*Man"', true);
+  shqlTest('Evaluate match — Superman plain', '"Superman" ~  r"Super\\s*Man"', true);
+  shqlTest('Evaluate match — Batman case-insensitive', '"Batman" ~  "batman"', true);
+  shqlTest('Evaluate match false — Bat Man', '"Bat Man" ~  r"Super\\s*Man"', false);
+  shqlTest('Evaluate match false — Batman', '"Batman" ~  r"Super\\s*Man"', false);
+  shqlTest('Evaluate mismatch true — Bat Man', '"Bat Man" !~  r"Super\\s*Man"', true);
+  shqlTest('Evaluate mismatch true — Batman', '"Batman" !~  r"Super\\s*Man"', true);
+  shqlTest('Evaluate mismatch false — Superman', '"Super Man" !~  r"Super\\s*Man"', false);
+  shqlTest('Evaluate mismatch false — Superman2', '"Superman" !~  r"Super\\s*Man"', false);
 
-  // engine-only: multiple unrelated expects
-  test('Evaluate match false', () async {
-    expect(await evalEngine('"Bat Man" ~  r"Super\\s*Man"'), false);
-    expect(await evalEngine('"Batman" ~  r"Super\\s*Man"'), false);
-  });
-
-  // engine-only: multiple unrelated expects
-  test('Evaluate mismatch true', () async {
-    expect(await evalEngine('"Bat Man" !~  r"Super\\s*Man"'), true);
-    expect(await evalEngine('"Batman" !~  r"Super\\s*Man"'), true);
-  });
-
-  // engine-only: multiple unrelated expects
-  test('Evaluate mismatch false', () async {
-    expect(await evalEngine('"Super Man" !~  r"Super\\s*Man"'), false);
-    expect(await evalEngine('"Superman" !~  r"Super\\s*Man"'), false);
-  });
-
-  // engine-only: multiple unrelated expects
-  test('Evaluate in list true', () async {
-    expect(
-      await evalEngine('"Super Man" in ["Super Man", "Batman"]'),
-      true,
-    );
-    expect(
-      await evalEngine('"Super Man" finns_i ["Super Man", "Batman"]'),
-      true,
-    );
-    expect(await evalEngine('"Batman" in  ["Super Man", "Batman"]'), true);
-    expect(
-      await evalEngine('"Batman" finns_i  ["Super Man", "Batman"]'),
-      true,
-    );
-  });
-
-  // engine-only: multiple expects with shared runtime
-  test('Evaluate lower case in list true', () async {
-    var (runtime, constantsSet) = await _loadStdLib();
-    expect(
-      await evalEngine(
-        'lowercase("Robin") in  ["batman", "robin"]',
-        runtime: runtime,
-        constantsSet: constantsSet,
-      ),
-      true,
-    );
-    expect(
-      await evalEngine(
-        'lowercase("Batman") in  ["batman", "robin"]',
-        runtime: runtime,
-        constantsSet: constantsSet,
-      ),
-      true,
-    );
-  });
-
-  // engine-only: multiple unrelated expects
-  test('Evaluate in list false', () async {
-    expect(await evalEngine('"Robin" in  ["Super Man", "Batman"]'), false);
-    expect(
-      await evalEngine('"Superman" in ["Super Man", "Batman"]'),
-      false,
-    );
-  });
-
-  // engine-only: multiple expects with shared runtime
-  test('Evaluate lower case in list false', () async {
-    var (runtime, constantsSet) = await _loadStdLib();
-    expect(
-      await evalEngine(
-        'lowercase("robin") in  ["super man", "batman"]',
-        runtime: runtime,
-        constantsSet: constantsSet,
-      ),
-      false,
-    );
-    expect(
-      await evalEngine(
-        'lowercase("robin") finns_i  ["super man", "batman"]',
-        runtime: runtime,
-        constantsSet: constantsSet,
-      ),
-      false,
-    );
-    expect(
-      await evalEngine(
-        'lowercase("superman") in  ["super man", "batman"]',
-        runtime: runtime,
-        constantsSet: constantsSet,
-      ),
-      false,
-    );
-    expect(
-      await evalEngine(
-        'lowercase("superman") finns_i  ["super man", "batman"]',
-        runtime: runtime,
-        constantsSet: constantsSet,
-      ),
-      false,
-    );
-  });
+  shqlTest('in list — Super Man found', '"Super Man" in ["Super Man", "Batman"]', true);
+  shqlTest('in list — Super Man found (finns_i)', '"Super Man" finns_i ["Super Man", "Batman"]', true);
+  shqlTest('in list — Batman found', '"Batman" in  ["Super Man", "Batman"]', true);
+  shqlTest('in list — Batman found (finns_i)', '"Batman" finns_i  ["Super Man", "Batman"]', true);
+  shqlTest('in list — Robin not found', '"Robin" in  ["Super Man", "Batman"]', false);
+  shqlTest('in list — Superman not found', '"Superman" in ["Super Man", "Batman"]', false);
+  shqlTestStdlib('in list — lowercase Robin found', 'lowercase("Robin") in  ["batman", "robin"]', true);
+  shqlTestStdlib('in list — lowercase Batman found', 'lowercase("Batman") in  ["batman", "robin"]', true);
+  shqlTestStdlib('in list — lowercase robin not found', 'lowercase("robin") in  ["super man", "batman"]', false);
+  shqlTestStdlib('in list — lowercase robin not found (finns_i)', 'lowercase("robin") finns_i  ["super man", "batman"]', false);
+  shqlTestStdlib('in list — lowercase superman not found', 'lowercase("superman") in  ["super man", "batman"]', false);
+  shqlTestStdlib('in list — lowercase superman not found (finns_i)', 'lowercase("superman") finns_i  ["super man", "batman"]', false);
 
   shqlTest('Execute not equal false', '5*2 <> 2+8', false);
   shqlTest('Execute not equal false with exclamation equals', '5*2 != 2+8', false);
@@ -281,41 +164,18 @@ void main() {
   shqlTest('Execute greater than or equal false', '1>=10', false);
   shqlTest('Execute greater than or equal true', '10>=1', true);
 
-  // engine-only: multiple unrelated expects
-  test('Execute some boolean algebra and true', () async {
-    expect(await evalEngine('1<10 AND 2<9'), true);
-    expect(await evalEngine('1<10 OCH 2<9'), true);
-  });
-
-  // engine-only: multiple unrelated expects
-  test('Execute some boolean algebra and false', () async {
-    expect(await evalEngine('1>10 AND 2<9'), false);
-    expect(await evalEngine('1>10 OCH 2<9'), false);
-  });
-
-  // engine-only: multiple unrelated expects
-  test('Execute some boolean algebra or true', () async {
-    expect(await evalEngine('1>10 OR 2<9'), true);
-    expect(await evalEngine('1>10 ELLER 2<9'), true);
-  });
-
-  // engine-only: multiple unrelated expects
-  test('Execute some boolean algebra xor true', () async {
-    expect(await evalEngine('1>10 XOR 2<9'), true);
-    expect(await evalEngine('1>10 ANTINGEN_ELLER 2<9'), true);
-  });
-
-  // engine-only: multiple unrelated expects
-  test('calculate_some_bool_algebra_xor_false', () async {
-    expect(await evalEngine('10>1 XOR 2<9'), false);
-    expect(await evalEngine('10>1 ANTINGEN_ELLER 2<9'), false);
-  });
-
-  // engine-only: multiple unrelated expects
-  test('calculate_negation', () async {
-    expect(await evalEngine('NOT 11'), false);
-    expect(await evalEngine('INTE 11'), false);
-  });
+  shqlTest('AND true', '1<10 AND 2<9', true);
+  shqlTest('AND true (OCH)', '1<10 OCH 2<9', true);
+  shqlTest('AND false', '1>10 AND 2<9', false);
+  shqlTest('AND false (OCH)', '1>10 OCH 2<9', false);
+  shqlTest('OR true', '1>10 OR 2<9', true);
+  shqlTest('OR true (ELLER)', '1>10 ELLER 2<9', true);
+  shqlTest('XOR true', '1>10 XOR 2<9', true);
+  shqlTest('XOR true (ANTINGEN_ELLER)', '1>10 ANTINGEN_ELLER 2<9', true);
+  shqlTest('XOR false', '10>1 XOR 2<9', false);
+  shqlTest('XOR false (ANTINGEN_ELLER)', '10>1 ANTINGEN_ELLER 2<9', false);
+  shqlTest('NOT true number', 'NOT 11', false);
+  shqlTest('NOT true number (INTE)', 'INTE 11', false);
 
   shqlTest('calculate_negation with exclamation', '!11', false);
   shqlTest('Execute unary minus', '-5+11', 6);
@@ -323,53 +183,21 @@ void main() {
   shqlTest('Execute with constants', 'PI * 2', 3.1415926535897932 * 2);
   shqlTest('Execute with lowercase constants', 'pi * 2', 3.1415926535897932 * 2);
 
-  // POW and SQRT are native Dart functions: engine mode needs stdlib loaded,
-  // bytecode mode uses evalBytecode directly (natives are auto-bridged).
-  test('Execute with functions [engine]', () async {
-    var (runtime, constantsSet) = await _loadStdLib();
-    expect(await evalEngine('POW(2,2)', runtime: runtime, constantsSet: constantsSet), 4);
-  });
-  test('Execute with functions [bytecode]', () async => expect(await evalBytecode('POW(2,2)'), 4.0));
-
-  test('Execute with two functions [engine]', () async {
-    var (runtime, constantsSet) = await _loadStdLib();
-    expect(await evalEngine('POW(2,2)+SQRT(4)', runtime: runtime, constantsSet: constantsSet), 6);
-  });
-  test('Execute with two functions [bytecode]', () async => expect(await evalBytecode('POW(2,2)+SQRT(4)'), 6.0));
-
-  // engine-only: uses Engine.evalExpr (not evalEngine)
-  test('Calculate library function', () async {
-    var (runtime, constantsSet) = await _loadStdLib();
-    expect(
-      await Engine.evalExpr(
-        'SQRT(4)',
-        runtime: runtime,
-        constantsSet: constantsSet,
-      ),
-      2,
-    );
-  });
-
-  test('Execute nested function call [engine]', () async {
-    var (runtime, constantsSet) = await _loadStdLib();
-    expect(await evalEngine('SQRT(POW(2,2))', runtime: runtime, constantsSet: constantsSet), 2);
-  });
-  test('Execute nested function call [bytecode]', () async => expect(await evalBytecode('SQRT(POW(2,2))'), 2.0));
-
-  test('Execute nested function call with expression [engine]', () async {
-    var (runtime, constantsSet) = await _loadStdLib();
-    expect(await evalEngine('SQRT(POW(2,2)+10)', runtime: runtime, constantsSet: constantsSet), 3.7416573867739413);
-  });
-  test('Execute nested function call with expression [bytecode]', () async => expect(await evalBytecode('SQRT(POW(2,2)+10)'), 3.7416573867739413));
+  shqlTestStdlib('Execute with functions', 'POW(2,2)', 4);
+  shqlTestStdlib('Execute with two functions', 'POW(2,2)+SQRT(4)', 6);
+  shqlTestExprStdlib('Calculate library function', 'SQRT(4)', 2);
+  shqlTestStdlib('Execute nested function call', 'SQRT(POW(2,2))', 2);
+  shqlTestStdlib('Execute nested function call with expression', 'SQRT(POW(2,2)+10)', 3.7416573867739413);
 
   shqlTest('Execute two expressions', '10;11', 11);
   shqlTest('Execute two expressions with final semicolon', '10;11;', 11);
   shqlTest('Test assignment', 'i:=42', 42);
   shqlTest('Test increment', 'i:=41;i:=i+1', 42);
 
-  // engine-only: checks is UserFunction (bytecode produces BytecodeCallable)
   test('Test function definition', () async {
-    expect((await evalEngine('f(x):=x*2')).runtimeType, UserFunction);
+    const src = 'f(x):=x*2';
+    expect(await evalEngine(src), isA<UserFunction>());
+    expect(await evalBytecode(src), isNotNull);
   });
 
   shqlTest('Test user function', 'f(x):=x*2;f(2)', 4);
@@ -397,6 +225,7 @@ void main() {
           RETURN __result;
         END;
         __test()
+
       ''', [0, 2]);
 
   shqlTest('FOR CONTINUE with nested IF-ELSE IF', r'''
@@ -461,11 +290,7 @@ void main() {
   shqlTest('Test repeat until', 'x := 0; REPEAT x := x + 1 UNTIL x = 10; x', 10);
   shqlTest('Test for loop', 'sum := 0; FOR i := 1 TO 10 DO sum := sum + i; sum', 55);
 
-  // engine-only: complex multi-step test with multiple evalEngine calls and is-Map checks
-  test("Test list utils", () async {
-    var (runtime, constantsSet) = await _loadStdLib();
-
-    var listUtilsCodde = """
+  const _listUtilsCode = """
 -- This function is now only used to generate the initial cache.
 _GEN_LIST_ITEM_TEMPLATE(i) := {
     "type": "Container",
@@ -519,36 +344,20 @@ GENERATE_WIDGETS(n) := BEGIN
         items := items + [item_template];
     RETURN items;
 END;
-
 """;
-    await evalEngine(
-      listUtilsCodde,
-      runtime: runtime,
-      constantsSet: constantsSet,
-    );
-    await evalEngine(
-      "list := [_GEN_LIST_ITEM_TEMPLATE(1)];",
-      runtime: runtime,
-      constantsSet: constantsSet,
-    );
-    expect(
-      (await evalEngine(
-            "list[0]",
-            runtime: runtime,
-            constantsSet: constantsSet,
-          )
-          is Map),
-      true,
-    );
-    expect(
-      (await evalEngine(
-            "list[0]['props']",
-            runtime: runtime,
-            constantsSet: constantsSet,
-          )
-          is Map),
-      true,
-    );
+
+  test("Test list utils", () async {
+    const setup = '$_listUtilsCode\nlist := [_GEN_LIST_ITEM_TEMPLATE(1)];';
+    const q1 = 'list[0]';
+    const q2 = "list[0]['props']";
+
+    final (runtime, constantsSet) = await _loadStdLib();
+    await evalEngine(setup, runtime: runtime, constantsSet: constantsSet);
+    expect((await evalEngine(q1, runtime: runtime, constantsSet: constantsSet)) is Map, true);
+    expect((await evalEngine(q2, runtime: runtime, constantsSet: constantsSet)) is Map, true);
+
+    expect(await evalBytecodeWithStdlib('$setup $q1'), isA<Map>());
+    expect(await evalBytecodeWithStdlib('$setup $q2'), isA<Map>());
   });
 
   shqlTest('Test for loop with step', 'sum := 0; FOR i := 1 TO 10 STEP 2 DO sum := sum + i; sum', 25);
@@ -557,9 +366,10 @@ END;
   shqlTest('Can assign to list variable', 'x := [1,2,3];x[0]', 1);
   shqlTest('Can assign to list member', 'x := [1,2,3];x[1]:=4;x[1]', 4);
 
-  // engine-only: checks is Thread type (bytecode produces a different thread representation)
   test("Can create thread", () async {
-    expect((await evalEngine("THREAD( () => 9 )")) is Thread, true);
+    const src = "THREAD( () => 9 )";
+    expect((await evalEngine(src)) is Thread, true);
+    expect((await evalBytecode(src)) is Thread, true);
   });
 
   shqlTest('Can assign to map variable', "x := {'a':1,'b':2,'c':3};x['a']", 1);
@@ -567,244 +377,111 @@ END;
 
   shqlTest("Can start thread", "x := 0; t := THREAD( () => BEGIN FOR i := 1 TO 1000 DO x := x + 1; END ); JOIN(t); x", 1000);
 
-  // engine-only: global variable tests use a shared runtime object across multiple evalEngine calls
-  test("Global variable accessed in function", () async {
-    var constantsSet = Runtime.prepareConstantsSet();
-    var runtime = Runtime.prepareRuntime(constantsSet);
-    final code = """
-      my_global := 42;
-      GET_GLOBAL() := my_global;
-      GET_GLOBAL()
-    """;
-    expect(
-      await evalEngine(code, runtime: runtime, constantsSet: constantsSet),
-      42,
-    );
-  });
-
-  // engine-only: global variable tests use a shared runtime
-  test("Global variable modified in function", () async {
-    var constantsSet = Runtime.prepareConstantsSet();
-    var runtime = Runtime.prepareRuntime(constantsSet);
-    final code = """
-      my_global := 10;
-      ADD_TO_GLOBAL(x) := BEGIN
-        my_global := my_global + x;
-        RETURN my_global;
-      END;
-      ADD_TO_GLOBAL(5)
-    """;
-    expect(
-      await evalEngine(code, runtime: runtime, constantsSet: constantsSet),
-      15,
-    );
-  });
-
-  // engine-only: complex multi-expect with shared runtime
-  test("Global array accessed in function", () async {
-    var (runtime, constantsSet) = await _loadStdLib();
-    final code = """
-      my_array := [1, 2, 3];
-      GET_LENGTH() := LENGTH(my_array);
-      GET_LENGTH()
-    """;
-    expect(
-      await evalEngine(code, runtime: runtime, constantsSet: constantsSet),
-      3,
-    );
-  });
-
-  // engine-only: complex multi-expect with shared runtime
-  test("Global array modified in function", () async {
-    var (runtime, constantsSet) = await _loadStdLib();
-    final code = """
-      my_array := [1, 2, 3];
-      PUSH_TO_ARRAY(x) := BEGIN
-        my_array := my_array + [x];
-        RETURN my_array;
-      END;
-      PUSH_TO_ARRAY(4)
-    """;
-    final result = await evalEngine(
-      code,
-      runtime: runtime,
-      constantsSet: constantsSet,
-    );
-    expect(result is List, true);
-    expect((result as List).length, 4);
-    expect(result[3], 4);
-  });
-
-  // engine-only: complex navigation pattern with shared runtime
-  test("Navigation stack push/pop pattern", () async {
-    var (runtime, constantsSet) = await _loadStdLib();
-    final code = """
-      navigation_stack := ['main'];
-
-      PUSH_ROUTE(route) := BEGIN
-        IF LENGTH(navigation_stack) = 0 THEN BEGIN
-          navigation_stack := [route];
-        END ELSE BEGIN
-          IF navigation_stack[LENGTH(navigation_stack) - 1] != route THEN BEGIN
-            navigation_stack := navigation_stack + [route];
-          END;
-        END;
-        RETURN navigation_stack;
-      END;
-
-      POP_ROUTE() := BEGIN
-        IF LENGTH(navigation_stack) > 1 THEN BEGIN
-          RETURN navigation_stack[LENGTH(navigation_stack) - 1];
-        END ELSE BEGIN
-          RETURN 'main';
-        END;
-      END;
-
-      PUSH_ROUTE('screen1');
-      PUSH_ROUTE('screen2');
-      result := POP_ROUTE();
-      result
-    """;
-    expect(
-      await evalEngine(code, runtime: runtime, constantsSet: constantsSet),
-      'screen2',
-    );
-  });
+  shqlTest('Global variable accessed in function',
+      'my_global := 42; GET_GLOBAL() := my_global; GET_GLOBAL()', 42);
+  shqlTest('Global variable modified in function',
+      'my_global := 10; ADD_TO_GLOBAL(x) := BEGIN my_global := my_global + x; RETURN my_global; END; ADD_TO_GLOBAL(5)', 15);
+  shqlTestStdlib('Global array accessed in function',
+      'my_array := [1, 2, 3]; GET_LENGTH() := LENGTH(my_array); GET_LENGTH()', 3);
+  shqlTestStdlib('Global array modified in function — element at 3',
+      'my_array := [1, 2, 3]; PUSH_TO_ARRAY(x) := BEGIN my_array := my_array + [x]; RETURN my_array; END; PUSH_TO_ARRAY(4)[3]', 4);
+  shqlTestStdlib('Navigation stack push/pop pattern', r'''
+navigation_stack := ['main'];
+PUSH_ROUTE(route) := BEGIN
+  IF LENGTH(navigation_stack) = 0 THEN BEGIN
+    navigation_stack := [route];
+  END ELSE BEGIN
+    IF navigation_stack[LENGTH(navigation_stack) - 1] != route THEN BEGIN
+      navigation_stack := navigation_stack + [route];
+    END;
+  END;
+  RETURN navigation_stack;
+END;
+POP_ROUTE() := BEGIN
+  IF LENGTH(navigation_stack) > 1 THEN BEGIN
+    RETURN navigation_stack[LENGTH(navigation_stack) - 1];
+  END ELSE BEGIN
+    RETURN 'main';
+  END;
+END;
+PUSH_ROUTE('screen1');
+PUSH_ROUTE('screen2');
+POP_ROUTE()
+''', 'screen2');
 
   shqlTest('User function can access constants like TRUE', 'test() := TRUE; test()', true);
 
   group('Error reporting tests', () {
     test('Should show correct line numbers in error messages', () async {
-      final constantsSet = Runtime.prepareConstantsSet();
-      final runtime = Runtime.prepareRuntime(constantsSet);
+      const src = 'test() := undefinedFunction(); test()';
 
+      // Engine reports source location and identifier name.
       try {
-        // Define a function that calls an undefined function
-        await evalEngine(
-          "test() := undefinedFunction();",
-          constantsSet: constantsSet,
-          runtime: runtime,
-        );
-
-        // Try to call it - this should fail because undefinedFunction doesn't exist
-        await evalEngine(
-          "test()",
-          constantsSet: constantsSet,
-          runtime: runtime,
-        );
-
+        await evalEngine(src);
         fail('Expected RuntimeException to be thrown');
       } catch (e) {
-        final errorMessage = e.toString();
-        // Should contain correct line number
-        expect(errorMessage, contains('Line 1:'));
-        // Should contain the actual code
-        expect(errorMessage, contains('undefinedFunction'));
+        expect(e.toString(), contains('Line 1:'));
+        expect(e.toString(), contains('undefinedFunction'));
+      }
+
+      // Bytecode must also throw on the same SHQL.
+      try {
+        await evalBytecode(src);
+        fail('Expected bytecode to throw');
+      } catch (e) {
+        if (e is TestFailure) rethrow;
       }
     });
   });
 
   group('List utility functions', () {
-    // engine-only: multiple unrelated expects in one test
-    test('LENGTH should return list length', () async {
-      final (runtime, constantsSet) = await _loadStdLib();
-      expect(
-        await evalEngine(
-          'LENGTH([1, 2, 3])',
-          runtime: runtime,
-          constantsSet: constantsSet,
-        ),
-        3,
-      );
-      expect(
-        await evalEngine(
-          'LENGTH([])',
-          runtime: runtime,
-          constantsSet: constantsSet,
-        ),
-        0,
-      );
-    });
+    shqlTestStdlib('LENGTH of 3-element list', 'LENGTH([1, 2, 3])', 3);
+    shqlTestStdlib('LENGTH of empty list', 'LENGTH([])', 0);
   });
 
   group('Object member access with dot operator', () {
-    // engine-only: uses Dart Object manipulation to set up test state
+    // Dart-injected Object: same runtime is shared with evalBytecode so both modes
+    // see the same pre-populated scope.
     test('Should access Object members using dot notation', () async {
       final constantsSet = Runtime.prepareConstantsSet();
       final runtime = Runtime.prepareRuntime(constantsSet);
 
-      // Create an Object explicitly and add members
       final testObject = Object();
       final nameId = runtime.identifiers.include('NAME');
       final ageId = runtime.identifiers.include('AGE');
       testObject.setVariable(nameId, 'Alice');
       testObject.setVariable(ageId, 30);
-
-      // Add the object to the scope
       final personId = runtime.identifiers.include('PERSON');
       runtime.globalScope.setVariable(personId, testObject);
 
-      // Access member using dot notation
-      expect(
-        await evalEngine(
-          'person.name',
-          runtime: runtime,
-          constantsSet: constantsSet,
-        ),
-        'Alice',
-      );
-
-      expect(
-        await evalEngine(
-          'person.age',
-          runtime: runtime,
-          constantsSet: constantsSet,
-        ),
-        30,
-      );
+      expect(await evalEngine('person.name', runtime: runtime, constantsSet: constantsSet), 'Alice');
+      expect(await evalEngine('person.age', runtime: runtime, constantsSet: constantsSet), 30);
+      expect(await evalBytecode('person.name', runtime: runtime, cs: constantsSet), 'Alice');
+      expect(await evalBytecode('person.age', runtime: runtime, cs: constantsSet), 30);
     });
 
-    // engine-only: uses Dart Object manipulation to set up test state
     test('Should wrap Object in Scope for member access', () async {
       final constantsSet = Runtime.prepareConstantsSet();
       final runtime = Runtime.prepareRuntime(constantsSet);
 
-      // Create an Object with members
       final configObject = Object();
       final hostId = runtime.identifiers.include('HOST');
       final portId = runtime.identifiers.include('PORT');
       configObject.setVariable(hostId, 'localhost');
       configObject.setVariable(portId, 8080);
-
       final configId = runtime.identifiers.include('CONFIG');
       runtime.globalScope.setVariable(configId, configObject);
 
-      // Access members
-      expect(
-        await evalEngine(
-          'config.host',
-          runtime: runtime,
-          constantsSet: constantsSet,
-        ),
-        'localhost',
-      );
-
-      expect(
-        await evalEngine(
-          'config.port',
-          runtime: runtime,
-          constantsSet: constantsSet,
-        ),
-        8080,
-      );
+      expect(await evalEngine('config.host', runtime: runtime, constantsSet: constantsSet), 'localhost');
+      expect(await evalEngine('config.port', runtime: runtime, constantsSet: constantsSet), 8080);
+      expect(await evalBytecode('config.host', runtime: runtime, cs: constantsSet), 'localhost');
+      expect(await evalBytecode('config.port', runtime: runtime, cs: constantsSet), 8080);
     });
 
-    // engine-only: uses Dart Object manipulation to set up nested test state
     test('Should support nested object access (a.b.c.d)', () async {
       final constantsSet = Runtime.prepareConstantsSet();
       final runtime = Runtime.prepareRuntime(constantsSet);
 
-      // Create nested object structure: app.server.database.host
       final databaseObject = Object();
       final hostId = runtime.identifiers.include('HOST');
       final portId = runtime.identifiers.include('PORT');
@@ -822,141 +499,56 @@ END;
       final versionId = runtime.identifiers.include('VERSION');
       appObject.setVariable(serverId, serverObject);
       appObject.setVariable(versionId, '1.0.0');
-
       final appId = runtime.identifiers.include('APP');
       runtime.globalScope.setVariable(appId, appObject);
 
-      // Test nested access: app.server.database.host
-      expect(
-        await evalEngine(
-          'app.server.database.host',
-          runtime: runtime,
-          constantsSet: constantsSet,
-        ),
-        'db.example.com',
-      );
-
-      // Test nested access: app.server.database.port
-      expect(
-        await evalEngine(
-          'app.server.database.port',
-          runtime: runtime,
-          constantsSet: constantsSet,
-        ),
-        5432,
-      );
-
-      // Test partial access: app.server.name
-      expect(
-        await evalEngine(
-          'app.server.name',
-          runtime: runtime,
-          constantsSet: constantsSet,
-        ),
-        'prod-server',
-      );
-
-      // Test shallow access: app.version
-      expect(
-        await evalEngine(
-          'app.version',
-          runtime: runtime,
-          constantsSet: constantsSet,
-        ),
-        '1.0.0',
-      );
+      for (final eval in [
+        (String src) => evalEngine(src, runtime: runtime, constantsSet: constantsSet),
+        (String src) => evalBytecode(src, runtime: runtime, cs: constantsSet),
+      ]) {
+        expect(await eval('app.server.database.host'), 'db.example.com');
+        expect(await eval('app.server.database.port'), 5432);
+        expect(await eval('app.server.name'), 'prod-server');
+        expect(await eval('app.version'), '1.0.0');
+      }
     });
   });
 
   group('Object literal with OBJECT keyword', () {
-    // engine-only: checks isA<Object>() and then inspects Dart-level Object fields
+    // Inspects Dart-level Object fields via resolveIdentifier — engine only for introspection,
+    // bytecode verified separately via dot access which is already covered by shqlTest.
     test('Should create Object with bare identifier keys', () async {
-      final result = await evalEngine('OBJECT{name: "Alice", age: 30}');
-      expect(result, isA<Object>());
+      final cs = Runtime.prepareConstantsSet();
+      final rt = Runtime.prepareRuntime(cs);
+      final nameId = rt.identifiers.include('NAME');
+      final ageId = rt.identifiers.include('AGE');
 
-      final obj = result as Object;
-      final constantsSet = Runtime.prepareConstantsSet();
-      final runtime = Runtime.prepareRuntime(constantsSet);
-      final nameId = runtime.identifiers.include('NAME');
-      final ageId = runtime.identifiers.include('AGE');
-
-      final nameVar = obj.resolveIdentifier(nameId) as Variable;
-      final ageVar = obj.resolveIdentifier(ageId) as Variable;
-      expect(nameVar.value, 'Alice');
-      expect(ageVar.value, 30);
+      for (final result in [
+        await evalEngine('OBJECT{name: "Alice", age: 30}'),
+        await evalBytecode('OBJECT{name: "Alice", age: 30}', cs: cs),
+      ]) {
+        expect(result, isA<Object>());
+        final obj = result as Object;
+        expect((obj.resolveIdentifier(nameId) as Variable).value, 'Alice');
+        expect((obj.resolveIdentifier(ageId) as Variable).value, 30);
+      }
     });
 
-    // engine-only: multiple unrelated expects in one test
-    test('Should access Object literal members with dot notation', () async {
-      expect(await evalEngine('obj := OBJECT{x: 10, y: 20}; obj.x'), 10);
+    shqlTest('Object literal dot — x', 'obj := OBJECT{x: 10, y: 20}; obj.x', 10);
+    shqlTest('Object literal dot — y', 'obj := OBJECT{x: 10, y: 20}; obj.y', 20);
+    shqlTest('Nested Objects — person.name', 'obj := OBJECT{person: OBJECT{name: "Bob", age: 25}}; obj.person.name', 'Bob');
+    shqlTest('Nested Objects — person.age', 'obj := OBJECT{person: OBJECT{name: "Bob", age: 25}}; obj.person.age', 25);
+    shqlTest('Object complex value — list element', 'obj := OBJECT{list: [1, 2, 3], sum: 1 + 2}; list := obj.list; list[1]', 2);
+    shqlTest('Object complex value — sum', 'obj := OBJECT{list: [1, 2, 3], sum: 1 + 2}; obj.sum', 3);
+    shqlTest('Object member assignment — x', 'obj := OBJECT{x: 10, y: 20}; obj.x := 100; obj.x', 100);
+    shqlTest('Object member assignment — y', 'obj := OBJECT{x: 10, y: 20}; obj.y := 200; obj.y', 200);
 
-      expect(await evalEngine('obj := OBJECT{x: 10, y: 20}; obj.y'), 20);
-    });
-
-    // engine-only: multiple unrelated expects in one test
-    test('Should create nested Objects', () async {
-      expect(
-        await evalEngine(
-          'obj := OBJECT{person: OBJECT{name: "Bob", age: 25}}; obj.person.name',
-        ),
-        'Bob',
-      );
-
-      expect(
-        await evalEngine(
-          'obj := OBJECT{person: OBJECT{name: "Bob", age: 25}}; obj.person.age',
-        ),
-        25,
-      );
-    });
-
-    // engine-only: multiple expects checking different types (Object vs Map)
     test('Should distinguish Objects from Maps', () async {
-      // Object with bare identifier keys
-      final obj = await evalEngine('OBJECT{name: "Alice"}');
-      expect(obj, isA<Object>());
-
-      // Map with evaluated expression keys
-      final map = await evalEngine('x := "name"; {x: "Alice"}');
-      expect(map, isA<Map>());
-
-      // Map with literal number keys
-      final map2 = await evalEngine('{42: "answer"}');
-      expect(map2, isA<Map>());
-    });
-
-    // engine-only: multiple unrelated expects in one test
-    test('Should create Object with complex values', () async {
-      expect(
-        await evalEngine(
-          'obj := OBJECT{list: [1, 2, 3], sum: 1 + 2}; list := obj.list; list[1]',
-        ),
-        2,
-      );
-
-      expect(
-        await evalEngine(
-          'obj := OBJECT{list: [1, 2, 3], sum: 1 + 2}; obj.sum',
-        ),
-        3,
-      );
-    });
-
-    // engine-only: multiple unrelated expects in one test
-    test('Should assign to Object members', () async {
-      expect(
-        await evalEngine(
-          'obj := OBJECT{x: 10, y: 20}; obj.x := 100; obj.x',
-        ),
-        100,
-      );
-
-      expect(
-        await evalEngine(
-          'obj := OBJECT{x: 10, y: 20}; obj.y := 200; obj.y',
-        ),
-        200,
-      );
+      for (final eval in [evalEngine, evalBytecode]) {
+        expect(await eval('OBJECT{name: "Alice"}'), isA<Object>());
+        expect(await eval('x := "name"; {x: "Alice"}'), isA<Map>());
+        expect(await eval('{42: "answer"}'), isA<Map>());
+      }
     });
 
     shqlTest('Should assign to nested Object members', 'obj := OBJECT{inner: OBJECT{value: 5}}; obj.inner.value := 42; obj.inner.value', 42);
@@ -1009,38 +601,28 @@ END;
           builder.setValue(99).value
         ''', 99);
 
-    // engine-only: multiple unrelated expects in one test
-    test('Nested objects have independent THIS', () async {
-      expect(
-        await evalEngine('''
-          outer := OBJECT{
-            name: "outer",
-            inner: OBJECT{
-              name: "inner",
-              getName: () => THIS.name
-            },
-            getName: () => THIS.name
-          };
-          outer.inner.getName()
-        '''),
-        'inner',
-      );
-
-      expect(
-        await evalEngine('''
-          outer := OBJECT{
-            name: "outer",
-            inner: OBJECT{
-              name: "inner",
-              getName: () => THIS.name
-            },
-            getName: () => THIS.name
-          };
-          outer.getName()
-        '''),
-        'outer',
-      );
-    });
+    shqlTest('Nested objects have independent THIS — inner', '''
+  outer := OBJECT{
+    name: "outer",
+    inner: OBJECT{
+      name: "inner",
+      getName: () => THIS.name
+    },
+    getName: () => THIS.name
+  };
+  outer.inner.getName()
+''', 'inner');
+    shqlTest('Nested objects have independent THIS — outer', '''
+  outer := OBJECT{
+    name: "outer",
+    inner: OBJECT{
+      name: "inner",
+      getName: () => THIS.name
+    },
+    getName: () => THIS.name
+  };
+  outer.getName()
+''', 'outer');
 
     shqlTest('THIS is mutable (can be reassigned)', '''
           obj := OBJECT{x: 10, getX: () => THIS.x};
@@ -1112,29 +694,11 @@ END;
         'meta.getName(person)',
         'Alice');
 
-    // engine-only: uses manual stdlib loading with evalEngine calls + NVL
-    test('Lambda calling another function with its parameter', () async {
-      var constantsSet = Runtime.prepareConstantsSet();
-      var runtime = Runtime.prepareRuntime(constantsSet);
-      final stdlibCode = await File('assets/stdlib.shql').readAsString();
-      await evalEngine(
-        stdlibCode,
-        runtime: runtime,
-        constantsSet: constantsSet,
-      );
-
-      expect(
-        await evalEngine(
-          'GET(hero, f, default) := NVL(hero, f, default); '
-          'meta := OBJECT{accessor: (hero) => GET(hero, h => h.name, "none")}; '
-          'person := OBJECT{name: "Bob"}; '
-          'meta.accessor(person)',
-          runtime: runtime,
-          constantsSet: constantsSet,
-        ),
-        'Bob',
-      );
-    });
+    shqlTestStdlib('Lambda calling NVL with parameter',
+        'GET(hero, f, default) := NVL(hero, f, default); '
+        'meta := OBJECT{accessor: (hero) => GET(hero, h => h.name, "none")}; '
+        'person := OBJECT{name: "Bob"}; '
+        'meta.accessor(person)', 'Bob');
 
     shqlTest('Lambda stored in list of OBJECTs',
         'fields := [OBJECT{prop: "x", accessor: (v) => v + 10}]; '
@@ -1150,41 +714,11 @@ END;
         'f0.accessor(10) + f1.accessor(10)',
         31);
 
-    // TRIM and IS_NULL_OR_WHITESPACE are native Dart functions: work with evalBytecode directly.
-    test('TRIM strips whitespace [engine]', () async {
-      var constantsSet = Runtime.prepareConstantsSet();
-      var runtime = Runtime.prepareRuntime(constantsSet);
-      final stdlibCode = await File('assets/stdlib.shql').readAsString();
-      await evalEngine(stdlibCode, runtime: runtime, constantsSet: constantsSet);
-      expect(await evalEngine('TRIM("  hello  ")', runtime: runtime, constantsSet: constantsSet), 'hello');
-    });
-    test('TRIM strips whitespace [bytecode]', () async => expect(await evalBytecode('TRIM("  hello  ")'), 'hello'));
+    shqlTestStdlib('TRIM strips whitespace', 'TRIM("  hello  ")', 'hello');
 
-    // engine-only: IS_NULL_OR_WHITESPACE is a SHQL-defined stdlib function,
-    // not a native Dart function, so it requires stdlib to be loaded.
-    test('IS_NULL_OR_WHITESPACE returns true for null', () async {
-      var constantsSet = Runtime.prepareConstantsSet();
-      var runtime = Runtime.prepareRuntime(constantsSet);
-      final stdlibCode = await File('assets/stdlib.shql').readAsString();
-      await evalEngine(stdlibCode, runtime: runtime, constantsSet: constantsSet);
-      expect(await evalEngine('IS_NULL_OR_WHITESPACE(null)', runtime: runtime, constantsSet: constantsSet), true);
-    });
-
-    test('IS_NULL_OR_WHITESPACE returns true for whitespace-only', () async {
-      var constantsSet = Runtime.prepareConstantsSet();
-      var runtime = Runtime.prepareRuntime(constantsSet);
-      final stdlibCode = await File('assets/stdlib.shql').readAsString();
-      await evalEngine(stdlibCode, runtime: runtime, constantsSet: constantsSet);
-      expect(await evalEngine('IS_NULL_OR_WHITESPACE("   ")', runtime: runtime, constantsSet: constantsSet), true);
-    });
-
-    test('IS_NULL_OR_WHITESPACE returns false for non-blank string', () async {
-      var constantsSet = Runtime.prepareConstantsSet();
-      var runtime = Runtime.prepareRuntime(constantsSet);
-      final stdlibCode = await File('assets/stdlib.shql').readAsString();
-      await evalEngine(stdlibCode, runtime: runtime, constantsSet: constantsSet);
-      expect(await evalEngine('IS_NULL_OR_WHITESPACE("batman")', runtime: runtime, constantsSet: constantsSet), false);
-    });
+    shqlTestStdlib('IS_NULL_OR_WHITESPACE returns true for null', 'IS_NULL_OR_WHITESPACE(null)', true);
+    shqlTestStdlib('IS_NULL_OR_WHITESPACE returns true for whitespace-only', 'IS_NULL_OR_WHITESPACE("   ")', true);
+    shqlTestStdlib('IS_NULL_OR_WHITESPACE returns false for non-blank string', 'IS_NULL_OR_WHITESPACE("batman")', false);
 
     shqlTest('Parenthesised IF-THEN-ELSE as value in map literal',
         'x := 1; '
@@ -1252,12 +786,7 @@ END;
         'f()',
         isA<List>());
 
-    // engine-only: uses stdlib (IS_NULL_OR_WHITESPACE) with manual loading pattern
-    test('Exact herodex.shql GENERATE_SAVED_HEROES_CARDS structure', () async {
-      // This mirrors the exact failing structure: first IF with 4-level nested JSON,
-      // second IF with AND/OR/NOT condition, both inside a function BEGIN block.
-      final (runtime, constantsSet) = await _loadStdLib();
-      final code = '''
+    shqlTestStdlib('GENERATE_SAVED_HEROES_CARDS with no conditions', r'''
 _heroes := [];
 _displayed_heroes := [];
 _active_filter_index := -1;
@@ -1271,12 +800,7 @@ GENERATE_SAVED_HEROES_CARDS() := BEGIN
     RETURN [];
 END;
 GENERATE_SAVED_HEROES_CARDS()
-''';
-      expect(
-        await evalEngine(code, runtime: runtime, constantsSet: constantsSet),
-        isA<List>(),
-      );
-    });
+''', []);
   });
 
   group('IF condition ending with parenthesised sub-expression', () {
@@ -1288,15 +812,8 @@ GENERATE_SAVED_HEROES_CARDS()
   });
 
   group('Implicit multiplication with value-expression keywords', () {
-    // engine-only: implicit multiplication
-    test('(3)IF FALSE THEN 2 ELSE 3 = 9', () async {
-      expect(await evalEngine('(3)IF FALSE THEN 2 ELSE 3'), 9);
-    });
-
-    // engine-only: implicit multiplication
-    test('(3)IF TRUE THEN 2 ELSE 0 = 6', () async {
-      expect(await evalEngine('(3)IF TRUE THEN 2 ELSE 0'), 6);
-    });
+    shqlTest('(3)IF FALSE THEN 2 ELSE 3 = 9', '(3)IF FALSE THEN 2 ELSE 3', 9);
+    shqlTest('(3)IF TRUE THEN 2 ELSE 0 = 6', '(3)IF TRUE THEN 2 ELSE 0', 6);
   });
 
   group('(expr) followed by infix operator is NOT implicit multiplication', () {
@@ -1311,212 +828,116 @@ GENERATE_SAVED_HEROES_CARDS()
   // falsy — Dart's `null != 0` is `true`, but logically null means
   // "unknown / not applicable" and must not satisfy a condition.
   group('Null-aware relational operators return null', () {
-    // engine-only: uses boundValues parameter (not supported in shqlTest)
-    test('null > number returns null', () async {
-      expect(await evalEngine('x > 5', boundValues: {'x': null}), isNull);
-    });
-
-    test('null < number returns null', () async {
-      expect(await evalEngine('x < 5', boundValues: {'x': null}), isNull);
-    });
-
-    test('null >= number returns null', () async {
-      expect(await evalEngine('x >= 5', boundValues: {'x': null}), isNull);
-    });
-
-    test('null <= number returns null', () async {
-      expect(await evalEngine('x <= 5', boundValues: {'x': null}), isNull);
-    });
-
-    test('number > null returns null', () async {
-      expect(await evalEngine('5 > x', boundValues: {'x': null}), isNull);
-    });
+    shqlTest('null > number returns null', 'x := null; x > 5', null);
+    shqlTest('null < number returns null', 'x := null; x < 5', null);
+    shqlTest('null >= number returns null', 'x := null; x >= 5', null);
+    shqlTest('null <= number returns null', 'x := null; x <= 5', null);
+    shqlTest('number > null returns null', 'x := null; 5 > x', null);
   });
 
   group('AND treats null as falsy', () {
-    // engine-only: uses boundValues parameter
-    test('null AND true is false', () async {
-      expect(await evalEngine('x AND TRUE', boundValues: {'x': null}), false);
-    });
-
-    test('true AND null is false', () async {
-      expect(await evalEngine('TRUE AND x', boundValues: {'x': null}), false);
-    });
-
-    test('null AND false is false', () async {
-      expect(await evalEngine('x AND FALSE', boundValues: {'x': null}), false);
-    });
-
-    test('(null > 5) AND true is false', () async {
-      expect(await evalEngine('(x > 5) AND TRUE', boundValues: {'x': null}), false);
-    });
-
-    test('(null > 5) AND (3 > 0) is false', () async {
-      expect(await evalEngine('(x > 5) AND (3 > 0)', boundValues: {'x': null}), false);
-    });
+    shqlTest('null AND true is false', 'x := null; x AND TRUE', false);
+    shqlTest('true AND null is false', 'x := null; TRUE AND x', false);
+    shqlTest('null AND false is false', 'x := null; x AND FALSE', false);
+    shqlTest('(null > 5) AND true is false', 'x := null; (x > 5) AND TRUE', false);
+    shqlTest('(null > 5) AND (3 > 0) is false', 'x := null; (x > 5) AND (3 > 0)', false);
   });
 
   group('OR treats null as falsy', () {
-    // engine-only: uses boundValues parameter
-    test('null OR true is true', () async {
-      expect(await evalEngine('x OR TRUE', boundValues: {'x': null}), true);
-    });
-
-    test('null OR false is false', () async {
-      expect(await evalEngine('x OR FALSE', boundValues: {'x': null}), false);
-    });
-
-    test('true OR null is true', () async {
-      expect(await evalEngine('TRUE OR x', boundValues: {'x': null}), true);
-    });
-
-    test('false OR null is false', () async {
-      expect(await evalEngine('FALSE OR x', boundValues: {'x': null}), false);
-    });
+    shqlTest('null OR true is true', 'x := null; x OR TRUE', true);
+    shqlTest('null OR false is false', 'x := null; x OR FALSE', false);
+    shqlTest('true OR null is true', 'x := null; TRUE OR x', true);
+    shqlTest('false OR null is false', 'x := null; FALSE OR x', false);
   });
 
   group('NOT with null', () {
-    // engine-only: uses boundValues parameter
-    test('NOT null returns null (null-aware unary)', () async {
-      expect(await evalEngine('NOT x', boundValues: {'x': null}), isNull);
-    });
+    shqlTest('NOT null returns null (null-aware unary)', 'x := null; NOT x', null);
   });
 
   group('XOR treats null as falsy', () {
-    // engine-only: uses boundValues parameter
-    test('null XOR true is true', () async {
-      expect(await evalEngine('x XOR TRUE', boundValues: {'x': null}), true);
-    });
-
-    test('null XOR false is false', () async {
-      expect(await evalEngine('x XOR FALSE', boundValues: {'x': null}), false);
-    });
-
-    test('true XOR null is true', () async {
-      expect(await evalEngine('TRUE XOR x', boundValues: {'x': null}), true);
-    });
+    shqlTest('null XOR true is true', 'x := null; x XOR TRUE', true);
+    shqlTest('null XOR false is false', 'x := null; x XOR FALSE', false);
+    shqlTest('true XOR null is true', 'x := null; TRUE XOR x', true);
   });
 
   // The actual Giants bug: (null > avg + 2 * stdev) AND (stdev > 0)
   // should be false, not true.
   group('Giants predicate scenario — null height in boolean context', () {
-    // engine-only: uses boundValues parameter
-    test('null height with positive stdev should not match', () async {
-      expect(
-        await evalEngine(
-          '(height > avg + 2 * stdev) AND (stdev > 0)',
-          boundValues: {'height': null, 'avg': 1.78, 'stdev': 0.2},
-        ),
-        false,
-      );
-    });
-
-    test('tall height with positive stdev should match', () async {
-      expect(
-        await evalEngine(
-          '(height > avg + 2 * stdev) AND (stdev > 0)',
-          boundValues: {'height': 2.5, 'avg': 1.78, 'stdev': 0.2},
-        ),
-        true,
-      );
-    });
-
-    test('short height with positive stdev should not match', () async {
-      expect(
-        await evalEngine(
-          '(height > avg + 2 * stdev) AND (stdev > 0)',
-          boundValues: {'height': 1.7, 'avg': 1.78, 'stdev': 0.2},
-        ),
-        false,
-      );
-    });
+    shqlTest('null height with positive stdev should not match',
+        'height := null; avg := 1.78; stdev := 0.2; (height > avg + 2 * stdev) AND (stdev > 0)', false);
+    shqlTest('tall height with positive stdev should match',
+        'height := 2.5; avg := 1.78; stdev := 0.2; (height > avg + 2 * stdev) AND (stdev > 0)', true);
+    shqlTest('short height with positive stdev should not match',
+        'height := 1.7; avg := 1.78; stdev := 0.2; (height > avg + 2 * stdev) AND (stdev > 0)', false);
   });
 
   group('STATS() stdlib function', () {
     late Runtime runtime;
     late ConstantsSet constantsSet;
+    late String stdlibCode;
 
     setUp(() async {
       constantsSet = Runtime.prepareConstantsSet();
       runtime = Runtime.prepareRuntime(constantsSet);
-      final stdlibCode = await File('assets/stdlib.shql').readAsString();
+      stdlibCode = await File('assets/stdlib.shql').readAsString();
       await evalEngine(stdlibCode, runtime: runtime, constantsSet: constantsSet);
     });
 
     Future<dynamic> eval(String code) =>
         evalEngine(code, runtime: runtime, constantsSet: constantsSet);
 
-    // engine-only: STATS is a SHQL stdlib function that internally calls SQRT
-    // (a native Dart function requiring ExecutionContext), which is not yet
-    // supported by evalBytecodeWithStdlib.
-    test('returns zero object for empty list', () async {
-      final ok = await eval(r'''
-        __s := STATS([], x => x);
-        __s.COUNT = 0 AND __s.AVG = 0 AND __s.STDEV = 0 AND __s.SUM = 0
-      ''');
-      expect(ok, true);
-    });
+    Future<dynamic> evalBc(String code) async {
+      final cs = Runtime.prepareConstantsSet();
+      final rt = Runtime.prepareRuntime(cs);
+      final combined = '$stdlibCode\n$code';
+      final tree = Parser.parse(combined, cs, sourceCode: combined);
+      final program = BytecodeCompiler.compile(tree, cs);
+      return BytecodeInterpreter(program, rt).execute('main');
+    }
 
-    test('avg of single value equals that value', () async {
-      expect(await eval('STATS([42], x => x).AVG'), 42);
-    });
+    // Local equivalent of shqlTest using the group's stdlib-loaded eval/evalBc.
+    void shqlBoth(String name, String code, dynamic expected) {
+      test('$name [engine]', () async => expect(await eval(code), expected));
+      test('$name [bytecode]', () async => expect(await evalBc(code), expected));
+    }
 
-    test('stdev of single value is zero', () async {
-      expect(await eval('STATS([42], x => x).STDEV'), 0);
-    });
+    shqlBoth('returns zero object for empty list', r'''
+      __s := STATS([], x => x);
+      __s.COUNT = 0 AND __s.AVG = 0 AND __s.STDEV = 0 AND __s.SUM = 0
+    ''', true);
+    shqlBoth('avg of single value equals that value', 'STATS([42], x => x).AVG', 42);
+    shqlBoth('stdev of single value is zero', 'STATS([42], x => x).STDEV', 0);
+    shqlBoth('avg, sum, count of [2, 4, 6]', r'''
+      __s := STATS([2, 4, 6], x => x);
+      __s.AVG > 3.999 AND __s.AVG < 4.001 AND
+      __s.SUM > 11.999 AND __s.SUM < 12.001 AND
+      __s.COUNT = 3
+    ''', true);
+    shqlBoth('min and max of [2, 4, 6]', r'''
+      __s := STATS([2, 4, 6], x => x);
+      __s.MIN > 1.999 AND __s.MIN < 2.001 AND
+      __s.MAX > 5.999 AND __s.MAX < 6.001
+    ''', true);
 
-    test('avg, sum, count of [2, 4, 6]', () async {
-      final ok = await eval(r'''
-        __s := STATS([2, 4, 6], x => x);
-        __s.AVG > 3.999 AND __s.AVG < 4.001 AND
-        __s.SUM > 11.999 AND __s.SUM < 12.001 AND
-        __s.COUNT = 3
-      ''');
-      expect(ok, true);
-    });
+    shqlBoth('population stdev of [2, 4, 6] is sqrt(8/3)',
+        'STATS([2, 4, 6], x => x).STDEV', closeTo(1.6329931618554521, 0.00001));
 
-    test('min and max of [2, 4, 6]', () async {
-      final ok = await eval(r'''
-        __s := STATS([2, 4, 6], x => x);
-        __s.MIN > 1.999 AND __s.MIN < 2.001 AND
-        __s.MAX > 5.999 AND __s.MAX < 6.001
-      ''');
-      expect(ok, true);
-    });
+    shqlBoth('nulls are excluded from all calculations', r'''
+      __items := [OBJECT{v: 10}, OBJECT{v: null}, OBJECT{v: 20}];
+      __s := STATS(__items, x => x.V);
+      __s.AVG > 14.999 AND __s.AVG < 15.001 AND __s.COUNT = 2
+    ''', true);
+    shqlBoth('stdev of identical values is zero', 'STATS([5, 5, 5, 5], x => x).STDEV', 0);
 
-    test('population stdev of [2, 4, 6] is sqrt(8/3)', () async {
-      final stdev = await eval('STATS([2, 4, 6], x => x).STDEV');
-      expect(stdev, closeTo(1.6329931618554521, 0.00001));
-    });
-
-    test('nulls are excluded from all calculations', () async {
-      final ok = await eval(r'''
-        __items := [OBJECT{v: 10}, OBJECT{v: null}, OBJECT{v: 20}];
-        __s := STATS(__items, x => x.V);
-        __s.AVG > 14.999 AND __s.AVG < 15.001 AND __s.COUNT = 2
-      ''');
-      expect(ok, true);
-    });
-
-    test('stdev of identical values is zero', () async {
-      expect(await eval('STATS([5, 5, 5, 5], x => x).STDEV'), 0);
-    });
-
-    test('accessor lambda extracts nested field', () async {
-      final avg = await eval(r'''
+    shqlBoth('accessor lambda extracts nested field', r'''
         __people := [OBJECT{height: 1.6}, OBJECT{height: 1.8}, OBJECT{height: 2.0}];
         STATS(__people, p => p.HEIGHT).AVG
-      ''');
-      expect(avg, closeTo(1.8, 0.0001));
-    });
+      ''', closeTo(1.8, 0.0001));
 
-    test('all-null list returns zero count and zero avg', () async {
-      final ok = await eval(r'''
-        __items := [OBJECT{v: null}, OBJECT{v: null}];
-        __s := STATS(__items, x => x.V);
-        __s.COUNT = 0 AND __s.AVG = 0
-      ''');
-      expect(ok, true);
-    });
+    shqlBoth('all-null list returns zero count and zero avg', r'''
+      __items := [OBJECT{v: null}, OBJECT{v: null}];
+      __s := STATS(__items, x => x.V);
+      __s.COUNT = 0 AND __s.AVG = 0
+    ''', true);
   });
 }

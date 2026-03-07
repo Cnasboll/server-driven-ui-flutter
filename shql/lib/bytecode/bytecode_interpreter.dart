@@ -15,7 +15,10 @@ library;
 import 'dart:math' as math;
 
 import 'package:shql/bytecode/bytecode.dart';
+import 'package:shql/bytecode/bytecode_compiler.dart';
 import 'package:shql/execution/runtime/runtime.dart';
+import 'package:shql/parser/constants_set.dart';
+import 'package:shql/parser/parser.dart';
 
 // ---------------------------------------------------------------------------
 // Errors
@@ -28,6 +31,12 @@ class BytecodeRuntimeError implements Exception {
 
   @override
   String toString() => 'BytecodeRuntimeError: $message';
+}
+
+/// Thrown internally by [BytecodeInterpreter.evalExpr] when a backward jump
+/// is encountered.  Not a real error — execution simply stops early.
+class _EvalExprStopped extends BytecodeRuntimeError {
+  _EvalExprStopped() : super('evalExpr: stopped at backward jump');
 }
 
 // ---------------------------------------------------------------------------
@@ -106,6 +115,10 @@ class BytecodeInterpreter {
   /// Threads spawned by [Opcode.call] on `THREAD(fn)`.
   /// Indexed by [Thread.id] so [JOIN] can locate them.
   final List<BytecodeThread> _spawnedThreads = [];
+
+  /// When true, any backward jump throws [_EvalExprStopped] instead of
+  /// looping.  Set exclusively by [evalExpr].
+  bool _stopOnBackwardJump = false;
 
   BytecodeInterpreter(this.program, this.runtime) {
     _bridgeRuntime();
@@ -187,7 +200,28 @@ class BytecodeInterpreter {
     }
 
     // Instance binary: int id → (ctx, caller, p1, p2) fn
+    // Special case: _EXTERN(name, args) dispatches to static maps — handle
+    // without ExecutionContext so bytecode can call it with null context.
+    final externId = runtime.identifiers.include('_EXTERN');
+    _nativeFunctions[externId] = (args) {
+      final name = args[0] as String;
+      final fnArgs = args[1];
+      final unary = Runtime.unaryFunctions[name];
+      if (unary != null && fnArgs is List && fnArgs.length == 1) {
+        return unary(null, fnArgs[0]);
+      }
+      final binary = Runtime.binaryFunctions[name];
+      if (binary != null && fnArgs is List && fnArgs.length == 2) {
+        return binary(fnArgs[0], fnArgs[1]);
+      }
+      final ternary = Runtime.ternaryFunctions[name];
+      if (ternary != null && fnArgs is List && fnArgs.length == 3) {
+        return ternary(fnArgs[0], fnArgs[1], fnArgs[2]);
+      }
+      return null;
+    };
     for (final e in runtime.binaryFunctionRegistrations.entries) {
+      if (e.key == externId) continue; // already registered above
       final dynamic fn = e.value;
       _nativeFunctions[e.key] = (args) => fn(null, null, args[0], args[1]);
     }
@@ -226,6 +260,34 @@ class BytecodeInterpreter {
     while (thread.isRunning) {
       _tickOne(thread);
     }
+    if (thread.error != null) throw thread.error!;
+    return Future.value(thread.result);
+  }
+
+  /// Evaluate [expression] like [Engine.evalExpr]: compile and run the
+  /// program, but stop (without error) the moment a backward jump is
+  /// encountered.  Returns the top-of-stack value at that point, or `null`
+  /// if execution stopped early.
+  ///
+  /// This is used by awesome_calculator to show live results for in-progress
+  /// programs that may contain loops — the first partial result is returned
+  /// rather than running forever.
+  static Future<dynamic> evalExpr(
+    String expression, {
+    Runtime? runtime,
+    ConstantsSet? constantsSet,
+  }) {
+    constantsSet ??= Runtime.prepareConstantsSet();
+    runtime ??= Runtime.prepareRuntime(constantsSet);
+    final tree = Parser.parse(expression, constantsSet, sourceCode: expression);
+    final program = BytecodeCompiler.compile(tree, constantsSet);
+    final interp = BytecodeInterpreter(program, runtime);
+    interp._stopOnBackwardJump = true;
+    final thread = interp.createThread('main');
+    while (thread.isRunning) {
+      interp._tickOne(thread);
+    }
+    if (thread.error is _EvalExprStopped) return Future.value(null);
     if (thread.error != null) throw thread.error!;
     return Future.value(thread.result);
   }
@@ -391,13 +453,26 @@ class BytecodeInterpreter {
       // ---- Control flow ----------------------------------------------------
 
       case Opcode.jump:
+        if (_stopOnBackwardJump && instr.operand < frame.pc) {
+          throw _EvalExprStopped();
+        }
         frame.pc = instr.operand;
 
       case Opcode.jumpFalse:
-        if (!_truthy(stack.removeLast())) frame.pc = instr.operand;
+        if (!_truthy(stack.removeLast())) {
+          if (_stopOnBackwardJump && instr.operand < frame.pc) {
+            throw _EvalExprStopped();
+          }
+          frame.pc = instr.operand;
+        }
 
       case Opcode.jumpTrue:
-        if (_truthy(stack.removeLast())) frame.pc = instr.operand;
+        if (_truthy(stack.removeLast())) {
+          if (_stopOnBackwardJump && instr.operand < frame.pc) {
+            throw _EvalExprStopped();
+          }
+          frame.pc = instr.operand;
+        }
 
       // ---- Scope -----------------------------------------------------------
 
@@ -423,6 +498,10 @@ class BytecodeInterpreter {
           );
         } else if (callable is _NativeCallable) {
           stack.add(callable.fn(callArgs));
+        } else if (callable is num && argCount == 1 && callArgs[0] is num) {
+          // Implicit multiplication — the core SHQL calculator feature.
+          // `42(2)` means `42 * 2`, matching CallExecutionNode's runtime fallback.
+          stack.add(callable * (callArgs[0] as num));
         } else {
           throw BytecodeRuntimeError('Cannot call $callable');
         }
