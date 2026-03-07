@@ -86,6 +86,8 @@ class BytecodeEncoder {
     } else if (value is ChunkRef) {
       buf.add(0x04);
       _str8(buf, value.name);
+    } else if (value is bool) {
+      buf.add(value ? 0x05 : 0x06);
     } else {
       throw StateError('Unsupported constant type: ${value.runtimeType}');
     }
@@ -177,6 +179,8 @@ class BytecodeDecoder {
       0x02 => _f64(),
       0x03 => _str16(),
       0x04 => ChunkRef(_str8()),
+      0x05 => true,
+      0x06 => false,
       _ => throw FormatException('Unknown constant tag: 0x${tag.toRadixString(16)}'),
     };
   }

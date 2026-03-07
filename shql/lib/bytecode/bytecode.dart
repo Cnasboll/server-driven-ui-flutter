@@ -23,12 +23,24 @@ enum Opcode {
   /// Discard the top of the value stack.
   pop,
 
+  /// Duplicate the top of the value stack (push a copy).
+  dup,
+
+  /// Load register `operand` and push it onto the stack.
+  loadReg,
+
+  /// Pop top of stack and store it in register `operand`.
+  storeReg,
+
   // --- Arithmetic ---
   add,
   sub,
   mul,
   div,
   mod,
+
+  /// Exponentiation: pop b then a, push math.pow(a, b).
+  pow,
 
   /// Unary negation.
   neg,
@@ -98,14 +110,42 @@ enum Opcode {
   /// Pop `operand` items (last-pushed = last element) and push a [List].
   makeList,
 
-  /// Pop `operand * 2` items (key, value pairs) and push a [Map].
-  makeObject;
+  /// Pop `operand * 2` items (key, value pairs) and push an SHQL [Object].
+  makeObject,
+
+  /// Like [makeObject] but uses the current frame scope's backing [Object]
+  /// (created by a preceding [pushScope]) as the object instance, rather than
+  /// allocating a new one.
+  ///
+  /// This mirrors [ObjectLiteralNode]'s behaviour: the scope that wraps the
+  /// object is established *before* any field values are evaluated, so every
+  /// closure captures a reference to the same [Object] and can therefore see
+  /// *all* members — including those defined later in the literal — at call
+  /// time.
+  makeObjectHere,
+
+  /// Pop `operand * 2` items (key, value pairs) and push a Dart [Map].
+  makeMap,
+
+  // --- Pattern / membership --------------------------------------------------
+
+  /// Pop rhs then lhs; null-aware IN: push whether lhs is in rhs
+  /// (List/Set membership or String substring).
+  opIn,
+
+  /// Pop rhs (pattern) then lhs (subject); null-aware regex match.
+  opMatch,
+
+  /// Pop rhs (pattern) then lhs (subject); null-aware regex no-match.
+  opNotMatch;
 
   /// Whether this opcode carries an integer operand in the instruction stream.
   bool get hasOperand => switch (this) {
     Opcode.pushConst ||
     Opcode.loadVar ||
     Opcode.storeVar ||
+    Opcode.loadReg ||
+    Opcode.storeReg ||
     Opcode.jump ||
     Opcode.jumpFalse ||
     Opcode.jumpTrue ||
@@ -114,7 +154,9 @@ enum Opcode {
     Opcode.getMember ||
     Opcode.setMember ||
     Opcode.makeList ||
-    Opcode.makeObject => true,
+    Opcode.makeObject ||
+    Opcode.makeObjectHere ||
+    Opcode.makeMap => true,
     _ => false,
   };
 

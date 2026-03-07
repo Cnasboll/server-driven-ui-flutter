@@ -989,6 +989,24 @@ class Runtime {
     setBinaryFunction("_EXTERN", extern);
   }
 
+  // ---- Read-only views of function registries (for external tooling) --------
+
+  /// All registered nullary function entries (name → function).
+  Iterable<MapEntry<String, Function>> get nullaryFunctionEntries =>
+      _nullaryFunctions.entries;
+
+  /// Read-only view of the instance unary function registry (id → function).
+  Map<int, Function> get unaryFunctionRegistrations =>
+      Map.unmodifiable(_unaryFunctions);
+
+  /// Read-only view of the instance binary function registry (id → function).
+  Map<int, Function> get binaryFunctionRegistrations =>
+      Map.unmodifiable(_binaryFunctions);
+
+  /// Read-only view of the instance ternary function registry (id → function).
+  Map<int, Function> get ternaryFunctionRegistrations =>
+      Map.unmodifiable(_ternaryFunctions);
+
   static ConstantsSet prepareConstantsSet() {
     var constantsSet = ConstantsSet();
     // Register mathematical constants
@@ -1034,7 +1052,7 @@ class Runtime {
     "AVOGADRO": 6.0221408e+23,
   };
 
-  static final Map<String, dynamic Function(ExecutionNode caller, dynamic)>
+  static final Map<String, dynamic Function(ExecutionNode? caller, dynamic)>
   unaryFunctions = {
     "CLONE": (caller, a) {
       if (a is Map) {

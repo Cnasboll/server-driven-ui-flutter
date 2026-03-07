@@ -12,6 +12,8 @@
 /// share the same identifier space.
 library;
 
+import 'dart:math' as math;
+
 import 'package:shql/bytecode/bytecode.dart';
 import 'package:shql/execution/runtime/runtime.dart';
 
@@ -62,6 +64,10 @@ class BytecodeFrame {
   final List<dynamic> stack;
   Scope scope; // mutable: push_scope / pop_scope update it in place
 
+  /// Per-frame register file — grows lazily as [Opcode.storeReg] fills slots.
+  /// Registers are private to a frame; nested calls each get a fresh file.
+  final List<dynamic> regs = [];
+
   BytecodeFrame({
     required this.chunk,
     required this.pc,
@@ -97,12 +103,107 @@ class BytecodeInterpreter {
   final Runtime runtime;
   final Map<int, dynamic Function(List<dynamic>)> _nativeFunctions = {};
 
-  BytecodeInterpreter(this.program, this.runtime);
+  /// Threads spawned by [Opcode.call] on `THREAD(fn)`.
+  /// Indexed by [Thread.id] so [JOIN] can locate them.
+  final List<BytecodeThread> _spawnedThreads = [];
+
+  BytecodeInterpreter(this.program, this.runtime) {
+    _bridgeRuntime();
+    _registerBytecodeNatives();
+  }
+
+  /// Override the runtime-bridged THREAD / JOIN with versions that know how
+  /// to create and schedule [BytecodeThread]s.
+  void _registerBytecodeNatives() {
+    registerNative('THREAD', (args) {
+      final callable = args[0];
+      if (callable is! BytecodeCallable) {
+        throw BytecodeRuntimeError('THREAD() requires a callable, got $callable');
+      }
+      final thread = BytecodeThread(
+        initialFrame: _makeFrame(callable.chunk, [], callable.capturedScope),
+      );
+      final handle = Thread(id: _spawnedThreads.length);
+      _spawnedThreads.add(thread);
+      return handle;
+    });
+
+    registerNative('JOIN', (args) {
+      final handle = args[0];
+      if (handle is! Thread) {
+        throw BytecodeRuntimeError('JOIN() requires a Thread, got $handle');
+      }
+      final idx = handle.id;
+      if (idx < 0 || idx >= _spawnedThreads.length) return null;
+      final target = _spawnedThreads[idx];
+      // Cooperative round-robin: tick ALL spawned threads until target finishes.
+      while (target.isRunning) {
+        for (final t in _spawnedThreads) {
+          if (t.isRunning) _tickOne(t);
+        }
+      }
+      if (target.error != null) throw target.error!;
+      return null; // SHQL JOIN does not surface the thread's return value
+    });
+  }
 
   /// Register a native Dart function callable from bytecode via [Opcode.call].
   /// [name] is case-insensitive (uppercased to match SHQL™ identifier semantics).
   void registerNative(String name, dynamic Function(List<dynamic> args) fn) {
     _nativeFunctions[runtime.identifiers.include(name.toUpperCase())] = fn;
+  }
+
+  /// Bridge all native functions registered in [runtime] into this
+  /// interpreter's native function table.
+  ///
+  /// Called automatically by the constructor.  The [ExecutionContext] /
+  /// [ExecutionNode] parameters expected by instance functions are satisfied
+  /// with `null` — all current implementations ignore them for the operations
+  /// that the bytecode VM exercises.
+  void _bridgeRuntime() {
+    // Nullary: String name → (ctx, caller) fn
+    for (final e in runtime.nullaryFunctionEntries) {
+      final id = runtime.identifiers.include(e.key);
+      final dynamic fn = e.value;
+      _nativeFunctions[id] = (_) => fn(null, null);
+    }
+
+    // Static unary: String name → (caller?, p1) fn
+    for (final e in Runtime.unaryFunctions.entries) {
+      final id = runtime.identifiers.include(e.key);
+      _nativeFunctions[id] = (args) => e.value(null, args[0]);
+    }
+
+    // Instance unary: int id → (ctx, caller, p1) fn
+    for (final e in runtime.unaryFunctionRegistrations.entries) {
+      final dynamic fn = e.value;
+      _nativeFunctions[e.key] = (args) => fn(null, null, args[0]);
+    }
+
+    // Static binary: String name → (p1, p2) fn
+    for (final e in Runtime.binaryFunctions.entries) {
+      final id = runtime.identifiers.include(e.key);
+      _nativeFunctions[id] = (args) => e.value(args[0], args[1]);
+    }
+
+    // Instance binary: int id → (ctx, caller, p1, p2) fn
+    for (final e in runtime.binaryFunctionRegistrations.entries) {
+      final dynamic fn = e.value;
+      _nativeFunctions[e.key] = (args) => fn(null, null, args[0], args[1]);
+    }
+
+    // Static ternary: String name → (p1, p2, p3) fn
+    for (final e in Runtime.ternaryFunctions.entries) {
+      final id = runtime.identifiers.include(e.key);
+      _nativeFunctions[id] = (args) => e.value(args[0], args[1], args[2]);
+    }
+
+    // Instance ternary: int id → (ctx, caller, p1, p2, p3) fn
+    for (final e in runtime.ternaryFunctionRegistrations.entries) {
+      final dynamic fn = e.value;
+      _nativeFunctions[e.key] = (args) =>
+          fn(null, null, args[0], args[1], args[2]);
+    }
   }
 
   /// Create a new [BytecodeThread] ready to run [chunkName] with [args].
@@ -203,11 +304,27 @@ class BytecodeInterpreter {
       case Opcode.pop:
         stack.removeLast();
 
+      case Opcode.dup:
+        stack.add(stack.last);
+
+      case Opcode.loadReg:
+        final idx = instr.operand;
+        stack.add(idx < frame.regs.length ? frame.regs[idx] : null);
+
+      case Opcode.storeReg:
+        final idx = instr.operand;
+        while (frame.regs.length <= idx) frame.regs.add(null);
+        frame.regs[idx] = stack.removeLast();
+
       // ---- Arithmetic ------------------------------------------------------
 
       case Opcode.add:
         final b = stack.removeLast(), a = stack.removeLast();
-        stack.add(a + b);
+        if (a is List && b is List) {
+          stack.add([...a, ...b]);
+        } else {
+          stack.add(a + b);
+        }
 
       case Opcode.sub:
         final b = stack.removeLast(), a = stack.removeLast();
@@ -224,6 +341,10 @@ class BytecodeInterpreter {
       case Opcode.mod:
         final b = stack.removeLast(), a = stack.removeLast();
         stack.add(a % b);
+
+      case Opcode.pow:
+        final b = stack.removeLast(), a = stack.removeLast();
+        stack.add(math.pow(a as num, b as num));
 
       case Opcode.neg:
         stack.add(-(stack.removeLast() as num));
@@ -320,7 +441,19 @@ class BytecodeInterpreter {
         final id = _id(frame.chunk, instr.operand);
         final obj = stack.removeLast();
         if (obj is Object) {
-          stack.add(_unwrap(obj.resolveIdentifier(id)));
+          final value = _unwrap(obj.resolveIdentifier(id));
+          if (value is BytecodeCallable) {
+            // Re-bind method: insert the object's scope so the method body
+            // can access sibling fields via normal variable lookup.
+            final objectScope = Scope(
+              obj,
+              constants: value.capturedScope.constants,
+              parent: value.capturedScope,
+            );
+            stack.add(BytecodeCallable(value.chunk, objectScope));
+          } else {
+            stack.add(value);
+          }
         } else {
           throw BytecodeRuntimeError(
             'get_member: expected SHQL Object, got $obj',
@@ -345,6 +478,10 @@ class BytecodeInterpreter {
         final container = stack.removeLast();
         if (container is List) {
           stack.add(container[idx as int]);
+        } else if (container is Map) {
+          stack.add(container[idx]);
+        } else if (container is String) {
+          stack.add(container[idx as int]);
         } else {
           throw BytecodeRuntimeError('get_index: cannot index $container');
         }
@@ -355,6 +492,8 @@ class BytecodeInterpreter {
         final container = stack.removeLast();
         if (container is List) {
           container[idx as int] = value;
+        } else if (container is Map) {
+          container[idx] = value;
         } else {
           throw BytecodeRuntimeError('set_index: cannot index $container');
         }
@@ -380,7 +519,76 @@ class BytecodeInterpreter {
           final id = runtime.identifiers.include(key.toUpperCase());
           obj.setVariable(id, pairs[i * 2 + 1]);
         }
+        // THIS = self-reference, mirrors ObjectLiteralNode
+        obj.setVariable(runtime.identifiers.include('THIS'), obj);
         stack.add(obj);
+
+      // Like makeObject but uses the Object already backing the current scope
+      // (created by the preceding pushScope).  Closures compiled between
+      // pushScope and makeObjectHere therefore capture a Scope that wraps THIS
+      // very Object, so all object members — including those defined later in
+      // the literal — are visible inside every method at call time.
+      case Opcode.makeObjectHere:
+        final pairCount2 = instr.operand;
+        final obj2 = frame.scope.members; // reuse pushScope's Object
+        final pairs2 = List<dynamic>.filled(pairCount2 * 2, null);
+        for (var i = pairCount2 * 2 - 1; i >= 0; i--) {
+          pairs2[i] = stack.removeLast();
+        }
+        for (var i = 0; i < pairCount2; i++) {
+          final key = pairs2[i * 2] as String;
+          final id = runtime.identifiers.include(key.toUpperCase());
+          obj2.setVariable(id, pairs2[i * 2 + 1]);
+        }
+        obj2.setVariable(runtime.identifiers.include('THIS'), obj2);
+        stack.add(obj2);
+
+      case Opcode.makeMap:
+        final pairCount = instr.operand;
+        final pairs = List<dynamic>.filled(pairCount * 2, null);
+        for (var i = pairCount * 2 - 1; i >= 0; i--) {
+          pairs[i] = stack.removeLast();
+        }
+        final map = <dynamic, dynamic>{};
+        for (var i = 0; i < pairCount; i++) {
+          map[pairs[i * 2]] = pairs[i * 2 + 1];
+        }
+        stack.add(map);
+
+      case Opcode.opIn:
+        final rhs = stack.removeLast();
+        final lhs = stack.removeLast();
+        if (lhs == null || rhs == null) {
+          stack.add(null);
+        } else if (rhs is List || rhs is Set) {
+          stack.add((rhs as Iterable).contains(lhs));
+        } else if (rhs is Iterable) {
+          stack.add(rhs.any((e) => e == lhs));
+        } else {
+          final l = lhs is String ? lhs : lhs.toString();
+          final r = rhs is String ? rhs : rhs.toString();
+          stack.add(r.contains(l));
+        }
+
+      case Opcode.opMatch:
+        final rhs = stack.removeLast();
+        final lhs = stack.removeLast();
+        if (lhs == null || rhs == null) {
+          stack.add(null);
+        } else {
+          final regex = RegExp(rhs.toString(), caseSensitive: false);
+          stack.add(regex.hasMatch(lhs.toString()));
+        }
+
+      case Opcode.opNotMatch:
+        final rhs = stack.removeLast();
+        final lhs = stack.removeLast();
+        if (lhs == null || rhs == null) {
+          stack.add(null);
+        } else {
+          final regex = RegExp(rhs.toString(), caseSensitive: false);
+          stack.add(!regex.hasMatch(lhs.toString()));
+        }
     }
   }
 
