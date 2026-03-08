@@ -5289,4 +5289,1807 @@ GENERATE_SAVED_HEROES_CARDS()
         'ret',
       ]);
   });
+
+  // ---------------------------------------------------------------------------
+  // Migrated from bytecode_compiler_test.dart -- drift detection
+  // ---------------------------------------------------------------------------
+  group('Compiler drift detection', () {
+  shqlBoth('f:=x=>x^2;f(3)', 'f:=x=>x^2;f(3)', 9, [
+      'make_closure(.__lambda_0)',
+      'store_var(F)',
+      'load_var(F)',
+      'pop',
+      'load_var(F)',
+      'push_const(3)',
+      'call(1)',
+      'ret',
+    ]);
+  shqlBoth('PI*2', 'PI*2', 6.283185307179586, [
+      'push_const(3.141592653589793)',
+      'jump_null(7)',
+      'push_const(2)',
+      'jump_null(6)',
+      'mul',
+      'jump(9)',
+      'pop',
+      'pop',
+      'push_const(null)',
+      'ret',
+    ]);
+  shqlBoth('"Batman" ~ "batman"', '"Batman" ~ "batman"', true, [
+      'push_const("Batman")',
+      'jump_null(7)',
+      'push_const("batman")',
+      'jump_null(6)',
+      'op_match',
+      'jump(9)',
+      'pop',
+      'pop',
+      'push_const(null)',
+      'ret',
+    ]);
+  shqlBoth('"Batman" ~ "bat.*"', '"Batman" ~ "bat.*"', true, [
+      'push_const("Batman")',
+      'jump_null(7)',
+      'push_const("bat.*")',
+      'jump_null(6)',
+      'op_match',
+      'jump(9)',
+      'pop',
+      'pop',
+      'push_const(null)',
+      'ret',
+    ]);
+  shqlBoth('"Robin" ~ "bat.*"', '"Robin" ~ "bat.*"', false, [
+      'push_const("Robin")',
+      'jump_null(7)',
+      'push_const("bat.*")',
+      'jump_null(6)',
+      'op_match',
+      'jump(9)',
+      'pop',
+      'pop',
+      'push_const(null)',
+      'ret',
+    ]);
+  shqlBoth('"Super Man" ~ r"Super\s*Man"', '"Super Man" ~ r"Supers*Man"', false, [
+      'push_const("Super Man")',
+      'jump_null(7)',
+      'push_const("Supers*Man")',
+      'jump_null(6)',
+      'op_match',
+      'jump(9)',
+      'pop',
+      'pop',
+      'push_const(null)',
+      'ret',
+    ]);
+  shqlBoth('"Robin" !~ "bat.*"', '"Robin" !~ "bat.*"', true, [
+      'push_const("Robin")',
+      'jump_null(7)',
+      'push_const("bat.*")',
+      'jump_null(6)',
+      'op_not_match',
+      'jump(9)',
+      'pop',
+      'pop',
+      'push_const(null)',
+      'ret',
+    ]);
+  shqlBoth('"Batman" !~ "bat.*"', '"Batman" !~ "bat.*"', false, [
+      'push_const("Batman")',
+      'jump_null(7)',
+      'push_const("bat.*")',
+      'jump_null(6)',
+      'op_not_match',
+      'jump(9)',
+      'pop',
+      'pop',
+      'push_const(null)',
+      'ret',
+    ]);
+  shqlBoth('"Batman" in ["Batman","Robin"]', '"Batman" in ["Batman","Robin"]', true, [
+      'push_const("Batman")',
+      'jump_null(9)',
+      'push_const("Batman")',
+      'push_const("Robin")',
+      'make_list(2)',
+      'jump_null(8)',
+      'op_in',
+      'jump(11)',
+      'pop',
+      'pop',
+      'push_const(null)',
+      'ret',
+    ]);
+  shqlBoth('"Superman" in ["Batman","Robin"]', '"Superman" in ["Batman","Robin"]', false, [
+      'push_const("Superman")',
+      'jump_null(9)',
+      'push_const("Batman")',
+      'push_const("Robin")',
+      'make_list(2)',
+      'jump_null(8)',
+      'op_in',
+      'jump(11)',
+      'pop',
+      'pop',
+      'push_const(null)',
+      'ret',
+    ]);
+  shqlBoth('"Batman" finns_i ["Batman","Robin"]', '"Batman" finns_i ["Batman","Robin"]', true, [
+      'push_const("Batman")',
+      'jump_null(9)',
+      'push_const("Batman")',
+      'push_const("Robin")',
+      'make_list(2)',
+      'jump_null(8)',
+      'op_in',
+      'jump(11)',
+      'pop',
+      'pop',
+      'push_const(null)',
+      'ret',
+    ]);
+  shqlBoth('i:=41;i:=i+1', 'i:=41;i:=i+1', 42, [
+      'push_const(41)',
+      'store_var(I)',
+      'load_var(I)',
+      'pop',
+      'load_var(I)',
+      'jump_null(11)',
+      'push_const(1)',
+      'jump_null(10)',
+      'add',
+      'jump(13)',
+      'pop',
+      'pop',
+      'push_const(null)',
+      'store_var(I)',
+      'load_var(I)',
+      'ret',
+    ]);
+  shqlBoth('my_global := 10; ADD(x) := BEGIN my_global := my_global + x; RETURN my_global; END; ADD(5)', 'my_global := 10; ADD(x) := BEGIN my_global := my_global + x; RETURN my_global; END; ADD(5)', 15, [
+      'push_const(10)',
+      'store_var(MY_GLOBAL)',
+      'load_var(MY_GLOBAL)',
+      'pop',
+      'make_closure(.__ADD_0)',
+      'store_var(ADD)',
+      'load_var(ADD)',
+      'pop',
+      'load_var(ADD)',
+      'push_const(5)',
+      'call(1)',
+      'ret',
+    ]);
+  shqlBothStdlib('LOWERCASE("Hello")', 'LOWERCASE("Hello")', 'hello', [
+      'load_var(LOWERCASE)',
+      'push_const("Hello")',
+      'call(1)',
+      'ret',
+    ]);
+  shqlBothStdlib('UPPERCASE("hello")', 'UPPERCASE("hello")', 'HELLO', [
+      'load_var(UPPERCASE)',
+      'push_const("hello")',
+      'call(1)',
+      'ret',
+    ]);
+  shqlBothStdlib('TRIM("  hello  ")', 'TRIM("  hello  ")', 'hello', [
+      'load_var(TRIM)',
+      'push_const("  hello  ")',
+      'call(1)',
+      'ret',
+    ]);
+  shqlBothStdlib('SUBSTRING("hello world", 0, 5)', 'SUBSTRING("hello world", 0, 5)', 'hello', [
+      'load_var(SUBSTRING)',
+      'push_const("hello world")',
+      'push_const(0)',
+      'push_const(5)',
+      'call(3)',
+      'ret',
+    ]);
+  shqlBothStdlib('LENGTH("hello")', 'LENGTH("hello")', 5, [
+      'load_var(LENGTH)',
+      'push_const("hello")',
+      'call(1)',
+      'ret',
+    ]);
+  shqlBothStdlib('LENGTH([1,2,3])', 'LENGTH([1,2,3])', 3, [
+      'load_var(LENGTH)',
+      'push_const(1)',
+      'push_const(2)',
+      'push_const(3)',
+      'make_list(3)',
+      'call(1)',
+      'ret',
+    ]);
+  shqlBothStdlib('LOWERCASE("Robin") in ["batman","robin"]', 'LOWERCASE("Robin") in ["batman","robin"]', true, [
+      'load_var(LOWERCASE)',
+      'push_const("Robin")',
+      'call(1)',
+      'jump_null(11)',
+      'push_const("batman")',
+      'push_const("robin")',
+      'make_list(2)',
+      'jump_null(10)',
+      'op_in',
+      'jump(13)',
+      'pop',
+      'pop',
+      'push_const(null)',
+      'ret',
+    ]);
+  shqlBoth('my_array := [1, 2, 3]; PUSH(x) := BEGIN my_array := my_array + [x]; RETURN my_array; END; PUSH(4)', 'my_array := [1, 2, 3]; PUSH(x) := BEGIN my_array := my_array + [x]; RETURN my_array; END; PUSH(4)', [1, 2, 3, 4], [
+      'push_const(1)',
+      'push_const(2)',
+      'push_const(3)',
+      'make_list(3)',
+      'store_var(MY_ARRAY)',
+      'load_var(MY_ARRAY)',
+      'pop',
+      'make_closure(.__PUSH_0)',
+      'store_var(PUSH)',
+      'load_var(PUSH)',
+      'pop',
+      'load_var(PUSH)',
+      'push_const(4)',
+      'call(1)',
+      'ret',
+    ]);
+  shqlBoth('f(x):=x*2;f(2)', 'f(x):=x*2;f(2)', 4, [
+      'make_closure(.__F_0)',
+      'store_var(F)',
+      'load_var(F)',
+      'pop',
+      'load_var(F)',
+      'push_const(2)',
+      'call(1)',
+      'ret',
+    ]);
+  shqlBoth('f(a,b):=a-b;f(10,2)', 'f(a,b):=a-b;f(10,2)', 8, [
+      'make_closure(.__F_0)',
+      'store_var(F)',
+      'load_var(F)',
+      'pop',
+      'load_var(F)',
+      'push_const(10)',
+      'push_const(2)',
+      'call(2)',
+      'ret',
+    ]);
+  shqlBoth('fac(x):=IF x<=1 THEN 1 ELSE x*fac(x-1);fac(3)', 'fac(x):=IF x<=1 THEN 1 ELSE x*fac(x-1);fac(3)', 6, [
+      'make_closure(.__FAC_0)',
+      'store_var(FAC)',
+      'load_var(FAC)',
+      'pop',
+      'load_var(FAC)',
+      'push_const(3)',
+      'call(1)',
+      'ret',
+    ]);
+  shqlBoth('sum(a,b):=a+b; f1(f,a,b,c):=f(a,b)+c; f1(sum,1,2,3)', 'sum(a,b):=a+b; f1(f,a,b,c):=f(a,b)+c; f1(sum,1,2,3)', 6, [
+      'make_closure(.__SUM_0)',
+      'store_var(SUM)',
+      'load_var(SUM)',
+      'pop',
+      'make_closure(.__F1_1)',
+      'store_var(F1)',
+      'load_var(F1)',
+      'pop',
+      'load_var(F1)',
+      'load_var(SUM)',
+      'push_const(1)',
+      'push_const(2)',
+      'push_const(3)',
+      'call(4)',
+      'ret',
+    ]);
+  shqlBoth('sum(a,b):=a+b; f1(f,a,b,c):=f(a,b)+c; f1(sum,10,20,5)', 'sum(a,b):=a+b; f1(f,a,b,c):=f(a,b)+c; f1(sum,10,20,5)', 35, [
+      'make_closure(.__SUM_0)',
+      'store_var(SUM)',
+      'load_var(SUM)',
+      'pop',
+      'make_closure(.__F1_1)',
+      'store_var(F1)',
+      'load_var(F1)',
+      'pop',
+      'load_var(F1)',
+      'load_var(SUM)',
+      'push_const(10)',
+      'push_const(20)',
+      'push_const(5)',
+      'call(4)',
+      'ret',
+    ]);
+  shqlBoth('test():=TRUE;test()', 'test():=TRUE;test()', true, [
+      'make_closure(.__TEST_0)',
+      'store_var(TEST)',
+      'load_var(TEST)',
+      'pop',
+      'load_var(TEST)',
+      'call(0)',
+      'ret',
+    ]);
+  shqlBoth('f:=x=>x^2;f(3)', 'f:=x=>x^2;f(3)', 9, [
+      'make_closure(.__lambda_0)',
+      'store_var(F)',
+      'load_var(F)',
+      'pop',
+      'load_var(F)',
+      'push_const(3)',
+      'call(1)',
+      'ret',
+    ]);
+  shqlBoth('(x=>x^2)(3)', '(x=>x^2)(3)', 9, [
+      'make_closure(.__lambda_0)',
+      'push_const(3)',
+      'call(1)',
+      'ret',
+    ]);
+  shqlBoth('(()=>9)()', '(()=>9)()', 9, [
+      'make_closure(.__lambda_0)',
+      'call(0)',
+      'ret',
+    ]);
+  shqlBoth('f(x):=IF x%2=0 THEN RETURN x+1 ELSE RETURN x;f(2)', 'f(x):=IF x%2=0 THEN RETURN x+1 ELSE RETURN x;f(2)', 3, [
+      'make_closure(.__F_0)',
+      'store_var(F)',
+      'load_var(F)',
+      'pop',
+      'load_var(F)',
+      'push_const(2)',
+      'call(1)',
+      'ret',
+    ]);
+  shqlBoth('f(x):=BEGIN IF x%2=0 THEN RETURN x+1; RETURN x; END;f(2)', 'f(x):=BEGIN IF x%2=0 THEN RETURN x+1; RETURN x; END;f(2)', 3, [
+      'make_closure(.__F_0)',
+      'store_var(F)',
+      'load_var(F)',
+      'pop',
+      'load_var(F)',
+      'push_const(2)',
+      'call(1)',
+      'ret',
+    ]);
+  shqlBoth('f(x):=BEGIN IF x<=1 THEN RETURN 1; RETURN x*f(x-1); END;f(5)', 'f(x):=BEGIN IF x<=1 THEN RETURN 1; RETURN x*f(x-1); END;f(5)', 120, [
+      'make_closure(.__F_0)',
+      'store_var(F)',
+      'load_var(F)',
+      'pop',
+      'load_var(F)',
+      'push_const(5)',
+      'call(1)',
+      'ret',
+    ]);
+  shqlBoth('IF TRUE THEN 42', 'IF TRUE THEN 42', 42, [
+      'push_const(true)',
+      'jump_false(4)',
+      'push_const(42)',
+      'jump(5)',
+      'push_const(null)',
+      'ret',
+    ]);
+  shqlBoth('IF FALSE THEN 42', 'IF FALSE THEN 42', null, [
+      'push_const(false)',
+      'jump_false(4)',
+      'push_const(42)',
+      'jump(5)',
+      'push_const(null)',
+      'ret',
+    ]);
+  shqlBoth('IF 1=1 AND (2=2) THEN "yes" ELSE "no"', 'IF 1=1 AND (2=2) THEN "yes" ELSE "no"', 'yes', [
+      'push_const(1)',
+      'push_const(1)',
+      'cmp_eq',
+      'push_const(2)',
+      'push_const(2)',
+      'cmp_eq',
+      'log_and',
+      'jump_false(10)',
+      'push_const("yes")',
+      'jump(11)',
+      'push_const("no")',
+      'ret',
+    ]);
+  shqlBoth('x:=0; WHILE x<10 DO x:=x+1; x', 'x:=0; WHILE x<10 DO x:=x+1; x', 10, [
+      'push_const(0)',
+      'store_var(X)',
+      'load_var(X)',
+      'pop',
+      'push_const(null)',
+      'store_reg(0)',
+      'load_var(X)',
+      'jump_null(13)',
+      'push_const(10)',
+      'jump_null(12)',
+      'cmp_lt',
+      'jump(15)',
+      'pop',
+      'pop',
+      'push_const(null)',
+      'jump_false(29)',
+      'load_var(X)',
+      'jump_null(23)',
+      'push_const(1)',
+      'jump_null(22)',
+      'add',
+      'jump(25)',
+      'pop',
+      'pop',
+      'push_const(null)',
+      'store_var(X)',
+      'load_var(X)',
+      'store_reg(0)',
+      'jump(6)',
+      'load_reg(0)',
+      'pop',
+      'load_var(X)',
+      'ret',
+    ]);
+  shqlBoth('x:=0; WHILE TRUE DO BEGIN x:=x+1; IF x=10 THEN BREAK; END; x', 'x:=0; WHILE TRUE DO BEGIN x:=x+1; IF x=10 THEN BREAK; END; x', 10, [
+      'push_const(0)',
+      'store_var(X)',
+      'load_var(X)',
+      'pop',
+      'push_const(null)',
+      'store_reg(0)',
+      'push_const(true)',
+      'jump_false(31)',
+      'push_scope',
+      'load_var(X)',
+      'jump_null(16)',
+      'push_const(1)',
+      'jump_null(15)',
+      'add',
+      'jump(18)',
+      'pop',
+      'pop',
+      'push_const(null)',
+      'store_var(X)',
+      'load_var(X)',
+      'pop',
+      'load_var(X)',
+      'push_const(10)',
+      'cmp_eq',
+      'jump_false(27)',
+      'jump(31)',
+      'jump(28)',
+      'push_const(null)',
+      'pop_scope',
+      'store_reg(0)',
+      'jump(6)',
+      'load_reg(0)',
+      'pop',
+      'load_var(X)',
+      'ret',
+    ]);
+  shqlBoth('x:=0; y:=0; WHILE x<10 DO BEGIN x:=x+1; IF x%2=0 THEN CONTINUE; y:=y+1; END; y', 'x:=0; y:=0; WHILE x<10 DO BEGIN x:=x+1; IF x%2=0 THEN CONTINUE; y:=y+1; END; y', 5, [
+      'push_const(0)',
+      'store_var(X)',
+      'load_var(X)',
+      'pop',
+      'push_const(0)',
+      'store_var(Y)',
+      'load_var(Y)',
+      'pop',
+      'push_const(null)',
+      'store_reg(0)',
+      'load_var(X)',
+      'jump_null(17)',
+      'push_const(10)',
+      'jump_null(16)',
+      'cmp_lt',
+      'jump(19)',
+      'pop',
+      'pop',
+      'push_const(null)',
+      'jump_false(63)',
+      'push_scope',
+      'load_var(X)',
+      'jump_null(28)',
+      'push_const(1)',
+      'jump_null(27)',
+      'add',
+      'jump(30)',
+      'pop',
+      'pop',
+      'push_const(null)',
+      'store_var(X)',
+      'load_var(X)',
+      'pop',
+      'load_var(X)',
+      'jump_null(40)',
+      'push_const(2)',
+      'jump_null(39)',
+      'mod',
+      'jump(42)',
+      'pop',
+      'pop',
+      'push_const(null)',
+      'push_const(0)',
+      'cmp_eq',
+      'jump_false(47)',
+      'jump(10)',
+      'jump(48)',
+      'push_const(null)',
+      'pop',
+      'load_var(Y)',
+      'jump_null(56)',
+      'push_const(1)',
+      'jump_null(55)',
+      'add',
+      'jump(58)',
+      'pop',
+      'pop',
+      'push_const(null)',
+      'store_var(Y)',
+      'load_var(Y)',
+      'pop_scope',
+      'store_reg(0)',
+      'jump(10)',
+      'load_reg(0)',
+      'pop',
+      'load_var(Y)',
+      'ret',
+    ]);
+  shqlBoth('sum:=0; FOR i:=1 TO 10 DO sum:=sum+i; sum', 'sum:=0; FOR i:=1 TO 10 DO sum:=sum+i; sum', 55, [
+      'push_const(0)',
+      'store_var(SUM)',
+      'load_var(SUM)',
+      'pop',
+      'push_const(1)',
+      'store_var(I)',
+      'load_var(I)',
+      'pop',
+      'load_var(I)',
+      'store_reg(0)',
+      'push_const(false)',
+      'store_reg(1)',
+      'load_var(SUM)',
+      'jump_null(19)',
+      'load_var(I)',
+      'jump_null(18)',
+      'add',
+      'jump(21)',
+      'pop',
+      'pop',
+      'push_const(null)',
+      'store_var(SUM)',
+      'load_var(SUM)',
+      'pop',
+      'load_reg(1)',
+      'jump_true(66)',
+      'push_const(10)',
+      'store_reg(2)',
+      'load_reg(2)',
+      'load_reg(0)',
+      'cmp_gte',
+      'store_reg(3)',
+      'load_reg(3)',
+      'jump_false(36)',
+      'push_const(1)',
+      'jump(37)',
+      'push_const(-1)',
+      'store_reg(4)',
+      'load_var(I)',
+      'load_reg(4)',
+      'add',
+      'store_reg(5)',
+      'load_reg(3)',
+      'load_reg(5)',
+      'load_reg(2)',
+      'cmp_gt',
+      'log_and',
+      'load_reg(3)',
+      'log_not',
+      'load_reg(5)',
+      'load_reg(2)',
+      'cmp_lt',
+      'log_and',
+      'log_or',
+      'store_reg(6)',
+      'load_reg(6)',
+      'load_reg(5)',
+      'load_reg(2)',
+      'cmp_eq',
+      'log_or',
+      'store_reg(1)',
+      'load_reg(6)',
+      'jump_true(66)',
+      'load_reg(5)',
+      'store_var(I)',
+      'jump(12)',
+      'push_const(null)',
+      'pop',
+      'load_var(SUM)',
+      'ret',
+    ]);
+  shqlBoth('sum:=0; FOR i:=1 TO 10 STEP 2 DO sum:=sum+i; sum', 'sum:=0; FOR i:=1 TO 10 STEP 2 DO sum:=sum+i; sum', 25, [
+      'push_const(0)',
+      'store_var(SUM)',
+      'load_var(SUM)',
+      'pop',
+      'push_const(1)',
+      'store_var(I)',
+      'load_var(I)',
+      'pop',
+      'load_var(I)',
+      'store_reg(0)',
+      'push_const(false)',
+      'store_reg(1)',
+      'load_var(SUM)',
+      'jump_null(19)',
+      'load_var(I)',
+      'jump_null(18)',
+      'add',
+      'jump(21)',
+      'pop',
+      'pop',
+      'push_const(null)',
+      'store_var(SUM)',
+      'load_var(SUM)',
+      'pop',
+      'load_reg(1)',
+      'jump_true(62)',
+      'push_const(10)',
+      'store_reg(2)',
+      'load_reg(2)',
+      'load_reg(0)',
+      'cmp_gte',
+      'store_reg(3)',
+      'push_const(2)',
+      'store_reg(4)',
+      'load_var(I)',
+      'load_reg(4)',
+      'add',
+      'store_reg(5)',
+      'load_reg(3)',
+      'load_reg(5)',
+      'load_reg(2)',
+      'cmp_gt',
+      'log_and',
+      'load_reg(3)',
+      'log_not',
+      'load_reg(5)',
+      'load_reg(2)',
+      'cmp_lt',
+      'log_and',
+      'log_or',
+      'store_reg(6)',
+      'load_reg(6)',
+      'load_reg(5)',
+      'load_reg(2)',
+      'cmp_eq',
+      'log_or',
+      'store_reg(1)',
+      'load_reg(6)',
+      'jump_true(62)',
+      'load_reg(5)',
+      'store_var(I)',
+      'jump(12)',
+      'push_const(null)',
+      'pop',
+      'load_var(SUM)',
+      'ret',
+    ]);
+  shqlBoth('sum:=0; FOR i:=10 TO 1 STEP -1 DO sum:=sum+i; sum', 'sum:=0; FOR i:=10 TO 1 STEP -1 DO sum:=sum+i; sum', 55, [
+      'push_const(0)',
+      'store_var(SUM)',
+      'load_var(SUM)',
+      'pop',
+      'push_const(10)',
+      'store_var(I)',
+      'load_var(I)',
+      'pop',
+      'load_var(I)',
+      'store_reg(0)',
+      'push_const(false)',
+      'store_reg(1)',
+      'load_var(SUM)',
+      'jump_null(19)',
+      'load_var(I)',
+      'jump_null(18)',
+      'add',
+      'jump(21)',
+      'pop',
+      'pop',
+      'push_const(null)',
+      'store_var(SUM)',
+      'load_var(SUM)',
+      'pop',
+      'load_reg(1)',
+      'jump_true(64)',
+      'push_const(1)',
+      'store_reg(2)',
+      'load_reg(2)',
+      'load_reg(0)',
+      'cmp_gte',
+      'store_reg(3)',
+      'push_const(1)',
+      'jump_null(35)',
+      'neg',
+      'store_reg(4)',
+      'load_var(I)',
+      'load_reg(4)',
+      'add',
+      'store_reg(5)',
+      'load_reg(3)',
+      'load_reg(5)',
+      'load_reg(2)',
+      'cmp_gt',
+      'log_and',
+      'load_reg(3)',
+      'log_not',
+      'load_reg(5)',
+      'load_reg(2)',
+      'cmp_lt',
+      'log_and',
+      'log_or',
+      'store_reg(6)',
+      'load_reg(6)',
+      'load_reg(5)',
+      'load_reg(2)',
+      'cmp_eq',
+      'log_or',
+      'store_reg(1)',
+      'load_reg(6)',
+      'jump_true(64)',
+      'load_reg(5)',
+      'store_var(I)',
+      'jump(12)',
+      'push_const(null)',
+      'pop',
+      'load_var(SUM)',
+      'ret',
+    ]);
+  shqlBoth('FOR CONTINUE with IF', r'''
+
+
+__test():=BEGIN
+
+  __result:=[];
+
+  FOR __i:=0 TO 2 DO BEGIN
+
+    IF __i=1 THEN CONTINUE;
+
+    __result:=__result+[__i];
+
+  END;
+
+  RETURN __result;
+
+END;
+
+__test()
+
+
+
+
+''', [0, 2], [
+      'make_closure(.____TEST_0)',
+      'store_var(__TEST)',
+      'load_var(__TEST)',
+      'pop',
+      'load_var(__TEST)',
+      'call(0)',
+      'ret',
+    ]);
+  shqlBoth('FOR CONTINUE with nested IF-ELSE IF', r'''
+
+
+__test():=BEGIN
+
+  __result:=[];
+
+  FOR __i:=0 TO 2 DO BEGIN
+
+    IF __i=0 THEN __result:=__result+['zero']
+
+    ELSE IF __i=1 THEN BEGIN
+
+      __result:=__result+['skip'];
+
+      CONTINUE;
+
+    END
+
+    ELSE __result:=__result+['two'];
+
+    __result:=__result+['after'];
+
+  END;
+
+  RETURN __result;
+
+END;
+
+__test()
+
+
+
+
+''', ['zero', 'after', 'skip', 'two', 'after'], [
+      'make_closure(.____TEST_0)',
+      'store_var(__TEST)',
+      'load_var(__TEST)',
+      'pop',
+      'load_var(__TEST)',
+      'call(0)',
+      'ret',
+    ]);
+  shqlBoth('FOR CONTINUE inside nested IF-THEN-BEGIN-END', r'''
+
+
+__test():=BEGIN
+
+  __result:=[];
+
+  __flag:=TRUE;
+
+  FOR __i:=0 TO 2 DO BEGIN
+
+    IF __flag THEN BEGIN
+
+      IF __i=1 THEN BEGIN
+
+        __result:=__result+['skip'];
+
+        CONTINUE;
+
+      END;
+
+    END;
+
+    __result:=__result+[__i];
+
+  END;
+
+  RETURN __result;
+
+END;
+
+__test()
+
+
+
+
+''', [0, 'skip', 2], [
+      'make_closure(.____TEST_0)',
+      'store_var(__TEST)',
+      'load_var(__TEST)',
+      'pop',
+      'load_var(__TEST)',
+      'call(0)',
+      'ret',
+    ]);
+  shqlBoth('FOR CONTINUE with ELSE IF BREAK pattern', r'''
+
+
+__test():=BEGIN
+
+  __result:=[];
+
+  __flag:=TRUE;
+
+  __action:='skip';
+
+  FOR __i:=0 TO 2 DO BEGIN
+
+    IF __flag THEN BEGIN
+
+      IF __action='saveAll' THEN __result:=__result+['saveAll']
+
+      ELSE IF __action='cancel' THEN BEGIN
+
+        __result:=__result+['cancel'];
+
+        BREAK;
+
+      END
+
+      ELSE IF __action<>'save' THEN BEGIN
+
+        __result:=__result+['skipped'];
+
+        CONTINUE;
+
+      END;
+
+    END;
+
+    __result:=__result+['after:'+STRING(__i)];
+
+  END;
+
+  RETURN __result;
+
+END;
+
+__test()
+
+
+
+
+''', ['skipped', 'skipped', 'skipped'], [
+      'make_closure(.____TEST_0)',
+      'store_var(__TEST)',
+      'load_var(__TEST)',
+      'pop',
+      'load_var(__TEST)',
+      'call(0)',
+      'ret',
+    ]);
+  shqlBoth('x:=0; REPEAT x:=x+1 UNTIL x=10; x', 'x:=0; REPEAT x:=x+1 UNTIL x=10; x', 10, [
+      'push_const(0)',
+      'store_var(X)',
+      'load_var(X)',
+      'pop',
+      'push_const(null)',
+      'store_reg(0)',
+      'load_var(X)',
+      'jump_null(13)',
+      'push_const(1)',
+      'jump_null(12)',
+      'add',
+      'jump(15)',
+      'pop',
+      'pop',
+      'push_const(null)',
+      'store_var(X)',
+      'load_var(X)',
+      'store_reg(0)',
+      'load_var(X)',
+      'push_const(10)',
+      'cmp_eq',
+      'jump_false(6)',
+      'load_reg(0)',
+      'pop',
+      'load_var(X)',
+      'ret',
+    ]);
+  shqlBoth('x:=[10,20,30]; x[1]:=99; x[1]', 'x:=[10,20,30]; x[1]:=99; x[1]', 99, [
+      'push_const(10)',
+      'push_const(20)',
+      'push_const(30)',
+      'make_list(3)',
+      'store_var(X)',
+      'load_var(X)',
+      'pop',
+      'load_var(X)',
+      'push_const(1)',
+      'push_const(99)',
+      'set_index',
+      'pop',
+      'load_var(X)',
+      'push_const(1)',
+      'get_index',
+      'ret',
+    ]);
+  shqlBoth('{\'a\':1,\'b\':2}', r'''
+{'a':1,'b':2}
+''', {'a': 1, 'b': 2}, [
+      'push_const("a")',
+      'push_const(1)',
+      'push_const("b")',
+      'push_const(2)',
+      'make_map(2)',
+      'ret',
+    ]);
+  shqlBoth('x:={\'a\':1,\'b\':2}; x[\'a\']', r'''
+x:={'a':1,'b':2}; x['a']
+''', 1, [
+      'push_const("a")',
+      'push_const(1)',
+      'push_const("b")',
+      'push_const(2)',
+      'make_map(2)',
+      'store_var(X)',
+      'load_var(X)',
+      'pop',
+      'load_var(X)',
+      'push_const("a")',
+      'get_index',
+      'ret',
+    ]);
+  shqlBoth('k:=\'name\'; {k:\'Alice\'}', r'''
+k:='name'; {k:'Alice'}
+''', {'name': 'Alice'}, [
+      'push_const("name")',
+      'store_var(K)',
+      'load_var(K)',
+      'pop',
+      'push_const("K")',
+      'push_const("Alice")',
+      'make_map(1)',
+      'ret',
+    ]);
+  shqlBoth('k:=\'name\'; {k:\'Alice\'}[\'name\']', r'''
+k:='name'; {k:'Alice'}['name']
+''', 'Alice', [
+      'push_const("name")',
+      'store_var(K)',
+      'load_var(K)',
+      'pop',
+      'push_const("K")',
+      'push_const("Alice")',
+      'make_map(1)',
+      'push_const("name")',
+      'get_index',
+      'ret',
+    ]);
+  shqlBoth('obj:=OBJECT{x:10,y:20}; obj.x', 'obj:=OBJECT{x:10,y:20}; obj.x', 10, [
+      'push_scope',
+      'push_const("X")',
+      'push_const(10)',
+      'push_const("Y")',
+      'push_const(20)',
+      'make_object_here(2)',
+      'pop_scope',
+      'store_var(OBJ)',
+      'load_var(OBJ)',
+      'pop',
+      'load_var(OBJ)',
+      'get_member(X)',
+      'ret',
+    ]);
+  shqlBoth('obj:=OBJECT{x:10,y:20}; obj.x:=100; obj.x', 'obj:=OBJECT{x:10,y:20}; obj.x:=100; obj.x', 100, [
+      'push_scope',
+      'push_const("X")',
+      'push_const(10)',
+      'push_const("Y")',
+      'push_const(20)',
+      'make_object_here(2)',
+      'pop_scope',
+      'store_var(OBJ)',
+      'load_var(OBJ)',
+      'pop',
+      'load_var(OBJ)',
+      'push_const(100)',
+      'set_member(X)',
+      'pop',
+      'load_var(OBJ)',
+      'get_member(X)',
+      'ret',
+    ]);
+  shqlBoth('obj:=OBJECT{person:OBJECT{name:"Bob",age:25}}; obj.person.name', 'obj:=OBJECT{person:OBJECT{name:"Bob",age:25}}; obj.person.name', 'Bob', [
+      'push_scope',
+      'push_const("PERSON")',
+      'push_scope',
+      'push_const("NAME")',
+      'push_const("Bob")',
+      'push_const("AGE")',
+      'push_const(25)',
+      'make_object_here(2)',
+      'pop_scope',
+      'make_object_here(1)',
+      'pop_scope',
+      'store_var(OBJ)',
+      'load_var(OBJ)',
+      'pop',
+      'load_var(OBJ)',
+      'get_member(PERSON)',
+      'get_member(NAME)',
+      'ret',
+    ]);
+  shqlBoth('obj:=OBJECT{inner:OBJECT{value:5}}; obj.inner.value:=42; obj.inner.value', 'obj:=OBJECT{inner:OBJECT{value:5}}; obj.inner.value:=42; obj.inner.value', 42, [
+      'push_scope',
+      'push_const("INNER")',
+      'push_scope',
+      'push_const("VALUE")',
+      'push_const(5)',
+      'make_object_here(1)',
+      'pop_scope',
+      'make_object_here(1)',
+      'pop_scope',
+      'store_var(OBJ)',
+      'load_var(OBJ)',
+      'pop',
+      'load_var(OBJ)',
+      'get_member(INNER)',
+      'push_const(42)',
+      'set_member(VALUE)',
+      'pop',
+      'load_var(OBJ)',
+      'get_member(INNER)',
+      'get_member(VALUE)',
+      'ret',
+    ]);
+  shqlBoth('obj:=OBJECT{counter:0}; obj.counter:=obj.counter+1; obj.counter', 'obj:=OBJECT{counter:0}; obj.counter:=obj.counter+1; obj.counter', 1, [
+      'push_scope',
+      'push_const("COUNTER")',
+      'push_const(0)',
+      'make_object_here(1)',
+      'pop_scope',
+      'store_var(OBJ)',
+      'load_var(OBJ)',
+      'pop',
+      'load_var(OBJ)',
+      'load_var(OBJ)',
+      'get_member(COUNTER)',
+      'jump_null(17)',
+      'push_const(1)',
+      'jump_null(16)',
+      'add',
+      'jump(19)',
+      'pop',
+      'pop',
+      'push_const(null)',
+      'set_member(COUNTER)',
+      'pop',
+      'load_var(OBJ)',
+      'get_member(COUNTER)',
+      'ret',
+    ]);
+  shqlBoth('obj:=OBJECT{list:[1,2,3],sum:1+2}; obj.sum', 'obj:=OBJECT{list:[1,2,3],sum:1+2}; obj.sum', 3, [
+      'push_scope',
+      'push_const("LIST")',
+      'push_const(1)',
+      'push_const(2)',
+      'push_const(3)',
+      'make_list(3)',
+      'push_const("SUM")',
+      'push_const(1)',
+      'jump_null(14)',
+      'push_const(2)',
+      'jump_null(13)',
+      'add',
+      'jump(16)',
+      'pop',
+      'pop',
+      'push_const(null)',
+      'make_object_here(2)',
+      'pop_scope',
+      'store_var(OBJ)',
+      'load_var(OBJ)',
+      'pop',
+      'load_var(OBJ)',
+      'get_member(SUM)',
+      'ret',
+    ]);
+  shqlBoth('obj:=OBJECT{title:null}; obj.title', 'obj:=OBJECT{title:null}; obj.title', null, [
+      'push_scope',
+      'push_const("TITLE")',
+      'push_const(null)',
+      'make_object_here(1)',
+      'pop_scope',
+      'store_var(OBJ)',
+      'load_var(OBJ)',
+      'pop',
+      'load_var(OBJ)',
+      'get_member(TITLE)',
+      'ret',
+    ]);
+  shqlBoth('obj:=OBJECT{x:10,getX:()=>x}; obj.getX()', 'obj:=OBJECT{x:10,getX:()=>x}; obj.getX()', 10, [
+      'push_scope',
+      'push_const("X")',
+      'push_const(10)',
+      'push_const("GETX")',
+      'make_closure(.__lambda_0)',
+      'make_object_here(2)',
+      'pop_scope',
+      'store_var(OBJ)',
+      'load_var(OBJ)',
+      'pop',
+      'load_var(OBJ)',
+      'get_member(GETX)',
+      'call(0)',
+      'ret',
+    ]);
+  shqlBoth('obj:=OBJECT{x:10,y:20,sum:()=>x+y}; obj.sum()', 'obj:=OBJECT{x:10,y:20,sum:()=>x+y}; obj.sum()', 30, [
+      'push_scope',
+      'push_const("X")',
+      'push_const(10)',
+      'push_const("Y")',
+      'push_const(20)',
+      'push_const("SUM")',
+      'make_closure(.__lambda_0)',
+      'make_object_here(3)',
+      'pop_scope',
+      'store_var(OBJ)',
+      'load_var(OBJ)',
+      'pop',
+      'load_var(OBJ)',
+      'get_member(SUM)',
+      'call(0)',
+      'ret',
+    ]);
+  shqlBoth('obj:=OBJECT{n:0,inc:()=>n:=n+1}; obj.inc(); obj.n', 'obj:=OBJECT{n:0,inc:()=>n:=n+1}; obj.inc(); obj.n', 1, [
+      'push_scope',
+      'push_const("N")',
+      'push_const(0)',
+      'push_const("INC")',
+      'make_closure(.__lambda_0)',
+      'make_object_here(2)',
+      'pop_scope',
+      'store_var(OBJ)',
+      'load_var(OBJ)',
+      'pop',
+      'load_var(OBJ)',
+      'get_member(INC)',
+      'call(0)',
+      'pop',
+      'load_var(OBJ)',
+      'get_member(N)',
+      'ret',
+    ]);
+  shqlBoth('obj:=OBJECT{n:0,inc:()=>n:=n+1}; obj.inc(); obj.inc(); obj.inc(); obj.n', 'obj:=OBJECT{n:0,inc:()=>n:=n+1}; obj.inc(); obj.inc(); obj.inc(); obj.n', 3, [
+      'push_scope',
+      'push_const("N")',
+      'push_const(0)',
+      'push_const("INC")',
+      'make_closure(.__lambda_0)',
+      'make_object_here(2)',
+      'pop_scope',
+      'store_var(OBJ)',
+      'load_var(OBJ)',
+      'pop',
+      'load_var(OBJ)',
+      'get_member(INC)',
+      'call(0)',
+      'pop',
+      'load_var(OBJ)',
+      'get_member(INC)',
+      'call(0)',
+      'pop',
+      'load_var(OBJ)',
+      'get_member(INC)',
+      'call(0)',
+      'pop',
+      'load_var(OBJ)',
+      'get_member(N)',
+      'ret',
+    ]);
+  shqlBoth('obj:=OBJECT{x:10,add:(delta)=>x+delta}; obj.add(5)', 'obj:=OBJECT{x:10,add:(delta)=>x+delta}; obj.add(5)', 15, [
+      'push_scope',
+      'push_const("X")',
+      'push_const(10)',
+      'push_const("ADD")',
+      'make_closure(.__lambda_0)',
+      'make_object_here(2)',
+      'pop_scope',
+      'store_var(OBJ)',
+      'load_var(OBJ)',
+      'pop',
+      'load_var(OBJ)',
+      'get_member(ADD)',
+      'push_const(5)',
+      'call(1)',
+      'ret',
+    ]);
+  shqlBoth('obj:=OBJECT{x:10,setX:(newX)=>x:=newX}; obj.setX(42); obj.x', 'obj:=OBJECT{x:10,setX:(newX)=>x:=newX}; obj.setX(42); obj.x', 42, [
+      'push_scope',
+      'push_const("X")',
+      'push_const(10)',
+      'push_const("SETX")',
+      'make_closure(.__lambda_0)',
+      'make_object_here(2)',
+      'pop_scope',
+      'store_var(OBJ)',
+      'load_var(OBJ)',
+      'pop',
+      'load_var(OBJ)',
+      'get_member(SETX)',
+      'push_const(42)',
+      'call(1)',
+      'pop',
+      'load_var(OBJ)',
+      'get_member(X)',
+      'ret',
+    ]);
+  shqlBoth('obj:=OBJECT{inner:OBJECT{value:5},getInnerValue:()=>inner.value}; obj.getInnerValue()', 'obj:=OBJECT{inner:OBJECT{value:5},getInnerValue:()=>inner.value}; obj.getInnerValue()', 5, [
+      'push_scope',
+      'push_const("INNER")',
+      'push_scope',
+      'push_const("VALUE")',
+      'push_const(5)',
+      'make_object_here(1)',
+      'pop_scope',
+      'push_const("GETINNERVALUE")',
+      'make_closure(.__lambda_0)',
+      'make_object_here(2)',
+      'pop_scope',
+      'store_var(OBJ)',
+      'load_var(OBJ)',
+      'pop',
+      'load_var(OBJ)',
+      'get_member(GETINNERVALUE)',
+      'call(0)',
+      'ret',
+    ]);
+  shqlBoth('obj:=OBJECT{x:10,useParam:(x)=>x}; obj.useParam(42)', 'obj:=OBJECT{x:10,useParam:(x)=>x}; obj.useParam(42)', 42, [
+      'push_scope',
+      'push_const("X")',
+      'push_const(10)',
+      'push_const("USEPARAM")',
+      'make_closure(.__lambda_0)',
+      'make_object_here(2)',
+      'pop_scope',
+      'store_var(OBJ)',
+      'load_var(OBJ)',
+      'pop',
+      'load_var(OBJ)',
+      'get_member(USEPARAM)',
+      'push_const(42)',
+      'call(1)',
+      'ret',
+    ]);
+  shqlBoth('obj:=OBJECT{x:10,getX:()=>x,doubleX:()=>getX()*2}; obj.doubleX()', 'obj:=OBJECT{x:10,getX:()=>x,doubleX:()=>getX()*2}; obj.doubleX()', 20, [
+      'push_scope',
+      'push_const("X")',
+      'push_const(10)',
+      'push_const("GETX")',
+      'make_closure(.__lambda_0)',
+      'push_const("DOUBLEX")',
+      'make_closure(.__lambda_1)',
+      'make_object_here(3)',
+      'pop_scope',
+      'store_var(OBJ)',
+      'load_var(OBJ)',
+      'pop',
+      'load_var(OBJ)',
+      'get_member(DOUBLEX)',
+      'call(0)',
+      'ret',
+    ]);
+  shqlBoth('obj:=OBJECT{x:10,getThis:()=>THIS}; obj.getThis().x', 'obj:=OBJECT{x:10,getThis:()=>THIS}; obj.getThis().x', 10, [
+      'push_scope',
+      'push_const("X")',
+      'push_const(10)',
+      'push_const("GETTHIS")',
+      'make_closure(.__lambda_0)',
+      'make_object_here(2)',
+      'pop_scope',
+      'store_var(OBJ)',
+      'load_var(OBJ)',
+      'pop',
+      'load_var(OBJ)',
+      'get_member(GETTHIS)',
+      'call(0)',
+      'get_member(X)',
+      'ret',
+    ]);
+  shqlBoth('obj:=OBJECT{x:42,getX:()=>THIS.x}; obj.getX()', 'obj:=OBJECT{x:42,getX:()=>THIS.x}; obj.getX()', 42, [
+      'push_scope',
+      'push_const("X")',
+      'push_const(42)',
+      'push_const("GETX")',
+      'make_closure(.__lambda_0)',
+      'make_object_here(2)',
+      'pop_scope',
+      'store_var(OBJ)',
+      'load_var(OBJ)',
+      'pop',
+      'load_var(OBJ)',
+      'get_member(GETX)',
+      'call(0)',
+      'ret',
+    ]);
+  shqlBoth('A:=OBJECT{x:10,count:0,SET_COUNT:(v)=>BEGIN count:=v; END}; B:=OBJECT{notify:()=>BEGIN A.SET_COUNT(A.x+5); END}; B.notify(); A.count', 'A:=OBJECT{x:10,count:0,SET_COUNT:(v)=>BEGIN count:=v; END}; B:=OBJECT{notify:()=>BEGIN A.SET_COUNT(A.x+5); END}; B.notify(); A.count', 15, [
+      'push_scope',
+      'push_const("X")',
+      'push_const(10)',
+      'push_const("COUNT")',
+      'push_const(0)',
+      'push_const("SET_COUNT")',
+      'make_closure(.__lambda_0)',
+      'make_object_here(3)',
+      'pop_scope',
+      'store_var(A)',
+      'load_var(A)',
+      'pop',
+      'push_scope',
+      'push_const("NOTIFY")',
+      'make_closure(.__lambda_1)',
+      'make_object_here(1)',
+      'pop_scope',
+      'store_var(B)',
+      'load_var(B)',
+      'pop',
+      'load_var(B)',
+      'get_member(NOTIFY)',
+      'call(0)',
+      'pop',
+      'load_var(A)',
+      'get_member(COUNT)',
+      'ret',
+    ]);
+  shqlBoth('x:=null; x', 'x:=null; x', null, [
+      'push_const(null)',
+      'store_var(X)',
+      'load_var(X)',
+      'pop',
+      'load_var(X)',
+      'ret',
+    ]);
+  shqlBoth('x:=null; y:=5; x=null', 'x:=null; y:=5; x=null', true, [
+      'push_const(null)',
+      'store_var(X)',
+      'load_var(X)',
+      'pop',
+      'push_const(5)',
+      'store_var(Y)',
+      'load_var(Y)',
+      'pop',
+      'load_var(X)',
+      'push_const(null)',
+      'cmp_eq',
+      'ret',
+    ]);
+  shqlBoth('f(x):=x; f(null)', 'f(x):=x; f(null)', null, [
+      'make_closure(.__F_0)',
+      'store_var(F)',
+      'load_var(F)',
+      'pop',
+      'load_var(F)',
+      'push_const(null)',
+      'call(1)',
+      'ret',
+    ]);
+  shqlBoth('obj:=OBJECT{title:null}; obj.title', 'obj:=OBJECT{title:null}; obj.title', null, [
+      'push_scope',
+      'push_const("TITLE")',
+      'push_const(null)',
+      'make_object_here(1)',
+      'pop_scope',
+      'store_var(OBJ)',
+      'load_var(OBJ)',
+      'pop',
+      'load_var(OBJ)',
+      'get_member(TITLE)',
+      'ret',
+    ]);
+  shqlBoth('obj:=OBJECT{getNull:()=>null}; obj.getNull()', 'obj:=OBJECT{getNull:()=>null}; obj.getNull()', null, [
+      'push_scope',
+      'push_const("GETNULL")',
+      'make_closure(.__lambda_0)',
+      'make_object_here(1)',
+      'pop_scope',
+      'store_var(OBJ)',
+      'load_var(OBJ)',
+      'pop',
+      'load_var(OBJ)',
+      'get_member(GETNULL)',
+      'call(0)',
+      'ret',
+    ]);
+  shqlBoth('posts:=[{"title":null}]; title:=posts[0]["title"]; title', 'posts:=[{"title":null}]; title:=posts[0]["title"]; title', null, [
+      'push_const("title")',
+      'push_const(null)',
+      'make_map(1)',
+      'make_list(1)',
+      'store_var(POSTS)',
+      'load_var(POSTS)',
+      'pop',
+      'load_var(POSTS)',
+      'push_const(0)',
+      'get_index',
+      'push_const("title")',
+      'get_index',
+      'store_var(TITLE)',
+      'load_var(TITLE)',
+      'pop',
+      'load_var(TITLE)',
+      'ret',
+    ]);
+  shqlBoth('m:={"a":null}; m["a"]', 'm:={"a":null}; m["a"]', null, [
+      'push_const("a")',
+      'push_const(null)',
+      'make_map(1)',
+      'store_var(M)',
+      'load_var(M)',
+      'pop',
+      'load_var(M)',
+      'push_const("a")',
+      'get_index',
+      'ret',
+    ]);
+  shqlBoth('two simple IFs', r'''
+
+
+f():=BEGIN
+
+  IF 1=0 THEN RETURN "first";
+
+  IF 1=1 THEN RETURN "second";
+
+  RETURN "third";
+
+END;
+
+f()
+
+
+''', 'second', [
+      'make_closure(.__F_0)',
+      'store_var(F)',
+      'load_var(F)',
+      'pop',
+      'load_var(F)',
+      'call(0)',
+      'ret',
+    ]);
+  shqlBoth('first IF RETURN with map', r'''
+
+
+f():=BEGIN
+
+  IF 1=0 THEN RETURN [{"type":"A","data":"empty"}];
+
+  IF 1=1 THEN RETURN [{"type":"B","data":"match"}];
+
+  RETURN [];
+
+END;
+
+f()
+
+
+''', [{'type': 'B', 'data': 'match'}], [
+      'make_closure(.__F_0)',
+      'store_var(F)',
+      'load_var(F)',
+      'pop',
+      'load_var(F)',
+      'call(0)',
+      'ret',
+    ]);
+  shqlBoth('IF TRUE THEN "FOO"', 'IF TRUE THEN "FOO"', 'FOO', [
+      'push_const(true)',
+      'jump_false(4)',
+      'push_const("FOO")',
+      'jump(5)',
+      'push_const(null)',
+      'ret',
+    ]);
+  shqlBoth('IF 1 = 1 AND (2 = 2) THEN "yes" ELSE "no"', 'IF 1 = 1 AND (2 = 2) THEN "yes" ELSE "no"', 'yes', [
+      'push_const(1)',
+      'push_const(1)',
+      'cmp_eq',
+      'push_const(2)',
+      'push_const(2)',
+      'cmp_eq',
+      'log_and',
+      'jump_false(10)',
+      'push_const("yes")',
+      'jump(11)',
+      'push_const("no")',
+      'ret',
+    ]);
+  shqlBoth('IF 1 = 1 AND (2 = 3) THEN "yes" ELSE "no"', 'IF 1 = 1 AND (2 = 3) THEN "yes" ELSE "no"', 'no', [
+      'push_const(1)',
+      'push_const(1)',
+      'cmp_eq',
+      'push_const(2)',
+      'push_const(3)',
+      'cmp_eq',
+      'log_and',
+      'jump_false(10)',
+      'push_const("yes")',
+      'jump(11)',
+      'push_const("no")',
+      'ret',
+    ]);
+  shqlBoth('obj:=OBJECT{acc:(x)=>x+1}; obj.acc(5)', 'obj:=OBJECT{acc:(x)=>x+1}; obj.acc(5)', 6, [
+      'push_scope',
+      'push_const("ACC")',
+      'make_closure(.__lambda_0)',
+      'make_object_here(1)',
+      'pop_scope',
+      'store_var(OBJ)',
+      'load_var(OBJ)',
+      'pop',
+      'load_var(OBJ)',
+      'get_member(ACC)',
+      'push_const(5)',
+      'call(1)',
+      'ret',
+    ]);
+  shqlBoth('obj:=OBJECT{acc:x=>x+1}; obj.acc(5)', 'obj:=OBJECT{acc:x=>x+1}; obj.acc(5)', 6, [
+      'push_scope',
+      'push_const("ACC")',
+      'make_closure(.__lambda_0)',
+      'make_object_here(1)',
+      'pop_scope',
+      'store_var(OBJ)',
+      'load_var(OBJ)',
+      'pop',
+      'load_var(OBJ)',
+      'get_member(ACC)',
+      'push_const(5)',
+      'call(1)',
+      'ret',
+    ]);
+  shqlBoth('fields:=[OBJECT{prop:"x",accessor:(v)=>v+10}]; fields[0].accessor(5)', 'fields:=[OBJECT{prop:"x",accessor:(v)=>v+10}]; fields[0].accessor(5)', 15, [
+      'push_scope',
+      'push_const("PROP")',
+      'push_const("x")',
+      'push_const("ACCESSOR")',
+      'make_closure(.__lambda_0)',
+      'make_object_here(2)',
+      'pop_scope',
+      'make_list(1)',
+      'store_var(FIELDS)',
+      'load_var(FIELDS)',
+      'pop',
+      'load_var(FIELDS)',
+      'push_const(0)',
+      'get_index',
+      'get_member(ACCESSOR)',
+      'push_const(5)',
+      'call(1)',
+      'ret',
+    ]);
+  shqlBoth('f0:=OBJECT{accessor:(v)=>v+1}; f1:=OBJECT{accessor:(v)=>v*2}; f0.accessor(10)+f1.accessor(10)', 'f0:=OBJECT{accessor:(v)=>v+1}; f1:=OBJECT{accessor:(v)=>v*2}; f0.accessor(10)+f1.accessor(10)', 31, [
+      'push_scope',
+      'push_const("ACCESSOR")',
+      'make_closure(.__lambda_0)',
+      'make_object_here(1)',
+      'pop_scope',
+      'store_var(F0)',
+      'load_var(F0)',
+      'pop',
+      'push_scope',
+      'push_const("ACCESSOR")',
+      'make_closure(.__lambda_1)',
+      'make_object_here(1)',
+      'pop_scope',
+      'store_var(F1)',
+      'load_var(F1)',
+      'pop',
+      'load_var(F0)',
+      'get_member(ACCESSOR)',
+      'push_const(10)',
+      'call(1)',
+      'jump_null(29)',
+      'load_var(F1)',
+      'get_member(ACCESSOR)',
+      'push_const(10)',
+      'call(1)',
+      'jump_null(28)',
+      'add',
+      'jump(31)',
+      'pop',
+      'pop',
+      'push_const(null)',
+      'ret',
+    ]);
+  shqlBoth('x:=1; obj:={"label":(IF x=1 THEN "one" ELSE "other"),"score":42}; obj["label"]', 'x:=1; obj:={"label":(IF x=1 THEN "one" ELSE "other"),"score":42}; obj["label"]', 'one', [
+      'push_const(1)',
+      'store_var(X)',
+      'load_var(X)',
+      'pop',
+      'push_const("label")',
+      'load_var(X)',
+      'push_const(1)',
+      'cmp_eq',
+      'jump_false(11)',
+      'push_const("one")',
+      'jump(12)',
+      'push_const("other")',
+      'push_const("score")',
+      'push_const(42)',
+      'make_map(2)',
+      'store_var(OBJ)',
+      'load_var(OBJ)',
+      'pop',
+      'load_var(OBJ)',
+      'push_const("label")',
+      'get_index',
+      'ret',
+    ]);
+  shqlBoth('x:=5;x', 'x:=5;x', 5, [
+      'push_const(5)',
+      'store_var(X)',
+      'load_var(X)',
+      'pop',
+      'load_var(X)',
+      'ret',
+    ]);
+  shqlBoth('{"a":1}', '{"a":1}', {'a': 1}, [
+      'push_const("a")',
+      'push_const(1)',
+      'make_map(1)',
+      'ret',
+    ]);
+  shqlBothStdlib('navigation_stack_pattern', r'''
+
+
+navigation_stack:=['main'];
+
+PUSH_ROUTE(route):=BEGIN
+
+  IF LENGTH(navigation_stack)=0 THEN BEGIN
+
+    navigation_stack:=[route];
+
+  END ELSE BEGIN
+
+    IF navigation_stack[LENGTH(navigation_stack)-1]!=route THEN BEGIN
+
+      navigation_stack:=navigation_stack+[route];
+
+    END;
+
+  END;
+
+  RETURN navigation_stack;
+
+END;
+
+POP_ROUTE():=BEGIN
+
+  IF LENGTH(navigation_stack)>1 THEN BEGIN
+
+    RETURN navigation_stack[LENGTH(navigation_stack)-1];
+
+  END ELSE BEGIN
+
+    RETURN 'main';
+
+  END;
+
+END;
+
+PUSH_ROUTE('screen1');
+
+PUSH_ROUTE('screen2');
+
+POP_ROUTE()
+
+
+''', 'screen2', [
+      'push_const("main")',
+      'make_list(1)',
+      'store_var(NAVIGATION_STACK)',
+      'load_var(NAVIGATION_STACK)',
+      'pop',
+      'make_closure(.__PUSH_ROUTE_0)',
+      'store_var(PUSH_ROUTE)',
+      'load_var(PUSH_ROUTE)',
+      'pop',
+      'make_closure(.__POP_ROUTE_1)',
+      'store_var(POP_ROUTE)',
+      'load_var(POP_ROUTE)',
+      'pop',
+      'load_var(PUSH_ROUTE)',
+      'push_const("screen1")',
+      'call(1)',
+      'pop',
+      'load_var(PUSH_ROUTE)',
+      'push_const("screen2")',
+      'call(1)',
+      'pop',
+      'load_var(POP_ROUTE)',
+      'call(0)',
+      'ret',
+    ]);
+
+  shqlBoth('OBJECT{name:"Alice",age:30}', 'OBJECT{name:"Alice",age:30}', isA<Object>(), [
+      'push_scope',
+      'push_const("NAME")',
+      'push_const("Alice")',
+      'push_const("AGE")',
+      'push_const(30)',
+      'make_object_here(2)',
+      'pop_scope',
+      'ret',
+    ]);
+  shqlBoth('OBJECT{x:1}', 'OBJECT{x:1}', isA<Object>(), [
+      'push_scope',
+      'push_const("X")',
+      'push_const(1)',
+      'make_object_here(1)',
+      'pop_scope',
+      'ret',
+    ]);
+  shqlBoth('OBJECT{x:10}', 'OBJECT{x:10}', isA<Object>(), [
+      'push_scope',
+      'push_const("X")',
+      'push_const(10)',
+      'make_object_here(1)',
+      'pop_scope',
+      'ret',
+    ]);
+  });
 }
