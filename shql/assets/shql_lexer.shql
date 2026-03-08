@@ -1,5 +1,5 @@
 -- ============================================================
--- SHQL Lexer — tokenizes SHQL source into a list of token maps.
+-- SHQL™ Lexer — tokenizes SHQL™ source into a list of token maps.
 -- Each token: {"t": type, "v": value, "l": line, "sc": start_col, "len": length}
 --
 -- Token types:
@@ -23,6 +23,19 @@ _LX_KEYWORDS := [
 ];
 
 _LX_IS_KW(s) := INDEX_OF(_LX_KEYWORDS, s) >= 0;
+
+-- Swedish/alias keywords that map to canonical English token types.
+_LX_ALIAS_KEYS := ['OCH', 'ELLER', 'ANTINGEN_ELLER', 'INTE', 'FINNS_I'];
+_LX_ALIAS_VALS := ['AND', 'OR',  'XOR',              'NOT', 'IN'       ];
+_LX_ALIAS(word) := BEGIN
+  i := 0;
+  WHILE i < LENGTH(_LX_ALIAS_KEYS) DO BEGIN
+    IF _LX_ALIAS_KEYS[i] = word THEN RETURN _LX_ALIAS_VALS[i];
+    i := i + 1;
+  END;
+  RETURN NULL;
+END;
+
 _LX_IS_DIGIT(c)  := c ~ r'[0-9]';
 _LX_IS_ALPHA(c)  := c ~ r'[a-zA-Z_]';
 _LX_IS_ALNUM(c)  := c ~ r'[a-zA-Z0-9_]';
@@ -156,7 +169,10 @@ _LX_TOKENIZE(src) := BEGIN
       word := UPPERCASE(SUBSTRING(src, start, i));
       len := i - start;
       col := col + len;
-      IF _LX_IS_KW(word) THEN
+      alias := _LX_ALIAS(word);
+      IF alias <> NULL THEN
+        tokens := tokens + [_LX_TOK(alias, word, tok_line, tok_sc, len)]
+      ELSE IF _LX_IS_KW(word) THEN
         tokens := tokens + [_LX_TOK(word, word, tok_line, tok_sc, len)]
       ELSE
         tokens := tokens + [_LX_TOK('ID', word, tok_line, tok_sc, len)];
@@ -171,7 +187,11 @@ _LX_TOKENIZE(src) := BEGIN
     IF c2 = '>=' THEN BEGIN tokens := tokens + [_LX_TOK('>=','>=', tok_line, tok_sc, 2)]; i:=i+2; col:=col+2; CONTINUE; END;
     IF c2 = '<>' THEN BEGIN tokens := tokens + [_LX_TOK('<>','<>', tok_line, tok_sc, 2)]; i:=i+2; col:=col+2; CONTINUE; END;
     IF c2 = '!~' THEN BEGIN tokens := tokens + [_LX_TOK('!~','!~', tok_line, tok_sc, 2)]; i:=i+2; col:=col+2; CONTINUE; END;
+    IF c2 = '!=' THEN BEGIN tokens := tokens + [_LX_TOK('<>','<>', tok_line, tok_sc, 2)]; i:=i+2; col:=col+2; CONTINUE; END;
     IF c2 = '**' THEN BEGIN tokens := tokens + [_LX_TOK('^', '^', tok_line, tok_sc, 2)];  i:=i+2; col:=col+2; CONTINUE; END;
+
+    -- '!' alone (not followed by = or ~) = NOT keyword
+    IF c = '!' THEN BEGIN tokens := tokens + [_LX_TOK('NOT','NOT', tok_line, tok_sc, 1)]; i:=i+1; col:=col+1; CONTINUE; END;
 
     -- Single-character tokens
     tokens := tokens + [_LX_TOK(c, c, tok_line, tok_sc, 1)];

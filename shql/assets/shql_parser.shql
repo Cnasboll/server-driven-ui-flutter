@@ -1,5 +1,5 @@
 -- ============================================================
--- SHQL Parser — converts a token list (from shql_lexer) into a
+-- SHQL™ Parser — converts a token list (from shql_lexer) into a
 -- parse tree.
 --
 -- Parse-tree node: {"sym": S, "children": [...], "val": V}
@@ -326,8 +326,13 @@ _PR_PRIMARY(tokens, pos) := BEGIN
   IF tt = 'FLOAT' THEN RETURN _PR_RES(_PR_LEAF('float_lit', DOUBLE(tv)), pos+1);
   -- String literal
   IF tt = 'STR'   THEN RETURN _PR_RES(_PR_LEAF('str_lit',   tv),         pos+1);
-  -- Identifier
-  IF tt = 'ID'    THEN RETURN _PR_RES(_PR_LEAF('ident', tv), pos+1);
+  -- Identifier (NULL / TRUE / FALSE are special-cased to literal nodes)
+  IF tt = 'ID' THEN BEGIN
+    IF tv = 'NULL'  THEN RETURN _PR_RES(_PR_LEAF('null_lit',  NULL),  pos+1);
+    IF tv = 'TRUE'  THEN RETURN _PR_RES(_PR_LEAF('true_lit',  TRUE),  pos+1);
+    IF tv = 'FALSE' THEN RETURN _PR_RES(_PR_LEAF('false_lit', FALSE), pos+1);
+    RETURN _PR_RES(_PR_LEAF('ident', tv), pos+1);
+  END;
 
   -- Keywords that start an expression
   IF tt = 'IF'       THEN RETURN _PR_IF(tokens, pos);

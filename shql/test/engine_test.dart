@@ -68,18 +68,60 @@ Future<dynamic> evalBytecode(
   ConstantsSet? cs,
   Map<String, dynamic>? boundValues,
   Scope? startingScope,
-}) {
+}) async {
   cs ??= Runtime.prepareConstantsSet();
   runtime ??= Runtime.prepareRuntime(cs);
-  final tree = Parser.parse(src, cs, sourceCode: src);
-  final program = BytecodeCompiler.compile(tree, cs);
-  final decoded = BytecodeDecoder.decode(BytecodeEncoder.encode(program));
-  expect(disasm(decoded['main']), expectedBytecode);
-  return BytecodeInterpreter(decoded, runtime).executeScoped(
+  final dartTree     = Parser.parse(src, cs, sourceCode: src);
+  final dartProg     = BytecodeCompiler.compile(dartTree, cs);
+  final roundTripped = BytecodeDecoder.decode(BytecodeEncoder.encode(dartProg));
+  final dartLines    = disasm(roundTripped['main']);
+  expect(dartLines, expectedBytecode);
+  final dartResult = await BytecodeInterpreter(roundTripped, runtime).executeScoped(
     'main',
     boundValues: boundValues,
     startingScope: startingScope,
   );
+
+  // SHQL self-hosting pipeline: compile + decode via the SHQL compiler and
+  // codec, then assert both the bytecode disassembly and the execution result
+  // match the Dart reference. Skipped when startingScope is provided (the
+  // scope chain can't be replicated on the pipeline runtime).
+  if (startingScope == null) {
+    await _ensurePipeline();
+    // Pass runtime constants (ANSWER, PI, …) so the SHQL compiler can inline
+    // them as push_const instead of load_var — matching the Dart compiler.
+    final consts = {
+      for (final e in Runtime.allConstants.entries)
+        if (e.value is! bool) e.key: e.value,
+    };
+    // Run the pre-compiled pipeline invocation script on the dedicated pipeline
+    // runtime.  boundValues are scoped locally so the pipeline runtime's global
+    // scope is never polluted by per-test variables (src, consts, tokens, …).
+    final shqlOutput = await BytecodeInterpreter(_pipelineProg!, _pipelineRt!)
+        .executeScoped('main', boundValues: {'src': src, 'consts': consts}) as List;
+    final shqlProgMap    = shqlOutput[0] as Map;
+    final shqlLines      = (shqlOutput[1] as List).cast<String>();
+    expect(shqlLines, dartCodec(roundTripped),
+        reason: 'SHQL compiler + codec must produce identical output to Dart compiler + codec');
+    // Execute the SHQL-compiled program on the same per-test runtime used by
+    // the Dart path — keeping _pipelineRt dedicated to compilation only.
+    final shqlResult = await BytecodeInterpreter(
+      shqlMapToProgram(shqlProgMap),
+      runtime,
+    ).executeScoped('main', boundValues: boundValues);
+    // Compare results. For non-primitive values (closures) equality is not
+    // meaningful across VM instances — just verify both are non-null.
+    if (dartResult == null || dartResult is bool || dartResult is num ||
+        dartResult is String || dartResult is List || dartResult is Map) {
+      expect(shqlResult, dartResult,
+          reason: 'SHQL self-hosting pipeline must produce the same result as the Dart compiler');
+    } else if (dartResult != null) {
+      expect(shqlResult, isNotNull,
+          reason: 'SHQL self-hosting pipeline must produce a non-null result');
+    }
+  }
+
+  return dartResult;
 }
 
 /// Compile [src] with the Dart [BytecodeCompiler] and run it on [rt] via
@@ -126,7 +168,86 @@ BytecodeProgram shqlMapToProgram(Map program) {
   return BytecodeProgram(chunks);
 }
 
+/// Dart implementation of the SHQL codec — produces the same human-readable
+/// listing format as [shql_codec.shql]'s `codec.decode()`, so the Dart and
+/// SHQL codec implementations can be compared directly (no format mismatch).
+List<String> dartCodec(BytecodeProgram program) {
+  String fmtConst(dynamic val) {
+    if (val == null) return 'null';
+    if (val == true) return 'true';
+    if (val == false) return 'false';
+    if (val is ChunkRef) return '.${val.name}';
+    return val.toString(); // int, double, String — no extra quotes, matches STRING() in SHQL
+  }
+
+  String fmtInstr(Instruction instr, List<dynamic> constants) {
+    final op = instr.op;
+    if (!op.hasOperand) return op.mnemonic;
+    final arg = instr.operand;
+    var resolved = '';
+    if (op == Opcode.pushConst || op == Opcode.makeClosure)
+      resolved = '  -- ${fmtConst(constants[arg])}';
+    else if (op == Opcode.loadVar || op == Opcode.storeVar ||
+             op == Opcode.getMember || op == Opcode.setMember)
+      resolved = '  -- ${constants[arg]}';
+    return '${op.mnemonic}($arg)$resolved';
+  }
+
+  List<String> chunkLines(BytecodeChunk chunk) {
+    final out = <String>[];
+    out.add('CHUNK ${chunk.name} (${chunk.params.join(', ')})');
+    for (var i = 0; i < chunk.constants.length; i++)
+      out.add('  CONST  $i: ${fmtConst(chunk.constants[i])}');
+    out.add('  CODE:');
+    for (var i = 0; i < chunk.code.length; i++)
+      out.add('    $i: ${fmtInstr(chunk.code[i], chunk.constants)}');
+    return out;
+  }
+
+  final out = <String>[];
+  if (program.hasChunk('main')) out.addAll(chunkLines(program['main']));
+  for (final chunk in program.chunks.values)
+    if (chunk.name != 'main') out.addAll(chunkLines(chunk));
+  return out;
+}
+
 late String _stdlibSrc;
+late String _lexerSrc, _parserSrc, _compilerSrc, _codecSrc;
+
+/// Dedicated runtime for the SHQL self-hosting pipeline (lexer / parser /
+/// compiler / codec).  Loaded once; never used to execute compiled test
+/// programs so its state stays pristine across the entire test run.
+Runtime? _pipelineRt;
+ConstantsSet? _pipelineCs;
+
+/// Pre-compiled [BytecodeProgram] for the pipeline invocation script.
+/// Compiled once so [evalBytecode] doesn't need to re-parse/re-compile it on
+/// every test invocation.
+BytecodeProgram? _pipelineProg;
+
+/// Source of the pipeline invocation script — tokenize → parse → compile →
+/// decode, then return [prog, dec].  Stored as a constant so the program can
+/// be compiled once and reused.
+const _pipelineInvocSrc = '''
+tokens  := lexer.tokenize(src);
+tree    := parser.parse(tokens);
+prog    := compiler.compile_with_consts(tree, consts);
+dec     := codec.decode(prog);
+[prog, dec]
+''';
+
+Future<void> _ensurePipeline() async {
+  if (_pipelineRt != null) return;
+  _pipelineCs = Runtime.prepareConstantsSet();
+  _pipelineRt = Runtime.prepareRuntime(_pipelineCs!);
+  for (final src in [_stdlibSrc, _lexerSrc, _parserSrc, _compilerSrc, _codecSrc]) {
+    await _runOnVm(src, _pipelineRt!, _pipelineCs!);
+  }
+  // Pre-compile the pipeline invocation script once so evalBytecode can reuse
+  // the BytecodeProgram directly without re-parsing/re-compiling per test.
+  final invocTree = Parser.parse(_pipelineInvocSrc, _pipelineCs!, sourceCode: _pipelineInvocSrc);
+  _pipelineProg = BytecodeCompiler.compile(invocTree, _pipelineCs!);
+}
 
 void shqlBoth(String name, String src, dynamic expected, List<String> expectedBytecode,
     {Map<String, dynamic>? boundValues}) {
@@ -168,7 +289,11 @@ void shqlBothStdlib(String name, String src, dynamic expected, List<String> expe
 
 void main() {
   setUpAll(() async {
-    _stdlibSrc = await File('assets/stdlib.shql').readAsString();
+    _stdlibSrc   = await File('assets/stdlib.shql').readAsString();
+    _lexerSrc    = await File('assets/shql_lexer.shql').readAsString();
+    _parserSrc   = await File('assets/shql_parser.shql').readAsString();
+    _compilerSrc = await File('assets/shql_compiler.shql').readAsString();
+    _codecSrc    = await File('assets/shql_codec.shql').readAsString();
   });
 
   test('Parse addition', () {
@@ -5700,28 +5825,14 @@ f()
   // Everything in this group goes through _runOnVm (Dart BytecodeCompiler +
   // BytecodeInterpreter). No evalEngine calls.
   group('SHQL self-hosting compiler', () {
-    late String lexerSrc, parserSrc, compilerSrc, codecSrc;
-
-    setUpAll(() async {
-      lexerSrc    = await File('assets/shql_lexer.shql').readAsString();
-      parserSrc   = await File('assets/shql_parser.shql').readAsString();
-      compilerSrc = await File('assets/shql_compiler.shql').readAsString();
-      codecSrc    = await File('assets/shql_codec.shql').readAsString();
-    });
-
-    /// Load SHQL source files and run the self-hosting pipeline, returning the
-    /// program Map produced by the SHQL compiler.
+    /// Run the SHQL self-hosting pipeline on [shqlSrc], returning the program Map.
     Future<Map> compile(String shqlSrc) async {
-      final cs = Runtime.prepareConstantsSet();
-      final rt = Runtime.prepareRuntime(cs);
-      for (final src in [_stdlibSrc, lexerSrc, parserSrc, compilerSrc]) {
-        await _runOnVm(src, rt, cs);
-      }
+      await _ensurePipeline();
       return await _runOnVm('''
 tokens  := lexer.tokenize(src);
 tree    := parser.parse(tokens);
 compiler.compile(tree)
-''', rt, cs, boundValues: {'src': shqlSrc}) as Map;
+''', _pipelineRt!, _pipelineCs!, boundValues: {'src': shqlSrc}) as Map;
     }
 
     /// Execute a SHQL-compiled program Map on a fresh bytecode VM.
@@ -5731,12 +5842,8 @@ compiler.compile(tree)
     }
 
     test('tokenizer: 1+2', () async {
-      final cs = Runtime.prepareConstantsSet();
-      final rt = Runtime.prepareRuntime(cs);
-      for (final src in [_stdlibSrc, lexerSrc]) {
-        await _runOnVm(src, rt, cs);
-      }
-      final result = await _runOnVm("lexer.tokenize('1+2')", rt, cs);
+      await _ensurePipeline();
+      final result = await _runOnVm("lexer.tokenize('1+2')", _pipelineRt!, _pipelineCs!);
       expect(result, [
         {'t': 'INT', 'v': '1', 'l': 1, 'sc': 1, 'len': 1},
         {'t': '+',   'v': '+', 'l': 1, 'sc': 2, 'len': 1},
@@ -5746,17 +5853,13 @@ compiler.compile(tree)
     });
 
     test('codec: 1+2', () async {
-      final cs = Runtime.prepareConstantsSet();
-      final rt = Runtime.prepareRuntime(cs);
-      for (final src in [_stdlibSrc, lexerSrc, parserSrc, compilerSrc, codecSrc]) {
-        await _runOnVm(src, rt, cs);
-      }
+      await _ensurePipeline();
       final lines = await _runOnVm('''
 tokens  := lexer.tokenize(src);
 tree    := parser.parse(tokens);
 program := compiler.compile(tree);
 codec.decode(program)
-''', rt, cs, boundValues: {'src': '1+2'}) as List;
+''', _pipelineRt!, _pipelineCs!, boundValues: {'src': '1+2'}) as List;
       expect(lines, [
         'CHUNK main ()',
         '  CONST  0: 1',
