@@ -749,7 +749,7 @@ EXPECT(GENERATE_SAVED_HEROES_CARDS(), [])
   });
 
   group('IF without ELSE branch', () {
-    shqlBoth('IF FALSE THEN returns null', 'EXPECT(IF FALSE THEN "FOO"), NULL)');
+    shqlBoth('IF FALSE THEN returns null', 'EXPECT(IF FALSE THEN "FOO", NULL)');
     shqlBoth('IF TRUE THEN returns value', "EXPECT(IF TRUE THEN 'FOO', 'FOO')");
   });
 
