@@ -54,11 +54,11 @@ _LX_SCAN_STR(src, i, n, q) := BEGIN
     IF c = '\\' THEN BEGIN
       i := i + 1;
       IF i < n THEN BEGIN
-        e := _LX_CH(src, i);
-        IF e = 'n' THEN buf := buf + '\n'
-        ELSE IF e = 't' THEN buf := buf + '\t'
-        ELSE IF e = 'r' THEN buf := buf + '\r'
-        ELSE buf := buf + e;
+        ec := _LX_CH(src, i);
+        IF ec = 'n' THEN buf := buf + '\n'
+        ELSE IF ec = 't' THEN buf := buf + '\t'
+        ELSE IF ec = 'r' THEN buf := buf + '\r'
+        ELSE buf := buf + ec;
         i := i + 1;
       END;
     END ELSE BEGIN

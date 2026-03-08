@@ -149,7 +149,9 @@ BytecodeProgram shqlMapToProgram(Map program) {
     final name = entry.key as String;
     final chunk = entry.value as Map;
     final constants = (chunk['constants'] as List).map<dynamic>((c) {
-      if (c is String && c.startsWith('@')) return ChunkRef(c.substring(1));
+      // Chunk refs are stored as '@' + chunkName (non-empty name).
+      // A bare '@' string literal must NOT be converted to ChunkRef("").
+      if (c is String && c.length > 1 && c.startsWith('@')) return ChunkRef(c.substring(1));
       return c;
     }).toList();
     final code = (chunk['code'] as List).map((instr) {
@@ -5887,6 +5889,69 @@ codec.decode(program)
 
     test('pipeline: x := 42; x', () async {
       expect(await run(await compile('x := 42; x')), 42);
+    });
+
+    // The ultimate self-hosting test: Stage 2 bootstrap.
+    //
+    // Stage 1: SHQL pipeline (Dart-compiled) compiles all four pipeline files
+    //          — lexer, parser, compiler, codec — through itself.
+    // Stage 2: the four compiled programs are executed into a fresh runtime
+    //          (only stdlib is Dart-compiled; everything else is SHQL-compiled).
+    //          That Stage-2 pipeline then compiles a test expression.
+    // Assertion: Stage-2 bytecode output is identical to Stage-1 output.
+    //
+    // If this passes, the SHQL compiler can compile the entire pipeline
+    // (including itself) and the result is a fully functional, self-reproducing
+    // toolchain — the classical definition of a self-hosting compiler.
+    test('Stage 2 bootstrap — full pipeline compiled by SHQL, not Dart', () async {
+      await _ensurePipeline();
+      final consts = {
+        for (final e in Runtime.allConstants.entries)
+          if (e.value is! bool) e.key: e.value,
+      };
+
+      // Build a Stage-2 runtime: stdlib only via Dart (it wraps native ops),
+      // then compile each pipeline file through the SHQL pipeline and execute
+      // the result in stage2Rt — in dependency order.
+      final stage2Cs = Runtime.prepareConstantsSet();
+      final stage2Rt = Runtime.prepareRuntime(stage2Cs);
+      await _runOnVm(_stdlibSrc, stage2Rt, stage2Cs); // stdlib: Dart-compiled foundation
+      for (final src in [_lexerSrc, _parserSrc, _compilerSrc, _codecSrc]) {
+        // Pipeline files are standalone programs — they must not be compiled
+        // with runtime constants (PI, E, ANSWER, …), because any local variable
+        // whose uppercased name matches a constant (e.g. `e` → E = 2.718…)
+        // would be wrongly inlined instead of treated as a load_var.
+        final out = await _pipelineVm!
+            .executeScoped('main', boundValues: {'src': src, 'consts': <String, dynamic>{}}) as List;
+        await BytecodeInterpreter(
+          shqlMapToProgram(out[0] as Map), stage2Rt,
+        ).executeScoped('main');
+      }
+      // stage2Rt now has: stdlib (Dart) + lexer/parser/compiler/codec (all SHQL-compiled).
+
+      // Stage 2: compile a test expression using the all-SHQL pipeline.
+      const testSrc = 'x := 42; x * 2';
+      final invocTree = Parser.parse(_pipelineInvocSrc, stage2Cs, sourceCode: _pipelineInvocSrc);
+      final stage2Out = await BytecodeInterpreter(
+        BytecodeCompiler.compile(invocTree, stage2Cs), stage2Rt,
+      ).executeScoped('main', boundValues: {'src': testSrc, 'consts': consts}) as List;
+
+      // Stage 1 reference: original SHQL pipeline compiling the same source.
+      final stage1Out = await _pipelineVm!
+          .executeScoped('main', boundValues: {'src': testSrc, 'consts': consts}) as List;
+
+      expect(
+        (stage2Out[1] as List).cast<String>(),
+        (stage1Out[1] as List).cast<String>(),
+        reason: 'Stage 2: all-SHQL-compiled pipeline must produce identical bytecode to Stage 1',
+      );
+
+      // Execute the Stage-2 compiled program and verify the result.
+      final stage2Result = await BytecodeInterpreter(
+        shqlMapToProgram(stage2Out[0] as Map),
+        Runtime.prepareRuntime(Runtime.prepareConstantsSet()),
+      ).executeScoped('main');
+      expect(stage2Result, 84); // 42 * 2
     });
   });
 }

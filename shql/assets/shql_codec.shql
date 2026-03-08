@@ -20,9 +20,10 @@ _CDC_FMT_CONST(val) := BEGIN
   IF val = TRUE THEN RETURN 'true';
   IF val = FALSE THEN RETURN 'false';
   s := STRING(val);
-  -- ChunkRef: stored as '@chunkname' by the compiler
+  -- ChunkRef: stored as '@chunkname' (non-empty name after '@') by the compiler.
+  -- A bare '@' string literal is NOT a chunk ref.
   -- Use nested IF, not AND, because SHQL AND is eager (both sides always evaluated).
-  IF LENGTH(s) > 0 THEN BEGIN
+  IF LENGTH(s) > 1 THEN BEGIN
     IF SUBSTRING(s, 0, 1) = '@' THEN RETURN '.' + SUBSTRING(s, 1, LENGTH(s));
   END;
   RETURN s;
