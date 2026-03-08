@@ -41,7 +41,7 @@ class IfStatementExecutionNode extends LazyExecutionNode {
 
       if (node.children.length <= 2) {
         // No else branch
-        result = false;
+        result = null;
         return TickResult.completed;
       }
 

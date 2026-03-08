@@ -48,12 +48,6 @@ class WhileLoopExecutionNode extends LazyExecutionNode {
         result = _bodyNode!.result;
         error ??= _bodyNode!.error;
       }
-      _bodyNode = null;
-    } else if (_conditionNode != null) {
-      if (_conditionNode!.completed) {
-        result ??= _conditionNode!.result;
-        error ??= _conditionNode!.error;
-      }
     }
     _conditionNode = null;
     _bodyNode = null;
