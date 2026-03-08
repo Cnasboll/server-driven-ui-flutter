@@ -409,99 +409,24 @@ EXPECT(POP_ROUTE(), 'screen2')
   });
 
   group('Object member access with dot operator', () {
-    // Dart-injected Object: same runtime is shared with evalBytecode so both modes
-    // see the same pre-populated scope.
-    test('Should access Object members using dot notation', () async {
-      final constantsSet = Runtime.prepareConstantsSet();
-      final runtime = Runtime.prepareRuntime(constantsSet);
-
-      final testObject = Object();
-      final nameId = runtime.identifiers.include('NAME');
-      final ageId = runtime.identifiers.include('AGE');
-      testObject.setVariable(nameId, 'Alice');
-      testObject.setVariable(ageId, 30);
-      final personId = runtime.identifiers.include('PERSON');
-      runtime.globalScope.setVariable(personId, testObject);
-
-      expect(await evalEngine('person.name', runtime: runtime, constantsSet: constantsSet), 'Alice');
-      expect(await evalEngine('person.age', runtime: runtime, constantsSet: constantsSet), 30);
-      expect(await evalBytecode('person.name', runtime: runtime, cs: constantsSet), 'Alice');
-      expect(await evalBytecode('person.age', runtime: runtime, cs: constantsSet), 30);
-    });
-
-    test('Should wrap Object in Scope for member access', () async {
-      final constantsSet = Runtime.prepareConstantsSet();
-      final runtime = Runtime.prepareRuntime(constantsSet);
-
-      final configObject = Object();
-      final hostId = runtime.identifiers.include('HOST');
-      final portId = runtime.identifiers.include('PORT');
-      configObject.setVariable(hostId, 'localhost');
-      configObject.setVariable(portId, 8080);
-      final configId = runtime.identifiers.include('CONFIG');
-      runtime.globalScope.setVariable(configId, configObject);
-
-      expect(await evalEngine('config.host', runtime: runtime, constantsSet: constantsSet), 'localhost');
-      expect(await evalEngine('config.port', runtime: runtime, constantsSet: constantsSet), 8080);
-      expect(await evalBytecode('config.host', runtime: runtime, cs: constantsSet), 'localhost');
-      expect(await evalBytecode('config.port', runtime: runtime, cs: constantsSet), 8080);
-    });
-
-    test('Should support nested object access (a.b.c.d)', () async {
-      final constantsSet = Runtime.prepareConstantsSet();
-      final runtime = Runtime.prepareRuntime(constantsSet);
-
-      final databaseObject = Object();
-      final hostId = runtime.identifiers.include('HOST');
-      final portId = runtime.identifiers.include('PORT');
-      databaseObject.setVariable(hostId, 'db.example.com');
-      databaseObject.setVariable(portId, 5432);
-
-      final serverObject = Object();
-      final databaseId = runtime.identifiers.include('DATABASE');
-      final nameId = runtime.identifiers.include('NAME');
-      serverObject.setVariable(databaseId, databaseObject);
-      serverObject.setVariable(nameId, 'prod-server');
-
-      final appObject = Object();
-      final serverId = runtime.identifiers.include('SERVER');
-      final versionId = runtime.identifiers.include('VERSION');
-      appObject.setVariable(serverId, serverObject);
-      appObject.setVariable(versionId, '1.0.0');
-      final appId = runtime.identifiers.include('APP');
-      runtime.globalScope.setVariable(appId, appObject);
-
-      for (final eval in [
-        (String src) => evalEngine(src, runtime: runtime, constantsSet: constantsSet),
-        (String src) => evalBytecode(src, runtime: runtime, cs: constantsSet),
-      ]) {
-        expect(await eval('app.server.database.host'), 'db.example.com');
-        expect(await eval('app.server.database.port'), 5432);
-        expect(await eval('app.server.name'), 'prod-server');
-        expect(await eval('app.version'), '1.0.0');
-      }
-    });
+    shqlBoth('Should access Object members using dot notation',
+        'person := OBJECT{name: "Alice", age: 30}; EXPECT(person.name, "Alice"); EXPECT(person.age, 30)');
+    shqlBoth('Should wrap Object in Scope for member access',
+        'config := OBJECT{host: "localhost", port: 8080}; EXPECT(config.host, "localhost"); EXPECT(config.port, 8080)');
+    shqlBoth('Should support nested object access (a.b.c.d)', '''
+        db := OBJECT{host: "db.example.com", port: 5432};
+        server := OBJECT{database: db, name: "prod-server"};
+        app := OBJECT{server: server, version: "1.0.0"};
+        EXPECT(app.server.database.host, "db.example.com");
+        EXPECT(app.server.database.port, 5432);
+        EXPECT(app.server.name, "prod-server");
+        EXPECT(app.version, "1.0.0")
+    ''');
   });
 
   group('Object literal with OBJECT keyword', () {
-    // Inspects Dart-level Object fields via resolveIdentifier — engine only for introspection,
-    // bytecode verified separately via dot access which is already covered by shqlTest.
-    test('Should create Object with bare identifier keys', () async {
-      final cs = Runtime.prepareConstantsSet();
-      final rt = Runtime.prepareRuntime(cs);
-      final nameId = rt.identifiers.include('NAME');
-      final ageId = rt.identifiers.include('AGE');
-
-      for (final result in [
-        await evalEngine('OBJECT{name: "Alice", age: 30}'),
-        await evalBytecode('OBJECT{name: "Alice", age: 30}', cs: cs),
-      ]) {
-        expect(result, isA<Object>());
-        final obj = result as Object;
-        expect((obj.resolveIdentifier(nameId) as Variable).value, 'Alice');
-        expect((obj.resolveIdentifier(ageId) as Variable).value, 30);
-      }
-    });
+    shqlBoth('OBJECT literal keys are unquoted identifiers',
+        'obj := OBJECT{name: "Alice", age: 30}; EXPECT(obj.name, "Alice"); EXPECT(obj.age, 30)');
 
     shqlBoth('Object literal dot — x', 'obj := OBJECT{x: 10, y: 20}; EXPECT(obj.x, 10)');
     shqlBoth('Object literal dot — y', 'obj := OBJECT{x: 10, y: 20}; EXPECT(obj.y, 20)');
