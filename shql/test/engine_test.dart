@@ -97,7 +97,7 @@ Future<dynamic> evalBytecode(
     // Run the pre-compiled pipeline invocation script on the dedicated pipeline
     // runtime.  boundValues are scoped locally so the pipeline runtime's global
     // scope is never polluted by per-test variables (src, consts, tokens, …).
-    final shqlOutput = await BytecodeInterpreter(_pipelineProg!, _pipelineRt!)
+    final shqlOutput = await _pipelineVm!
         .executeScoped('main', boundValues: {'src': src, 'consts': consts}) as List;
     final shqlProgMap    = shqlOutput[0] as Map;
     final shqlLines      = (shqlOutput[1] as List).cast<String>();
@@ -220,10 +220,11 @@ late String _lexerSrc, _parserSrc, _compilerSrc, _codecSrc;
 Runtime? _pipelineRt;
 ConstantsSet? _pipelineCs;
 
-/// Pre-compiled [BytecodeProgram] for the pipeline invocation script.
-/// Compiled once so [evalBytecode] doesn't need to re-parse/re-compile it on
-/// every test invocation.
-BytecodeProgram? _pipelineProg;
+/// Single reusable [BytecodeInterpreter] for the pipeline.  Created once in
+/// [_ensurePipeline]; safe to reuse because [executeScoped] creates its own
+/// thread/stack per call and [boundValues] are scoped locally, so the
+/// pipeline runtime's global scope is never polluted by per-test variables.
+BytecodeInterpreter? _pipelineVm;
 
 /// Source of the pipeline invocation script — tokenize → parse → compile →
 /// decode, then return [prog, dec].  Stored as a constant so the program can
@@ -246,7 +247,8 @@ Future<void> _ensurePipeline() async {
   // Pre-compile the pipeline invocation script once so evalBytecode can reuse
   // the BytecodeProgram directly without re-parsing/re-compiling per test.
   final invocTree = Parser.parse(_pipelineInvocSrc, _pipelineCs!, sourceCode: _pipelineInvocSrc);
-  _pipelineProg = BytecodeCompiler.compile(invocTree, _pipelineCs!);
+  final invocProg = BytecodeCompiler.compile(invocTree, _pipelineCs!);
+  _pipelineVm     = BytecodeInterpreter(invocProg, _pipelineRt!);
 }
 
 void shqlBoth(String name, String src, dynamic expected, List<String> expectedBytecode,
