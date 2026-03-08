@@ -2141,8 +2141,7 @@ void main() {
       'ret',
     ]);
 
-  const _listUtilsCode = """
--- This function is now only used to generate the initial cache.
+  shqlBothStdlib('Test list utils - item', r'''
 _GEN_LIST_ITEM_TEMPLATE(i) := {
     "type": "Container",
     "props": {
@@ -2156,7 +2155,7 @@ _GEN_LIST_ITEM_TEMPLATE(i) := {
             {
                 "type": "Text",
                 "props": {
-                    "data": ""  -- The data will be injected dynamically.
+                    "data": ""
                 }
             },
             { "type": "Spacer" },
@@ -2173,32 +2172,75 @@ _GEN_LIST_ITEM_TEMPLATE(i) := {
         ]
     }
 };
-
--- This is the new, fast function that the UI will call on every rebuild.
-GENERATE_WIDGETS(n) := BEGIN
-    -- If the cache is empty, populate it once.
-    IF LENGTH(_list_item_cache) = 0 THEN BEGIN
-        FOR i := 1 TO n DO
-            _list_item_cache := _list_item_cache + [_GEN_LIST_ITEM_TEMPLATE(i)];
-    END;
-
-    -- Now, create the final list by injecting the current counts into the cached templates.
-    items := [];
-    FOR i := 1 TO n DO
-        -- Important: We need to create a copy of the map from the cache,
-        -- otherwise we would be modifying the cache itself.
-        item_template := CLONE(_list_item_cache[i-1]);
-
-        -- Inject the current count into the Text widget's data property.
-        item_template["child"]["children"][0]["props"]["data"] := 'Item ' + STRING(i) + ': ' + STRING(item_counts[i-1]);
-
-        items := items + [item_template];
-    RETURN items;
-END;
-""";
-
-  shqlBothStdlib('Test list utils - item', '$_listUtilsCode\nlist := [_GEN_LIST_ITEM_TEMPLATE(1)]; list[0]', isA<Map>(), []);
-  shqlBothStdlib('Test list utils - props', "$_listUtilsCode\nlist := [_GEN_LIST_ITEM_TEMPLATE(1)]; list[0]['props']", isA<Map>(), []);
+list := [_GEN_LIST_ITEM_TEMPLATE(1)]; list[0]
+''', isA<Map>(), [
+      'make_closure(.___GEN_LIST_ITEM_TEMPLATE_0)',
+      'store_var(_GEN_LIST_ITEM_TEMPLATE)',
+      'load_var(_GEN_LIST_ITEM_TEMPLATE)',
+      'pop',
+      'load_var(_GEN_LIST_ITEM_TEMPLATE)',
+      'push_const(1)',
+      'call(1)',
+      'make_list(1)',
+      'store_var(LIST)',
+      'load_var(LIST)',
+      'pop',
+      'load_var(LIST)',
+      'push_const(0)',
+      'get_index',
+      'ret',
+    ]);
+  shqlBothStdlib('Test list utils - props', r'''
+_GEN_LIST_ITEM_TEMPLATE(i) := {
+    "type": "Container",
+    "props": {
+        "height": 50,
+        "color": '0xFF' + SUBSTRING(MD5('item' + STRING(i)), 0, 6),
+        "padding": { "left": 16, "right": 16 }
+    },
+    "child": {
+        "type": "Row",
+        "children": [
+            {
+                "type": "Text",
+                "props": {
+                    "data": ""
+                }
+            },
+            { "type": "Spacer" },
+            {
+                "type": "ElevatedButton",
+                "props": {
+                    "onPressed": "shql: INCREMENT_ITEM(" + STRING(i-1) + ")"
+                },
+                "child": {
+                    "type": "Text",
+                    "props": { "data": "+" }
+                }
+            }
+        ]
+    }
+};
+list := [_GEN_LIST_ITEM_TEMPLATE(1)]; list[0]['props']
+''', isA<Map>(), [
+      'make_closure(.___GEN_LIST_ITEM_TEMPLATE_0)',
+      'store_var(_GEN_LIST_ITEM_TEMPLATE)',
+      'load_var(_GEN_LIST_ITEM_TEMPLATE)',
+      'pop',
+      'load_var(_GEN_LIST_ITEM_TEMPLATE)',
+      'push_const(1)',
+      'call(1)',
+      'make_list(1)',
+      'store_var(LIST)',
+      'load_var(LIST)',
+      'pop',
+      'load_var(LIST)',
+      'push_const(0)',
+      'get_index',
+      'push_const("props")',
+      'get_index',
+      'ret',
+    ]);
 
   shqlBoth('Test for loop with step', 'sum := 0; FOR i := 1 TO 10 STEP 2 DO sum := sum + i; sum', 25, [
       'push_const(0)',
@@ -2655,8 +2697,18 @@ POP_ROUTE()
   });
 
   group('startingScope and boundValues injection', () {
-    shqlBoth('boundValues visible', 'x + 1', 11,
-        ['load_var(X)', 'jump_null(7)', 'push_const(1)', 'jump_null(6)', 'add', 'jump(9)', 'pop', 'pop', 'push_const(null)', 'ret'],
+    shqlBoth('boundValues visible', 'x + 1', 11, [
+        'load_var(X)',
+        'jump_null(7)',
+        'push_const(1)',
+        'jump_null(6)',
+        'add',
+        'jump(9)',
+        'pop',
+        'pop',
+        'push_const(null)',
+        'ret',
+      ],
         boundValues: {'x': 10});
     test('boundValues shadow global', () async {
       final cs = Runtime.prepareConstantsSet();
