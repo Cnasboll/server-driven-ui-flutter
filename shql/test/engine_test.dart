@@ -748,6 +748,16 @@ EXPECT(GENERATE_SAVED_HEROES_CARDS(), [])
 ''');
   });
 
+  group('IF without ELSE branch', () {
+    shqlBoth('IF FALSE THEN returns false', 'ASSERT_FALSE(IF FALSE THEN "FOO")');
+    shqlBoth('IF TRUE THEN returns value', "EXPECT(IF TRUE THEN 'FOO', 'FOO')");
+  });
+
+  group('WHILE loop result', () {
+    shqlBoth('WHILE that never executes returns false', 'ASSERT_FALSE(WHILE FALSE DO TRUE)');
+    shqlBoth('WHILE returns last body expression', 'x := 0; EXPECT(WHILE x < 3 DO BEGIN x := x + 1; x^2 END, 9)');
+  });
+
   group('IF condition ending with parenthesised sub-expression', () {
     // Regression: the implicit-multiplication check consumed THEN as an
     // identifier after a single-element tuple, e.g. `AND (expr) THEN` would
