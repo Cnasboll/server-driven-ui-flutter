@@ -1,10 +1,27 @@
 import 'dart:io';
 
+import 'package:shql/bytecode/bytecode_codec.dart';
+import 'package:shql/bytecode/bytecode_compiler.dart';
+import 'package:shql/bytecode/bytecode_interpreter.dart';
 import 'package:shql/engine/engine.dart';
 import 'package:shql/execution/execution_node.dart';
 import 'package:shql/execution/runtime/execution_context.dart';
 import 'package:shql/execution/runtime/runtime.dart';
 import 'package:shql/parser/constants_set.dart';
+import 'package:shql/parser/parser.dart';
+
+/// Execution strategy injected into [ShqlTestRunner].
+///
+/// [src] is the complete SHQL™ source to execute (may include a stdlib
+/// prelude). [runtime] holds registered native callbacks. [cs] is the shared
+/// constants set. [boundValues] are additional variables to inject before
+/// execution.
+typedef ShqlExecutorFn = Future<dynamic> Function(
+  String src,
+  Runtime runtime,
+  ConstantsSet cs, {
+  Map<String, dynamic>? boundValues,
+});
 
 /// Framework-agnostic SHQL™ test runner.
 ///
@@ -38,14 +55,25 @@ class ShqlTestRunner {
   /// [expr] is the SHQL expression text (for error messages).
   final void Function(dynamic actual, dynamic expected, String expr) onExpect;
 
+  /// Custom execution strategy. When null the default [Engine.execute] is used.
+  /// When provided, [test] prepends all accumulated prelude source and calls
+  /// this function — enabling bytecode or any other execution backend.
+  final ShqlExecutorFn? _executor;
+
   late Runtime runtime;
   late ConstantsSet constantsSet;
+
+  /// SHQL™ source accumulated by [setUp] and [loadFile].
+  /// Custom executors receive this as a prefix so they can recompile the full
+  /// program (stdlib + loaded files + test code) in a single pass.
+  final List<String> _sourcePrelude = [];
 
   /// Records every mocked function invocation as `"NAME(arg1, arg2)"`.
   final List<String> callLog = [];
   final Map<String, int> _callCounts = {};
 
-  ShqlTestRunner({required this.onExpect});
+  ShqlTestRunner({required this.onExpect, ShqlExecutorFn? executor})
+      : _executor = executor;
 
   /// Convenience: wire to `expect()` from package:test or package:flutter_test.
   factory ShqlTestRunner.withExpect(
@@ -55,6 +83,41 @@ class ShqlTestRunner {
       onExpect: (actual, expected, expr) =>
           expect(actual, expected, reason: expr),
     );
+  }
+
+  /// Bytecode-backed variant.
+  ///
+  /// [setUp] and [loadFile] still execute via the tree-walking engine so that
+  /// native Dart callbacks are registered on [runtime]. [test] then compiles
+  /// the full accumulated prelude + test source as a single bytecode program
+  /// and executes it on the bytecode VM — both modes share the same [runtime]
+  /// so registered native callbacks are bridged automatically.
+  factory ShqlTestRunner.bytecodeWithExpect(
+    void Function(dynamic actual, dynamic expected, {String? reason}) expect,
+  ) {
+    return ShqlTestRunner(
+      onExpect: (actual, expected, expr) =>
+          expect(actual, expected, reason: expr),
+      executor: _bytecodeExecutor,
+    );
+  }
+
+  static Future<dynamic> _bytecodeExecutor(
+    String src,
+    Runtime runtime,
+    ConstantsSet cs, {
+    Map<String, dynamic>? boundValues,
+  }) {
+    if (boundValues != null) {
+      for (final entry in boundValues.entries) {
+        final id = cs.identifiers.include(entry.key.toUpperCase());
+        runtime.globalScope.setVariable(id, entry.value);
+      }
+    }
+    final tree = Parser.parse(src, cs, sourceCode: src);
+    final program = BytecodeCompiler.compile(tree, cs);
+    final decoded = BytecodeDecoder.decode(BytecodeEncoder.encode(program));
+    return BytecodeInterpreter(decoded, runtime).execute('main');
   }
 
   /// Initialise the runtime, load stdlib + shql_test, register callbacks.
@@ -68,14 +131,14 @@ class ShqlTestRunner {
     constantsSet = Runtime.prepareConstantsSet();
     runtime = Runtime.prepareRuntime(constantsSet);
 
-    // Load stdlib
-    await _exec(await File(stdlibPath).readAsString());
+    // Load stdlib as prelude (engine-execute + accumulate for custom executors)
+    await _loadPrelude(await File(stdlibPath).readAsString());
 
     // Register test callbacks before loading shql_test.shql
     _registerTestCallbacks();
 
-    // Load test primitives
-    await _exec(await File(testLibPath).readAsString());
+    // Load test primitives as prelude
+    await _loadPrelude(await File(testLibPath).readAsString());
 
     // Wire runtime callbacks with no-op defaults
     runtime.saveStateFunction = (key, value) async {};
@@ -85,24 +148,55 @@ class ShqlTestRunner {
     runtime.debugLogFunction = (msg) {};
   }
 
+  /// Initialise the runtime and load only shql_test.shql (no stdlib).
+  ///
+  /// Use this for tests that don't need stdlib functions (LENGTH, STATS, etc.).
+  Future<void> setUpTestOnly({
+    String testLibPath = 'assets/shql_test.shql',
+  }) async {
+    constantsSet = Runtime.prepareConstantsSet();
+    runtime = Runtime.prepareRuntime(constantsSet);
+    _registerTestCallbacks();
+    await _loadPrelude(await File(testLibPath).readAsString());
+    runtime.saveStateFunction = (key, value) async {};
+    runtime.loadStateFunction = (key, defaultValue) async => defaultValue;
+    runtime.navigateFunction = (route) async {};
+    runtime.notifyListeners = (name) {};
+    runtime.debugLogFunction = (msg) {};
+  }
+
   // ─── Execution ─────────────────────────────────────────────────────
 
+  /// Execute [code] via the engine and accumulate it as prelude source.
+  ///
+  /// Used by [setUp] and [loadFile]. Custom executors (e.g. bytecode) receive
+  /// the full accumulated prelude on every [test] call so they can recompile
+  /// the entire program in one pass.
+  Future<void> _loadPrelude(String code) async {
+    await Engine.execute(code, runtime: runtime, constantsSet: constantsSet);
+    _sourcePrelude.add(code);
+  }
+
   Future<dynamic> _exec(String code, {Map<String, dynamic>? boundValues}) {
-    return Engine.execute(
-      code,
-      runtime: runtime,
-      constantsSet: constantsSet,
-      boundValues: boundValues,
-    );
+    if (_executor == null) {
+      return Engine.execute(
+        code,
+        runtime: runtime,
+        constantsSet: constantsSet,
+        boundValues: boundValues,
+      );
+    }
+    final fullSrc = [..._sourcePrelude, code].join('\n');
+    return _executor(fullSrc, runtime, constantsSet, boundValues: boundValues);
   }
 
   /// Execute SHQL™ code (may contain EXPECT/ASSERT calls).
   Future<dynamic> test(String code, {Map<String, dynamic>? boundValues}) =>
       _exec(code, boundValues: boundValues);
 
-  /// Load and execute a `.shql` file.
+  /// Load and execute a `.shql` file (accumulated as prelude for custom executors).
   Future<void> loadFile(String path) async {
-    await _exec(await File(path).readAsString());
+    await _loadPrelude(await File(path).readAsString());
   }
 
   // ─── Object helpers ────────────────────────────────────────────────
@@ -162,10 +256,13 @@ class ShqlTestRunner {
   // ─── Internals ────────────────────────────────────────────────────
 
   void _registerTestCallbacks() {
+    // ctx/caller are nullable: the bytecode VM passes null for both (it has no
+    // ExecutionContext). None of these callbacks use ctx or caller, so this is safe.
+
     // EXPECT(actual, expected) — direct value comparison.
     runtime.setBinaryFunction(
       '__EXPECT',
-      (ExecutionContext ctx, ExecutionNode caller, dynamic actual,
+      (ExecutionContext? ctx, ExecutionNode? caller, dynamic actual,
           dynamic expected) {
         onExpect(actual, expected, 'EXPECT($actual, $expected)');
       },
@@ -174,7 +271,7 @@ class ShqlTestRunner {
     // ASSERT(condition) — direct boolean check.
     runtime.setUnaryFunction(
       '__ASSERT',
-      (ExecutionContext ctx, ExecutionNode caller, dynamic condition) {
+      (ExecutionContext? ctx, ExecutionNode? caller, dynamic condition) {
         onExpect(condition, true, 'ASSERT($condition)');
       },
     );
@@ -182,7 +279,7 @@ class ShqlTestRunner {
     // ASSERT_FALSE(condition) — direct boolean check (negated).
     runtime.setUnaryFunction(
       '__ASSERT_FALSE',
-      (ExecutionContext ctx, ExecutionNode caller, dynamic condition) {
+      (ExecutionContext? ctx, ExecutionNode? caller, dynamic condition) {
         onExpect(condition, false, 'ASSERT_FALSE($condition)');
       },
     );
@@ -190,7 +287,7 @@ class ShqlTestRunner {
     // ASSERT_TRUE(condition, label) — direct boolean check with label.
     runtime.setBinaryFunction(
       '__ASSERT_TRUE',
-      (ExecutionContext ctx, ExecutionNode caller, dynamic condition,
+      (ExecutionContext? ctx, ExecutionNode? caller, dynamic condition,
           dynamic label) {
         onExpect(condition, true, '$label');
       },
@@ -199,7 +296,7 @@ class ShqlTestRunner {
     // ASSERT_CALLED("name") — check call log.
     runtime.setUnaryFunction(
       '__ASSERT_CALLED',
-      (ExecutionContext ctx, ExecutionNode caller, dynamic name) {
+      (ExecutionContext? ctx, ExecutionNode? caller, dynamic name) {
         final found = callLog.any((entry) => entry.startsWith('$name('));
         onExpect(
             found, true, 'ASSERT_CALLED("$name") — not found in call log');
@@ -209,7 +306,7 @@ class ShqlTestRunner {
     // ASSERT_NOT_CALLED("name") — check call log (negative).
     runtime.setUnaryFunction(
       '__ASSERT_NOT_CALLED',
-      (ExecutionContext ctx, ExecutionNode caller, dynamic name) {
+      (ExecutionContext? ctx, ExecutionNode? caller, dynamic name) {
         final found = callLog.any((entry) => entry.startsWith('$name('));
         onExpect(found, false,
             'ASSERT_NOT_CALLED("$name") — unexpectedly found in call log');
@@ -219,7 +316,7 @@ class ShqlTestRunner {
     // ASSERT_CALL_COUNT("name", n) — check exact invocation count.
     runtime.setBinaryFunction(
       '__ASSERT_CALL_COUNT',
-      (ExecutionContext ctx, ExecutionNode caller, dynamic name,
+      (ExecutionContext? ctx, ExecutionNode? caller, dynamic name,
           dynamic count) {
         final actual = _callCounts['$name'] ?? 0;
         onExpect(actual, count,
@@ -230,7 +327,7 @@ class ShqlTestRunner {
     // CLEAR_CALL_LOG() — reset tracking.
     runtime.setNullaryFunction(
       '__CLEAR_CALL_LOG',
-      (ExecutionContext ctx, ExecutionNode caller) {
+      (ExecutionContext? ctx, ExecutionNode? caller) {
         callLog.clear();
         _callCounts.clear();
       },
