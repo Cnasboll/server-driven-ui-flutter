@@ -62,8 +62,8 @@ Future<dynamic> evalEngine(
 /// encode→decode round-trip equals [expectedBytecode] — preventing silent
 /// compiler drift between the engine and VM paths.
 Future<dynamic> evalBytecode(
-  String src, {
-  required List<String> expectedBytecode,
+  String src,
+  List<String> expectedBytecode, {
   Runtime? runtime,
   ConstantsSet? cs,
   Map<String, dynamic>? boundValues,
@@ -82,40 +82,18 @@ Future<dynamic> evalBytecode(
   );
 }
 
-/// Run [src] on the bytecode VM without asserting the disassembly.
-/// Used for stdlib tests (bytecode would be enormous) and behavioural tests
-/// (error propagation, scope injection) where bytecode structure is not the focus.
-Future<dynamic> _runBytecodeNoAssert(
-  String src, {
-  Runtime? runtime,
-  ConstantsSet? cs,
-  Map<String, dynamic>? boundValues,
-  Scope? startingScope,
-}) {
-  cs ??= Runtime.prepareConstantsSet();
-  runtime ??= Runtime.prepareRuntime(cs);
-  final tree = Parser.parse(src, cs, sourceCode: src);
-  final program = BytecodeCompiler.compile(tree, cs);
-  final decoded = BytecodeDecoder.decode(BytecodeEncoder.encode(program));
-  return BytecodeInterpreter(decoded, runtime).executeScoped(
-    'main',
-    boundValues: boundValues,
-    startingScope: startingScope,
-  );
-}
-
 late String _stdlibSrc;
 
-void shqlBoth(String name, String src, dynamic expected, {required List<String> expectedBytecode}) {
+void shqlBoth(String name, String src, dynamic expected, List<String> expectedBytecode) {
   test('$name [engine]', () async => expect(await evalEngine(src), expected));
   test('$name [bytecode]', () async =>
-      expect(await evalBytecode(src, expectedBytecode: expectedBytecode), expected));
+      expect(await evalBytecode(src, expectedBytecode), expected));
 }
 
 /// Tests [src] against both the engine and bytecode VM, with stdlib pre-loaded
 /// as a separate program (not concatenated) — mirroring how herodex_3000 loads
 /// stdlib.shql once, then evaluates individual SHQL programs against that runtime.
-void shqlBothStdlib(String name, String src, dynamic expected, {required List<String> expectedBytecode}) {
+void shqlBothStdlib(String name, String src, dynamic expected, List<String> expectedBytecode) {
   test('$name [engine]', () async {
     final cs = Runtime.prepareConstantsSet();
     final runtime = Runtime.prepareRuntime(cs);
@@ -160,27 +138,27 @@ void main() {
   });
 
   // Minimal literal / operator programs (drift-detection against bytecode_compiler_test)
-  shqlBoth('integer literal 42', '42', 42, expectedBytecode: [
+  shqlBoth('integer literal 42', '42', 42, [
       'push_const(42)',
       'ret',
     ]);
-  shqlBoth('null literal', 'null', null, expectedBytecode: [
+  shqlBoth('null literal', 'null', null, [
       'push_const(null)',
       'ret',
     ]);
-  shqlBoth('1=1', '1=1', true, expectedBytecode: [
+  shqlBoth('1=1', '1=1', true, [
       'push_const(1)',
       'push_const(1)',
       'cmp_eq',
       'ret',
     ]);
-  shqlBoth('1<>2', '1<>2', true, expectedBytecode: [
+  shqlBoth('1<>2', '1<>2', true, [
       'push_const(1)',
       'push_const(2)',
       'cmp_neq',
       'ret',
     ]);
-  shqlBoth('1+2', '1+2', 3, expectedBytecode: [
+  shqlBoth('1+2', '1+2', 3, [
       'push_const(1)',
       'jump_null(7)',
       'push_const(2)',
@@ -192,7 +170,7 @@ void main() {
       'push_const(null)',
       'ret',
     ]);
-  shqlBoth('2^3', '2^3', 8, expectedBytecode: [
+  shqlBoth('2^3', '2^3', 8, [
       'push_const(2)',
       'jump_null(7)',
       'push_const(3)',
@@ -204,7 +182,7 @@ void main() {
       'push_const(null)',
       'ret',
     ]);
-  shqlBoth('x:=5; x', 'x:=5; x', 5, expectedBytecode: [
+  shqlBoth('x:=5; x', 'x:=5; x', 5, [
       'push_const(5)',
       'store_var(X)',
       'load_var(X)',
@@ -212,7 +190,7 @@ void main() {
       'load_var(X)',
       'ret',
     ]);
-  shqlBoth('IF TRUE THEN 1 ELSE 2', 'IF TRUE THEN 1 ELSE 2', 1, expectedBytecode: [
+  shqlBoth('IF TRUE THEN 1 ELSE 2', 'IF TRUE THEN 1 ELSE 2', 1, [
       'push_const(true)',
       'jump_false(4)',
       'push_const(1)',
@@ -220,7 +198,7 @@ void main() {
       'push_const(2)',
       'ret',
     ]);
-  shqlBoth('OBJECT literal', 'OBJECT{x:1}.x', 1, expectedBytecode: [
+  shqlBoth('OBJECT literal', 'OBJECT{x:1}.x', 1, [
       'push_scope',
       'push_const("X")',
       'push_const(1)',
@@ -229,7 +207,7 @@ void main() {
       'get_member(X)',
       'ret',
     ]);
-  shqlBoth('map literal', '{"a":1}["a"]', 1, expectedBytecode: [
+  shqlBoth('map literal', '{"a":1}["a"]', 1, [
       'push_const("a")',
       'push_const(1)',
       'make_map(1)',
@@ -237,7 +215,7 @@ void main() {
       'get_index',
       'ret',
     ]);
-  shqlBoth('NULL < 5 is null', 'NULL < 5', null, expectedBytecode: [
+  shqlBoth('NULL < 5 is null', 'NULL < 5', null, [
       'push_const(null)',
       'jump_null(7)',
       'push_const(5)',
@@ -249,14 +227,14 @@ void main() {
       'push_const(null)',
       'ret',
     ]);
-  shqlBoth('NOT NULL is null', 'NOT NULL', null, expectedBytecode: [
+  shqlBoth('NOT NULL is null', 'NOT NULL', null, [
       'push_const(null)',
       'jump_null(3)',
       'log_not',
       'ret',
     ]);
 
-  shqlBoth('Execute addition', '10+2', 12, expectedBytecode: [
+  shqlBoth('Execute addition', '10+2', 12, [
       'push_const(10)',
       'jump_null(7)',
       'push_const(2)',
@@ -268,7 +246,7 @@ void main() {
       'push_const(null)',
       'ret',
     ]);
-  shqlBoth('Execute addition and multiplication', '10+13*37+1', 492, expectedBytecode: [
+  shqlBoth('Execute addition and multiplication', '10+13*37+1', 492, [
       'push_const(10)',
       'jump_null(15)',
       'push_const(13)',
@@ -296,13 +274,13 @@ void main() {
       'push_const(null)',
       'ret',
     ]);
-  shqlBoth('Execute implicit constant multiplication with parenthesis', 'ANSWER(2)', 84, expectedBytecode: [
+  shqlBoth('Execute implicit constant multiplication with parenthesis', 'ANSWER(2)', 84, [
       'push_const(42)',
       'push_const(2)',
       'call(1)',
       'ret',
     ]);
-  shqlBoth('Execute implicit constant multiplication with parenthesis first', '(2)ANSWER', 84, expectedBytecode: [
+  shqlBoth('Execute implicit constant multiplication with parenthesis first', '(2)ANSWER', 84, [
       'push_const(2)',
       'jump_null(7)',
       'push_const(42)',
@@ -314,7 +292,7 @@ void main() {
       'push_const(null)',
       'ret',
     ]);
-  shqlBoth('Execute implicit constant multiplication with constant within parenthesis first', '(ANSWER)2', 84, expectedBytecode: [
+  shqlBoth('Execute implicit constant multiplication with constant within parenthesis first', '(ANSWER)2', 84, [
       'push_const(42)',
       'jump_null(7)',
       'push_const(2)',
@@ -326,13 +304,13 @@ void main() {
       'push_const(null)',
       'ret',
     ]);
-  shqlBoth('Execute implicit multiplication with parenthesis', '2(3)', 6, expectedBytecode: [
+  shqlBoth('Execute implicit multiplication with parenthesis', '2(3)', 6, [
       'push_const(2)',
       'push_const(3)',
       'call(1)',
       'ret',
     ]);
-  shqlBoth('Execute addition and multiplication with parenthesis', '10+13*(37+1)', 504, expectedBytecode: [
+  shqlBoth('Execute addition and multiplication with parenthesis', '10+13*(37+1)', 504, [
       'push_const(10)',
       'jump_null(23)',
       'push_const(13)',
@@ -360,7 +338,7 @@ void main() {
       'push_const(null)',
       'ret',
     ]);
-  shqlBoth('Execute addition and implicit multiplication with parenthesis', '10+13(37+1)', 504, expectedBytecode: [
+  shqlBoth('Execute addition and implicit multiplication with parenthesis', '10+13(37+1)', 504, [
       'push_const(10)',
       'jump_null(17)',
       'push_const(13)',
@@ -382,7 +360,7 @@ void main() {
       'push_const(null)',
       'ret',
     ]);
-  shqlBoth('Execute addition, multiplication and subtraction', '10+13*37-1', 490, expectedBytecode: [
+  shqlBoth('Execute addition, multiplication and subtraction', '10+13*37-1', 490, [
       'push_const(10)',
       'jump_null(15)',
       'push_const(13)',
@@ -410,7 +388,7 @@ void main() {
       'push_const(null)',
       'ret',
     ]);
-  shqlBoth('Execute addition, implicit multiplication and subtraction', '10+13(37)-1', 490, expectedBytecode: [
+  shqlBoth('Execute addition, implicit multiplication and subtraction', '10+13(37)-1', 490, [
       'push_const(10)',
       'jump_null(9)',
       'push_const(13)',
@@ -432,7 +410,7 @@ void main() {
       'push_const(null)',
       'ret',
     ]);
-  shqlBoth('Execute addition, multiplication, subtraction and division', '10+13*37/2-1', 249.5, expectedBytecode: [
+  shqlBoth('Execute addition, multiplication, subtraction and division', '10+13*37/2-1', 249.5, [
       'push_const(10)',
       'jump_null(23)',
       'push_const(13)',
@@ -468,7 +446,7 @@ void main() {
       'push_const(null)',
       'ret',
     ]);
-  shqlBoth('Execute addition, implicit multiplication, subtraction and division', '10+13(37)/2-1', 249.5, expectedBytecode: [
+  shqlBoth('Execute addition, implicit multiplication, subtraction and division', '10+13(37)/2-1', 249.5, [
       'push_const(10)',
       'jump_null(17)',
       'push_const(13)',
@@ -499,7 +477,7 @@ void main() {
       'ret',
     ]);
 
-  shqlBoth('Execute modulus', '9%2', 1, expectedBytecode: [
+  shqlBoth('Execute modulus', '9%2', 1, [
       'push_const(9)',
       'jump_null(7)',
       'push_const(2)',
@@ -511,7 +489,7 @@ void main() {
       'push_const(null)',
       'ret',
     ]);
-  shqlBoth('exponentiation 2^10', '2^10', 1024, expectedBytecode: [
+  shqlBoth('exponentiation 2^10', '2^10', 1024, [
       'push_const(2)',
       'jump_null(7)',
       'push_const(10)',
@@ -523,7 +501,7 @@ void main() {
       'push_const(null)',
       'ret',
     ]);
-  shqlBoth('Execute equality true', '5*2 = 2+8', true, expectedBytecode: [
+  shqlBoth('Execute equality true', '5*2 = 2+8', true, [
       'push_const(5)',
       'jump_null(7)',
       'push_const(2)',
@@ -545,7 +523,7 @@ void main() {
       'cmp_eq',
       'ret',
     ]);
-  shqlBoth('Execute equality false', '5*2 = 1+8', false, expectedBytecode: [
+  shqlBoth('Execute equality false', '5*2 = 1+8', false, [
       'push_const(5)',
       'jump_null(7)',
       'push_const(2)',
@@ -567,7 +545,7 @@ void main() {
       'cmp_eq',
       'ret',
     ]);
-  shqlBoth('Execute not equal true', '5*2 <> 1+8', true, expectedBytecode: [
+  shqlBoth('Execute not equal true', '5*2 <> 1+8', true, [
       'push_const(5)',
       'jump_null(7)',
       'push_const(2)',
@@ -589,7 +567,7 @@ void main() {
       'cmp_neq',
       'ret',
     ]);
-  shqlBoth('Execute not equal true with exclamation equals', '5*2 != 1+8', true, expectedBytecode: [
+  shqlBoth('Execute not equal true with exclamation equals', '5*2 != 1+8', true, [
       'push_const(5)',
       'jump_null(7)',
       'push_const(2)',
@@ -612,7 +590,7 @@ void main() {
       'ret',
     ]);
 
-  shqlBoth('Evaluate match — Superman regex', r'"Super Man" ~  r"Super\s*Man"', true, expectedBytecode: [
+  shqlBoth('Evaluate match — Superman regex', r'"Super Man" ~  r"Super\s*Man"', true, [
       'push_const("Super Man")',
       'jump_null(7)',
       'push_const("Super\\s*Man")',
@@ -624,7 +602,7 @@ void main() {
       'push_const(null)',
       'ret',
     ]);
-  shqlBoth('Evaluate match — Superman plain', r'"Superman" ~  r"Super\s*Man"', true, expectedBytecode: [
+  shqlBoth('Evaluate match — Superman plain', r'"Superman" ~  r"Super\s*Man"', true, [
       'push_const("Superman")',
       'jump_null(7)',
       'push_const("Super\\s*Man")',
@@ -636,7 +614,7 @@ void main() {
       'push_const(null)',
       'ret',
     ]);
-  shqlBoth('Evaluate match — Batman case-insensitive', '"Batman" ~  "batman"', true, expectedBytecode: [
+  shqlBoth('Evaluate match — Batman case-insensitive', '"Batman" ~  "batman"', true, [
       'push_const("Batman")',
       'jump_null(7)',
       'push_const("batman")',
@@ -648,7 +626,7 @@ void main() {
       'push_const(null)',
       'ret',
     ]);
-  shqlBoth('Evaluate match false — Bat Man', r'"Bat Man" ~  r"Super\s*Man"', false, expectedBytecode: [
+  shqlBoth('Evaluate match false — Bat Man', r'"Bat Man" ~  r"Super\s*Man"', false, [
       'push_const("Bat Man")',
       'jump_null(7)',
       'push_const("Super\\s*Man")',
@@ -660,7 +638,7 @@ void main() {
       'push_const(null)',
       'ret',
     ]);
-  shqlBoth('Evaluate match false — Batman', r'"Batman" ~  r"Super\s*Man"', false, expectedBytecode: [
+  shqlBoth('Evaluate match false — Batman', r'"Batman" ~  r"Super\s*Man"', false, [
       'push_const("Batman")',
       'jump_null(7)',
       'push_const("Super\\s*Man")',
@@ -672,7 +650,7 @@ void main() {
       'push_const(null)',
       'ret',
     ]);
-  shqlBoth('Evaluate mismatch true — Bat Man', r'"Bat Man" !~  r"Super\s*Man"', true, expectedBytecode: [
+  shqlBoth('Evaluate mismatch true — Bat Man', r'"Bat Man" !~  r"Super\s*Man"', true, [
       'push_const("Bat Man")',
       'jump_null(7)',
       'push_const("Super\\s*Man")',
@@ -684,7 +662,7 @@ void main() {
       'push_const(null)',
       'ret',
     ]);
-  shqlBoth('Evaluate mismatch true — Batman', r'"Batman" !~  r"Super\s*Man"', true, expectedBytecode: [
+  shqlBoth('Evaluate mismatch true — Batman', r'"Batman" !~  r"Super\s*Man"', true, [
       'push_const("Batman")',
       'jump_null(7)',
       'push_const("Super\\s*Man")',
@@ -696,7 +674,7 @@ void main() {
       'push_const(null)',
       'ret',
     ]);
-  shqlBoth('Evaluate mismatch false — Superman', r'"Super Man" !~  r"Super\s*Man"', false, expectedBytecode: [
+  shqlBoth('Evaluate mismatch false — Superman', r'"Super Man" !~  r"Super\s*Man"', false, [
       'push_const("Super Man")',
       'jump_null(7)',
       'push_const("Super\\s*Man")',
@@ -708,7 +686,7 @@ void main() {
       'push_const(null)',
       'ret',
     ]);
-  shqlBoth('Evaluate mismatch false — Superman2', r'"Superman" !~  r"Super\s*Man"', false, expectedBytecode: [
+  shqlBoth('Evaluate mismatch false — Superman2', r'"Superman" !~  r"Super\s*Man"', false, [
       'push_const("Superman")',
       'jump_null(7)',
       'push_const("Super\\s*Man")',
@@ -721,7 +699,7 @@ void main() {
       'ret',
     ]);
 
-  shqlBoth('Evaluate match — bat.* true', '"Batman" ~  "bat.*"', true, expectedBytecode: [
+  shqlBoth('Evaluate match — bat.* true', '"Batman" ~  "bat.*"', true, [
       'push_const("Batman")',
       'jump_null(7)',
       'push_const("bat.*")',
@@ -733,7 +711,7 @@ void main() {
       'push_const(null)',
       'ret',
     ]);
-  shqlBoth('Evaluate match — bat.* false', '"Robin" ~  "bat.*"', false, expectedBytecode: [
+  shqlBoth('Evaluate match — bat.* false', '"Robin" ~  "bat.*"', false, [
       'push_const("Robin")',
       'jump_null(7)',
       'push_const("bat.*")',
@@ -745,7 +723,7 @@ void main() {
       'push_const(null)',
       'ret',
     ]);
-  shqlBoth('Evaluate mismatch — bat.* true (Robin)', '"Robin" !~  "bat.*"', true, expectedBytecode: [
+  shqlBoth('Evaluate mismatch — bat.* true (Robin)', '"Robin" !~  "bat.*"', true, [
       'push_const("Robin")',
       'jump_null(7)',
       'push_const("bat.*")',
@@ -757,7 +735,7 @@ void main() {
       'push_const(null)',
       'ret',
     ]);
-  shqlBoth('Evaluate mismatch — bat.* false (Batman)', '"Batman" !~  "bat.*"', false, expectedBytecode: [
+  shqlBoth('Evaluate mismatch — bat.* false (Batman)', '"Batman" !~  "bat.*"', false, [
       'push_const("Batman")',
       'jump_null(7)',
       'push_const("bat.*")',
@@ -770,7 +748,7 @@ void main() {
       'ret',
     ]);
 
-  shqlBoth('in string — Bat in Batman', '"Bat" in "Batman"', true, expectedBytecode: [
+  shqlBoth('in string — Bat in Batman', '"Bat" in "Batman"', true, [
       'push_const("Bat")',
       'jump_null(7)',
       'push_const("Batman")',
@@ -782,7 +760,7 @@ void main() {
       'push_const(null)',
       'ret',
     ]);
-  shqlBoth('in string — bat in Batman (case-sensitive)', '"bat" in "Batman"', false, expectedBytecode: [
+  shqlBoth('in string — bat in Batman (case-sensitive)', '"bat" in "Batman"', false, [
       'push_const("bat")',
       'jump_null(7)',
       'push_const("Batman")',
@@ -795,7 +773,7 @@ void main() {
       'ret',
     ]);
 
-  shqlBoth('in list — Super Man found', '"Super Man" in ["Super Man", "Batman"]', true, expectedBytecode: [
+  shqlBoth('in list — Super Man found', '"Super Man" in ["Super Man", "Batman"]', true, [
       'push_const("Super Man")',
       'jump_null(9)',
       'push_const("Super Man")',
@@ -809,7 +787,7 @@ void main() {
       'push_const(null)',
       'ret',
     ]);
-  shqlBoth('in list — Super Man found (finns_i)', '"Super Man" finns_i ["Super Man", "Batman"]', true, expectedBytecode: [
+  shqlBoth('in list — Super Man found (finns_i)', '"Super Man" finns_i ["Super Man", "Batman"]', true, [
       'push_const("Super Man")',
       'jump_null(9)',
       'push_const("Super Man")',
@@ -823,7 +801,7 @@ void main() {
       'push_const(null)',
       'ret',
     ]);
-  shqlBoth('in list — Batman found', '"Batman" in  ["Super Man", "Batman"]', true, expectedBytecode: [
+  shqlBoth('in list — Batman found', '"Batman" in  ["Super Man", "Batman"]', true, [
       'push_const("Batman")',
       'jump_null(9)',
       'push_const("Super Man")',
@@ -837,7 +815,7 @@ void main() {
       'push_const(null)',
       'ret',
     ]);
-  shqlBoth('in list — Batman found (finns_i)', '"Batman" finns_i  ["Super Man", "Batman"]', true, expectedBytecode: [
+  shqlBoth('in list — Batman found (finns_i)', '"Batman" finns_i  ["Super Man", "Batman"]', true, [
       'push_const("Batman")',
       'jump_null(9)',
       'push_const("Super Man")',
@@ -851,7 +829,7 @@ void main() {
       'push_const(null)',
       'ret',
     ]);
-  shqlBoth('in list — Robin not found', '"Robin" in  ["Super Man", "Batman"]', false, expectedBytecode: [
+  shqlBoth('in list — Robin not found', '"Robin" in  ["Super Man", "Batman"]', false, [
       'push_const("Robin")',
       'jump_null(9)',
       'push_const("Super Man")',
@@ -865,7 +843,7 @@ void main() {
       'push_const(null)',
       'ret',
     ]);
-  shqlBoth('in list — Superman not found', '"Superman" in ["Super Man", "Batman"]', false, expectedBytecode: [
+  shqlBoth('in list — Superman not found', '"Superman" in ["Super Man", "Batman"]', false, [
       'push_const("Superman")',
       'jump_null(9)',
       'push_const("Super Man")',
@@ -879,14 +857,104 @@ void main() {
       'push_const(null)',
       'ret',
     ]);
-  shqlBothStdlib('in list — lowercase Robin found', 'lowercase("Robin") in  ["batman", "robin"]', true);
-  shqlBothStdlib('in list — lowercase Batman found', 'lowercase("Batman") in  ["batman", "robin"]', true);
-  shqlBothStdlib('in list — lowercase robin not found', 'lowercase("robin") in  ["super man", "batman"]', false);
-  shqlBothStdlib('in list — lowercase robin not found (finns_i)', 'lowercase("robin") finns_i  ["super man", "batman"]', false);
-  shqlBothStdlib('in list — lowercase superman not found', 'lowercase("superman") in  ["super man", "batman"]', false);
-  shqlBothStdlib('in list — lowercase superman not found (finns_i)', 'lowercase("superman") finns_i  ["super man", "batman"]', false);
+  shqlBothStdlib('in list — lowercase Robin found', 'lowercase("Robin") in  ["batman", "robin"]', true, [
+      'load_var(LOWERCASE)',
+      'push_const("Robin")',
+      'call(1)',
+      'jump_null(11)',
+      'push_const("batman")',
+      'push_const("robin")',
+      'make_list(2)',
+      'jump_null(10)',
+      'op_in',
+      'jump(13)',
+      'pop',
+      'pop',
+      'push_const(null)',
+      'ret',
+    ]);
+  shqlBothStdlib('in list — lowercase Batman found', 'lowercase("Batman") in  ["batman", "robin"]', true, [
+      'load_var(LOWERCASE)',
+      'push_const("Batman")',
+      'call(1)',
+      'jump_null(11)',
+      'push_const("batman")',
+      'push_const("robin")',
+      'make_list(2)',
+      'jump_null(10)',
+      'op_in',
+      'jump(13)',
+      'pop',
+      'pop',
+      'push_const(null)',
+      'ret',
+    ]);
+  shqlBothStdlib('in list — lowercase robin not found', 'lowercase("robin") in  ["super man", "batman"]', false, [
+      'load_var(LOWERCASE)',
+      'push_const("robin")',
+      'call(1)',
+      'jump_null(11)',
+      'push_const("super man")',
+      'push_const("batman")',
+      'make_list(2)',
+      'jump_null(10)',
+      'op_in',
+      'jump(13)',
+      'pop',
+      'pop',
+      'push_const(null)',
+      'ret',
+    ]);
+  shqlBothStdlib('in list — lowercase robin not found (finns_i)', 'lowercase("robin") finns_i  ["super man", "batman"]', false, [
+      'load_var(LOWERCASE)',
+      'push_const("robin")',
+      'call(1)',
+      'jump_null(11)',
+      'push_const("super man")',
+      'push_const("batman")',
+      'make_list(2)',
+      'jump_null(10)',
+      'op_in',
+      'jump(13)',
+      'pop',
+      'pop',
+      'push_const(null)',
+      'ret',
+    ]);
+  shqlBothStdlib('in list — lowercase superman not found', 'lowercase("superman") in  ["super man", "batman"]', false, [
+      'load_var(LOWERCASE)',
+      'push_const("superman")',
+      'call(1)',
+      'jump_null(11)',
+      'push_const("super man")',
+      'push_const("batman")',
+      'make_list(2)',
+      'jump_null(10)',
+      'op_in',
+      'jump(13)',
+      'pop',
+      'pop',
+      'push_const(null)',
+      'ret',
+    ]);
+  shqlBothStdlib('in list — lowercase superman not found (finns_i)', 'lowercase("superman") finns_i  ["super man", "batman"]', false, [
+      'load_var(LOWERCASE)',
+      'push_const("superman")',
+      'call(1)',
+      'jump_null(11)',
+      'push_const("super man")',
+      'push_const("batman")',
+      'make_list(2)',
+      'jump_null(10)',
+      'op_in',
+      'jump(13)',
+      'pop',
+      'pop',
+      'push_const(null)',
+      'ret',
+    ]);
 
-  shqlBoth('Execute not equal false', '5*2 <> 2+8', false, expectedBytecode: [
+  shqlBoth('Execute not equal false', '5*2 <> 2+8', false, [
       'push_const(5)',
       'jump_null(7)',
       'push_const(2)',
@@ -908,7 +976,7 @@ void main() {
       'cmp_neq',
       'ret',
     ]);
-  shqlBoth('Execute not equal false with exclamation equals', '5*2 != 2+8', false, expectedBytecode: [
+  shqlBoth('Execute not equal false with exclamation equals', '5*2 != 2+8', false, [
       'push_const(5)',
       'jump_null(7)',
       'push_const(2)',
@@ -930,7 +998,7 @@ void main() {
       'cmp_neq',
       'ret',
     ]);
-  shqlBoth('Execute less than false', '10<1', false, expectedBytecode: [
+  shqlBoth('Execute less than false', '10<1', false, [
       'push_const(10)',
       'jump_null(7)',
       'push_const(1)',
@@ -942,7 +1010,7 @@ void main() {
       'push_const(null)',
       'ret',
     ]);
-  shqlBoth('Execute less than true', '1<10', true, expectedBytecode: [
+  shqlBoth('Execute less than true', '1<10', true, [
       'push_const(1)',
       'jump_null(7)',
       'push_const(10)',
@@ -954,7 +1022,7 @@ void main() {
       'push_const(null)',
       'ret',
     ]);
-  shqlBoth('Execute less than or equal false', '10<=1', false, expectedBytecode: [
+  shqlBoth('Execute less than or equal false', '10<=1', false, [
       'push_const(10)',
       'jump_null(7)',
       'push_const(1)',
@@ -966,7 +1034,7 @@ void main() {
       'push_const(null)',
       'ret',
     ]);
-  shqlBoth('Execute less than or equal true', '1<=10', true, expectedBytecode: [
+  shqlBoth('Execute less than or equal true', '1<=10', true, [
       'push_const(1)',
       'jump_null(7)',
       'push_const(10)',
@@ -978,7 +1046,7 @@ void main() {
       'push_const(null)',
       'ret',
     ]);
-  shqlBoth('Execute greater than false', '1>10', false, expectedBytecode: [
+  shqlBoth('Execute greater than false', '1>10', false, [
       'push_const(1)',
       'jump_null(7)',
       'push_const(10)',
@@ -990,7 +1058,7 @@ void main() {
       'push_const(null)',
       'ret',
     ]);
-  shqlBoth('Execute greater than true', '10>1', true, expectedBytecode: [
+  shqlBoth('Execute greater than true', '10>1', true, [
       'push_const(10)',
       'jump_null(7)',
       'push_const(1)',
@@ -1002,7 +1070,7 @@ void main() {
       'push_const(null)',
       'ret',
     ]);
-  shqlBoth('Execute greater than or equal false', '1>=10', false, expectedBytecode: [
+  shqlBoth('Execute greater than or equal false', '1>=10', false, [
       'push_const(1)',
       'jump_null(7)',
       'push_const(10)',
@@ -1014,7 +1082,7 @@ void main() {
       'push_const(null)',
       'ret',
     ]);
-  shqlBoth('Execute greater than or equal true', '10>=1', true, expectedBytecode: [
+  shqlBoth('Execute greater than or equal true', '10>=1', true, [
       'push_const(10)',
       'jump_null(7)',
       'push_const(1)',
@@ -1027,7 +1095,7 @@ void main() {
       'ret',
     ]);
 
-  shqlBoth('AND true', '1<10 AND 2<9', true, expectedBytecode: [
+  shqlBoth('AND true', '1<10 AND 2<9', true, [
       'push_const(1)',
       'jump_null(7)',
       'push_const(10)',
@@ -1049,7 +1117,7 @@ void main() {
       'log_and',
       'ret',
     ]);
-  shqlBoth('AND true (OCH)', '1<10 OCH 2<9', true, expectedBytecode: [
+  shqlBoth('AND true (OCH)', '1<10 OCH 2<9', true, [
       'push_const(1)',
       'jump_null(7)',
       'push_const(10)',
@@ -1071,29 +1139,7 @@ void main() {
       'log_and',
       'ret',
     ]);
-  shqlBoth('AND false', '1>10 AND 2<9', false, expectedBytecode: [
-      'push_const(1)',
-      'jump_null(7)',
-      'push_const(10)',
-      'jump_null(6)',
-      'cmp_gt',
-      'jump(9)',
-      'pop',
-      'pop',
-      'push_const(null)',
-      'push_const(2)',
-      'jump_null(16)',
-      'push_const(9)',
-      'jump_null(15)',
-      'cmp_lt',
-      'jump(18)',
-      'pop',
-      'pop',
-      'push_const(null)',
-      'log_and',
-      'ret',
-    ]);
-  shqlBoth('AND false (OCH)', '1>10 OCH 2<9', false, expectedBytecode: [
+  shqlBoth('AND false', '1>10 AND 2<9', false, [
       'push_const(1)',
       'jump_null(7)',
       'push_const(10)',
@@ -1115,7 +1161,29 @@ void main() {
       'log_and',
       'ret',
     ]);
-  shqlBoth('OR true', '1>10 OR 2<9', true, expectedBytecode: [
+  shqlBoth('AND false (OCH)', '1>10 OCH 2<9', false, [
+      'push_const(1)',
+      'jump_null(7)',
+      'push_const(10)',
+      'jump_null(6)',
+      'cmp_gt',
+      'jump(9)',
+      'pop',
+      'pop',
+      'push_const(null)',
+      'push_const(2)',
+      'jump_null(16)',
+      'push_const(9)',
+      'jump_null(15)',
+      'cmp_lt',
+      'jump(18)',
+      'pop',
+      'pop',
+      'push_const(null)',
+      'log_and',
+      'ret',
+    ]);
+  shqlBoth('OR true', '1>10 OR 2<9', true, [
       'push_const(1)',
       'jump_null(7)',
       'push_const(10)',
@@ -1137,7 +1205,7 @@ void main() {
       'log_or',
       'ret',
     ]);
-  shqlBoth('OR true (ELLER)', '1>10 ELLER 2<9', true, expectedBytecode: [
+  shqlBoth('OR true (ELLER)', '1>10 ELLER 2<9', true, [
       'push_const(1)',
       'jump_null(7)',
       'push_const(10)',
@@ -1159,7 +1227,7 @@ void main() {
       'log_or',
       'ret',
     ]);
-  shqlBoth('XOR true', '1>10 XOR 2<9', true, expectedBytecode: [
+  shqlBoth('XOR true', '1>10 XOR 2<9', true, [
       'push_const(1)',
       'jump_null(7)',
       'push_const(10)',
@@ -1185,7 +1253,7 @@ void main() {
       'cmp_neq',
       'ret',
     ]);
-  shqlBoth('XOR true (ANTINGEN_ELLER)', '1>10 ANTINGEN_ELLER 2<9', true, expectedBytecode: [
+  shqlBoth('XOR true (ANTINGEN_ELLER)', '1>10 ANTINGEN_ELLER 2<9', true, [
       'push_const(1)',
       'jump_null(7)',
       'push_const(10)',
@@ -1211,7 +1279,7 @@ void main() {
       'cmp_neq',
       'ret',
     ]);
-  shqlBoth('XOR false', '10>1 XOR 2<9', false, expectedBytecode: [
+  shqlBoth('XOR false', '10>1 XOR 2<9', false, [
       'push_const(10)',
       'jump_null(7)',
       'push_const(1)',
@@ -1237,7 +1305,7 @@ void main() {
       'cmp_neq',
       'ret',
     ]);
-  shqlBoth('XOR false (ANTINGEN_ELLER)', '10>1 ANTINGEN_ELLER 2<9', false, expectedBytecode: [
+  shqlBoth('XOR false (ANTINGEN_ELLER)', '10>1 ANTINGEN_ELLER 2<9', false, [
       'push_const(10)',
       'jump_null(7)',
       'push_const(1)',
@@ -1263,26 +1331,26 @@ void main() {
       'cmp_neq',
       'ret',
     ]);
-  shqlBoth('NOT true number', 'NOT 11', false, expectedBytecode: [
+  shqlBoth('NOT true number', 'NOT 11', false, [
       'push_const(11)',
       'jump_null(3)',
       'log_not',
       'ret',
     ]);
-  shqlBoth('NOT true number (INTE)', 'INTE 11', false, expectedBytecode: [
+  shqlBoth('NOT true number (INTE)', 'INTE 11', false, [
       'push_const(11)',
       'jump_null(3)',
       'log_not',
       'ret',
     ]);
 
-  shqlBoth('calculate_negation with exclamation', '!11', false, expectedBytecode: [
+  shqlBoth('calculate_negation with exclamation', '!11', false, [
       'push_const(11)',
       'jump_null(3)',
       'log_not',
       'ret',
     ]);
-  shqlBoth('Execute unary minus', '-5+11', 6, expectedBytecode: [
+  shqlBoth('Execute unary minus', '-5+11', 6, [
       'push_const(5)',
       'jump_null(3)',
       'neg',
@@ -1296,7 +1364,7 @@ void main() {
       'push_const(null)',
       'ret',
     ]);
-  shqlBoth('Execute unary plus', '+5+11', 16, expectedBytecode: [
+  shqlBoth('Execute unary plus', '+5+11', 16, [
       'push_const(5)',
       'jump_null(7)',
       'push_const(11)',
@@ -1308,7 +1376,7 @@ void main() {
       'push_const(null)',
       'ret',
     ]);
-  shqlBoth('Execute with constants', 'PI * 2', 3.1415926535897932 * 2, expectedBytecode: [
+  shqlBoth('Execute with constants', 'PI * 2', 3.1415926535897932 * 2, [
       'push_const(3.141592653589793)',
       'jump_null(7)',
       'push_const(2)',
@@ -1320,7 +1388,7 @@ void main() {
       'push_const(null)',
       'ret',
     ]);
-  shqlBoth('Execute with lowercase constants', 'pi * 2', 3.1415926535897932 * 2, expectedBytecode: [
+  shqlBoth('Execute with lowercase constants', 'pi * 2', 3.1415926535897932 * 2, [
       'push_const(3.141592653589793)',
       'jump_null(7)',
       'push_const(2)',
@@ -1332,47 +1400,147 @@ void main() {
       'push_const(null)',
       'ret',
     ]);
-  shqlBoth('ANSWER constant', 'ANSWER', 42, expectedBytecode: [
+  shqlBoth('ANSWER constant', 'ANSWER', 42, [
       'push_const(42)',
       'ret',
     ]);
-  shqlBoth('TRUE constant', 'TRUE', true, expectedBytecode: [
+  shqlBoth('TRUE constant', 'TRUE', true, [
       'push_const(true)',
       'ret',
     ]);
-  shqlBoth('FALSE constant', 'FALSE', false, expectedBytecode: [
+  shqlBoth('FALSE constant', 'FALSE', false, [
       'push_const(false)',
       'ret',
     ]);
 
-  shqlBothStdlib('Execute with functions', 'POW(2,2)', 4);
-  shqlBothStdlib('Execute with two functions', 'POW(2,2)+SQRT(4)', 6);
-  shqlBothStdlib('Calculate library function', 'SQRT(4)', 2);
-  shqlBothStdlib('Execute nested function call', 'SQRT(POW(2,2))', 2);
-  shqlBothStdlib('Execute nested function call with expression', 'SQRT(POW(2,2)+10)', 3.7416573867739413);
-  shqlBothStdlib('LOWERCASE', "LOWERCASE(\"Hello\")", 'hello');
-  shqlBothStdlib('UPPERCASE', "UPPERCASE(\"hello\")", 'HELLO');
-  shqlBothStdlib('STRING', "STRING(42)", '42');
-  shqlBothStdlib('INT truncates float', 'INT(3.9)', 3);
-  shqlBothStdlib('ROUND', 'ROUND(3.6)', 4);
-  shqlBothStdlib('MIN', 'MIN(3, 7)', 3);
-  shqlBothStdlib('MAX', 'MAX(3, 7)', 7);
-  shqlBothStdlib('SUBSTRING', "SUBSTRING(\"hello world\", 0, 5)", 'hello');
-  shqlBothStdlib('LENGTH of string', "LENGTH(\"hello\")", 5);
+  shqlBothStdlib('Execute with functions', 'POW(2,2)', 4, [
+      'load_var(POW)',
+      'push_const(2)',
+      'push_const(2)',
+      'call(2)',
+      'ret',
+    ]);
+  shqlBothStdlib('Execute with two functions', 'POW(2,2)+SQRT(4)', 6, [
+      'load_var(POW)',
+      'push_const(2)',
+      'push_const(2)',
+      'call(2)',
+      'jump_null(12)',
+      'load_var(SQRT)',
+      'push_const(4)',
+      'call(1)',
+      'jump_null(11)',
+      'add',
+      'jump(14)',
+      'pop',
+      'pop',
+      'push_const(null)',
+      'ret',
+    ]);
+  shqlBothStdlib('Calculate library function', 'SQRT(4)', 2, [
+      'load_var(SQRT)',
+      'push_const(4)',
+      'call(1)',
+      'ret',
+    ]);
+  shqlBothStdlib('Execute nested function call', 'SQRT(POW(2,2))', 2, [
+      'load_var(SQRT)',
+      'load_var(POW)',
+      'push_const(2)',
+      'push_const(2)',
+      'call(2)',
+      'call(1)',
+      'ret',
+    ]);
+  shqlBothStdlib('Execute nested function call with expression', 'SQRT(POW(2,2)+10)', 3.7416573867739413, [
+      'load_var(SQRT)',
+      'load_var(POW)',
+      'push_const(2)',
+      'push_const(2)',
+      'call(2)',
+      'jump_null(11)',
+      'push_const(10)',
+      'jump_null(10)',
+      'add',
+      'jump(13)',
+      'pop',
+      'pop',
+      'push_const(null)',
+      'call(1)',
+      'ret',
+    ]);
+  shqlBothStdlib('LOWERCASE', "LOWERCASE(\"Hello\")", 'hello', [
+      'load_var(LOWERCASE)',
+      'push_const("Hello")',
+      'call(1)',
+      'ret',
+    ]);
+  shqlBothStdlib('UPPERCASE', "UPPERCASE(\"hello\")", 'HELLO', [
+      'load_var(UPPERCASE)',
+      'push_const("hello")',
+      'call(1)',
+      'ret',
+    ]);
+  shqlBothStdlib('STRING', "STRING(42)", '42', [
+      'load_var(STRING)',
+      'push_const(42)',
+      'call(1)',
+      'ret',
+    ]);
+  shqlBothStdlib('INT truncates float', 'INT(3.9)', 3, [
+      'load_var(INT)',
+      'push_const(3.9)',
+      'call(1)',
+      'ret',
+    ]);
+  shqlBothStdlib('ROUND', 'ROUND(3.6)', 4, [
+      'load_var(ROUND)',
+      'push_const(3.6)',
+      'call(1)',
+      'ret',
+    ]);
+  shqlBothStdlib('MIN', 'MIN(3, 7)', 3, [
+      'load_var(MIN)',
+      'push_const(3)',
+      'push_const(7)',
+      'call(2)',
+      'ret',
+    ]);
+  shqlBothStdlib('MAX', 'MAX(3, 7)', 7, [
+      'load_var(MAX)',
+      'push_const(3)',
+      'push_const(7)',
+      'call(2)',
+      'ret',
+    ]);
+  shqlBothStdlib('SUBSTRING', "SUBSTRING(\"hello world\", 0, 5)", 'hello', [
+      'load_var(SUBSTRING)',
+      'push_const("hello world")',
+      'push_const(0)',
+      'push_const(5)',
+      'call(3)',
+      'ret',
+    ]);
+  shqlBothStdlib('LENGTH of string', "LENGTH(\"hello\")", 5, [
+      'load_var(LENGTH)',
+      'push_const("hello")',
+      'call(1)',
+      'ret',
+    ]);
 
-  shqlBoth('Execute two expressions', '10;11', 11, expectedBytecode: [
+  shqlBoth('Execute two expressions', '10;11', 11, [
       'push_const(10)',
       'pop',
       'push_const(11)',
       'ret',
     ]);
-  shqlBoth('Execute two expressions with final semicolon', '10;11;', 11, expectedBytecode: [
+  shqlBoth('Execute two expressions with final semicolon', '10;11;', 11, [
       'push_const(10)',
       'pop',
       'push_const(11)',
       'ret',
     ]);
-  shqlBoth('sequence of two expressions', 'r := BEGIN 10;11 END; r', 11, expectedBytecode: [
+  shqlBoth('sequence of two expressions', 'r := BEGIN 10;11 END; r', 11, [
       'push_scope',
       'push_const(10)',
       'pop',
@@ -1384,7 +1552,7 @@ void main() {
       'load_var(R)',
       'ret',
     ]);
-  shqlBoth('sequence with trailing semicolon', 'r := BEGIN 10;11; END; r', 11, expectedBytecode: [
+  shqlBoth('sequence with trailing semicolon', 'r := BEGIN 10;11; END; r', 11, [
       'push_scope',
       'push_const(10)',
       'pop',
@@ -1396,13 +1564,13 @@ void main() {
       'load_var(R)',
       'ret',
     ]);
-  shqlBoth('Test assignment', 'i:=42', 42, expectedBytecode: [
+  shqlBoth('Test assignment', 'i:=42', 42, [
       'push_const(42)',
       'store_var(I)',
       'load_var(I)',
       'ret',
     ]);
-  shqlBoth('Test increment', 'i:=41; i:=i+1', 42, expectedBytecode: [
+  shqlBoth('Test increment', 'i:=41; i:=i+1', 42, [
       'push_const(41)',
       'store_var(I)',
       'load_var(I)',
@@ -1421,13 +1589,13 @@ void main() {
       'ret',
     ]);
 
-  shqlBoth('standalone function def', 'f(x):=x*2', isNotNull, expectedBytecode: [
+  shqlBoth('standalone function def', 'f(x):=x*2', isNotNull, [
       'make_closure(.__F_0)',
       'store_var(F)',
       'load_var(F)',
       'ret',
     ]);
-  shqlBoth('standalone lambda def', 'x=>x+1', isNotNull, expectedBytecode: [
+  shqlBoth('standalone lambda def', 'x=>x+1', isNotNull, [
       'make_closure(.__lambda_0)',
       'ret',
     ]);
@@ -1435,10 +1603,10 @@ void main() {
   test('Test function definition', () async {
     const src = 'f(x):=x*2';
     expect(await evalEngine(src), isA<UserFunction>());
-    expect(await _runBytecodeNoAssert(src), isNotNull);
+    expect(await evalBytecode(src, ['make_closure(.__F_0)', 'store_var(F)', 'load_var(F)', 'ret']), isNotNull);
   });
 
-  shqlBoth('Test user function', 'f(x):=x*2; f(2)', 4, expectedBytecode: [
+  shqlBoth('Test user function', 'f(x):=x*2; f(2)', 4, [
       'make_closure(.__F_0)',
       'store_var(F)',
       'load_var(F)',
@@ -1448,7 +1616,7 @@ void main() {
       'call(1)',
       'ret',
     ]);
-  shqlBoth('Test two argument user function', 'f(a,b):=a-b; f(10,2)', 8, expectedBytecode: [
+  shqlBoth('Test two argument user function', 'f(a,b):=a-b; f(10,2)', 8, [
       'make_closure(.__F_0)',
       'store_var(F)',
       'load_var(F)',
@@ -1459,7 +1627,7 @@ void main() {
       'call(2)',
       'ret',
     ]);
-  shqlBoth('Test recursion', 'fac(x) := IF x <= 1 THEN 1 ELSE x * fac(x-1); fac(3)', 6, expectedBytecode: [
+  shqlBoth('Test recursion', 'fac(x) := IF x <= 1 THEN 1 ELSE x * fac(x-1); fac(3)', 6, [
       'make_closure(.__FAC_0)',
       'store_var(FAC)',
       'load_var(FAC)',
@@ -1469,7 +1637,7 @@ void main() {
       'call(1)',
       'ret',
     ]);
-  shqlBoth('Test while loop', 'x := 0; WHILE x < 10 DO x := x + 1; x', 10, expectedBytecode: [
+  shqlBoth('Test while loop', 'x := 0; WHILE x < 10 DO x := x + 1; x', 10, [
       'push_const(0)',
       'store_var(X)',
       'load_var(X)',
@@ -1504,7 +1672,7 @@ void main() {
       'load_var(X)',
       'ret',
     ]);
-  shqlBoth('Test lambda function', 'sum(a,b) := a+b; f1(f,a,b,c) := f(a,b)+c; f1(sum, 1,2,3)', 6, expectedBytecode: [
+  shqlBoth('Test lambda function', 'sum(a,b) := a+b; f1(f,a,b,c) := f(a,b)+c; f1(sum, 1,2,3)', 6, [
       'make_closure(.__SUM_0)',
       'store_var(SUM)',
       'load_var(SUM)',
@@ -1521,7 +1689,7 @@ void main() {
       'call(4)',
       'ret',
     ]);
-  shqlBoth('Test lambda function with user function argument', 'sum(a,b) := a+b; f1(f,a,b,c) := f(a,b)+c; f1(sum, 10,20,5)', 35, expectedBytecode: [
+  shqlBoth('Test lambda function with user function argument', 'sum(a,b) := a+b; f1(f,a,b,c) := f(a,b)+c; f1(sum, 10,20,5)', 35, [
       'make_closure(.__SUM_0)',
       'store_var(SUM)',
       'load_var(SUM)',
@@ -1538,7 +1706,7 @@ void main() {
       'call(4)',
       'ret',
     ]);
-  shqlBoth('Test lambda expression', 'f:= x => x^2; f(3)', 9, expectedBytecode: [
+  shqlBoth('Test lambda expression', 'f:= x => x^2; f(3)', 9, [
       'make_closure(.__lambda_0)',
       'store_var(F)',
       'load_var(F)',
@@ -1548,18 +1716,18 @@ void main() {
       'call(1)',
       'ret',
     ]);
-  shqlBoth('Test anonymous lambda expression', '(x => x^2)(3)', 9, expectedBytecode: [
+  shqlBoth('Test anonymous lambda expression', '(x => x^2)(3)', 9, [
       'make_closure(.__lambda_0)',
       'push_const(3)',
       'call(1)',
       'ret',
     ]);
-  shqlBoth('Test nullary anonymous lambda expression', '(() => 9)()', 9, expectedBytecode: [
+  shqlBoth('Test nullary anonymous lambda expression', '(() => 9)()', 9, [
       'make_closure(.__lambda_0)',
       'call(0)',
       'ret',
     ]);
-  shqlBoth('Test return', 'f(x) := IF x % 2 = 0 THEN RETURN x+1 ELSE RETURN x; f(2)', 3, expectedBytecode: [
+  shqlBoth('Test return', 'f(x) := IF x % 2 = 0 THEN RETURN x+1 ELSE RETURN x; f(2)', 3, [
       'make_closure(.__F_0)',
       'store_var(F)',
       'load_var(F)',
@@ -1569,7 +1737,7 @@ void main() {
       'call(1)',
       'ret',
     ]);
-  shqlBoth('Test block return', 'f(x) := BEGIN IF x % 2 = 0 THEN RETURN x+1; RETURN x; END; f(2)', 3, expectedBytecode: [
+  shqlBoth('Test block return', 'f(x) := BEGIN IF x % 2 = 0 THEN RETURN x+1; RETURN x; END; f(2)', 3, [
       'make_closure(.__F_0)',
       'store_var(F)',
       'load_var(F)',
@@ -1579,7 +1747,7 @@ void main() {
       'call(1)',
       'ret',
     ]);
-  shqlBoth('Test factorial with return', 'f(x) := BEGIN IF x <= 1 THEN RETURN 1; RETURN x * f(x-1); END; f(5)', 120, expectedBytecode: [
+  shqlBoth('Test factorial with return', 'f(x) := BEGIN IF x <= 1 THEN RETURN 1; RETURN x * f(x-1); END; f(5)', 120, [
       'make_closure(.__F_0)',
       'store_var(F)',
       'load_var(F)',
@@ -1589,7 +1757,7 @@ void main() {
       'call(1)',
       'ret',
     ]);
-  shqlBoth('Test break', 'x := 0; WHILE TRUE DO BEGIN x := x + 1; IF x = 10 THEN BREAK; END; x', 10, expectedBytecode: [
+  shqlBoth('Test break', 'x := 0; WHILE TRUE DO BEGIN x := x + 1; IF x = 10 THEN BREAK; END; x', 10, [
       'push_const(0)',
       'store_var(X)',
       'load_var(X)',
@@ -1626,7 +1794,7 @@ void main() {
       'load_var(X)',
       'ret',
     ]);
-  shqlBoth('Test continue', 'x := 0; y := 0; WHILE x < 10 DO BEGIN x := x + 1; IF x % 2 = 0 THEN CONTINUE; y := y + 1; END; y', 5, expectedBytecode: [
+  shqlBoth('Test continue', 'x := 0; y := 0; WHILE x < 10 DO BEGIN x := x + 1; IF x % 2 = 0 THEN CONTINUE; y := y + 1; END; y', 5, [
       'push_const(0)',
       'store_var(X)',
       'load_var(X)',
@@ -1706,7 +1874,7 @@ void main() {
         RETURN __result;
       END;
       __test()
-    ''', [0, 2], expectedBytecode: [
+    ''', [0, 2], [
       'make_closure(.____TEST_0)',
       'store_var(__TEST)',
       'load_var(__TEST)',
@@ -1731,7 +1899,7 @@ void main() {
         RETURN __result;
       END;
       __test()
-    ''', ['zero', 'after', 'skip', 'two', 'after'], expectedBytecode: [
+    ''', ['zero', 'after', 'skip', 'two', 'after'], [
       'make_closure(.____TEST_0)',
       'store_var(__TEST)',
       'load_var(__TEST)',
@@ -1757,7 +1925,7 @@ void main() {
         RETURN __result;
       END;
       __test()
-    ''', [0, 'skip', 2], expectedBytecode: [
+    ''', [0, 'skip', 2], [
       'make_closure(.____TEST_0)',
       'store_var(__TEST)',
       'load_var(__TEST)',
@@ -1789,9 +1957,17 @@ void main() {
         RETURN __result;
       END;
       __test()
-    ''', ['skipped', 'skipped', 'skipped']);
+    ''', ['skipped', 'skipped', 'skipped'], [
+      'make_closure(.____TEST_0)',
+      'store_var(__TEST)',
+      'load_var(__TEST)',
+      'pop',
+      'load_var(__TEST)',
+      'call(0)',
+      'ret',
+    ]);
 
-  shqlBoth('Test repeat until', 'x := 0; REPEAT x := x + 1 UNTIL x = 10; x', 10, expectedBytecode: [
+  shqlBoth('Test repeat until', 'x := 0; REPEAT x := x + 1 UNTIL x = 10; x', 10, [
       'push_const(0)',
       'store_var(X)',
       'load_var(X)',
@@ -1819,7 +1995,7 @@ void main() {
       'load_var(X)',
       'ret',
     ]);
-  shqlBoth('Test for loop', 'sum := 0; FOR i := 1 TO 10 DO sum := sum + i; sum', 55, expectedBytecode: [
+  shqlBoth('Test for loop', 'sum := 0; FOR i := 1 TO 10 DO sum := sum + i; sum', 55, [
       'push_const(0)',
       'store_var(SUM)',
       'load_var(SUM)',
@@ -1891,7 +2067,7 @@ void main() {
       'load_var(SUM)',
       'ret',
     ]);
-  shqlBoth('FOR 0 TO 0 iterates once', 'sum:=0; FOR i:=0 TO 0 DO sum:=sum+1; sum', 1, expectedBytecode: [
+  shqlBoth('FOR 0 TO 0 iterates once', 'sum:=0; FOR i:=0 TO 0 DO sum:=sum+1; sum', 1, [
       'push_const(0)',
       'store_var(SUM)',
       'load_var(SUM)',
@@ -2029,11 +2205,22 @@ END;
 
     expect((await evalEngine('$stdlibSrc\n$setup $q1')) is Map, true);
     expect((await evalEngine('$stdlibSrc\n$setup $q2')) is Map, true);
-    expect(await _runBytecodeNoAssert('$stdlibSrc\n$setup $q1'), isA<Map>());
-    expect(await _runBytecodeNoAssert('$stdlibSrc\n$setup $q2'), isA<Map>());
+    // Bytecode: run stdlib + setup separately, then compile q1/q2 alone.
+    {
+      final cs = Runtime.prepareConstantsSet();
+      final runtime = Runtime.prepareRuntime(cs);
+      for (final src in [stdlibSrc, setup]) {
+        final tree = Parser.parse(src, cs, sourceCode: src);
+        final prog = BytecodeCompiler.compile(tree, cs);
+        final decoded = BytecodeDecoder.decode(BytecodeEncoder.encode(prog));
+        await BytecodeInterpreter(decoded, runtime).executeScoped('main');
+      }
+      expect(await evalBytecode(q1, ['load_var(LIST)', 'push_const(0)', 'get_index', 'ret'], cs: cs, runtime: runtime), isA<Map>());
+      expect(await evalBytecode(q2, ['load_var(LIST)', 'push_const(0)', 'get_index', 'push_const("props")', 'get_index', 'ret'], cs: cs, runtime: runtime), isA<Map>());
+    }
   });
 
-  shqlBoth('Test for loop with step', 'sum := 0; FOR i := 1 TO 10 STEP 2 DO sum := sum + i; sum', 25, expectedBytecode: [
+  shqlBoth('Test for loop with step', 'sum := 0; FOR i := 1 TO 10 STEP 2 DO sum := sum + i; sum', 25, [
       'push_const(0)',
       'store_var(SUM)',
       'load_var(SUM)',
@@ -2101,7 +2288,7 @@ END;
       'load_var(SUM)',
       'ret',
     ]);
-  shqlBoth('Test for loop counting down', 'sum := 0; FOR i := 10 TO 1 STEP -1 DO sum := sum + i; sum', 55, expectedBytecode: [
+  shqlBoth('Test for loop counting down', 'sum := 0; FOR i := 10 TO 1 STEP -1 DO sum := sum + i; sum', 55, [
       'push_const(0)',
       'store_var(SUM)',
       'load_var(SUM)',
@@ -2172,7 +2359,7 @@ END;
       'ret',
     ]);
 
-  shqlBoth('Can assign to list variable', 'x := [1,2,3]; x[0]', 1, expectedBytecode: [
+  shqlBoth('Can assign to list variable', 'x := [1,2,3]; x[0]', 1, [
       'push_const(1)',
       'push_const(2)',
       'push_const(3)',
@@ -2185,7 +2372,7 @@ END;
       'get_index',
       'ret',
     ]);
-  shqlBoth('Can assign to list member', 'x := [1,2,3]; x[1]:=4; x[1]', 4, expectedBytecode: [
+  shqlBoth('Can assign to list member', 'x := [1,2,3]; x[1]:=4; x[1]', 4, [
       'push_const(1)',
       'push_const(2)',
       'push_const(3)',
@@ -2203,18 +2390,18 @@ END;
       'get_index',
       'ret',
     ]);
-  shqlBoth('list literal', '[1,2,3]', [1,2,3], expectedBytecode: [
+  shqlBoth('list literal', '[1,2,3]', [1,2,3], [
       'push_const(1)',
       'push_const(2)',
       'push_const(3)',
       'make_list(3)',
       'ret',
     ]);
-  shqlBoth('empty list literal', '[]', [], expectedBytecode: [
+  shqlBoth('empty list literal', '[]', [], [
       'make_list(0)',
       'ret',
     ]);
-  shqlBoth('list concatenation', '[1,2]+[3,4]', [1,2,3,4], expectedBytecode: [
+  shqlBoth('list concatenation', '[1,2]+[3,4]', [1,2,3,4], [
       'push_const(1)',
       'push_const(2)',
       'make_list(2)',
@@ -2230,7 +2417,7 @@ END;
       'push_const(null)',
       'ret',
     ]);
-  shqlBoth('list index read', 'x:=[10,20,30]; x[1]', 20, expectedBytecode: [
+  shqlBoth('list index read', 'x:=[10,20,30]; x[1]', 20, [
       'push_const(10)',
       'push_const(20)',
       'push_const(30)',
@@ -2244,7 +2431,7 @@ END;
       'ret',
     ]);
 
-  shqlBoth('Can create thread', 'THREAD( () => 9 ) <> null', true, expectedBytecode: [
+  shqlBoth('Can create thread', 'THREAD( () => 9 ) <> null', true, [
       'load_var(THREAD)',
       'make_closure(.__lambda_0)',
       'call(1)',
@@ -2253,7 +2440,7 @@ END;
       'ret',
     ]);
 
-  shqlBoth('Can assign to map variable', "x := {'a':1,'b':2,'c':3}; x['a']", 1, expectedBytecode: [
+  shqlBoth('Can assign to map variable', "x := {'a':1,'b':2,'c':3}; x['a']", 1, [
       'push_const("a")',
       'push_const(1)',
       'push_const("b")',
@@ -2269,7 +2456,7 @@ END;
       'get_index',
       'ret',
     ]);
-  shqlBoth('Can assign to map member', "x := {'a':1,'b':2,'c':3}; x['b']:=4; x['b']", 4, expectedBytecode: [
+  shqlBoth('Can assign to map member', "x := {'a':1,'b':2,'c':3}; x['b']:=4; x['b']", 4, [
       'push_const("a")',
       'push_const(1)',
       'push_const("b")',
@@ -2290,7 +2477,7 @@ END;
       'get_index',
       'ret',
     ]);
-  shqlBoth('map literal index read', "{'a':1,'b':2}['a']", 1, expectedBytecode: [
+  shqlBoth('map literal index read', "{'a':1,'b':2}['a']", 1, [
       'push_const("a")',
       'push_const(1)',
       'push_const("b")',
@@ -2300,7 +2487,7 @@ END;
       'get_index',
       'ret',
     ]);
-  shqlBoth('map index write', "x:={'a':1,'b':2}; x['b']:=99; x['b']", 99, expectedBytecode: [
+  shqlBoth('map index write', "x:={'a':1,'b':2}; x['b']:=99; x['b']", 99, [
       'push_const("a")',
       'push_const(1)',
       'push_const("b")',
@@ -2320,7 +2507,7 @@ END;
       'ret',
     ]);
 
-  shqlBoth('Can start thread', "x := 0; t := THREAD( () => BEGIN FOR i := 1 TO 1000 DO x := x + 1; END ); JOIN(t); x", 1000, expectedBytecode: [
+  shqlBoth('Can start thread', "x := 0; t := THREAD( () => BEGIN FOR i := 1 TO 1000 DO x := x + 1; END ); JOIN(t); x", 1000, [
       'push_const(0)',
       'store_var(X)',
       'load_var(X)',
@@ -2340,7 +2527,7 @@ END;
     ]);
 
   shqlBoth('Global variable accessed in function',
-      'my_global := 42; GET_GLOBAL() := my_global; GET_GLOBAL()', 42, expectedBytecode: [
+      'my_global := 42; GET_GLOBAL() := my_global; GET_GLOBAL()', 42, [
       'push_const(42)',
       'store_var(MY_GLOBAL)',
       'load_var(MY_GLOBAL)',
@@ -2354,7 +2541,7 @@ END;
       'ret',
     ]);
   shqlBoth('Global variable modified in function',
-      'my_global := 10; ADD_TO_GLOBAL(x) := BEGIN my_global := my_global + x; RETURN my_global; END; ADD_TO_GLOBAL(5)', 15, expectedBytecode: [
+      'my_global := 10; ADD_TO_GLOBAL(x) := BEGIN my_global := my_global + x; RETURN my_global; END; ADD_TO_GLOBAL(5)', 15, [
       'push_const(10)',
       'store_var(MY_GLOBAL)',
       'load_var(MY_GLOBAL)',
@@ -2369,9 +2556,42 @@ END;
       'ret',
     ]);
   shqlBothStdlib('Global array accessed in function',
-      'my_array := [1, 2, 3]; GET_LENGTH() := LENGTH(my_array); GET_LENGTH()', 3);
+      'my_array := [1, 2, 3]; GET_LENGTH() := LENGTH(my_array); GET_LENGTH()', 3, [
+      'push_const(1)',
+      'push_const(2)',
+      'push_const(3)',
+      'make_list(3)',
+      'store_var(MY_ARRAY)',
+      'load_var(MY_ARRAY)',
+      'pop',
+      'make_closure(.__GET_LENGTH_0)',
+      'store_var(GET_LENGTH)',
+      'load_var(GET_LENGTH)',
+      'pop',
+      'load_var(GET_LENGTH)',
+      'call(0)',
+      'ret',
+    ]);
   shqlBothStdlib('Global array modified in function — element at 3',
-      'my_array := [1, 2, 3]; PUSH_TO_ARRAY(x) := BEGIN my_array := my_array + [x]; RETURN my_array; END; PUSH_TO_ARRAY(4)[3]', 4);
+      'my_array := [1, 2, 3]; PUSH_TO_ARRAY(x) := BEGIN my_array := my_array + [x]; RETURN my_array; END; PUSH_TO_ARRAY(4)[3]', 4, [
+      'push_const(1)',
+      'push_const(2)',
+      'push_const(3)',
+      'make_list(3)',
+      'store_var(MY_ARRAY)',
+      'load_var(MY_ARRAY)',
+      'pop',
+      'make_closure(.__PUSH_TO_ARRAY_0)',
+      'store_var(PUSH_TO_ARRAY)',
+      'load_var(PUSH_TO_ARRAY)',
+      'pop',
+      'load_var(PUSH_TO_ARRAY)',
+      'push_const(4)',
+      'call(1)',
+      'push_const(3)',
+      'get_index',
+      'ret',
+    ]);
   shqlBothStdlib('Navigation stack push/pop pattern', r'''
 navigation_stack := ['main'];
 PUSH_ROUTE(route) := BEGIN
@@ -2394,9 +2614,34 @@ END;
 PUSH_ROUTE('screen1');
 PUSH_ROUTE('screen2');
 POP_ROUTE()
-''', 'screen2');
+''', 'screen2', [
+      'push_const("main")',
+      'make_list(1)',
+      'store_var(NAVIGATION_STACK)',
+      'load_var(NAVIGATION_STACK)',
+      'pop',
+      'make_closure(.__PUSH_ROUTE_0)',
+      'store_var(PUSH_ROUTE)',
+      'load_var(PUSH_ROUTE)',
+      'pop',
+      'make_closure(.__POP_ROUTE_1)',
+      'store_var(POP_ROUTE)',
+      'load_var(POP_ROUTE)',
+      'pop',
+      'load_var(PUSH_ROUTE)',
+      'push_const("screen1")',
+      'call(1)',
+      'pop',
+      'load_var(PUSH_ROUTE)',
+      'push_const("screen2")',
+      'call(1)',
+      'pop',
+      'load_var(POP_ROUTE)',
+      'call(0)',
+      'ret',
+    ]);
 
-  shqlBoth('User function can access constants like TRUE', 'test() := TRUE; test()', true, expectedBytecode: [
+  shqlBoth('User function can access constants like TRUE', 'test() := TRUE; test()', true, [
       'make_closure(.__TEST_0)',
       'store_var(TEST)',
       'load_var(TEST)',
@@ -2421,7 +2666,7 @@ POP_ROUTE()
 
       // Bytecode must also throw on the same SHQL.
       try {
-        await _runBytecodeNoAssert(src);
+        await evalBytecode(src, ['make_closure(.__TEST_0)', 'store_var(TEST)', 'load_var(TEST)', 'pop', 'load_var(TEST)', 'call(0)', 'ret']);
         fail('Expected bytecode to throw');
       } catch (e) {
         if (e is TestFailure) rethrow;
@@ -2434,7 +2679,7 @@ POP_ROUTE()
       expect(await evalEngine('x + 1', boundValues: {'x': 10}), 11);
     });
     test('boundValues visible in bytecode', () async {
-      expect(await _runBytecodeNoAssert('x + 1', boundValues: {'x': 10}), 11);
+      expect(await evalBytecode('x + 1', ['load_var(X)', 'jump_null(7)', 'push_const(1)', 'jump_null(6)', 'add', 'jump(9)', 'pop', 'pop', 'push_const(null)', 'ret'], boundValues: {'x': 10}), 11);
     });
     test('boundValues shadow global in engine', () async {
       final cs = Runtime.prepareConstantsSet();
@@ -2446,7 +2691,7 @@ POP_ROUTE()
       final cs = Runtime.prepareConstantsSet();
       final rt = Runtime.prepareRuntime(cs);
       rt.globalScope.setVariable(cs.identifiers.include('X'), 99);
-      expect(await _runBytecodeNoAssert('x', runtime: rt, cs: cs, boundValues: {'x': 42}), 42);
+      expect(await evalBytecode('x', ['load_var(X)', 'ret'], runtime: rt, cs: cs, boundValues: {'x': 42}), 42);
     });
     test('startingScope variables visible in engine', () async {
       final cs = Runtime.prepareConstantsSet();
@@ -2460,7 +2705,7 @@ POP_ROUTE()
       final rt = Runtime.prepareRuntime(cs);
       final scope = Scope(Object(), parent: rt.globalScope);
       scope.setVariable(cs.identifiers.include('LABEL'), 'hello');
-      expect(await _runBytecodeNoAssert('label', cs: cs, runtime: rt, startingScope: scope), 'hello');
+      expect(await evalBytecode('label', ['load_var(LABEL)', 'ret'], cs: cs, runtime: rt, startingScope: scope), 'hello');
     });
     test('boundValues shadow startingScope in engine', () async {
       final cs = Runtime.prepareConstantsSet();
@@ -2474,18 +2719,31 @@ POP_ROUTE()
       final rt = Runtime.prepareRuntime(cs);
       final scope = Scope(Object(), parent: rt.globalScope);
       scope.setVariable(cs.identifiers.include('X'), 1);
-      expect(await _runBytecodeNoAssert('x', cs: cs, runtime: rt, startingScope: scope, boundValues: {'x': 2}), 2);
+      expect(await evalBytecode('x', ['load_var(X)', 'ret'], cs: cs, runtime: rt, startingScope: scope, boundValues: {'x': 2}), 2);
     });
   });
 
   group('List utility functions', () {
-    shqlBothStdlib('LENGTH of 3-element list', 'LENGTH([1, 2, 3])', 3);
-    shqlBothStdlib('LENGTH of empty list', 'LENGTH([])', 0);
+    shqlBothStdlib('LENGTH of 3-element list', 'LENGTH([1, 2, 3])', 3, [
+        'load_var(LENGTH)',
+        'push_const(1)',
+        'push_const(2)',
+        'push_const(3)',
+        'make_list(3)',
+        'call(1)',
+        'ret',
+      ]);
+    shqlBothStdlib('LENGTH of empty list', 'LENGTH([])', 0, [
+        'load_var(LENGTH)',
+        'make_list(0)',
+        'call(1)',
+        'ret',
+      ]);
   });
 
   group('Object member access with dot operator', () {
     shqlBoth('Should access Object members using dot notation',
-        'person := OBJECT{name: "Alice", age: 30}; [person.name, person.age]', ["Alice", 30], expectedBytecode: [
+        'person := OBJECT{name: "Alice", age: 30}; [person.name, person.age]', ["Alice", 30], [
         'push_scope',
         'push_const("NAME")',
         'push_const("Alice")',
@@ -2504,7 +2762,7 @@ POP_ROUTE()
         'ret',
       ]);
     shqlBoth('Should wrap Object in Scope for member access',
-        'config := OBJECT{host: "localhost", port: 8080}; [config.host, config.port]', ["localhost", 8080], expectedBytecode: [
+        'config := OBJECT{host: "localhost", port: 8080}; [config.host, config.port]', ["localhost", 8080], [
         'push_scope',
         'push_const("HOST")',
         'push_const("localhost")',
@@ -2527,7 +2785,7 @@ POP_ROUTE()
         server := OBJECT{database: db, name: "prod-server"};
         app := OBJECT{server: server, version: "1.0.0"};
         [app.server.database.host, app.server.database.port, app.server.name, app.version]
-    ''', ["db.example.com", 5432, "prod-server", "1.0.0"], expectedBytecode: [
+    ''', ["db.example.com", 5432, "prod-server", "1.0.0"], [
         'push_scope',
         'push_const("HOST")',
         'push_const("db.example.com")',
@@ -2578,7 +2836,7 @@ POP_ROUTE()
 
   group('Object literal with OBJECT keyword', () {
     shqlBoth('OBJECT literal keys are unquoted identifiers',
-        'obj := OBJECT{name: "Alice", age: 30}; [obj.name, obj.age]', ["Alice", 30], expectedBytecode: [
+        'obj := OBJECT{name: "Alice", age: 30}; [obj.name, obj.age]', ["Alice", 30], [
         'push_scope',
         'push_const("NAME")',
         'push_const("Alice")',
@@ -2597,7 +2855,7 @@ POP_ROUTE()
         'ret',
       ]);
 
-    shqlBoth('Object literal dot — x', 'obj := OBJECT{x: 10, y: 20}; obj.x', 10, expectedBytecode: [
+    shqlBoth('Object literal dot — x', 'obj := OBJECT{x: 10, y: 20}; obj.x', 10, [
         'push_scope',
         'push_const("X")',
         'push_const(10)',
@@ -2612,7 +2870,7 @@ POP_ROUTE()
         'get_member(X)',
         'ret',
       ]);
-    shqlBoth('Object literal dot — y', 'obj := OBJECT{x: 10, y: 20}; obj.y', 20, expectedBytecode: [
+    shqlBoth('Object literal dot — y', 'obj := OBJECT{x: 10, y: 20}; obj.y', 20, [
         'push_scope',
         'push_const("X")',
         'push_const(10)',
@@ -2627,7 +2885,7 @@ POP_ROUTE()
         'get_member(Y)',
         'ret',
       ]);
-    shqlBoth('Nested Objects — person.name', 'obj := OBJECT{person: OBJECT{name: "Bob", age: 25}}; obj.person.name', 'Bob', expectedBytecode: [
+    shqlBoth('Nested Objects — person.name', 'obj := OBJECT{person: OBJECT{name: "Bob", age: 25}}; obj.person.name', 'Bob', [
         'push_scope',
         'push_const("PERSON")',
         'push_scope',
@@ -2647,7 +2905,7 @@ POP_ROUTE()
         'get_member(NAME)',
         'ret',
       ]);
-    shqlBoth('Nested Objects — person.age', 'obj := OBJECT{person: OBJECT{name: "Bob", age: 25}}; obj.person.age', 25, expectedBytecode: [
+    shqlBoth('Nested Objects — person.age', 'obj := OBJECT{person: OBJECT{name: "Bob", age: 25}}; obj.person.age', 25, [
         'push_scope',
         'push_const("PERSON")',
         'push_scope',
@@ -2667,7 +2925,7 @@ POP_ROUTE()
         'get_member(AGE)',
         'ret',
       ]);
-    shqlBoth('Object complex value — list element', 'obj := OBJECT{list: [1, 2, 3], sum: 1 + 2}; list := obj.list; list[1]', 2, expectedBytecode: [
+    shqlBoth('Object complex value — list element', 'obj := OBJECT{list: [1, 2, 3], sum: 1 + 2}; list := obj.list; list[1]', 2, [
         'push_scope',
         'push_const("LIST")',
         'push_const(1)',
@@ -2699,7 +2957,7 @@ POP_ROUTE()
         'get_index',
         'ret',
       ]);
-    shqlBoth('Object complex value — sum', 'obj := OBJECT{list: [1, 2, 3], sum: 1 + 2}; obj.sum', 3, expectedBytecode: [
+    shqlBoth('Object complex value — sum', 'obj := OBJECT{list: [1, 2, 3], sum: 1 + 2}; obj.sum', 3, [
         'push_scope',
         'push_const("LIST")',
         'push_const(1)',
@@ -2725,7 +2983,7 @@ POP_ROUTE()
         'get_member(SUM)',
         'ret',
       ]);
-    shqlBoth('Object member assignment — x', 'obj := OBJECT{x: 10, y: 20}; obj.x := 100; obj.x', 100, expectedBytecode: [
+    shqlBoth('Object member assignment — x', 'obj := OBJECT{x: 10, y: 20}; obj.x := 100; obj.x', 100, [
         'push_scope',
         'push_const("X")',
         'push_const(10)',
@@ -2744,7 +3002,7 @@ POP_ROUTE()
         'get_member(X)',
         'ret',
       ]);
-    shqlBoth('Object member assignment — y', 'obj := OBJECT{x: 10, y: 20}; obj.y := 200; obj.y', 200, expectedBytecode: [
+    shqlBoth('Object member assignment — y', 'obj := OBJECT{x: 10, y: 20}; obj.y := 200; obj.y', 200, [
         'push_scope',
         'push_const("X")',
         'push_const(10)',
@@ -2764,15 +3022,32 @@ POP_ROUTE()
         'ret',
       ]);
 
-    test('Should distinguish Objects from Maps', () async {
-      for (final eval in [evalEngine, evalBytecode]) {
-        expect(await eval('OBJECT{name: "Alice"}'), isA<Object>());
-        expect(await eval('x := "name"; {x: "Alice"}'), isA<Map>());
-        expect(await eval('{42: "answer"}'), isA<Map>());
-      }
-    });
+    shqlBoth('OBJECT literal is not a Map', 'OBJECT{name: "Alice"}', isA<Object>(), [
+        'push_scope',
+        'push_const("NAME")',
+        'push_const("Alice")',
+        'make_object_here(1)',
+        'pop_scope',
+        'ret',
+      ]);
+    shqlBoth('variable-keyed brace literal is a Map', 'x := "name"; {x: "Alice"}', isA<Map>(), [
+        'push_const("name")',
+        'store_var(X)',
+        'load_var(X)',
+        'pop',
+        'push_const("X")',
+        'push_const("Alice")',
+        'make_map(1)',
+        'ret',
+      ]);
+    shqlBoth('number-keyed brace literal is a Map', '{42: "answer"}', isA<Map>(), [
+        'push_const(42)',
+        'push_const("answer")',
+        'make_map(1)',
+        'ret',
+      ]);
 
-    shqlBoth('Should assign to nested Object members', 'obj := OBJECT{inner: OBJECT{value: 5}}; obj.inner.value := 42; obj.inner.value', 42, expectedBytecode: [
+    shqlBoth('Should assign to nested Object members', 'obj := OBJECT{inner: OBJECT{value: 5}}; obj.inner.value := 42; obj.inner.value', 42, [
         'push_scope',
         'push_const("INNER")',
         'push_scope',
@@ -2795,7 +3070,7 @@ POP_ROUTE()
         'get_member(VALUE)',
         'ret',
       ]);
-    shqlBoth('Should modify Object member and read it back', 'obj := OBJECT{counter: 0}; obj.counter := obj.counter + 1; obj.counter', 1, expectedBytecode: [
+    shqlBoth('Should modify Object member and read it back', 'obj := OBJECT{counter: 0}; obj.counter := obj.counter + 1; obj.counter', 1, [
         'push_scope',
         'push_const("COUNTER")',
         'push_const(0)',
@@ -2824,7 +3099,7 @@ POP_ROUTE()
   });
 
   group('Object methods with proper scope', () {
-    shqlBoth('Should access object members from method', 'obj := OBJECT{x: 10, getX: () => x}; obj.getX()', 10, expectedBytecode: [
+    shqlBoth('Should access object members from method', 'obj := OBJECT{x: 10, getX: () => x}; obj.getX()', 10, [
         'push_scope',
         'push_const("X")',
         'push_const(10)',
@@ -2840,7 +3115,7 @@ POP_ROUTE()
         'call(0)',
         'ret',
       ]);
-    shqlBoth('Should access multiple object members from method', 'obj := OBJECT{x: 10, y: 20, sum: () => x + y}; obj.sum()', 30, expectedBytecode: [
+    shqlBoth('Should access multiple object members from method', 'obj := OBJECT{x: 10, y: 20, sum: () => x + y}; obj.sum()', 30, [
         'push_scope',
         'push_const("X")',
         'push_const(10)',
@@ -2858,7 +3133,7 @@ POP_ROUTE()
         'call(0)',
         'ret',
       ]);
-    shqlBoth('Should modify object members from method', 'obj := OBJECT{counter: 0, increment: () => counter := counter + 1}; obj.increment(); obj.counter', 1, expectedBytecode: [
+    shqlBoth('Should modify object members from method', 'obj := OBJECT{counter: 0, increment: () => counter := counter + 1}; obj.increment(); obj.counter', 1, [
         'push_scope',
         'push_const("COUNTER")',
         'push_const(0)',
@@ -2877,7 +3152,7 @@ POP_ROUTE()
         'get_member(COUNTER)',
         'ret',
       ]);
-    shqlBoth('Should call method multiple times and modify state', 'obj := OBJECT{counter: 0, increment: () => counter := counter + 1}; obj.increment(); obj.increment(); obj.increment(); obj.counter', 3, expectedBytecode: [
+    shqlBoth('Should call method multiple times and modify state', 'obj := OBJECT{counter: 0, increment: () => counter := counter + 1}; obj.increment(); obj.increment(); obj.increment(); obj.counter', 3, [
         'push_scope',
         'push_const("COUNTER")',
         'push_const(0)',
@@ -2904,7 +3179,7 @@ POP_ROUTE()
         'get_member(COUNTER)',
         'ret',
       ]);
-    shqlBoth('Should access method parameters and object members', 'obj := OBJECT{x: 10, add: (delta) => x + delta}; obj.add(5)', 15, expectedBytecode: [
+    shqlBoth('Should access method parameters and object members', 'obj := OBJECT{x: 10, add: (delta) => x + delta}; obj.add(5)', 15, [
         'push_scope',
         'push_const("X")',
         'push_const(10)',
@@ -2921,7 +3196,7 @@ POP_ROUTE()
         'call(1)',
         'ret',
       ]);
-    shqlBoth('Should modify object member with parameter', 'obj := OBJECT{x: 10, setX: (newX) => x := newX}; obj.setX(42); obj.x', 42, expectedBytecode: [
+    shqlBoth('Should modify object member with parameter', 'obj := OBJECT{x: 10, setX: (newX) => x := newX}; obj.setX(42); obj.x', 42, [
         'push_scope',
         'push_const("X")',
         'push_const(10)',
@@ -2941,7 +3216,7 @@ POP_ROUTE()
         'get_member(X)',
         'ret',
       ]);
-    shqlBoth('Should access nested object members from method', 'obj := OBJECT{inner: OBJECT{value: 5}, getInnerValue: () => inner.value}; obj.getInnerValue()', 5, expectedBytecode: [
+    shqlBoth('Should access nested object members from method', 'obj := OBJECT{inner: OBJECT{value: 5}, getInnerValue: () => inner.value}; obj.getInnerValue()', 5, [
         'push_scope',
         'push_const("INNER")',
         'push_scope',
@@ -2961,7 +3236,7 @@ POP_ROUTE()
         'call(0)',
         'ret',
       ]);
-    shqlBoth('Should modify nested object members from method', 'obj := OBJECT{inner: OBJECT{value: 5}, incrementInner: () => inner.value := inner.value + 1}; obj.incrementInner(); obj.inner.value', 6, expectedBytecode: [
+    shqlBoth('Should modify nested object members from method', 'obj := OBJECT{inner: OBJECT{value: 5}, incrementInner: () => inner.value := inner.value + 1}; obj.incrementInner(); obj.inner.value', 6, [
         'push_scope',
         'push_const("INNER")',
         'push_scope',
@@ -2985,7 +3260,7 @@ POP_ROUTE()
         'get_member(VALUE)',
         'ret',
       ]);
-    shqlBoth('Method should have access to closure variables', 'outerVar := 100; obj := OBJECT{x: 10, addOuter: () => x + outerVar}; obj.addOuter()', 110, expectedBytecode: [
+    shqlBoth('Method should have access to closure variables', 'outerVar := 100; obj := OBJECT{x: 10, addOuter: () => x + outerVar}; obj.addOuter()', 110, [
         'push_const(100)',
         'store_var(OUTERVAR)',
         'load_var(OUTERVAR)',
@@ -3005,7 +3280,7 @@ POP_ROUTE()
         'call(0)',
         'ret',
       ]);
-    shqlBoth('Method parameters should shadow object members', 'obj := OBJECT{x: 10, useParam: (x) => x}; obj.useParam(42)', 42, expectedBytecode: [
+    shqlBoth('Method parameters should shadow object members', 'obj := OBJECT{x: 10, useParam: (x) => x}; obj.useParam(42)', 42, [
         'push_scope',
         'push_const("X")',
         'push_const(10)',
@@ -3022,7 +3297,7 @@ POP_ROUTE()
         'call(1)',
         'ret',
       ]);
-    shqlBoth('Should support method calling another method', 'obj := OBJECT{x: 10, getX: () => x, doubleX: () => getX() * 2}; obj.doubleX()', 20, expectedBytecode: [
+    shqlBoth('Should support method calling another method', 'obj := OBJECT{x: 10, getX: () => x, doubleX: () => getX() * 2}; obj.doubleX()', 20, [
         'push_scope',
         'push_const("X")',
         'push_const(10)',
@@ -3052,7 +3327,7 @@ POP_ROUTE()
           obj.increment();
           obj.decrement();
           obj.getCount()
-          ''', 1, expectedBytecode: [
+          ''', 1, [
         'push_scope',
         'push_const("COUNT")',
         'push_const(0)',
@@ -3090,7 +3365,7 @@ POP_ROUTE()
     shqlBoth('THIS resolves to the object itself', '''
           obj := OBJECT{x: 10, getThis: () => THIS};
           obj.getThis().x
-        ''', 10, expectedBytecode: [
+        ''', 10, [
         'push_scope',
         'push_const("X")',
         'push_const(10)',
@@ -3111,7 +3386,7 @@ POP_ROUTE()
     shqlBoth('THIS.field works for dot access', '''
           obj := OBJECT{x: 42, getX: () => THIS.x};
           obj.getX()
-        ''', 42, expectedBytecode: [
+        ''', 42, [
         'push_scope',
         'push_const("X")',
         'push_const(42)',
@@ -3134,7 +3409,7 @@ POP_ROUTE()
             setValue: (v) => BEGIN value := v; RETURN THIS; END
           };
           builder.setValue(99).value
-        ''', 99, expectedBytecode: [
+        ''', 99, [
         'push_scope',
         'push_const("VALUE")',
         'push_const(0)',
@@ -3163,7 +3438,7 @@ POP_ROUTE()
     getName: () => THIS.name
   };
   outer.inner.getName()
-''', 'inner', expectedBytecode: [
+''', 'inner', [
         'push_scope',
         'push_const("NAME")',
         'push_const("outer")',
@@ -3198,7 +3473,7 @@ POP_ROUTE()
     getName: () => THIS.name
   };
   outer.getName()
-''', 'outer', expectedBytecode: [
+''', 'outer', [
         'push_scope',
         'push_const("NAME")',
         'push_const("outer")',
@@ -3226,7 +3501,7 @@ POP_ROUTE()
     shqlBoth('THIS is mutable (can be reassigned)', '''
           obj := OBJECT{x: 10, getX: () => THIS.x};
           obj.getX()
-        ''', 10, expectedBytecode: [
+        ''', 10, [
         'push_scope',
         'push_const("X")',
         'push_const(10)',
@@ -3258,7 +3533,7 @@ POP_ROUTE()
           };
           B.notify();
           A.count
-        ''', 15, expectedBytecode: [
+        ''', 15, [
         'push_scope',
         'push_const("X")',
         'push_const(10)',
@@ -3303,7 +3578,7 @@ POP_ROUTE()
           };
           Heroes.notify();
           Filters.filter_counts
-        ''', [], expectedBytecode: [
+        ''', [], [
         'push_scope',
         'push_const("FILTERS")',
         'push_const(10)',
@@ -3338,7 +3613,7 @@ POP_ROUTE()
   });
 
   group('Null value handling', () {
-    shqlBoth('Should distinguish between undefined and null variables', 'x := null; x', null, expectedBytecode: [
+    shqlBoth('Should distinguish between undefined and null variables', 'x := null; x', null, [
         'push_const(null)',
         'store_var(X)',
         'load_var(X)',
@@ -3346,7 +3621,7 @@ POP_ROUTE()
         'load_var(X)',
         'ret',
       ]);
-    shqlBoth('Should allow null in expressions', 'x := null; y := 5; x = null', true, expectedBytecode: [
+    shqlBoth('Should allow null in expressions', 'x := null; y := 5; x = null', true, [
         'push_const(null)',
         'store_var(X)',
         'load_var(X)',
@@ -3360,7 +3635,7 @@ POP_ROUTE()
         'cmp_eq',
         'ret',
       ]);
-    shqlBoth('Should allow calling functions with null arguments', 'f(x) := x; f(null)', null, expectedBytecode: [
+    shqlBoth('Should allow calling functions with null arguments', 'f(x) := x; f(null)', null, [
         'make_closure(.__F_0)',
         'store_var(F)',
         'load_var(F)',
@@ -3370,7 +3645,7 @@ POP_ROUTE()
         'call(1)',
         'ret',
       ]);
-    shqlBoth('Should access object members that are null', 'obj := OBJECT{title: null}; obj.title', null, expectedBytecode: [
+    shqlBoth('Should access object members that are null', 'obj := OBJECT{title: null}; obj.title', null, [
         'push_scope',
         'push_const("TITLE")',
         'push_const(null)',
@@ -3383,7 +3658,7 @@ POP_ROUTE()
         'get_member(TITLE)',
         'ret',
       ]);
-    shqlBoth('Should call object methods that return null', 'obj := OBJECT{getNull: () => null}; obj.getNull()', null, expectedBytecode: [
+    shqlBoth('Should call object methods that return null', 'obj := OBJECT{getNull: () => null}; obj.getNull()', null, [
         'push_scope',
         'push_const("GETNULL")',
         'make_closure(.__lambda_0)',
@@ -3397,7 +3672,7 @@ POP_ROUTE()
         'call(0)',
         'ret',
       ]);
-    shqlBoth('Should allow assigning null from map/list access', 'posts := [{"title": null}]; title := posts[0]["title"]; title', null, expectedBytecode: [
+    shqlBoth('Should allow assigning null from map/list access', 'posts := [{"title": null}]; title := posts[0]["title"]; title', null, [
         'push_const("title")',
         'push_const(null)',
         'make_map(1)',
@@ -3416,7 +3691,7 @@ POP_ROUTE()
         'load_var(TITLE)',
         'ret',
       ]);
-    shqlBoth('Should distinguish null value from missing key in map', 'm := {"a": null}; m["a"]', null, expectedBytecode: [
+    shqlBoth('Should distinguish null value from missing key in map', 'm := {"a": null}; m["a"]', null, [
         'push_const("a")',
         'push_const(null)',
         'make_map(1)',
@@ -3435,7 +3710,7 @@ POP_ROUTE()
     // retrieved and called from outside the object, with parameters binding
     // correctly (not referencing object members).
 
-    shqlBoth('Parenthesized param — simple value', 'obj := OBJECT{accessor: (x) => x + 1}; obj.accessor(5)', 6, expectedBytecode: [
+    shqlBoth('Parenthesized param — simple value', 'obj := OBJECT{accessor: (x) => x + 1}; obj.accessor(5)', 6, [
         'push_scope',
         'push_const("ACCESSOR")',
         'make_closure(.__lambda_0)',
@@ -3450,7 +3725,7 @@ POP_ROUTE()
         'call(1)',
         'ret',
       ]);
-    shqlBoth('Unparenthesized param — simple value', 'obj := OBJECT{accessor: x => x + 1}; obj.accessor(5)', 6, expectedBytecode: [
+    shqlBoth('Unparenthesized param — simple value', 'obj := OBJECT{accessor: x => x + 1}; obj.accessor(5)', 6, [
         'push_scope',
         'push_const("ACCESSOR")',
         'make_closure(.__lambda_0)',
@@ -3469,7 +3744,7 @@ POP_ROUTE()
     shqlBoth('Parenthesized param — member access on parameter',
         'person := OBJECT{name: "Alice"}; '
         'meta := OBJECT{getName: (p) => p.name}; '
-        "meta.getName(person)", 'Alice', expectedBytecode: [
+        "meta.getName(person)", 'Alice', [
         'push_scope',
         'push_const("NAME")',
         'push_const("Alice")',
@@ -3496,7 +3771,7 @@ POP_ROUTE()
     shqlBoth('Unparenthesized param — member access on parameter',
         'person := OBJECT{name: "Alice"}; '
         'meta := OBJECT{getName: p => p.name}; '
-        "meta.getName(person)", 'Alice', expectedBytecode: [
+        "meta.getName(person)", 'Alice', [
         'push_scope',
         'push_const("NAME")',
         'push_const("Alice")',
@@ -3524,11 +3799,37 @@ POP_ROUTE()
         'GET(hero, f, default) := NVL(hero, f, default); '
         'meta := OBJECT{accessor: (hero) => GET(hero, h => h.name, "none")}; '
         "person := OBJECT{name: \"Bob\"}; "
-        "meta.accessor(person)", 'Bob');
+        "meta.accessor(person)", 'Bob', [
+        'make_closure(.__GET_0)',
+        'store_var(GET)',
+        'load_var(GET)',
+        'pop',
+        'push_scope',
+        'push_const("ACCESSOR")',
+        'make_closure(.__lambda_1)',
+        'make_object_here(1)',
+        'pop_scope',
+        'store_var(META)',
+        'load_var(META)',
+        'pop',
+        'push_scope',
+        'push_const("NAME")',
+        'push_const("Bob")',
+        'make_object_here(1)',
+        'pop_scope',
+        'store_var(PERSON)',
+        'load_var(PERSON)',
+        'pop',
+        'load_var(META)',
+        'get_member(ACCESSOR)',
+        'load_var(PERSON)',
+        'call(1)',
+        'ret',
+      ]);
 
     shqlBoth('Lambda stored in list of OBJECTs',
         'fields := [OBJECT{prop: "x", accessor: (v) => v + 10}]; '
-        'fields[0].accessor(5)', 15, expectedBytecode: [
+        'fields[0].accessor(5)', 15, [
         'push_scope',
         'push_const("PROP")',
         'push_const("x")',
@@ -3555,7 +3856,7 @@ POP_ROUTE()
         '  OBJECT{prop: "b", accessor: (v) => v * 2}'
         ']; '
         'f0 := fields[0]; f1 := fields[1]; '
-        'f0.accessor(10) + f1.accessor(10)', 31, expectedBytecode: [
+        'f0.accessor(10) + f1.accessor(10)', 31, [
         'push_scope',
         'push_const("PROP")',
         'push_const("a")',
@@ -3604,16 +3905,36 @@ POP_ROUTE()
         'ret',
       ]);
 
-    shqlBothStdlib('TRIM strips whitespace', "TRIM(\"  hello  \")", 'hello');
+    shqlBothStdlib('TRIM strips whitespace', "TRIM(\"  hello  \")", 'hello', [
+        'load_var(TRIM)',
+        'push_const("  hello  ")',
+        'call(1)',
+        'ret',
+      ]);
 
-    shqlBothStdlib('IS_NULL_OR_WHITESPACE returns true for null', 'IS_NULL_OR_WHITESPACE(null)', true);
-    shqlBothStdlib('IS_NULL_OR_WHITESPACE returns true for whitespace-only', 'IS_NULL_OR_WHITESPACE("   ")', true);
-    shqlBothStdlib('IS_NULL_OR_WHITESPACE returns false for non-blank string', 'IS_NULL_OR_WHITESPACE("batman")', false);
+    shqlBothStdlib('IS_NULL_OR_WHITESPACE returns true for null', 'IS_NULL_OR_WHITESPACE(null)', true, [
+        'load_var(IS_NULL_OR_WHITESPACE)',
+        'push_const(null)',
+        'call(1)',
+        'ret',
+      ]);
+    shqlBothStdlib('IS_NULL_OR_WHITESPACE returns true for whitespace-only', 'IS_NULL_OR_WHITESPACE("   ")', true, [
+        'load_var(IS_NULL_OR_WHITESPACE)',
+        'push_const("   ")',
+        'call(1)',
+        'ret',
+      ]);
+    shqlBothStdlib('IS_NULL_OR_WHITESPACE returns false for non-blank string', 'IS_NULL_OR_WHITESPACE("batman")', false, [
+        'load_var(IS_NULL_OR_WHITESPACE)',
+        'push_const("batman")',
+        'call(1)',
+        'ret',
+      ]);
 
     shqlBoth('Parenthesised IF-THEN-ELSE as value in map literal',
         'x := 1; '
         'obj := {"label": (IF x = 1 THEN "one" ELSE "other"), "score": 42}; '
-        "obj[\"label\"]", 'one', expectedBytecode: [
+        "obj[\"label\"]", 'one', [
         'push_const(1)',
         'store_var(X)',
         'load_var(X)',
@@ -3641,7 +3962,7 @@ POP_ROUTE()
     shqlBoth('Parenthesised IF-THEN-ELSE as value in list of maps',
         'q := "batman"; '
         r'''result := [{"type": "Text", "data": (IF q <> "" THEN "no match: " + q ELSE "No match")}]; '''
-        "result[0][\"data\"]", 'no match: batman', expectedBytecode: [
+        "result[0][\"data\"]", 'no match: batman', [
         'push_const("batman")',
         'store_var(Q)',
         'load_var(Q)',
@@ -3688,7 +4009,7 @@ POP_ROUTE()
         '    IF 1 = 1 THEN RETURN "second"; '
         '    RETURN "third"; '
         'END; '
-        "f()", 'second', expectedBytecode: [
+        "f()", 'second', [
         'make_closure(.__F_0)',
         'store_var(F)',
         'load_var(F)',
@@ -3707,7 +4028,7 @@ POP_ROUTE()
         '        RETURN [{"type": "B", "data": "match"}]; '
         '    RETURN []; '
         'END; '
-        'f()', [{'type': 'B', 'data': 'match'}], expectedBytecode: [
+        'f()', [{'type': 'B', 'data': 'match'}], [
         'make_list(0)',
         'store_var(HEROES)',
         'load_var(HEROES)',
@@ -3732,7 +4053,7 @@ POP_ROUTE()
         '        RETURN [{"type": "Text", "props": {"data": "No match"}}]; '
         '    RETURN []; '
         'END; '
-        'f()', [], expectedBytecode: [
+        'f()', [], [
         'make_list(0)',
         'store_var(HEROES)',
         'load_var(HEROES)',
@@ -3767,7 +4088,7 @@ POP_ROUTE()
         '        RETURN [{"type": "Text", "props": {"data": "No match"}}]; '
         '    RETURN []; '
         'END; '
-        'f()', [], expectedBytecode: [
+        'f()', [], [
         'make_list(0)',
         'store_var(HEROES)',
         'load_var(HEROES)',
@@ -3805,11 +4126,37 @@ GENERATE_SAVED_HEROES_CARDS() := BEGIN
     RETURN [];
 END;
 GENERATE_SAVED_HEROES_CARDS()
-''', []);
+''', [], [
+        'make_list(0)',
+        'store_var(_HEROES)',
+        'load_var(_HEROES)',
+        'pop',
+        'make_list(0)',
+        'store_var(_DISPLAYED_HEROES)',
+        'load_var(_DISPLAYED_HEROES)',
+        'pop',
+        'push_const(1)',
+        'jump_null(11)',
+        'neg',
+        'store_var(_ACTIVE_FILTER_INDEX)',
+        'load_var(_ACTIVE_FILTER_INDEX)',
+        'pop',
+        'push_const("")',
+        'store_var(_CURRENT_QUERY)',
+        'load_var(_CURRENT_QUERY)',
+        'pop',
+        'make_closure(.__GENERATE_SAVED_HEROES_CARDS_0)',
+        'store_var(GENERATE_SAVED_HEROES_CARDS)',
+        'load_var(GENERATE_SAVED_HEROES_CARDS)',
+        'pop',
+        'load_var(GENERATE_SAVED_HEROES_CARDS)',
+        'call(0)',
+        'ret',
+      ]);
   });
 
   group('IF without ELSE branch', () {
-    shqlBoth('IF FALSE THEN returns null', 'IF FALSE THEN "FOO"', null, expectedBytecode: [
+    shqlBoth('IF FALSE THEN returns null', 'IF FALSE THEN "FOO"', null, [
         'push_const(false)',
         'jump_false(4)',
         'push_const("FOO")',
@@ -3817,7 +4164,7 @@ GENERATE_SAVED_HEROES_CARDS()
         'push_const(null)',
         'ret',
       ]);
-    shqlBoth('IF TRUE THEN returns value', "IF TRUE THEN 'FOO'", 'FOO', expectedBytecode: [
+    shqlBoth('IF TRUE THEN returns value', "IF TRUE THEN 'FOO'", 'FOO', [
         'push_const(true)',
         'jump_false(4)',
         'push_const("FOO")',
@@ -3828,7 +4175,7 @@ GENERATE_SAVED_HEROES_CARDS()
   });
 
   group('IF with ELSE branch', () {
-    shqlBoth('IF true branch', 'IF 1<10 THEN 42 ELSE 0', 42, expectedBytecode: [
+    shqlBoth('IF true branch', 'IF 1<10 THEN 42 ELSE 0', 42, [
         'push_const(1)',
         'jump_null(7)',
         'push_const(10)',
@@ -3844,7 +4191,7 @@ GENERATE_SAVED_HEROES_CARDS()
         'push_const(0)',
         'ret',
       ]);
-    shqlBoth('IF false branch', 'IF 10<1 THEN 42 ELSE 0', 0, expectedBytecode: [
+    shqlBoth('IF false branch', 'IF 10<1 THEN 42 ELSE 0', 0, [
         'push_const(10)',
         'jump_null(7)',
         'push_const(1)',
@@ -3863,7 +4210,7 @@ GENERATE_SAVED_HEROES_CARDS()
   });
 
   group('WHILE loop result', () {
-    shqlBoth('WHILE that never executes returns null', 'WHILE FALSE DO TRUE', null, expectedBytecode: [
+    shqlBoth('WHILE that never executes returns null', 'WHILE FALSE DO TRUE', null, [
         'push_const(null)',
         'store_reg(0)',
         'push_const(false)',
@@ -3874,7 +4221,7 @@ GENERATE_SAVED_HEROES_CARDS()
         'load_reg(0)',
         'ret',
       ]);
-    shqlBoth('WHILE returns last body expression', 'x := 0; WHILE x < 3 DO BEGIN x := x + 1; x^2 END', 9, expectedBytecode: [
+    shqlBoth('WHILE returns last body expression', 'x := 0; WHILE x < 3 DO BEGIN x := x + 1; x^2 END', 9, [
         'push_const(0)',
         'store_var(X)',
         'load_var(X)',
@@ -3922,7 +4269,7 @@ GENERATE_SAVED_HEROES_CARDS()
   });
 
   group('REPEAT loop result', () {
-    shqlBoth('REPEAT returns last body expression', 'x := 0; REPEAT BEGIN x := x + 1; x^2 END UNTIL x >= 3', 9, expectedBytecode: [
+    shqlBoth('REPEAT returns last body expression', 'x := 0; REPEAT BEGIN x := x + 1; x^2 END UNTIL x >= 3', 9, [
         'push_const(0)',
         'store_var(X)',
         'load_var(X)',
@@ -3972,7 +4319,7 @@ GENERATE_SAVED_HEROES_CARDS()
     // Regression: the implicit-multiplication check consumed THEN as an
     // identifier after a single-element tuple, e.g. `AND (expr) THEN` would
     // swallow THEN, causing "Expected THEN after IF condition".
-    shqlBoth('IF x AND (y) THEN evaluates correctly', "IF 1 = 1 AND (2 = 2) THEN \"yes\" ELSE \"no\"", 'yes', expectedBytecode: [
+    shqlBoth('IF x AND (y) THEN evaluates correctly', "IF 1 = 1 AND (2 = 2) THEN \"yes\" ELSE \"no\"", 'yes', [
         'push_const(1)',
         'push_const(1)',
         'cmp_eq',
@@ -3986,7 +4333,7 @@ GENERATE_SAVED_HEROES_CARDS()
         'push_const("no")',
         'ret',
       ]);
-    shqlBoth('IF x AND (y) THEN — false branch', "IF 1 = 1 AND (2 = 3) THEN \"yes\" ELSE \"no\"", 'no', expectedBytecode: [
+    shqlBoth('IF x AND (y) THEN — false branch', "IF 1 = 1 AND (2 = 3) THEN \"yes\" ELSE \"no\"", 'no', [
         'push_const(1)',
         'push_const(1)',
         'cmp_eq',
@@ -4003,7 +4350,7 @@ GENERATE_SAVED_HEROES_CARDS()
   });
 
   group('Implicit multiplication with value-expression keywords', () {
-    shqlBoth('(3)IF FALSE THEN 2 ELSE 3 = 9', '(3)IF FALSE THEN 2 ELSE 3', 9, expectedBytecode: [
+    shqlBoth('(3)IF FALSE THEN 2 ELSE 3 = 9', '(3)IF FALSE THEN 2 ELSE 3', 9, [
         'push_const(3)',
         'jump_null(11)',
         'push_const(false)',
@@ -4019,7 +4366,7 @@ GENERATE_SAVED_HEROES_CARDS()
         'push_const(null)',
         'ret',
       ]);
-    shqlBoth('(3)IF TRUE THEN 2 ELSE 0 = 6', '(3)IF TRUE THEN 2 ELSE 0', 6, expectedBytecode: [
+    shqlBoth('(3)IF TRUE THEN 2 ELSE 0 = 6', '(3)IF TRUE THEN 2 ELSE 0', 6, [
         'push_const(3)',
         'jump_null(11)',
         'push_const(true)',
@@ -4040,7 +4387,7 @@ GENERATE_SAVED_HEROES_CARDS()
   group('(expr) followed by infix operator is NOT implicit multiplication', () {
     // (5)-3 must be subtraction (= 2), not 5 * (-3) = -15.
     // (5)+3 must be addition  (= 8), not 5 * (+3) =  15.
-    shqlBoth('(5)-3 = 2', '(5)-3', 2, expectedBytecode: [
+    shqlBoth('(5)-3 = 2', '(5)-3', 2, [
         'push_const(5)',
         'jump_null(7)',
         'push_const(3)',
@@ -4052,7 +4399,7 @@ GENERATE_SAVED_HEROES_CARDS()
         'push_const(null)',
         'ret',
       ]);
-    shqlBoth('(5)+3 = 8', '(5)+3', 8, expectedBytecode: [
+    shqlBoth('(5)+3 = 8', '(5)+3', 8, [
         'push_const(5)',
         'jump_null(7)',
         'push_const(3)',
@@ -4067,7 +4414,7 @@ GENERATE_SAVED_HEROES_CARDS()
   });
 
   group('Null-aware arithmetic', () {
-    shqlBoth('null+number is null', 'NULL+5', null, expectedBytecode: [
+    shqlBoth('null+number is null', 'NULL+5', null, [
         'push_const(null)',
         'jump_null(7)',
         'push_const(5)',
@@ -4079,7 +4426,7 @@ GENERATE_SAVED_HEROES_CARDS()
         'push_const(null)',
         'ret',
       ]);
-    shqlBoth('number+null is null', '5+NULL', null, expectedBytecode: [
+    shqlBoth('number+null is null', '5+NULL', null, [
         'push_const(5)',
         'jump_null(7)',
         'push_const(null)',
@@ -4091,7 +4438,7 @@ GENERATE_SAVED_HEROES_CARDS()
         'push_const(null)',
         'ret',
       ]);
-    shqlBoth('null-number is null', 'NULL-5', null, expectedBytecode: [
+    shqlBoth('null-number is null', 'NULL-5', null, [
         'push_const(null)',
         'jump_null(7)',
         'push_const(5)',
@@ -4103,7 +4450,7 @@ GENERATE_SAVED_HEROES_CARDS()
         'push_const(null)',
         'ret',
       ]);
-    shqlBoth('null*number is null', 'NULL*5', null, expectedBytecode: [
+    shqlBoth('null*number is null', 'NULL*5', null, [
         'push_const(null)',
         'jump_null(7)',
         'push_const(5)',
@@ -4115,7 +4462,7 @@ GENERATE_SAVED_HEROES_CARDS()
         'push_const(null)',
         'ret',
       ]);
-    shqlBoth('null/number is null', 'NULL/5', null, expectedBytecode: [
+    shqlBoth('null/number is null', 'NULL/5', null, [
         'push_const(null)',
         'jump_null(7)',
         'push_const(5)',
@@ -4127,7 +4474,7 @@ GENERATE_SAVED_HEROES_CARDS()
         'push_const(null)',
         'ret',
       ]);
-    shqlBoth('null^number is null', 'NULL^2', null, expectedBytecode: [
+    shqlBoth('null^number is null', 'NULL^2', null, [
         'push_const(null)',
         'jump_null(7)',
         'push_const(2)',
@@ -4146,7 +4493,7 @@ GENERATE_SAVED_HEROES_CARDS()
   // falsy — Dart's `null != 0` is `true`, but logically null means
   // "unknown / not applicable" and must not satisfy a condition.
   group('Null-aware relational operators return null', () {
-    shqlBoth('null > number returns null', 'x := null; x > 5', null, expectedBytecode: [
+    shqlBoth('null > number returns null', 'x := null; x > 5', null, [
         'push_const(null)',
         'store_var(X)',
         'load_var(X)',
@@ -4162,7 +4509,7 @@ GENERATE_SAVED_HEROES_CARDS()
         'push_const(null)',
         'ret',
       ]);
-    shqlBoth('null < number returns null', 'x := null; x < 5', null, expectedBytecode: [
+    shqlBoth('null < number returns null', 'x := null; x < 5', null, [
         'push_const(null)',
         'store_var(X)',
         'load_var(X)',
@@ -4178,7 +4525,7 @@ GENERATE_SAVED_HEROES_CARDS()
         'push_const(null)',
         'ret',
       ]);
-    shqlBoth('null >= number returns null', 'x := null; x >= 5', null, expectedBytecode: [
+    shqlBoth('null >= number returns null', 'x := null; x >= 5', null, [
         'push_const(null)',
         'store_var(X)',
         'load_var(X)',
@@ -4194,7 +4541,7 @@ GENERATE_SAVED_HEROES_CARDS()
         'push_const(null)',
         'ret',
       ]);
-    shqlBoth('null <= number returns null', 'x := null; x <= 5', null, expectedBytecode: [
+    shqlBoth('null <= number returns null', 'x := null; x <= 5', null, [
         'push_const(null)',
         'store_var(X)',
         'load_var(X)',
@@ -4210,7 +4557,7 @@ GENERATE_SAVED_HEROES_CARDS()
         'push_const(null)',
         'ret',
       ]);
-    shqlBoth('number > null returns null', 'x := null; 5 > x', null, expectedBytecode: [
+    shqlBoth('number > null returns null', 'x := null; 5 > x', null, [
         'push_const(null)',
         'store_var(X)',
         'load_var(X)',
@@ -4229,7 +4576,7 @@ GENERATE_SAVED_HEROES_CARDS()
   });
 
   group('AND treats null as falsy', () {
-    shqlBoth('null AND true is false', 'x := null; x AND TRUE', false, expectedBytecode: [
+    shqlBoth('null AND true is false', 'x := null; x AND TRUE', false, [
         'push_const(null)',
         'store_var(X)',
         'load_var(X)',
@@ -4239,7 +4586,7 @@ GENERATE_SAVED_HEROES_CARDS()
         'log_and',
         'ret',
       ]);
-    shqlBoth('true AND null is false', 'x := null; TRUE AND x', false, expectedBytecode: [
+    shqlBoth('true AND null is false', 'x := null; TRUE AND x', false, [
         'push_const(null)',
         'store_var(X)',
         'load_var(X)',
@@ -4249,7 +4596,7 @@ GENERATE_SAVED_HEROES_CARDS()
         'log_and',
         'ret',
       ]);
-    shqlBoth('null AND false is false', 'x := null; x AND FALSE', false, expectedBytecode: [
+    shqlBoth('null AND false is false', 'x := null; x AND FALSE', false, [
         'push_const(null)',
         'store_var(X)',
         'load_var(X)',
@@ -4259,7 +4606,7 @@ GENERATE_SAVED_HEROES_CARDS()
         'log_and',
         'ret',
       ]);
-    shqlBoth('(null > 5) AND true is false', 'x := null; (x > 5) AND TRUE', false, expectedBytecode: [
+    shqlBoth('(null > 5) AND true is false', 'x := null; (x > 5) AND TRUE', false, [
         'push_const(null)',
         'store_var(X)',
         'load_var(X)',
@@ -4277,7 +4624,7 @@ GENERATE_SAVED_HEROES_CARDS()
         'log_and',
         'ret',
       ]);
-    shqlBoth('(null > 5) AND (3 > 0) is false', 'x := null; (x > 5) AND (3 > 0)', false, expectedBytecode: [
+    shqlBoth('(null > 5) AND (3 > 0) is false', 'x := null; (x > 5) AND (3 > 0)', false, [
         'push_const(null)',
         'store_var(X)',
         'load_var(X)',
@@ -4306,7 +4653,7 @@ GENERATE_SAVED_HEROES_CARDS()
   });
 
   group('OR treats null as falsy', () {
-    shqlBoth('null OR true is true', 'x := null; x OR TRUE', true, expectedBytecode: [
+    shqlBoth('null OR true is true', 'x := null; x OR TRUE', true, [
         'push_const(null)',
         'store_var(X)',
         'load_var(X)',
@@ -4316,7 +4663,7 @@ GENERATE_SAVED_HEROES_CARDS()
         'log_or',
         'ret',
       ]);
-    shqlBoth('null OR false is false', 'x := null; x OR FALSE', false, expectedBytecode: [
+    shqlBoth('null OR false is false', 'x := null; x OR FALSE', false, [
         'push_const(null)',
         'store_var(X)',
         'load_var(X)',
@@ -4326,7 +4673,7 @@ GENERATE_SAVED_HEROES_CARDS()
         'log_or',
         'ret',
       ]);
-    shqlBoth('true OR null is true', 'x := null; TRUE OR x', true, expectedBytecode: [
+    shqlBoth('true OR null is true', 'x := null; TRUE OR x', true, [
         'push_const(null)',
         'store_var(X)',
         'load_var(X)',
@@ -4336,7 +4683,7 @@ GENERATE_SAVED_HEROES_CARDS()
         'log_or',
         'ret',
       ]);
-    shqlBoth('false OR null is false', 'x := null; FALSE OR x', false, expectedBytecode: [
+    shqlBoth('false OR null is false', 'x := null; FALSE OR x', false, [
         'push_const(null)',
         'store_var(X)',
         'load_var(X)',
@@ -4349,7 +4696,7 @@ GENERATE_SAVED_HEROES_CARDS()
   });
 
   group('NOT with null', () {
-    shqlBoth('NOT null returns null (null-aware unary)', 'x := null; NOT x', null, expectedBytecode: [
+    shqlBoth('NOT null returns null (null-aware unary)', 'x := null; NOT x', null, [
         'push_const(null)',
         'store_var(X)',
         'load_var(X)',
@@ -4362,7 +4709,7 @@ GENERATE_SAVED_HEROES_CARDS()
   });
 
   group('XOR treats null as falsy', () {
-    shqlBoth('null XOR true is true', 'x := null; x XOR TRUE', true, expectedBytecode: [
+    shqlBoth('null XOR true is true', 'x := null; x XOR TRUE', true, [
         'push_const(null)',
         'store_var(X)',
         'load_var(X)',
@@ -4376,7 +4723,7 @@ GENERATE_SAVED_HEROES_CARDS()
         'cmp_neq',
         'ret',
       ]);
-    shqlBoth('null XOR false is false', 'x := null; x XOR FALSE', false, expectedBytecode: [
+    shqlBoth('null XOR false is false', 'x := null; x XOR FALSE', false, [
         'push_const(null)',
         'store_var(X)',
         'load_var(X)',
@@ -4390,7 +4737,7 @@ GENERATE_SAVED_HEROES_CARDS()
         'cmp_neq',
         'ret',
       ]);
-    shqlBoth('true XOR null is true', 'x := null; TRUE XOR x', true, expectedBytecode: [
+    shqlBoth('true XOR null is true', 'x := null; TRUE XOR x', true, [
         'push_const(null)',
         'store_var(X)',
         'load_var(X)',
@@ -4410,7 +4757,7 @@ GENERATE_SAVED_HEROES_CARDS()
   // should be false, not true.
   group('Giants predicate scenario — null height in boolean context', () {
     shqlBoth('null height with positive stdev should not match',
-        'height := null; avg := 1.78; stdev := 0.2; (height > avg + 2 * stdev) AND (stdev > 0)', false, expectedBytecode: [
+        'height := null; avg := 1.78; stdev := 0.2; (height > avg + 2 * stdev) AND (stdev > 0)', false, [
         'push_const(null)',
         'store_var(HEIGHT)',
         'load_var(HEIGHT)',
@@ -4461,7 +4808,7 @@ GENERATE_SAVED_HEROES_CARDS()
         'ret',
       ]);
     shqlBoth('tall height with positive stdev should match',
-        'height := 2.5; avg := 1.78; stdev := 0.2; (height > avg + 2 * stdev) AND (stdev > 0)', true, expectedBytecode: [
+        'height := 2.5; avg := 1.78; stdev := 0.2; (height > avg + 2 * stdev) AND (stdev > 0)', true, [
         'push_const(2.5)',
         'store_var(HEIGHT)',
         'load_var(HEIGHT)',
@@ -4512,7 +4859,7 @@ GENERATE_SAVED_HEROES_CARDS()
         'ret',
       ]);
     shqlBoth('short height with positive stdev should not match',
-        'height := 1.7; avg := 1.78; stdev := 0.2; (height > avg + 2 * stdev) AND (stdev > 0)', false, expectedBytecode: [
+        'height := 1.7; avg := 1.78; stdev := 0.2; (height > avg + 2 * stdev) AND (stdev > 0)', false, [
         'push_const(1.7)',
         'store_var(HEIGHT)',
         'load_var(HEIGHT)',
@@ -4568,42 +4915,378 @@ GENERATE_SAVED_HEROES_CARDS()
     shqlBothStdlib('returns zero object for empty list', r'''
       __s := STATS([], x => x);
       __s.COUNT = 0 AND __s.AVG = 0 AND __s.STDEV = 0 AND __s.SUM = 0
-    ''', true);
+    ''', true, [
+        'load_var(STATS)',
+        'make_list(0)',
+        'make_closure(.__lambda_0)',
+        'call(2)',
+        'store_var(__S)',
+        'load_var(__S)',
+        'pop',
+        'load_var(__S)',
+        'get_member(COUNT)',
+        'push_const(0)',
+        'cmp_eq',
+        'load_var(__S)',
+        'get_member(AVG)',
+        'push_const(0)',
+        'cmp_eq',
+        'log_and',
+        'load_var(__S)',
+        'get_member(STDEV)',
+        'push_const(0)',
+        'cmp_eq',
+        'log_and',
+        'load_var(__S)',
+        'get_member(SUM)',
+        'push_const(0)',
+        'cmp_eq',
+        'log_and',
+        'ret',
+      ]);
     shqlBothStdlib('avg of single value equals that value',
-        'STATS([42], x => x).AVG', 42);
+        'STATS([42], x => x).AVG', 42, [
+        'load_var(STATS)',
+        'push_const(42)',
+        'make_list(1)',
+        'make_closure(.__lambda_0)',
+        'call(2)',
+        'get_member(AVG)',
+        'ret',
+      ]);
     shqlBothStdlib('stdev of single value is zero',
-        'STATS([42], x => x).STDEV', 0);
+        'STATS([42], x => x).STDEV', 0, [
+        'load_var(STATS)',
+        'push_const(42)',
+        'make_list(1)',
+        'make_closure(.__lambda_0)',
+        'call(2)',
+        'get_member(STDEV)',
+        'ret',
+      ]);
     shqlBothStdlib('avg, sum, count of [2, 4, 6]', r'''
       __s := STATS([2, 4, 6], x => x);
       __s.AVG > 3.999 AND __s.AVG < 4.001 AND
              __s.SUM > 11.999 AND __s.SUM < 12.001 AND
              __s.COUNT = 3
-    ''', true);
+    ''', true, [
+        'load_var(STATS)',
+        'push_const(2)',
+        'push_const(4)',
+        'push_const(6)',
+        'make_list(3)',
+        'make_closure(.__lambda_0)',
+        'call(2)',
+        'store_var(__S)',
+        'load_var(__S)',
+        'pop',
+        'load_var(__S)',
+        'get_member(AVG)',
+        'jump_null(18)',
+        'push_const(3.999)',
+        'jump_null(17)',
+        'cmp_gt',
+        'jump(20)',
+        'pop',
+        'pop',
+        'push_const(null)',
+        'load_var(__S)',
+        'get_member(AVG)',
+        'jump_null(28)',
+        'push_const(4.001)',
+        'jump_null(27)',
+        'cmp_lt',
+        'jump(30)',
+        'pop',
+        'pop',
+        'push_const(null)',
+        'log_and',
+        'load_var(__S)',
+        'get_member(SUM)',
+        'jump_null(39)',
+        'push_const(11.999)',
+        'jump_null(38)',
+        'cmp_gt',
+        'jump(41)',
+        'pop',
+        'pop',
+        'push_const(null)',
+        'log_and',
+        'load_var(__S)',
+        'get_member(SUM)',
+        'jump_null(50)',
+        'push_const(12.001)',
+        'jump_null(49)',
+        'cmp_lt',
+        'jump(52)',
+        'pop',
+        'pop',
+        'push_const(null)',
+        'log_and',
+        'load_var(__S)',
+        'get_member(COUNT)',
+        'push_const(3)',
+        'cmp_eq',
+        'log_and',
+        'ret',
+      ]);
     shqlBothStdlib('min and max of [2, 4, 6]', r'''
       __s := STATS([2, 4, 6], x => x);
       __s.MIN > 1.999 AND __s.MIN < 2.001 AND
              __s.MAX > 5.999 AND __s.MAX < 6.001
-    ''', true);
+    ''', true, [
+        'load_var(STATS)',
+        'push_const(2)',
+        'push_const(4)',
+        'push_const(6)',
+        'make_list(3)',
+        'make_closure(.__lambda_0)',
+        'call(2)',
+        'store_var(__S)',
+        'load_var(__S)',
+        'pop',
+        'load_var(__S)',
+        'get_member(MIN)',
+        'jump_null(18)',
+        'push_const(1.999)',
+        'jump_null(17)',
+        'cmp_gt',
+        'jump(20)',
+        'pop',
+        'pop',
+        'push_const(null)',
+        'load_var(__S)',
+        'get_member(MIN)',
+        'jump_null(28)',
+        'push_const(2.001)',
+        'jump_null(27)',
+        'cmp_lt',
+        'jump(30)',
+        'pop',
+        'pop',
+        'push_const(null)',
+        'log_and',
+        'load_var(__S)',
+        'get_member(MAX)',
+        'jump_null(39)',
+        'push_const(5.999)',
+        'jump_null(38)',
+        'cmp_gt',
+        'jump(41)',
+        'pop',
+        'pop',
+        'push_const(null)',
+        'log_and',
+        'load_var(__S)',
+        'get_member(MAX)',
+        'jump_null(50)',
+        'push_const(6.001)',
+        'jump_null(49)',
+        'cmp_lt',
+        'jump(52)',
+        'pop',
+        'pop',
+        'push_const(null)',
+        'log_and',
+        'ret',
+      ]);
     shqlBothStdlib('population stdev of [2, 4, 6] is sqrt(8/3)', r'''
       __v := STATS([2, 4, 6], x => x).STDEV;
       __v > 1.63298 AND __v < 1.63301
-    ''', true);
+    ''', true, [
+        'load_var(STATS)',
+        'push_const(2)',
+        'push_const(4)',
+        'push_const(6)',
+        'make_list(3)',
+        'make_closure(.__lambda_0)',
+        'call(2)',
+        'get_member(STDEV)',
+        'store_var(__V)',
+        'load_var(__V)',
+        'pop',
+        'load_var(__V)',
+        'jump_null(18)',
+        'push_const(1.63298)',
+        'jump_null(17)',
+        'cmp_gt',
+        'jump(20)',
+        'pop',
+        'pop',
+        'push_const(null)',
+        'load_var(__V)',
+        'jump_null(27)',
+        'push_const(1.63301)',
+        'jump_null(26)',
+        'cmp_lt',
+        'jump(29)',
+        'pop',
+        'pop',
+        'push_const(null)',
+        'log_and',
+        'ret',
+      ]);
     shqlBothStdlib('nulls are excluded from all calculations', r'''
       __items := [OBJECT{v: 10}, OBJECT{v: null}, OBJECT{v: 20}];
       __s := STATS(__items, x => x.V);
       __s.AVG > 14.999 AND __s.AVG < 15.001 AND __s.COUNT = 2
-    ''', true);
+    ''', true, [
+        'push_scope',
+        'push_const("V")',
+        'push_const(10)',
+        'make_object_here(1)',
+        'pop_scope',
+        'push_scope',
+        'push_const("V")',
+        'push_const(null)',
+        'make_object_here(1)',
+        'pop_scope',
+        'push_scope',
+        'push_const("V")',
+        'push_const(20)',
+        'make_object_here(1)',
+        'pop_scope',
+        'make_list(3)',
+        'store_var(__ITEMS)',
+        'load_var(__ITEMS)',
+        'pop',
+        'load_var(STATS)',
+        'load_var(__ITEMS)',
+        'make_closure(.__lambda_0)',
+        'call(2)',
+        'store_var(__S)',
+        'load_var(__S)',
+        'pop',
+        'load_var(__S)',
+        'get_member(AVG)',
+        'jump_null(34)',
+        'push_const(14.999)',
+        'jump_null(33)',
+        'cmp_gt',
+        'jump(36)',
+        'pop',
+        'pop',
+        'push_const(null)',
+        'load_var(__S)',
+        'get_member(AVG)',
+        'jump_null(44)',
+        'push_const(15.001)',
+        'jump_null(43)',
+        'cmp_lt',
+        'jump(46)',
+        'pop',
+        'pop',
+        'push_const(null)',
+        'log_and',
+        'load_var(__S)',
+        'get_member(COUNT)',
+        'push_const(2)',
+        'cmp_eq',
+        'log_and',
+        'ret',
+      ]);
     shqlBothStdlib('stdev of identical values is zero',
-        'STATS([5, 5, 5, 5], x => x).STDEV', 0);
+        'STATS([5, 5, 5, 5], x => x).STDEV', 0, [
+        'load_var(STATS)',
+        'push_const(5)',
+        'push_const(5)',
+        'push_const(5)',
+        'push_const(5)',
+        'make_list(4)',
+        'make_closure(.__lambda_0)',
+        'call(2)',
+        'get_member(STDEV)',
+        'ret',
+      ]);
     shqlBothStdlib('accessor lambda extracts nested field', r'''
       __people := [OBJECT{height: 1.6}, OBJECT{height: 1.8}, OBJECT{height: 2.0}];
       __v := STATS(__people, p => p.HEIGHT).AVG;
       __v > 1.7999 AND __v < 1.8001
-    ''', true);
+    ''', true, [
+        'push_scope',
+        'push_const("HEIGHT")',
+        'push_const(1.6)',
+        'make_object_here(1)',
+        'pop_scope',
+        'push_scope',
+        'push_const("HEIGHT")',
+        'push_const(1.8)',
+        'make_object_here(1)',
+        'pop_scope',
+        'push_scope',
+        'push_const("HEIGHT")',
+        'push_const(2.0)',
+        'make_object_here(1)',
+        'pop_scope',
+        'make_list(3)',
+        'store_var(__PEOPLE)',
+        'load_var(__PEOPLE)',
+        'pop',
+        'load_var(STATS)',
+        'load_var(__PEOPLE)',
+        'make_closure(.__lambda_0)',
+        'call(2)',
+        'get_member(AVG)',
+        'store_var(__V)',
+        'load_var(__V)',
+        'pop',
+        'load_var(__V)',
+        'jump_null(34)',
+        'push_const(1.7999)',
+        'jump_null(33)',
+        'cmp_gt',
+        'jump(36)',
+        'pop',
+        'pop',
+        'push_const(null)',
+        'load_var(__V)',
+        'jump_null(43)',
+        'push_const(1.8001)',
+        'jump_null(42)',
+        'cmp_lt',
+        'jump(45)',
+        'pop',
+        'pop',
+        'push_const(null)',
+        'log_and',
+        'ret',
+      ]);
     shqlBothStdlib('all-null list returns zero count and zero avg', r'''
       __items := [OBJECT{v: null}, OBJECT{v: null}];
       __s := STATS(__items, x => x.V);
       __s.COUNT = 0 AND __s.AVG = 0
-    ''', true);
+    ''', true, [
+        'push_scope',
+        'push_const("V")',
+        'push_const(null)',
+        'make_object_here(1)',
+        'pop_scope',
+        'push_scope',
+        'push_const("V")',
+        'push_const(null)',
+        'make_object_here(1)',
+        'pop_scope',
+        'make_list(2)',
+        'store_var(__ITEMS)',
+        'load_var(__ITEMS)',
+        'pop',
+        'load_var(STATS)',
+        'load_var(__ITEMS)',
+        'make_closure(.__lambda_0)',
+        'call(2)',
+        'store_var(__S)',
+        'load_var(__S)',
+        'pop',
+        'load_var(__S)',
+        'get_member(COUNT)',
+        'push_const(0)',
+        'cmp_eq',
+        'load_var(__S)',
+        'get_member(AVG)',
+        'push_const(0)',
+        'cmp_eq',
+        'log_and',
+        'ret',
+      ]);
   });
 }

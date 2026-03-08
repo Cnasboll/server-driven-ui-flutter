@@ -297,17 +297,25 @@ class BytecodeInterpreter {
 
   /// Like [execute] but with an optional injected [startingScope] and
   /// [boundValues] — mirrors [Engine.execute] with those parameters.
+  ///
+  /// Unlike [createThread], the top-level frame's scope IS [parentScope]
+  /// directly (no child scope is created), so that top-level [Opcode.storeVar]
+  /// stores into the persistent global/starting scope.  This enables
+  /// multi-run patterns where stdlib is loaded in one call and src is
+  /// executed in a subsequent call against the same runtime.
   Future<dynamic> executeScoped(
     String chunkName, {
     List<dynamic> args = const [],
     Scope? startingScope,
     Map<String, dynamic>? boundValues,
   }) {
-    final thread = createThread(
-      chunkName,
-      args,
+    final frameScope = _buildParentScope(
       startingScope: startingScope,
       boundValues: boundValues,
+    );
+    final chunk = program[chunkName];
+    final thread = BytecodeThread(
+      initialFrame: BytecodeFrame(chunk: chunk, pc: 0, stack: [], scope: frameScope),
     );
     while (thread.isRunning) {
       _tickOne(thread);
