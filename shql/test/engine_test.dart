@@ -17,24 +17,36 @@ Future<dynamic> evalEngine(
   Runtime? runtime,
   ConstantsSet? constantsSet,
   Map<String, dynamic>? boundValues,
+  Scope? startingScope,
 }) => Engine.execute(
   src,
   runtime: runtime,
   constantsSet: constantsSet,
   boundValues: boundValues,
+  startingScope: startingScope,
 );
 
 /// Compile [src] to bytecode, binary-round-trip it, then execute on the VM.
 ///
 /// Runtime-registered functions (LENGTH, POW, SQRT, etc.) are bridged
 /// automatically by [BytecodeInterpreter]'s constructor.
-Future<dynamic> evalBytecode(String src, {Runtime? runtime, ConstantsSet? cs}) {
+Future<dynamic> evalBytecode(
+  String src, {
+  Runtime? runtime,
+  ConstantsSet? cs,
+  Map<String, dynamic>? boundValues,
+  Scope? startingScope,
+}) {
   cs ??= Runtime.prepareConstantsSet();
   runtime ??= Runtime.prepareRuntime(cs);
   final tree = Parser.parse(src, cs, sourceCode: src);
   final program = BytecodeCompiler.compile(tree, cs);
   final decoded = BytecodeDecoder.decode(BytecodeEncoder.encode(program));
-  return BytecodeInterpreter(decoded, runtime).execute('main');
+  return BytecodeInterpreter(decoded, runtime).executeScoped(
+    'main',
+    boundValues: boundValues,
+    startingScope: startingScope,
+  );
 }
 
 
@@ -400,6 +412,55 @@ EXPECT(POP_ROUTE(), 'screen2')
       } catch (e) {
         if (e is TestFailure) rethrow;
       }
+    });
+  });
+
+  group('startingScope and boundValues injection', () {
+    test('boundValues visible in engine', () async {
+      expect(await evalEngine('x + 1', boundValues: {'x': 10}), 11);
+    });
+    test('boundValues visible in bytecode', () async {
+      expect(await evalBytecode('x + 1', boundValues: {'x': 10}), 11);
+    });
+    test('boundValues shadow global in engine', () async {
+      final cs = Runtime.prepareConstantsSet();
+      final rt = Runtime.prepareRuntime(cs);
+      rt.globalScope.setVariable(cs.identifiers.include('X'), 99);
+      expect(await evalEngine('x', runtime: rt, constantsSet: cs, boundValues: {'x': 42}), 42);
+    });
+    test('boundValues shadow global in bytecode', () async {
+      final cs = Runtime.prepareConstantsSet();
+      final rt = Runtime.prepareRuntime(cs);
+      rt.globalScope.setVariable(cs.identifiers.include('X'), 99);
+      expect(await evalBytecode('x', runtime: rt, cs: cs, boundValues: {'x': 42}), 42);
+    });
+    test('startingScope variables visible in engine', () async {
+      final cs = Runtime.prepareConstantsSet();
+      final rt = Runtime.prepareRuntime(cs);
+      final scope = Scope(Object(), parent: rt.globalScope);
+      scope.setVariable(cs.identifiers.include('LABEL'), 'hello');
+      expect(await evalEngine('label', runtime: rt, constantsSet: cs, startingScope: scope), 'hello');
+    });
+    test('startingScope variables visible in bytecode', () async {
+      final cs = Runtime.prepareConstantsSet();
+      final rt = Runtime.prepareRuntime(cs);
+      final scope = Scope(Object(), parent: rt.globalScope);
+      scope.setVariable(cs.identifiers.include('LABEL'), 'hello');
+      expect(await evalBytecode('label', cs: cs, runtime: rt, startingScope: scope), 'hello');
+    });
+    test('boundValues shadow startingScope in engine', () async {
+      final cs = Runtime.prepareConstantsSet();
+      final rt = Runtime.prepareRuntime(cs);
+      final scope = Scope(Object(), parent: rt.globalScope);
+      scope.setVariable(cs.identifiers.include('X'), 1);
+      expect(await evalEngine('x', runtime: rt, constantsSet: cs, startingScope: scope, boundValues: {'x': 2}), 2);
+    });
+    test('boundValues shadow startingScope in bytecode', () async {
+      final cs = Runtime.prepareConstantsSet();
+      final rt = Runtime.prepareRuntime(cs);
+      final scope = Scope(Object(), parent: rt.globalScope);
+      scope.setVariable(cs.identifiers.include('X'), 1);
+      expect(await evalBytecode('x', cs: cs, runtime: rt, startingScope: scope, boundValues: {'x': 2}), 2);
     });
   });
 

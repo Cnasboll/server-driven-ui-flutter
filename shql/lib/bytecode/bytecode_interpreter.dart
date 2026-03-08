@@ -240,13 +240,44 @@ class BytecodeInterpreter {
     }
   }
 
+  /// Build the parent scope chain for the main frame.
+  ///
+  /// Chain (innermost first): boundValues scope → startingScope → globalScope.
+  Scope _buildParentScope({
+    Scope? startingScope,
+    Map<String, dynamic>? boundValues,
+  }) {
+    Scope parent = startingScope ?? runtime.globalScope;
+    if (boundValues != null && boundValues.isNotEmpty) {
+      final bound = Scope(Object(), parent: parent);
+      for (final entry in boundValues.entries) {
+        bound.setVariable(
+          runtime.identifiers.include(entry.key.toUpperCase()),
+          entry.value,
+        );
+      }
+      return bound;
+    }
+    return parent;
+  }
+
   /// Create a new [BytecodeThread] ready to run [chunkName] with [args].
+  ///
+  /// [startingScope] is injected between [runtime.globalScope] and the frame
+  /// scope — the same role it plays in [Engine.execute].
+  /// [boundValues] are pushed on top of [startingScope] (or globalScope).
   BytecodeThread createThread(
-    String chunkName, [
-    List<dynamic> args = const [],
-  ]) {
+    String chunkName,
+    List<dynamic> args, {
+    Scope? startingScope,
+    Map<String, dynamic>? boundValues,
+  }) {
+    final parentScope = _buildParentScope(
+      startingScope: startingScope,
+      boundValues: boundValues,
+    );
     return BytecodeThread(
-      initialFrame: _makeFrame(program[chunkName], args, runtime.globalScope),
+      initialFrame: _makeFrame(program[chunkName], args, parentScope),
     );
   }
 
@@ -257,6 +288,27 @@ class BytecodeInterpreter {
     List<dynamic> args = const [],
   ]) {
     final thread = createThread(chunkName, args);
+    while (thread.isRunning) {
+      _tickOne(thread);
+    }
+    if (thread.error != null) throw thread.error!;
+    return Future.value(thread.result);
+  }
+
+  /// Like [execute] but with an optional injected [startingScope] and
+  /// [boundValues] — mirrors [Engine.execute] with those parameters.
+  Future<dynamic> executeScoped(
+    String chunkName, {
+    List<dynamic> args = const [],
+    Scope? startingScope,
+    Map<String, dynamic>? boundValues,
+  }) {
+    final thread = createThread(
+      chunkName,
+      args,
+      startingScope: startingScope,
+      boundValues: boundValues,
+    );
     while (thread.isRunning) {
       _tickOne(thread);
     }
@@ -283,7 +335,7 @@ class BytecodeInterpreter {
     final program = BytecodeCompiler.compile(tree, constantsSet);
     final interp = BytecodeInterpreter(program, runtime);
     interp._stopOnBackwardJump = true;
-    final thread = interp.createThread('main');
+    final thread = interp.createThread('main', const []);
     while (thread.isRunning) {
       interp._tickOne(thread);
     }

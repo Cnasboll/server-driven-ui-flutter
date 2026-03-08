@@ -108,16 +108,13 @@ class ShqlTestRunner {
     ConstantsSet cs, {
     Map<String, dynamic>? boundValues,
   }) {
-    if (boundValues != null) {
-      for (final entry in boundValues.entries) {
-        final id = cs.identifiers.include(entry.key.toUpperCase());
-        runtime.globalScope.setVariable(id, entry.value);
-      }
-    }
     final tree = Parser.parse(src, cs, sourceCode: src);
     final program = BytecodeCompiler.compile(tree, cs);
     final decoded = BytecodeDecoder.decode(BytecodeEncoder.encode(program));
-    return BytecodeInterpreter(decoded, runtime).execute('main');
+    return BytecodeInterpreter(decoded, runtime).executeScoped(
+      'main',
+      boundValues: boundValues,
+    );
   }
 
   /// Initialise the runtime, load stdlib + shql_test, register callbacks.
