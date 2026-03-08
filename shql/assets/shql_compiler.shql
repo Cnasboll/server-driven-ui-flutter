@@ -15,7 +15,7 @@
 --   add sub mul div mod pow  neg
 --   log_not log_and log_or   cmp_eq cmp_neq cmp_lt cmp_lte cmp_gt cmp_gte
 --   op_match op_not_match op_in
---   jump jump_false jump_null
+--   jump jump_false jump_true jump_null
 --   call ret
 --   make_list(n) make_map(n) make_object_here(n)
 --   push_scope pop_scope make_closure
@@ -26,15 +26,22 @@
 --   {"chunks": {}, "counter": 0}
 --
 -- Chunk builder (also mutated in place):
---   {"name":N, "params":P, "constants":[], "cmap":{}, "code":[]}
+--   {"name":N, "params":P, "constants":[], "cmap":{}, "code":[], "regctr":0}
 -- ============================================================
 
 -- ---- Chunk builder helpers ----
 
 _CMP_NEW_CHUNK(name, params) := {
   "name": name, "params": params,
-  "constants": [], "cmap": {}, "code": []
+  "constants": [], "cmap": {}, "code": [], "regctr": 0
 };
+
+-- Allocate the next register index for this chunk (per-frame, starts at 0).
+_CMP_ALLOC_REG(chunk) := BEGIN
+  r := chunk['regctr'];
+  chunk['regctr'] := r + 1;
+  RETURN r;
+END;
 
 -- Add a constant, deduplicated by key.  Returns the pool index.
 _CMP_CONST(chunk, key, val) := BEGIN
@@ -380,98 +387,187 @@ _CMP_IF(node, chunk, state) := BEGIN
 END;
 
 -- ---- WHILE ----
+-- r_res holds the last body result (null initially for the never-executed case).
+--   r_res = null
+--   .loopTop: condition → jump_false .exit
+--   <body> → store_reg r_res   (BREAK skips this)
+--   jump .loopTop
+--   .exit: [BREAK patched here]
+--   load_reg r_res
 _CMP_WHILE(node, chunk, state) := BEGIN
-  ch := node['children'];
-  loop_top := LENGTH(chunk['code']);
+  ch   := node['children'];
+  rRes := _CMP_ALLOC_REG(chunk);
+  _CMP_EMIT1(chunk, 'push_const', _CMP_CONST_NULL(chunk));
+  _CMP_EMIT1(chunk, 'store_reg', rRes);
+  loop_top   := LENGTH(chunk['code']);
   _CMP_NODE(ch[0], chunk, state);            -- condition
   jf := _CMP_JUMP(chunk, 'jump_false');
   body_start := LENGTH(chunk['code']);
   _CMP_NODE(ch[1], chunk, state);            -- body
-  _CMP_EMIT(chunk, 'pop');
+  _CMP_EMIT1(chunk, 'store_reg', rRes);      -- save body result (BREAK skips this)
   _CMP_EMIT1(chunk, 'jump', loop_top);
   _CMP_PATCH(chunk, jf);
-  _CMP_EMIT1(chunk, 'push_const', _CMP_CONST_NULL(chunk));
-  -- Patch break/continue sentinels in the body range
-  _CMP_PATCH_LOOP(chunk, body_start, LENGTH(chunk['code'])-1, loop_top);
+  break_addr := LENGTH(chunk['code']);
+  _CMP_PATCH_LOOP(chunk, body_start, break_addr, loop_top);
+  _CMP_EMIT1(chunk, 'load_reg', rRes);
 END;
 
 -- ---- REPEAT/UNTIL ----
+-- r_res holds the last body result (null for BREAK-before-body case).
+--   r_res = null
+--   .loopTop: <body> → store_reg r_res   (BREAK skips this)
+--   condition → jump_false .loopTop
+--   .exit: [BREAK patched here]
+--   load_reg r_res
 _CMP_REPEAT(node, chunk, state) := BEGIN
-  ch := node['children'];
-  loop_top := LENGTH(chunk['code']);
+  ch   := node['children'];
+  rRes := _CMP_ALLOC_REG(chunk);
+  _CMP_EMIT1(chunk, 'push_const', _CMP_CONST_NULL(chunk));
+  _CMP_EMIT1(chunk, 'store_reg', rRes);
+  loop_top   := LENGTH(chunk['code']);
+  body_start := loop_top;
   _CMP_NODE(ch[0], chunk, state);            -- body
-  _CMP_EMIT(chunk, 'pop');
+  _CMP_EMIT1(chunk, 'store_reg', rRes);      -- save body result (BREAK skips this)
   _CMP_NODE(ch[1], chunk, state);            -- condition (until true)
   _CMP_EMIT1(chunk, 'jump_false', loop_top);
-  _CMP_EMIT1(chunk, 'push_const', _CMP_CONST_NULL(chunk));
+  break_addr := LENGTH(chunk['code']);
+  _CMP_PATCH_LOOP(chunk, body_start, break_addr, loop_top);
+  _CMP_EMIT1(chunk, 'load_reg', rRes);
 END;
 
 -- ---- FOR ----
--- Uses registers: r0=start/i, r1=final, r2=step, r3=going_up
--- Mirrors the Dart compiler's FOR implementation.
+-- Body-first expansion with 7 registers — mirrors Dart compiler _compileFor.
+-- SHQL parser children: [start_expr, end_expr, body, ?step_expr], val=var_name
+-- Dart parser children: [init_assign, body, limit, ?step]  ← different order!
+--
+--   i     := ch[0]              (start)
+--   r_sv  := i                  (fixes direction)
+--   r_fin := false
+--   .loop:
+--     <body = ch[2]>; pop
+--     if r_fin → exit
+--     r_tgt  := <ch[1]>         (re-evaluate limit)
+--     r_up   := r_tgt >= r_sv
+--     r_step := ch[3] | (r_up ? 1 : -1)
+--     r_next := i + r_step
+--     r_over := (r_up ∧ r_next>r_tgt) ∨ (¬r_up ∧ r_next<r_tgt)
+--     r_fin  := r_over ∨ r_next=r_tgt
+--     if r_over → exit
+--     i := r_next
+--     jump .loop
+--   .exit: [fin_break, over_break, BREAKs patched here]
+--   push_const null
 _CMP_FOR(node, chunk, state) := BEGIN
   ch       := node['children'];
   var_name := node['val'];
-  -- Compile start, store as loop var and in r0
-  _CMP_NODE(ch[0], chunk, state);
+  has_step := LENGTH(ch) > 3;
+
+  -- Seven dedicated registers (nested FORs get higher indices).
+  rSv   := _CMP_ALLOC_REG(chunk);   -- start_value (fixes direction)
+  rFin  := _CMP_ALLOC_REG(chunk);   -- finished flag
+  rTgt  := _CMP_ALLOC_REG(chunk);   -- target (re-evaluated each iteration)
+  rUp   := _CMP_ALLOC_REG(chunk);   -- counting_upwards = target >= start_value
+  rStep := _CMP_ALLOC_REG(chunk);   -- step value
+  rNext := _CMP_ALLOC_REG(chunk);   -- candidate next i (before updating i)
+  rOver := _CMP_ALLOC_REG(chunk);   -- overshoot flag
+
+  -- Init: i := start  (mirrors Dart's _compile(initNode, b) then pop)
+  _CMP_NODE(ch[0], chunk, state);            -- push start value
   _CMP_EMIT1(chunk, 'store_var', _CMP_CONST_NAME(chunk, var_name));
-  _CMP_EMIT1(chunk, 'load_var',  _CMP_CONST_NAME(chunk, var_name));
-  _CMP_EMIT1(chunk, 'store_reg', 0);
+  _CMP_EMIT1(chunk, 'load_var',  _CMP_CONST_NAME(chunk, var_name));  -- assignment result
   _CMP_EMIT(chunk, 'pop');
-  -- Compile end, store in r1
-  _CMP_NODE(ch[1], chunk, state);
-  _CMP_EMIT1(chunk, 'store_reg', 1);
-  -- Step: r2
-  IF LENGTH(ch) > 3 THEN BEGIN
-    _CMP_NODE(ch[3], chunk, state);
-    _CMP_EMIT1(chunk, 'store_reg', 2);
-  END ELSE BEGIN
-    -- Auto-detect direction: step = (start <= end) ? 1 : -1
-    _CMP_EMIT1(chunk, 'load_reg', 0);
-    _CMP_EMIT1(chunk, 'load_reg', 1);
-    _CMP_EMIT(chunk, 'cmp_lte');
-    j_up := _CMP_JUMP(chunk, 'jump_false');
-    _CMP_EMIT1(chunk, 'push_const', _CMP_CONST_INT(chunk, 1));
-    j_dn := _CMP_JUMP(chunk, 'jump');
-    _CMP_PATCH(chunk, j_up);
-    _CMP_EMIT1(chunk, 'push_const', _CMP_CONST_INT(chunk, -1));
-    _CMP_PATCH(chunk, j_dn);
-    _CMP_EMIT1(chunk, 'store_reg', 2);
-  END;
-  -- going_up = (step > 0), store in r3
-  _CMP_EMIT1(chunk, 'load_reg', 2);
-  _CMP_EMIT1(chunk, 'push_const', _CMP_CONST_INT(chunk, 0));
-  _CMP_EMIT(chunk, 'cmp_gt');
-  _CMP_EMIT1(chunk, 'store_reg', 3);
-  -- Loop condition check
-  loop_top := LENGTH(chunk['code']);
+
+  -- r_sv = initial i
   _CMP_EMIT1(chunk, 'load_var', _CMP_CONST_NAME(chunk, var_name));
-  _CMP_EMIT1(chunk, 'load_reg', 1);
-  -- if going_up: i <= end  else: i >= end
-  _CMP_EMIT1(chunk, 'load_reg', 3);
-  jf_up := _CMP_JUMP(chunk, 'jump_false');
-  _CMP_EMIT(chunk, 'cmp_lte');
-  je_cond := _CMP_JUMP(chunk, 'jump');
-  _CMP_PATCH(chunk, jf_up);
-  _CMP_EMIT(chunk, 'cmp_gte');
-  _CMP_PATCH(chunk, je_cond);
-  jf_exit := _CMP_JUMP(chunk, 'jump_false');
-  -- Body
-  body_start := LENGTH(chunk['code']);
+  _CMP_EMIT1(chunk, 'store_reg', rSv);
+
+  -- r_fin = false
+  _CMP_EMIT1(chunk, 'push_const', _CMP_CONST_BOOL(chunk, FALSE));
+  _CMP_EMIT1(chunk, 'store_reg', rFin);
+
+  loop_top   := LENGTH(chunk['code']);
+  body_start := loop_top;
+
+  -- Body (ch[2] in SHQL = ch[1] in Dart)
   _CMP_NODE(ch[2], chunk, state);
   _CMP_EMIT(chunk, 'pop');
-  -- Increment: var := var + step
-  continue_addr := LENGTH(chunk['code']);
-  _CMP_EMIT1(chunk, 'load_var',  _CMP_CONST_NAME(chunk, var_name));
-  _CMP_EMIT1(chunk, 'load_reg', 2);
+
+  -- Continue target: check/increment section right after body+pop
+  cont_addr := LENGTH(chunk['code']);
+
+  -- if r_fin (exact hit last iteration) → exit
+  _CMP_EMIT1(chunk, 'load_reg', rFin);
+  fin_break := _CMP_JUMP(chunk, 'jump_true');
+
+  -- r_tgt = re-evaluate limit (ch[1] in SHQL = ch[2] in Dart)
+  _CMP_NODE(ch[1], chunk, state);
+  _CMP_EMIT1(chunk, 'store_reg', rTgt);
+
+  -- r_up = target >= start_value  (>= matches Dart/ForLoopExecutionNode)
+  _CMP_EMIT1(chunk, 'load_reg', rTgt);
+  _CMP_EMIT1(chunk, 'load_reg', rSv);
+  _CMP_EMIT(chunk, 'cmp_gte');
+  _CMP_EMIT1(chunk, 'store_reg', rUp);
+
+  -- r_step
+  IF has_step THEN BEGIN
+    _CMP_NODE(ch[3], chunk, state);
+    _CMP_EMIT1(chunk, 'store_reg', rStep);
+  END ELSE BEGIN
+    _CMP_EMIT1(chunk, 'load_reg', rUp);
+    to_neg    := _CMP_JUMP(chunk, 'jump_false');
+    _CMP_EMIT1(chunk, 'push_const', _CMP_CONST_INT(chunk, 1));
+    step_done := _CMP_JUMP(chunk, 'jump');
+    _CMP_PATCH(chunk, to_neg);
+    _CMP_EMIT1(chunk, 'push_const', _CMP_CONST_INT(chunk, -1));
+    _CMP_PATCH(chunk, step_done);
+    _CMP_EMIT1(chunk, 'store_reg', rStep);
+  END;
+
+  -- r_next = i + step
+  _CMP_EMIT1(chunk, 'load_var', _CMP_CONST_NAME(chunk, var_name));
+  _CMP_EMIT1(chunk, 'load_reg', rStep);
   _CMP_EMIT(chunk, 'add');
+  _CMP_EMIT1(chunk, 'store_reg', rNext);
+
+  -- r_over = (r_up AND r_next > r_tgt) OR (NOT r_up AND r_next < r_tgt)
+  _CMP_EMIT1(chunk, 'load_reg', rUp);
+  _CMP_EMIT1(chunk, 'load_reg', rNext);
+  _CMP_EMIT1(chunk, 'load_reg', rTgt);
+  _CMP_EMIT(chunk, 'cmp_gt');
+  _CMP_EMIT(chunk, 'log_and');
+  _CMP_EMIT1(chunk, 'load_reg', rUp);
+  _CMP_EMIT(chunk, 'log_not');
+  _CMP_EMIT1(chunk, 'load_reg', rNext);
+  _CMP_EMIT1(chunk, 'load_reg', rTgt);
+  _CMP_EMIT(chunk, 'cmp_lt');
+  _CMP_EMIT(chunk, 'log_and');
+  _CMP_EMIT(chunk, 'log_or');
+  _CMP_EMIT1(chunk, 'store_reg', rOver);
+
+  -- r_fin = r_over OR r_next = r_tgt
+  _CMP_EMIT1(chunk, 'load_reg', rOver);
+  _CMP_EMIT1(chunk, 'load_reg', rNext);
+  _CMP_EMIT1(chunk, 'load_reg', rTgt);
+  _CMP_EMIT(chunk, 'cmp_eq');
+  _CMP_EMIT(chunk, 'log_or');
+  _CMP_EMIT1(chunk, 'store_reg', rFin);
+
+  -- if r_over → exit (overshoot: skip i update, skip final body)
+  _CMP_EMIT1(chunk, 'load_reg', rOver);
+  over_break := _CMP_JUMP(chunk, 'jump_true');
+
+  -- i := r_next (only when not overshooting)
+  _CMP_EMIT1(chunk, 'load_reg', rNext);
   _CMP_EMIT1(chunk, 'store_var', _CMP_CONST_NAME(chunk, var_name));
-  _CMP_EMIT(chunk, 'pop');
+
   _CMP_EMIT1(chunk, 'jump', loop_top);
-  _CMP_PATCH(chunk, jf_exit);
+
+  -- Exit: patch fin_break and over_break to here, then all BREAK sentinels
+  _CMP_PATCH(chunk, fin_break);
+  _CMP_PATCH(chunk, over_break);
+  _CMP_PATCH_LOOP(chunk, body_start, LENGTH(chunk['code']), cont_addr);
   _CMP_EMIT1(chunk, 'push_const', _CMP_CONST_NULL(chunk));
-  -- Patch break/continue
-  _CMP_PATCH_LOOP(chunk, body_start, LENGTH(chunk['code'])-1, continue_addr);
 END;
 
 -- Patch BREAK (-999) and CONTINUE (-998) sentinels within [from,to).
