@@ -3035,7 +3035,7 @@ POP_ROUTE()
         'store_var(X)',
         'load_var(X)',
         'pop',
-        'push_const("X")',
+        'load_var(X)',
         'push_const("Alice")',
         'make_map(1)',
         'ret',
@@ -5290,9 +5290,6 @@ GENERATE_SAVED_HEROES_CARDS()
       ]);
   });
 
-  // ---------------------------------------------------------------------------
-  // Migrated from bytecode_compiler_test.dart -- drift detection
-  // ---------------------------------------------------------------------------
   group('Compiler drift detection', () {
   shqlBoth('f:=x=>x^2;f(3)', 'f:=x=>x^2;f(3)', 9, [
       'make_closure(.__lambda_0)',
@@ -6299,7 +6296,7 @@ k:='name'; {k:'Alice'}
       'store_var(K)',
       'load_var(K)',
       'pop',
-      'push_const("K")',
+      'load_var(K)',
       'push_const("Alice")',
       'make_map(1)',
       'ret',
@@ -6311,7 +6308,7 @@ k:='name'; {k:'Alice'}['name']
       'store_var(K)',
       'load_var(K)',
       'pop',
-      'push_const("K")',
+      'load_var(K)',
       'push_const("Alice")',
       'make_map(1)',
       'push_const("name")',
