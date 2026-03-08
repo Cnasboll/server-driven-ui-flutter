@@ -140,12 +140,7 @@ class ShqlTestRunner {
     // Load test primitives as prelude
     await _loadPrelude(await File(testLibPath).readAsString());
 
-    // Wire runtime callbacks with no-op defaults
-    runtime.saveStateFunction = (key, value) async {};
-    runtime.loadStateFunction = (key, defaultValue) async => defaultValue;
-    runtime.navigateFunction = (route) async {};
-    runtime.notifyListeners = (name) {};
-    runtime.debugLogFunction = (msg) {};
+    _registerPlatformNoOps();
   }
 
   /// Initialise the runtime and load only shql_test.shql (no stdlib).
@@ -158,11 +153,23 @@ class ShqlTestRunner {
     runtime = Runtime.prepareRuntime(constantsSet);
     _registerTestCallbacks();
     await _loadPrelude(await File(testLibPath).readAsString());
-    runtime.saveStateFunction = (key, value) async {};
-    runtime.loadStateFunction = (key, defaultValue) async => defaultValue;
-    runtime.navigateFunction = (route) async {};
-    runtime.notifyListeners = (name) {};
-    runtime.debugLogFunction = (msg) {};
+    _registerPlatformNoOps();
+  }
+
+  void _registerPlatformNoOps() {
+    runtime.setBinaryFunction('SAVE_STATE', (ctx, caller, key, value) async {});
+    runtime.setBinaryFunction('LOAD_STATE', (ctx, caller, key, defaultValue) async => defaultValue);
+    runtime.setUnaryFunction('NAVIGATE', (ctx, caller, route) async {});
+    runtime.setBinaryFunction('SET', (ctx, caller, name, value) {
+      caller.scope.setVariable(runtime.identifiers.include((name as String).toUpperCase()), value);
+    });
+    runtime.setUnaryFunction('PUBLISH', (ctx, caller, name) {});
+    runtime.setUnaryFunction('DEBUG_LOG', (ctx, caller, msg) {});
+    runtime.setUnaryFunction('FETCH', (ctx, caller, url) async => null);
+    runtime.setBinaryFunction('POST', (ctx, caller, url, body) async => null);
+    runtime.setBinaryFunction('PATCH', (ctx, caller, url, body) async => null);
+    runtime.setBinaryFunction('FETCH_AUTH', (ctx, caller, url, token) async => null);
+    runtime.setTernaryFunction('PATCH_AUTH', (ctx, caller, url, body, token) async => null);
   }
 
   // ─── Execution ─────────────────────────────────────────────────────

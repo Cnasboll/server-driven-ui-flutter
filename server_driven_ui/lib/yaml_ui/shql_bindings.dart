@@ -38,19 +38,27 @@ class ShqlBindings {
   }) {
     _constantsSet = constantsSet ?? Runtime.prepareConstantsSet();
     _runtime = runtime ?? Runtime.prepareRuntime(_constantsSet);
+    // Console I/O — wired via Runtime fields shared with awesome_calculator.
     _runtime.printFunction = printLine;
     _runtime.readlineFunction = readline;
     _runtime.promptFunction = prompt;
-    _runtime.navigateFunction = navigate;
-    _runtime.fetchFunction = fetch;
-    _runtime.postFunction = post;
-    _runtime.patchFunction = patch;
-    _runtime.fetchAuthFunction = fetchAuth;
-    _runtime.patchAuthFunction = patchAuth;
-    _runtime.saveStateFunction = saveState;
-    _runtime.loadStateFunction = loadState;
-    _runtime.debugLogFunction = debugLog;
-    _runtime.notifyListeners = notifyListeners;
+    // Platform functions — registered directly in the function table.
+    _runtime.setUnaryFunction('NAVIGATE', (ctx, caller, url) => navigate?.call(url as String));
+    _runtime.setUnaryFunction('FETCH', (ctx, caller, url) => fetch?.call(url as String));
+    _runtime.setBinaryFunction('POST', (ctx, caller, url, body) => post?.call(url as String, body));
+    _runtime.setBinaryFunction('PATCH', (ctx, caller, url, body) => patch?.call(url as String, body));
+    _runtime.setBinaryFunction('FETCH_AUTH', (ctx, caller, url, token) => fetchAuth?.call(url as String, token as String));
+    _runtime.setTernaryFunction('PATCH_AUTH', (ctx, caller, url, body, token) => patchAuth?.call(url as String, body, token as String));
+    _runtime.setBinaryFunction('SAVE_STATE', (ctx, caller, key, value) => saveState?.call(key as String, value));
+    _runtime.setBinaryFunction('LOAD_STATE', (ctx, caller, key, defaultValue) => loadState?.call(key as String, defaultValue));
+    _runtime.setUnaryFunction('DEBUG_LOG', (ctx, caller, message) => debugLog?.call(message.toString()));
+    // SET writes a variable and notifies observers.
+    _runtime.setBinaryFunction('SET', (ctx, caller, name, value) {
+      caller.scope.setVariable(_runtime.identifiers.include((name as String).toUpperCase()), value);
+      notifyListeners(name);
+    });
+    // PUBLISH notifies observers without writing a variable.
+    _runtime.setUnaryFunction('PUBLISH', (ctx, caller, name) => notifyListeners(name as String));
 
     if (nullaryFunctions != null) {
       for (final entry in nullaryFunctions.entries) {

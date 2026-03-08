@@ -1371,11 +1371,8 @@ void main() {
       h = await _standardSetUp();
 
       // Override state functions to track saved state
-      h.runtime.saveStateFunction = (key, value) async {
-        savedState[key] = value;
-      };
-      h.runtime.loadStateFunction =
-          (key, defaultValue) async => savedState[key] ?? defaultValue;
+      h.runtime.setBinaryFunction('SAVE_STATE', (ctx, caller, key, value) async { savedState[key as String] = value; });
+      h.runtime.setBinaryFunction('LOAD_STATE', (ctx, caller, key, defaultValue) async => savedState[key as String] ?? defaultValue);
     });
 
     test('__FIREBASE_ERROR_MSG maps known codes', () async {
@@ -1595,11 +1592,8 @@ void main() {
       h = await _standardSetUp();
 
       // Override state functions to track saved state
-      h.runtime.saveStateFunction = (key, value) async {
-        savedState[key] = value;
-      };
-      h.runtime.loadStateFunction =
-          (key, defaultValue) async => savedState[key] ?? defaultValue;
+      h.runtime.setBinaryFunction('SAVE_STATE', (ctx, caller, key, value) async { savedState[key as String] = value; });
+      h.runtime.setBinaryFunction('LOAD_STATE', (ctx, caller, key, defaultValue) async => savedState[key as String] ?? defaultValue);
     });
 
     test('__TO_VALUE converts booleans', () async {

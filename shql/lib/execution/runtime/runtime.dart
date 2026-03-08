@@ -530,22 +530,13 @@ class Runtime {
   final Map<int, Runtime> _subModelScopes = {};
   bool _sandboxed = false;
 
+  // Console I/O — used by awesome_calculator which wires these directly.
   Function(dynamic value)? printFunction;
   Future<String?> Function()? readlineFunction;
   Future<String?> Function(String prompt)? promptFunction;
-  Future<void> Function(String routeName)? navigateFunction;
-  Future<dynamic> Function(String url)? fetchFunction;
-  Future<dynamic> Function(String url, dynamic body)? postFunction;
-  Future<dynamic> Function(String url, dynamic body)? patchFunction;
-  Future<dynamic> Function(String url, String token)? fetchAuthFunction;
-  Future<dynamic> Function(String url, dynamic body, String token)? patchAuthFunction;
-  Future<void> Function(String key, dynamic value)? saveStateFunction;
-  Future<dynamic> Function(String key, dynamic defaultValue)? loadStateFunction;
   Future<void> Function()? clsFunction;
   Future<void> Function()? hideGraphFunction;
   Future<void> Function(dynamic, dynamic)? plotFunction;
-  Function(String message)? debugLogFunction;
-  void Function(String name)? notifyListeners;
 
   Runtime({
     ConstantsSet? constantsSet,
@@ -576,19 +567,9 @@ class Runtime {
     printFunction = other.printFunction;
     readlineFunction = other.readlineFunction;
     promptFunction = other.promptFunction;
-    navigateFunction = other.navigateFunction;
-    fetchFunction = other.fetchFunction;
-    postFunction = other.postFunction;
-    patchFunction = other.patchFunction;
-    fetchAuthFunction = other.fetchAuthFunction;
-    patchAuthFunction = other.patchAuthFunction;
-    saveStateFunction = other.saveStateFunction;
-    loadStateFunction = other.loadStateFunction;
     clsFunction = other.clsFunction;
     hideGraphFunction = other.hideGraphFunction;
     plotFunction = other.plotFunction;
-    debugLogFunction = other.debugLogFunction;
-    notifyListeners = other.notifyListeners;
     hookUpConsole();
     _sandboxed = true;
   }
@@ -732,83 +713,6 @@ class Runtime {
     return await promptFunction?.call(prompt) ?? "";
   }
 
-  Future<void> navigate(
-    ExecutionContext executionContext,
-    ExecutionNode caller,
-    dynamic routeName,
-  ) async {
-    if (sandboxed) {
-      return;
-    }
-
-    return await navigateFunction?.call(routeName);
-  }
-
-  Future<dynamic> fetch(
-    ExecutionContext executionContext,
-    ExecutionNode caller,
-    dynamic url,
-  ) async {
-    if (sandboxed) {
-      return;
-    }
-
-    return fetchFunction?.call(url);
-  }
-
-  Future<dynamic> post(
-    ExecutionContext executionContext,
-    ExecutionNode caller,
-    dynamic url,
-    dynamic body,
-  ) async {
-    if (sandboxed) {
-      return;
-    }
-
-    return postFunction?.call(url, body);
-  }
-
-  Future<dynamic> patch(
-    ExecutionContext executionContext,
-    ExecutionNode caller,
-    dynamic url,
-    dynamic body,
-  ) async {
-    if (sandboxed) {
-      return;
-    }
-
-    return patchFunction?.call(url, body);
-  }
-
-  Future<dynamic> fetchAuth(
-    ExecutionContext executionContext,
-    ExecutionNode caller,
-    dynamic url,
-    dynamic token,
-  ) async {
-    if (sandboxed) {
-      return;
-    }
-
-    return fetchAuthFunction?.call(url, token);
-  }
-
-  Future<dynamic> patchAuth(
-    ExecutionContext executionContext,
-    ExecutionNode caller,
-    dynamic url,
-    dynamic body,
-    dynamic token,
-  ) async {
-    if (sandboxed) {
-      return;
-    }
-
-    return patchAuthFunction?.call(url, body, token);
-  }
-
   Future<String> readLine(
     ExecutionContext executionContext,
     ExecutionNode caller,
@@ -832,58 +736,6 @@ class Runtime {
     await plotFunction?.call(xVector, yVector);
   }
 
-  Future<void> set(
-    ExecutionContext executionContext,
-    ExecutionNode caller,
-    dynamic name,
-    dynamic value,
-  ) async {
-    if (sandboxed) {
-      return;
-    }
-
-    caller.scope.setVariable(identifiers.include(name.toUpperCase()), value);
-    notifyListeners?.call(name);
-  }
-
-  /// Notify listeners for a key without writing a global variable.
-  /// Use this when the canonical value lives inside a namespaced OBJECT
-  /// and Observers only need to know that something changed.
-  Future<void> publish(
-    ExecutionContext executionContext,
-    ExecutionNode caller,
-    dynamic name,
-  ) async {
-    if (sandboxed) return;
-    notifyListeners?.call(name);
-  }
-
-  Future<void> saveState(
-    ExecutionContext executionContext,
-    ExecutionNode caller,
-    dynamic key,
-    dynamic value,
-  ) async {
-    if (sandboxed) {
-      return;
-    }
-
-    await saveStateFunction?.call(key, value);
-  }
-
-  Future<dynamic> loadState(
-    ExecutionContext executionContext,
-    ExecutionNode caller,
-    dynamic key,
-    dynamic defaultValue,
-  ) async {
-    if (sandboxed) {
-      return;
-    }
-
-    return loadStateFunction?.call(key, defaultValue);
-  }
-
   Future<void> cls(
     ExecutionContext executionContext,
     ExecutionNode caller,
@@ -904,18 +756,6 @@ class Runtime {
     }
 
     await hideGraphFunction?.call();
-  }
-
-  void debugLog(
-    ExecutionContext executionContext,
-    ExecutionNode caller,
-    dynamic message,
-  ) {
-    if (sandboxed) {
-      return;
-    }
-
-    debugLogFunction?.call(message.toString());
   }
 
   Future<Thread> startThread(
@@ -969,23 +809,12 @@ class Runtime {
   void hookUpConsole() {
     setUnaryFunction("PRINT", print);
     setUnaryFunction("PROMPT", prompt);
-    setUnaryFunction("NAVIGATE", navigate);
-    setUnaryFunction("FETCH", fetch);
-    setBinaryFunction("POST", post);
-    setBinaryFunction("PATCH", patch);
-    setBinaryFunction("FETCH_AUTH", fetchAuth);
-    setTernaryFunction("PATCH_AUTH", patchAuth);
     setNullaryFunction("READLINE", readLine);
     setBinaryFunction("_DISPLAY_GRAPH", plot);
-    setBinaryFunction("SET", set);
-    setUnaryFunction("PUBLISH", publish);
-    setBinaryFunction("SAVE_STATE", saveState);
-    setBinaryFunction("LOAD_STATE", loadState);
     setNullaryFunction("CLS", cls);
     setNullaryFunction("HIDE_GRAPH", hideGraph);
     setUnaryFunction("THREAD", startThread);
     setUnaryFunction("JOIN", joinThread);
-    setUnaryFunction("DEBUG_LOG", debugLog);
     setBinaryFunction("_EXTERN", extern);
   }
 
