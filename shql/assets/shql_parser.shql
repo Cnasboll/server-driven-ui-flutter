@@ -357,7 +357,16 @@ _PR_PRIMARY(tokens, pos) := BEGIN
       pos := r2['pos'];
     END;
     IF _PR_IS(tokens, pos, ')') THEN pos := pos + 1;
-    IF LENGTH(items) = 1 THEN RETURN _PR_RES(items[0], pos);
+    IF LENGTH(items) = 1 THEN BEGIN
+      -- Implicit multiplication: (expr)ID, (expr)INT/FLOAT, (expr)IF
+      -- e.g. (2)ANSWER = 84,  (ANSWER)2 = 84,  (3)IF FALSE THEN 2 ELSE 3 = 9
+      ntt := _PR_TT(tokens, pos);
+      IF ntt = 'ID' OR ntt = 'INT' OR ntt = 'FLOAT' OR ntt = 'IF' THEN BEGIN
+        r2 := _PR_POSTFIX(tokens, pos);
+        RETURN _PR_RES(_PR_NODE('mul', [items[0], r2['node']]), r2['pos']);
+      END;
+      RETURN _PR_RES(items[0], pos);
+    END;
     RETURN _PR_RES(_PR_NODE('list', items), pos);
   END;
 
