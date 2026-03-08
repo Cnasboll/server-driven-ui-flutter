@@ -5734,6 +5734,45 @@ codec.encode(program)
       expect(result, isA<Map>());
     });
 
+    test('_PR_NOT works directly', () async {
+      final cs = Runtime.prepareConstantsSet();
+      final rt = Runtime.prepareRuntime(cs);
+      for (final src in [_stdlibSrc, parserSrc]) {
+        await evalEngine(src, runtime: rt, constantsSet: cs);
+      }
+      final result = await evalEngine(
+        "_PR_NOT([{'t':'INT','v':'42'},{'t':'EOF','v':''}], 0)",
+        runtime: rt, constantsSet: cs,
+      );
+      expect(result, isA<Map>());
+    });
+
+    test('_PR_AND works directly', () async {
+      final cs = Runtime.prepareConstantsSet();
+      final rt = Runtime.prepareRuntime(cs);
+      for (final src in [_stdlibSrc, parserSrc]) {
+        await evalEngine(src, runtime: rt, constantsSet: cs);
+      }
+      final result = await evalEngine(
+        "_PR_AND([{'t':'INT','v':'42'},{'t':'EOF','v':''}], 0)",
+        runtime: rt, constantsSet: cs,
+      );
+      expect(result, isA<Map>());
+    });
+
+    test('_PR_OR works directly', () async {
+      final cs = Runtime.prepareConstantsSet();
+      final rt = Runtime.prepareRuntime(cs);
+      for (final src in [_stdlibSrc, parserSrc]) {
+        await evalEngine(src, runtime: rt, constantsSet: cs);
+      }
+      final result = await evalEngine(
+        "_PR_OR([{'t':'INT','v':'42'},{'t':'EOF','v':''}], 0)",
+        runtime: rt, constantsSet: cs,
+      );
+      expect(result, isA<Map>());
+    });
+
     test('_PR_ASSIGN works directly', () async {
       final cs = Runtime.prepareConstantsSet();
       final rt = Runtime.prepareRuntime(cs);
