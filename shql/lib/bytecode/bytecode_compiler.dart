@@ -312,29 +312,28 @@ class BytecodeCompiler {
     b.emit(op);
   }
 
-  /// Emit a null check on the top-of-stack value using [dup].
-  /// After this call the stack still has [val] on top.
-  /// Returns the index of the [jumpTrue] placeholder that must be patched
-  /// to the "result is null" path by the caller.
-  int _emitNullCheck(ChunkBuilder b) {
-    b.emit(Opcode.dup);                          // [val, val]
-    b.emit1(Opcode.pushConst, b.addConst(null)); // [val, val, null]
-    b.emit(Opcode.cmpEq);                        // [val, (val==null)]
-    return b.emitJump(Opcode.jumpTrue);          // pops bool; [val] if not null
-  }
-
   /// Emit null-aware binary op — mirrors [NullAwareBinaryNode]:
   /// if lhs or rhs is null the result is null, otherwise [op] is applied.
+  ///
+  /// [Opcode.jumpNull] peeks without consuming, so the value stays on the
+  /// stack for the null-path cleanup — no `dup` required.
+  ///
+  ///   [lhs]      jumpNull .null    → falls through (not null), lhs stays
+  ///   [lhs, rhs] jumpNull .rhsNull → falls through (not null), rhs stays
+  ///   op → [result]; jump .done
+  ///   .rhsNull: pop [lhs] → fall into .null
+  ///   .null:    pop []    → pushConst null → [null]
+  ///   .done:
   void _nullAwareBinary(ParseTree node, ChunkBuilder b, Opcode op) {
-    _compile(node.children[0], b);               // [lhs]
-    final lhsNull = _emitNullCheck(b);           // [lhs]; jump→.null if null
-    _compile(node.children[1], b);               // [lhs, rhs]
-    final rhsNull = _emitNullCheck(b);           // [lhs, rhs]; jump→.null if null
-    b.emit(op);                                  // [result]
+    _compile(node.children[0], b);                   // [lhs]
+    final lhsNull = b.emitJump(Opcode.jumpNull);     // peek; if null → .null
+    _compile(node.children[1], b);                   // [lhs, rhs]
+    final rhsNull = b.emitJump(Opcode.jumpNull);     // peek; if null → .rhsNull
+    b.emit(op);                                      // [result]
     final done = b.emitJump(Opcode.jump);
     b.patchJump(rhsNull);  // .rhsNull: [lhs, rhs(null)]
     b.emit(Opcode.pop);    // [lhs]
-    b.patchJump(lhsNull);  // .lhsNull: [lhs(null)] OR [lhs] from rhsNull path
+    b.patchJump(lhsNull);  // .null: [lhs(null)] OR [lhs] from .rhsNull
     b.emit(Opcode.pop);    // []
     b.emit1(Opcode.pushConst, b.addConst(null));
     b.patchJump(done);
@@ -342,11 +341,15 @@ class BytecodeCompiler {
 
   /// Emit null-aware unary op — mirrors [NullAwareUnaryNode]:
   /// if operand is null the result is null, otherwise [op] is applied.
+  ///
+  ///   [val] jumpNull .end → falls through (not null), val stays
+  ///   op → [result]
+  ///   .end: [null] (peeked) or [result]
   void _nullAwareUnary(ParseTree node, ChunkBuilder b, Opcode op) {
     _compile(node.children[0], b);               // [val]
-    final isNull = _emitNullCheck(b);            // [val]; jump→.end if null
+    final isNull = b.emitJump(Opcode.jumpNull);  // peek; if null → .end
     b.emit(op);                                  // [result]
-    b.patchJump(isNull);                         // .end: stack has [null] or [result]
+    b.patchJump(isNull);                         // .end: [null] or [result]
   }
 
   // ---- Sequences -----------------------------------------------------------
@@ -484,35 +487,34 @@ class BytecodeCompiler {
   void _compileWhile(ParseTree node, ChunkBuilder b) {
     // children: [condition, body]
     //
-    // Stack discipline: one "last result" slot is always maintained on the stack.
-    //   push null            ← initial last-result (handles never-executed case)
+    // r_res holds the "last body result" — null initially (never-executed case).
+    //   r_res = null
     //   .loopTop:
-    //     condition          ← [last-result, condition]
-    //     jumpFalse .exit    ← condition consumed; [last-result] stays
-    //     pop                ← discard last-result; stack empty
-    //     <body>             ← body result pushed; [body-result]
+    //     condition → jumpFalse .exit
+    //     <body> → storeReg r_res
     //     jump .loopTop
-    //   .exit:               ← [last-result] on stack (null or last body value)
+    //   .exit:
+    //     loadReg r_res          ← push result (null or last body value)
     //
-    // BREAK/CONTINUE: fire at statement boundaries where the stack is empty
-    // (last-result was already popped). Push null first to restore balance.
-    b.emit1(Opcode.pushConst, b.addConst(null)); // initial last-result
+    // BREAK / CONTINUE are plain jumps — no null-push needed.
+    final rRes = b.allocReg();
+    b.emit1(Opcode.pushConst, b.addConst(null));
+    b.emit1(Opcode.storeReg, rRes);
+
     final loopTop = b.currentAddr;
     _compile(node.children[0], b); // condition
     final exitJump = b.emitJump(Opcode.jumpFalse);
 
-    b.emit(Opcode.pop); // discard last-result before body
-
     _loopStack.add((breaks: [], continues: [], continueAddr: loopTop));
-    _compile(node.children[1], b); // body — result stays on stack
+    _compile(node.children[1], b); // body
     final ctx = _loopStack.removeLast();
 
+    b.emit1(Opcode.storeReg, rRes); // save body result (BREAK skips this)
     b.emit1(Opcode.jump, loopTop);
+
     b.patchJump(exitJump);
-    for (final idx in ctx.breaks) {
-      b.patchJump(idx);
-    }
-    // last-result (null or last body value) is already on stack
+    for (final idx in ctx.breaks) b.patchJump(idx);
+    b.emit1(Opcode.loadReg, rRes); // push result
   }
 
   // ---- REPEAT/UNTIL --------------------------------------------------------
@@ -520,35 +522,33 @@ class BytecodeCompiler {
   void _compileRepeatUntil(ParseTree node, ChunkBuilder b) {
     // children: [body, condition]
     //
-    // Same stack discipline as WHILE: one "last result" slot maintained.
-    //   push null            ← initial last-result (for BREAK before first body)
+    // r_res holds the last body result — null initially (for BREAK before first
+    // body iteration completes).
+    //   r_res = null
     //   .loopTop:
-    //     pop                ← discard last-result; stack empty
-    //     <body>             ← [body-result]
-    //     condition          ← [body-result, condition]
-    //     jumpTrue .exit     ← pops condition; if true → .exit with [body-result]
-    //     jump .loopTop      ← condition false; [body-result] becomes new last-result
-    //   .exit:               ← [body-result] on stack
+    //     <body> → storeReg r_res
+    //     condition → jumpFalse .loopTop   ← loop while NOT yet met
+    //   .exit:
+    //     loadReg r_res          ← push result
     //
-    // BREAK/CONTINUE: fire at statement boundaries (inside body, after pop).
-    // Stack is empty — push null before jumping to restore balance.
-    b.emit1(Opcode.pushConst, b.addConst(null)); // initial last-result
+    // BREAK / CONTINUE are plain jumps — no null-push needed.
+    final rRes = b.allocReg();
+    b.emit1(Opcode.pushConst, b.addConst(null));
+    b.emit1(Opcode.storeReg, rRes);
+
     final loopTop = b.currentAddr;
-    b.emit(Opcode.pop); // discard last-result before body
 
     _loopStack.add((breaks: [], continues: [], continueAddr: loopTop));
-    _compile(node.children[0], b); // body — result stays on stack
+    _compile(node.children[0], b); // body
     final ctx = _loopStack.removeLast();
 
-    _compile(node.children[1], b); // UNTIL condition → [body-result, condition]
-    final exitJump = b.emitJump(Opcode.jumpTrue); // pops condition; if true → exit
-    b.emit1(Opcode.jump, loopTop); // condition false → loop ([body-result] popped at loopTop)
+    b.emit1(Opcode.storeReg, rRes); // save body result (BREAK skips this)
+    _compile(node.children[1], b); // UNTIL condition
+    b.emit1(Opcode.jumpFalse, loopTop); // loop while condition not yet met
 
-    b.patchJump(exitJump); // .exit: body-result on stack
-    for (final idx in ctx.breaks) {
-      b.patchJump(idx);
-    }
-    // body-result (or null for BREAK exits) is on stack
+    // .exit:
+    for (final idx in ctx.breaks) b.patchJump(idx);
+    b.emit1(Opcode.loadReg, rRes); // push result
   }
 
   // ---- FOR -----------------------------------------------------------------
@@ -711,26 +711,19 @@ class BytecodeCompiler {
 
   void _compileBreak(ChunkBuilder b) {
     if (_loopStack.isEmpty) throw BytecodeCompileError('BREAK outside loop');
-    final ctx = _loopStack.last;
-    if (ctx.continueAddr >= 0) {
-      // WHILE / REPEAT: the result-tracking structure pops last-result before body,
-      // so the stack is empty at BREAK time. Push null so the exit finds its slot.
-      b.emit1(Opcode.pushConst, b.addConst(null));
-    }
-    ctx.breaks.add(b.emitJump(Opcode.jump));
+    // FOR exits with pushConst null; WHILE/REPEAT exit with loadReg r_res.
+    // All cases: patch the jump to land at the right exit without stack fixup.
+    _loopStack.last.breaks.add(b.emitJump(Opcode.jump));
   }
 
   void _compileContinue(ChunkBuilder b) {
     if (_loopStack.isEmpty) throw BytecodeCompileError('CONTINUE outside loop');
     final ctx = _loopStack.last;
     if (ctx.continueAddr >= 0) {
-      // WHILE / REPEAT: target is already known.
-      // Stack is empty at CONTINUE time (last-result was popped before body).
-      // Push null so the pop at loopTop finds its expected value.
-      b.emit1(Opcode.pushConst, b.addConst(null));
+      // WHILE / REPEAT: target is already known (loopTop).
       b.emit1(Opcode.jump, ctx.continueAddr);
     } else {
-      // FOR: target (increment) not yet emitted — collect forward reference.
+      // FOR: increment target not yet emitted — collect forward reference.
       ctx.continues.add(b.emitJump(Opcode.jump));
     }
   }

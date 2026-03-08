@@ -526,6 +526,15 @@ class BytecodeInterpreter {
           frame.pc = instr.operand;
         }
 
+      case Opcode.jumpNull:
+        // Peek (do NOT pop) — leave value on stack for the non-null path.
+        if (stack.last == null) {
+          if (_stopOnBackwardJump && instr.operand < frame.pc) {
+            throw _EvalExprStopped();
+          }
+          frame.pc = instr.operand;
+        }
+
       // ---- Scope -----------------------------------------------------------
 
       case Opcode.pushScope:

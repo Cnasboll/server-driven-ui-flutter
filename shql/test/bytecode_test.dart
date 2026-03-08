@@ -169,6 +169,23 @@ void main() {
         throwsA(isA<BytecodeParseError>()),
       );
     });
+
+    test('parses jump_null opcode with forward label', () {
+      final prog = BytecodeParser.fromSource('''
+.chunk main:
+  .constants:
+    0: 1
+  .code:
+    push_const 0
+    jump_null .done
+    neg
+  .done:
+    ret
+''').parse();
+      // instruction layout: [push_const, jump_null, neg, ret]
+      expect(prog['main'].code[1].op, Opcode.jumpNull);
+      expect(prog['main'].code[1].operand, 3); // .done resolves to index 3
+    });
   });
 
   // -------------------------------------------------------------------------
@@ -178,6 +195,19 @@ void main() {
   Future<dynamic> run(String src, [List<dynamic> args = const []]) {
     final prog = BytecodeParser.fromSource(src).parse();
     return BytecodeInterpreter(prog, rt).execute('main', args);
+  }
+
+  Future<dynamic> runNative(
+    String src,
+    Map<String, dynamic Function(List<dynamic>)> natives, [
+    List<dynamic> args = const [],
+  ]) {
+    final prog = BytecodeParser.fromSource(src).parse();
+    final interp = BytecodeInterpreter(prog, rt);
+    for (final e in natives.entries) {
+      interp.registerNative(e.key, e.value);
+    }
+    return interp.execute('main', args);
   }
 
   // -------------------------------------------------------------------------
@@ -379,6 +409,157 @@ void main() {
     load_var 2
     ret
 '''), 15);
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  // jump_null — peek-without-consume semantics
+  // -------------------------------------------------------------------------
+  group('BytecodeInterpreter — jump_null', () {
+    test('non-null: falls through; value stays on stack', () async {
+      // push 42 → jump_null skipped → neg → -42
+      // Verifies both: (1) jump not taken for non-null, (2) 42 still on stack after peek
+      expect(await run('''
+.chunk main:
+  .constants:
+    0: 42
+    1: 1
+  .code:
+    push_const 0
+    jump_null .null_path
+    neg
+    jump .done
+  .null_path:
+    pop
+    push_const 1
+  .done:
+    ret
+'''), -42);
+    });
+
+    test('null: jump taken; null stays on stack (peek, not pop)', () async {
+      // Native fn returns null → jump_null jumps → null still on stack → pop → push 77
+      // Verifies: (1) jump taken for null, (2) null was NOT consumed (can be popped)
+      expect(
+        await runNative('''
+.chunk main:
+  .constants:
+    0: getNull
+    1: 77
+  .code:
+    load_var 0
+    call 0
+    jump_null .null_path
+    neg
+    jump .done
+  .null_path:
+    pop
+    push_const 1
+  .done:
+    ret
+''', {'getNull': (_) => null}),
+        77,
+      );
+    });
+  });
+
+  // -------------------------------------------------------------------------
+  // Registers (store_reg / load_reg)
+  // -------------------------------------------------------------------------
+  group('BytecodeInterpreter — registers', () {
+    test('store_reg saves value; load_reg retrieves it', () async {
+      expect(await run('''
+.chunk main:
+  .constants:
+    0: 42
+    1: 99
+  .code:
+    push_const 0
+    store_reg 0
+    push_const 1
+    pop
+    load_reg 0
+    ret
+'''), 42);
+    });
+
+    test('multiple registers are independent', () async {
+      expect(await run('''
+.chunk main:
+  .constants:
+    0: 10
+    1: 20
+  .code:
+    push_const 0
+    store_reg 0
+    push_const 1
+    store_reg 1
+    load_reg 0
+    load_reg 1
+    add
+    ret
+'''), 30);
+    });
+
+    test('WHILE-loop register pattern: result is last body value', () async {
+      // Simulates: reg=0; WHILE i < 3 DO BEGIN i:=i+1; reg:=i END; return reg
+      // Expected: reg = 3 (last iteration body result)
+      expect(await run('''
+.chunk main:
+  .constants:
+    0: 0
+    1: i
+    2: 3
+    3: 1
+  .code:
+    push_const 0
+    store_reg 0
+    push_const 0
+    store_var 1
+  .loop:
+    load_var 1
+    push_const 2
+    cmp_lt
+    jump_false .exit
+    load_var 1
+    push_const 3
+    add
+    store_var 1
+    load_var 1
+    store_reg 0
+    jump .loop
+  .exit:
+    load_reg 0
+    ret
+'''), 3);
+    });
+
+    test('WHILE-loop register pattern: null when loop never executes', () async {
+      // Simulates: reg=null; WHILE false DO body; return reg → null
+      // Uses native fn to get null as initial register value (text format can't represent null constants)
+      expect(
+        await runNative('''
+.chunk main:
+  .constants:
+    0: getNull
+    1: 0
+    2: 99
+  .code:
+    load_var 0
+    call 0
+    store_reg 0
+  .loop:
+    push_const 1
+    jump_false .exit
+    push_const 2
+    store_reg 0
+    jump .loop
+  .exit:
+    load_reg 0
+    ret
+''', {'getNull': (_) => null}),
+        isNull,
+      );
     });
   });
 
@@ -705,20 +886,6 @@ void main() {
   // Native functions
   // -------------------------------------------------------------------------
 
-  /// Build an interpreter with [natives] pre-registered and run [src].
-  Future<dynamic> runNative(
-    String src,
-    Map<String, dynamic Function(List<dynamic>)> natives, [
-    List<dynamic> args = const [],
-  ]) {
-    final prog = BytecodeParser.fromSource(src).parse();
-    final interp = BytecodeInterpreter(prog, rt);
-    for (final e in natives.entries) {
-      interp.registerNative(e.key, e.value);
-    }
-    return interp.execute('main', args);
-  }
-
   group('BytecodeInterpreter — native functions', () {
     test('unary: sqrt(9) = 3.0', () async {
       expect(
@@ -966,6 +1133,29 @@ void main() {
     load_var 5
     mod
     call 2
+    ret
+''');
+
+    roundTrip('jump_null opcode', '''
+.chunk main:
+  .constants:
+    0: 1
+  .code:
+    push_const 0
+    jump_null .done
+    neg
+  .done:
+    ret
+''');
+
+    roundTrip('store_reg / load_reg opcodes', '''
+.chunk main:
+  .constants:
+    0: 42
+  .code:
+    push_const 0
+    store_reg 0
+    load_reg 0
     ret
 ''');
   });

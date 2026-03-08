@@ -69,6 +69,10 @@ enum Opcode {
   /// Pop top; jump if truthy. `operand` = target instruction index.
   jumpTrue,
 
+  /// Peek top (do NOT consume); jump if null. `operand` = target index.
+  /// Non-null: fall through with the value still on the stack.
+  jumpNull,
+
   // --- Scope ---
 
   /// Push a new child scope (for BEGIN/END blocks).
@@ -149,6 +153,7 @@ enum Opcode {
     Opcode.jump ||
     Opcode.jumpFalse ||
     Opcode.jumpTrue ||
+    Opcode.jumpNull ||
     Opcode.call ||
     Opcode.makeClosure ||
     Opcode.getMember ||

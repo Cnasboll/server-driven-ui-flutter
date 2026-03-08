@@ -974,23 +974,18 @@ void main() {
     // ---- Null-aware binary -------------------------------------------------
 
     test('1+2 (null-aware add)', () {
-      // _nullAwareBinary emits: lhs, null-check, rhs, null-check, op, jump,
-      // pop-rhs, pop-lhs, push null; then ret.
+      // _nullAwareBinary: jumpNull peeks without consuming, so no dup needed.
+      // lhs → jumpNull .null; rhs → jumpNull .rhsNull; op; jump .done
+      // .rhsNull: pop rhs; .null: pop lhs; push null; .done:
       expect(disasm(compileMain('1+2')), [
         'push_const(1)',   // lhs
-        'dup',             // null-check lhs
-        'push_const(null)',
-        'cmp_eq',
-        'jump_true(13)',   // → .lhsNull (addr 13)
+        'jump_null(7)',    // peek lhs; if null → .null (addr 7)
         'push_const(2)',   // rhs
-        'dup',             // null-check rhs
-        'push_const(null)',
-        'cmp_eq',
-        'jump_true(12)',   // → .rhsNull (addr 12)
+        'jump_null(6)',    // peek rhs; if null → .rhsNull (addr 6)
         'add',
-        'jump(15)',        // → .done (addr 15)
+        'jump(9)',         // → .done (addr 9)
         'pop',             // .rhsNull: pop rhs
-        'pop',             // .lhsNull: pop lhs
+        'pop',             // .null: pop lhs
         'push_const(null)',
         'ret',             // .done
       ]);
@@ -999,17 +994,11 @@ void main() {
     test('2^3 (null-aware pow opcode)', () {
       expect(disasm(compileMain('2^3')), [
         'push_const(2)',
-        'dup',
-        'push_const(null)',
-        'cmp_eq',
-        'jump_true(13)',
+        'jump_null(7)',
         'push_const(3)',
-        'dup',
-        'push_const(null)',
-        'cmp_eq',
-        'jump_true(12)',
+        'jump_null(6)',
         'pow',
-        'jump(15)',
+        'jump(9)',
         'pop',
         'pop',
         'push_const(null)',

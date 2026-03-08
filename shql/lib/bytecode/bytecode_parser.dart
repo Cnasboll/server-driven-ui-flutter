@@ -327,6 +327,7 @@ class BytecodeParser {
       'jump' => Opcode.jump,
       'jump_false' || 'jumpfalse' => Opcode.jumpFalse,
       'jump_true' || 'jumptrue' => Opcode.jumpTrue,
+      'jump_null' || 'jumpnull' => Opcode.jumpNull,
       'push_scope' || 'pushscope' => Opcode.pushScope,
       'pop_scope' || 'popscope' => Opcode.popScope,
       'call' => Opcode.call,
