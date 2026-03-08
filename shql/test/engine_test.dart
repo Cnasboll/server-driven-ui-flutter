@@ -5698,6 +5698,94 @@ codec.encode(program)
       expect(result, contains('load_var'));
     });
 
+    test('parser loading does not crash', () async {
+      final cs = Runtime.prepareConstantsSet();
+      final rt = Runtime.prepareRuntime(cs);
+      await evalEngine(_stdlibSrc, runtime: rt, constantsSet: cs);
+      // If this throws, loading the parser source itself has a bug
+      final parserResult = await evalEngine(parserSrc, runtime: rt, constantsSet: cs);
+      // parserResult is the OBJECT
+      expect(parserResult, isNotNull);
+    });
+
+    test('_PR_PRIMARY works directly', () async {
+      final cs = Runtime.prepareConstantsSet();
+      final rt = Runtime.prepareRuntime(cs);
+      for (final src in [_stdlibSrc, parserSrc]) {
+        await evalEngine(src, runtime: rt, constantsSet: cs);
+      }
+      final result = await evalEngine(
+        "_PR_PRIMARY([{'t':'INT','v':'42'},{'t':'EOF','v':''}], 0)",
+        runtime: rt, constantsSet: cs,
+      );
+      expect(result, isA<Map>());
+    });
+
+    test('_PR_POSTFIX works directly', () async {
+      final cs = Runtime.prepareConstantsSet();
+      final rt = Runtime.prepareRuntime(cs);
+      for (final src in [_stdlibSrc, parserSrc]) {
+        await evalEngine(src, runtime: rt, constantsSet: cs);
+      }
+      final result = await evalEngine(
+        "_PR_POSTFIX([{'t':'INT','v':'42'},{'t':'EOF','v':''}], 0)",
+        runtime: rt, constantsSet: cs,
+      );
+      expect(result, isA<Map>());
+    });
+
+    test('_PR_ASSIGN works directly', () async {
+      final cs = Runtime.prepareConstantsSet();
+      final rt = Runtime.prepareRuntime(cs);
+      for (final src in [_stdlibSrc, parserSrc]) {
+        await evalEngine(src, runtime: rt, constantsSet: cs);
+      }
+      final result = await evalEngine(
+        "_PR_ASSIGN([{'t':'INT','v':'42'},{'t':'EOF','v':''}], 0)",
+        runtime: rt, constantsSet: cs,
+      );
+      expect(result, isA<Map>());
+    });
+
+    test('parser with hardcoded single-int token list', () async {
+      final cs = Runtime.prepareConstantsSet();
+      final rt = Runtime.prepareRuntime(cs);
+      for (final src in [_stdlibSrc, lexerSrc, parserSrc]) {
+        await evalEngine(src, runtime: rt, constantsSet: cs);
+      }
+      final result = await evalEngine(
+        "parser.parse([{'t':'INT','v':'42'},{'t':'EOF','v':''}])",
+        runtime: rt, constantsSet: cs,
+      );
+      expect(result, isA<Map>());
+    });
+
+    test('parser returns a map for 1+2', () async {
+      final cs = Runtime.prepareConstantsSet();
+      final rt = Runtime.prepareRuntime(cs);
+      for (final src in [_stdlibSrc, lexerSrc, parserSrc]) {
+        await evalEngine(src, runtime: rt, constantsSet: cs);
+      }
+      final result = await evalEngine(
+        "parser.parse(lexer.tokenize('1+2'))",
+        runtime: rt, constantsSet: cs,
+      );
+      expect(result, isA<Map>());
+    });
+
+    test('compiler returns a map for 1+2', () async {
+      final cs = Runtime.prepareConstantsSet();
+      final rt = Runtime.prepareRuntime(cs);
+      for (final src in [_stdlibSrc, lexerSrc, parserSrc, compilerSrc]) {
+        await evalEngine(src, runtime: rt, constantsSet: cs);
+      }
+      final result = await evalEngine(
+        "compiler.compile(parser.parse(lexer.tokenize('1+2')))",
+        runtime: rt, constantsSet: cs,
+      );
+      expect(result, isA<Map>());
+    });
+
     test('tokenizer returns a list', () async {
       final cs = Runtime.prepareConstantsSet();
       final rt = Runtime.prepareRuntime(cs);
