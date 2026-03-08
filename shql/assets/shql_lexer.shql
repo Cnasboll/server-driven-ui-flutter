@@ -1,0 +1,142 @@
+-- ============================================================
+-- SHQL Lexer — tokenizes SHQL source into a list of token maps.
+-- Each token: {"t": type, "v": value}
+--
+-- Token types:
+--   "INT"   integer literal (value is digit string)
+--   "FLOAT" float literal
+--   "STR"   string literal (value is the decoded string)
+--   "ID"    identifier (uppercased)
+--   keywords: "IF" "THEN" "ELSE" "WHILE" "DO" "REPEAT" "UNTIL"
+--             "FOR" "TO" "STEP" "BEGIN" "END" "BREAK" "CONTINUE"
+--             "RETURN" "AND" "OR" "XOR" "NOT" "IN" "OBJECT"
+--   operators: ":=" "=>" "<=" ">=" "<>" "!~" "^"
+--              "+" "-" "*" "/" "%" "=" "<" ">" "~"
+--              "(" ")" "[" "]" "{" "}" "." "," ":" ";"
+--   "EOF"
+-- ============================================================
+
+_LX_KEYWORDS := [
+  'IF','THEN','ELSE','WHILE','DO','REPEAT','UNTIL',
+  'FOR','TO','STEP','BEGIN','END','BREAK','CONTINUE','RETURN',
+  'AND','OR','XOR','NOT','IN','OBJECT'
+];
+
+_LX_IS_KW(s) := INDEX_OF(_LX_KEYWORDS, s) >= 0;
+_LX_IS_DIGIT(c)  := c ~ r'[0-9]';
+_LX_IS_ALPHA(c)  := c ~ r'[a-zA-Z_]';
+_LX_IS_ALNUM(c)  := c ~ r'[a-zA-Z0-9_]';
+_LX_TOK(t, v) := {"t": t, "v": v};
+_LX_CH(src, i) := SUBSTRING(src, i, i+1);
+_LX_CH2(src, i) := IF i+1 < LENGTH(src) THEN SUBSTRING(src, i, i+2) ELSE SUBSTRING(src, i, i+1);
+
+-- Scan a quoted string starting at i (i points to the opening quote).
+-- Returns {"buf": decoded_string, "i": pos_after_closing_quote}.
+_LX_SCAN_STR(src, i, n, q) := BEGIN
+  buf := '';
+  i := i + 1;
+  WHILE i < n DO BEGIN
+    c := _LX_CH(src, i);
+    IF c = q THEN BEGIN i := i + 1; RETURN {"buf": buf, "i": i}; END;
+    IF c = '\\' THEN BEGIN
+      i := i + 1;
+      IF i < n THEN BEGIN
+        e := _LX_CH(src, i);
+        IF e = 'n' THEN buf := buf + '\n'
+        ELSE IF e = 't' THEN buf := buf + '\t'
+        ELSE IF e = 'r' THEN buf := buf + '\r'
+        ELSE buf := buf + e;
+        i := i + 1;
+      END;
+    END ELSE BEGIN
+      buf := buf + c;
+      i := i + 1;
+    END;
+  END;
+  RETURN {"buf": buf, "i": i};
+END;
+
+_LX_TOKENIZE(src) := BEGIN
+  tokens := [];
+  i := 0;
+  n := LENGTH(src);
+  WHILE i < n DO BEGIN
+    c := _LX_CH(src, i);
+
+    -- Whitespace
+    IF c = ' ' OR c = '\t' OR c = '\n' OR c = '\r' THEN BEGIN i := i + 1; CONTINUE; END;
+
+    -- Line comment: --
+    IF _LX_CH2(src, i) = '--' THEN BEGIN
+      WHILE i < n AND _LX_CH(src, i) <> '\n' DO i := i + 1;
+      CONTINUE;
+    END;
+
+    -- Raw string: r'...' or r"..."
+    IF c = 'r' AND i+1 < n AND (_LX_CH(src, i+1) = "'" OR _LX_CH(src, i+1) = '"') THEN BEGIN
+      q := _LX_CH(src, i+1);
+      i := i + 2;
+      buf := '';
+      WHILE i < n AND _LX_CH(src, i) <> q DO BEGIN
+        buf := buf + _LX_CH(src, i);
+        i := i + 1;
+      END;
+      i := i + 1;
+      tokens := tokens + [_LX_TOK('STR', buf)];
+      CONTINUE;
+    END;
+
+    -- String literals: '...' or "..."
+    IF c = "'" OR c = '"' THEN BEGIN
+      r := _LX_SCAN_STR(src, i, n, c);
+      tokens := tokens + [_LX_TOK('STR', r['buf'])];
+      i := r['i'];
+      CONTINUE;
+    END;
+
+    -- Numbers
+    IF _LX_IS_DIGIT(c) THEN BEGIN
+      start := i;
+      WHILE i < n AND _LX_IS_DIGIT(_LX_CH(src, i)) DO i := i + 1;
+      IF i < n AND _LX_CH(src, i) = '.' AND i+1 < n AND _LX_IS_DIGIT(_LX_CH(src, i+1)) THEN BEGIN
+        i := i + 1;
+        WHILE i < n AND _LX_IS_DIGIT(_LX_CH(src, i)) DO i := i + 1;
+        tokens := tokens + [_LX_TOK('FLOAT', SUBSTRING(src, start, i))];
+      END ELSE
+        tokens := tokens + [_LX_TOK('INT', SUBSTRING(src, start, i))];
+      CONTINUE;
+    END;
+
+    -- Identifiers and keywords (includes 'r' when not followed by a quote)
+    IF _LX_IS_ALPHA(c) THEN BEGIN
+      start := i;
+      WHILE i < n AND _LX_IS_ALNUM(_LX_CH(src, i)) DO i := i + 1;
+      word := UPPERCASE(SUBSTRING(src, start, i));
+      IF _LX_IS_KW(word) THEN
+        tokens := tokens + [_LX_TOK(word, word)]
+      ELSE
+        tokens := tokens + [_LX_TOK('ID', word)];
+      CONTINUE;
+    END;
+
+    -- Two-character operators
+    c2 := _LX_CH2(src, i);
+    IF c2 = ':=' THEN BEGIN tokens := tokens + [_LX_TOK(':=',':=')]; i:=i+2; CONTINUE; END;
+    IF c2 = '=>' THEN BEGIN tokens := tokens + [_LX_TOK('=>','=>')]; i:=i+2; CONTINUE; END;
+    IF c2 = '<=' THEN BEGIN tokens := tokens + [_LX_TOK('<=','<=')]; i:=i+2; CONTINUE; END;
+    IF c2 = '>=' THEN BEGIN tokens := tokens + [_LX_TOK('>=','>=')]; i:=i+2; CONTINUE; END;
+    IF c2 = '<>' THEN BEGIN tokens := tokens + [_LX_TOK('<>','<>')]; i:=i+2; CONTINUE; END;
+    IF c2 = '!~' THEN BEGIN tokens := tokens + [_LX_TOK('!~','!~')]; i:=i+2; CONTINUE; END;
+    IF c2 = '**' THEN BEGIN tokens := tokens + [_LX_TOK('^', '^')];  i:=i+2; CONTINUE; END;
+
+    -- Single-character tokens
+    tokens := tokens + [_LX_TOK(c, c)];
+    i := i + 1;
+  END;
+  tokens := tokens + [_LX_TOK('EOF', '')];
+  RETURN tokens;
+END;
+
+lexer := OBJECT{
+  tokenize: (src) => _LX_TOKENIZE(src)
+};

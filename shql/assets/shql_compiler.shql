@@ -1,0 +1,494 @@
+-- ============================================================
+-- SHQL Compiler — converts a parse tree (from shql_parser) into
+-- a bytecode program map.
+--
+-- Output program: {"chunks": {name: chunk, ...}}
+-- Chunk: {
+--   "name": string,
+--   "params": [string, ...],
+--   "constants": [val, ...],
+--   "code": [{"op": opcode, "operand": int_or_null}, ...]
+-- }
+--
+-- Opcodes match the Dart BytecodeInterpreter:
+--   push_const   load_var   store_var   pop
+--   add sub mul div mod pow  neg
+--   log_not log_and log_or   cmp_eq cmp_neq cmp_lt cmp_lte cmp_gt cmp_gte
+--   op_match op_not_match op_in
+--   jump jump_false jump_null
+--   call ret
+--   make_list(n) make_map(n) make_object_here(n)
+--   push_scope pop_scope make_closure
+--   get_index set_index get_member set_member
+--   store_reg(r) load_reg(r) jump_reg(r)
+--
+-- Compiler state (shared map, mutated in place):
+--   {"chunks": {}, "counter": 0}
+--
+-- Chunk builder (also mutated in place):
+--   {"name":N, "params":P, "constants":[], "cmap":{}, "code":[]}
+-- ============================================================
+
+-- ---- Chunk builder helpers ----
+
+_CMP_NEW_CHUNK(name, params) := {
+  "name": name, "params": params,
+  "constants": [], "cmap": {}, "code": []
+};
+
+-- Add a constant, deduplicated by key.  Returns the pool index.
+_CMP_CONST(chunk, key, val) := BEGIN
+  IF chunk['cmap'][key] <> NULL THEN RETURN chunk['cmap'][key];
+  idx := LENGTH(chunk['constants']);
+  chunk['constants'] := chunk['constants'] + [val];
+  chunk['cmap'][key] := idx;
+  RETURN idx;
+END;
+
+_CMP_CONST_NULL(chunk)    := _CMP_CONST(chunk, 'null', NULL);
+_CMP_CONST_BOOL(chunk, b) := _CMP_CONST(chunk, 'b:' + STRING(b), b);
+_CMP_CONST_INT(chunk, n)  := _CMP_CONST(chunk, 'i:' + STRING(n), n);
+_CMP_CONST_FLT(chunk, f)  := _CMP_CONST(chunk, 'f:' + STRING(f), f);
+_CMP_CONST_STR(chunk, s)  := _CMP_CONST(chunk, '"' + s, s);
+_CMP_CONST_REF(chunk, n)  := _CMP_CONST(chunk, '&' + n, '@' + n);
+_CMP_CONST_NAME(chunk, n) := _CMP_CONST(chunk, 'n:' + n, n);  -- identifier name
+
+-- Emit one instruction.
+_CMP_EMIT(chunk, op)           := BEGIN chunk['code'] := chunk['code'] + [{"op": op, "operand": NULL}]; END;
+_CMP_EMIT1(chunk, op, operand) := BEGIN chunk['code'] := chunk['code'] + [{"op": op, "operand": operand}]; END;
+
+-- Emit a jump with a placeholder operand; return the instruction index.
+_CMP_JUMP(chunk, op) := BEGIN
+  idx := LENGTH(chunk['code']);
+  _CMP_EMIT1(chunk, op, -1);
+  RETURN idx;
+END;
+
+-- Patch a previously emitted jump to target the current code position.
+_CMP_PATCH(chunk, jump_idx) := BEGIN
+  instr := chunk['code'][jump_idx];
+  chunk['code'][jump_idx] := {"op": instr['op'], "operand": LENGTH(chunk['code'])};
+END;
+
+-- Emit null-aware binary op pattern:
+--   push lhs; jump_null L_NUL1; push rhs; jump_null L_NUL2; op; jump L_DONE
+--   L_NUL2: pop; L_NUL1: pop; push_const(null)
+--   L_DONE:
+_CMP_NULL_BINOP(node, chunk, state, op) := BEGIN
+  _CMP_NODE(node['children'][0], chunk, state);
+  j1 := _CMP_JUMP(chunk, 'jump_null');
+  _CMP_NODE(node['children'][1], chunk, state);
+  j2 := _CMP_JUMP(chunk, 'jump_null');
+  _CMP_EMIT(chunk, op);
+  j3 := _CMP_JUMP(chunk, 'jump');
+  _CMP_PATCH(chunk, j2);
+  _CMP_EMIT(chunk, 'pop');
+  _CMP_PATCH(chunk, j1);
+  _CMP_EMIT(chunk, 'pop');
+  _CMP_EMIT1(chunk, 'push_const', _CMP_CONST_NULL(chunk));
+  _CMP_PATCH(chunk, j3);
+END;
+
+-- Emit null-aware unary op:
+--   push operand; jump_null DONE; op; DONE:
+_CMP_NULL_UNOP(child, chunk, state, op) := BEGIN
+  _CMP_NODE(child, chunk, state);
+  j := _CMP_JUMP(chunk, 'jump_null');
+  _CMP_EMIT(chunk, op);
+  _CMP_PATCH(chunk, j);
+END;
+
+-- Generate a fresh chunk name.
+_CMP_FRESH(state, hint) := BEGIN
+  n := state['counter'];
+  state['counter'] := n + 1;
+  RETURN '__' + hint + '_' + STRING(n);
+END;
+
+-- ---- Main dispatch ----
+
+_CMP_NODE(node, chunk, state) := BEGIN
+  sym := node['sym'];
+  ch  := node['children'];
+  v   := node['val'];
+
+  -- Literals
+  IF sym = 'int_lit'   THEN BEGIN _CMP_EMIT1(chunk, 'push_const', _CMP_CONST_INT(chunk, v)); RETURN; END;
+  IF sym = 'float_lit' THEN BEGIN _CMP_EMIT1(chunk, 'push_const', _CMP_CONST_FLT(chunk, v)); RETURN; END;
+  IF sym = 'str_lit'   THEN BEGIN _CMP_EMIT1(chunk, 'push_const', _CMP_CONST_STR(chunk, v)); RETURN; END;
+  IF sym = 'null_lit'  THEN BEGIN _CMP_EMIT1(chunk, 'push_const', _CMP_CONST_NULL(chunk));   RETURN; END;
+  IF sym = 'true_lit'  THEN BEGIN _CMP_EMIT1(chunk, 'push_const', _CMP_CONST_BOOL(chunk, TRUE));  RETURN; END;
+  IF sym = 'false_lit' THEN BEGIN _CMP_EMIT1(chunk, 'push_const', _CMP_CONST_BOOL(chunk, FALSE)); RETURN; END;
+
+  -- Identifier lookup
+  IF sym = 'ident' THEN BEGIN
+    _CMP_EMIT1(chunk, 'load_var', _CMP_CONST_NAME(chunk, v));
+    RETURN;
+  END;
+
+  -- Null-aware binary arithmetic
+  IF sym = 'add' THEN BEGIN _CMP_NULL_BINOP(node, chunk, state, 'add'); RETURN; END;
+  IF sym = 'sub' THEN BEGIN _CMP_NULL_BINOP(node, chunk, state, 'sub'); RETURN; END;
+  IF sym = 'mul' THEN BEGIN _CMP_NULL_BINOP(node, chunk, state, 'mul'); RETURN; END;
+  IF sym = 'div' THEN BEGIN _CMP_NULL_BINOP(node, chunk, state, 'div'); RETURN; END;
+  IF sym = 'mod' THEN BEGIN _CMP_NULL_BINOP(node, chunk, state, 'mod'); RETURN; END;
+  IF sym = 'pow' THEN BEGIN _CMP_NULL_BINOP(node, chunk, state, 'pow'); RETURN; END;
+
+  -- Null-aware comparisons
+  IF sym = 'eq'  THEN BEGIN _CMP_NULL_BINOP(node, chunk, state, 'cmp_eq');  RETURN; END;
+  IF sym = 'neq' THEN BEGIN _CMP_NULL_BINOP(node, chunk, state, 'cmp_neq'); RETURN; END;
+  IF sym = 'lt'  THEN BEGIN _CMP_NULL_BINOP(node, chunk, state, 'cmp_lt');  RETURN; END;
+  IF sym = 'lte' THEN BEGIN _CMP_NULL_BINOP(node, chunk, state, 'cmp_lte'); RETURN; END;
+  IF sym = 'gt'  THEN BEGIN _CMP_NULL_BINOP(node, chunk, state, 'cmp_gt');  RETURN; END;
+  IF sym = 'gte' THEN BEGIN _CMP_NULL_BINOP(node, chunk, state, 'cmp_gte'); RETURN; END;
+
+  -- Null-aware pattern match / in
+  IF sym = 'match'     THEN BEGIN _CMP_NULL_BINOP(node, chunk, state, 'op_match');     RETURN; END;
+  IF sym = 'not_match' THEN BEGIN _CMP_NULL_BINOP(node, chunk, state, 'op_not_match'); RETURN; END;
+  IF sym = 'in'        THEN BEGIN _CMP_NULL_BINOP(node, chunk, state, 'op_in');        RETURN; END;
+
+  -- Boolean operators (not null-aware)
+  IF sym = 'and' THEN BEGIN _CMP_NODE(ch[0], chunk, state); _CMP_NODE(ch[1], chunk, state); _CMP_EMIT(chunk, 'log_and'); RETURN; END;
+  IF sym = 'or'  THEN BEGIN _CMP_NODE(ch[0], chunk, state); _CMP_NODE(ch[1], chunk, state); _CMP_EMIT(chunk, 'log_or');  RETURN; END;
+  IF sym = 'xor' THEN BEGIN
+    -- XOR: (a AND true) <> (b AND true)
+    _CMP_NODE(ch[0], chunk, state);
+    _CMP_EMIT1(chunk, 'push_const', _CMP_CONST_BOOL(chunk, TRUE));
+    _CMP_EMIT(chunk, 'log_and');
+    _CMP_NODE(ch[1], chunk, state);
+    _CMP_EMIT1(chunk, 'push_const', _CMP_CONST_BOOL(chunk, TRUE));
+    _CMP_EMIT(chunk, 'log_and');
+    _CMP_EMIT(chunk, 'cmp_neq');
+    RETURN;
+  END;
+
+  -- Unary
+  IF sym = 'neg' THEN BEGIN _CMP_NULL_UNOP(ch[0], chunk, state, 'neg'); RETURN; END;
+  IF sym = 'not' THEN BEGIN _CMP_NULL_UNOP(ch[0], chunk, state, 'log_not'); RETURN; END;
+
+  -- Program / sequence
+  IF sym = 'program' THEN BEGIN _CMP_SEQUENCE(ch, chunk, state); RETURN; END;
+
+  -- BEGIN...END compound
+  IF sym = 'begin' THEN BEGIN
+    _CMP_EMIT(chunk, 'push_scope');
+    _CMP_SEQUENCE(ch, chunk, state);
+    _CMP_EMIT(chunk, 'pop_scope');
+    RETURN;
+  END;
+
+  -- Assignment
+  IF sym = 'assign' THEN BEGIN _CMP_ASSIGN(node, chunk, state); RETURN; END;
+
+  -- Lambda
+  IF sym = 'lambda' THEN BEGIN _CMP_LAMBDA(node, chunk, state); RETURN; END;
+
+  -- IF
+  IF sym = 'if' THEN BEGIN _CMP_IF(node, chunk, state); RETURN; END;
+
+  -- WHILE
+  IF sym = 'while' THEN BEGIN _CMP_WHILE(node, chunk, state); RETURN; END;
+
+  -- REPEAT/UNTIL
+  IF sym = 'repeat' THEN BEGIN _CMP_REPEAT(node, chunk, state); RETURN; END;
+
+  -- FOR
+  IF sym = 'for' THEN BEGIN _CMP_FOR(node, chunk, state); RETURN; END;
+
+  -- RETURN
+  IF sym = 'return' THEN BEGIN
+    IF LENGTH(ch) > 0 THEN _CMP_NODE(ch[0], chunk, state)
+    ELSE _CMP_EMIT1(chunk, 'push_const', _CMP_CONST_NULL(chunk));
+    _CMP_EMIT(chunk, 'ret');
+    RETURN;
+  END;
+
+  -- BREAK / CONTINUE — push sentinel, real patching done by loop compilers
+  IF sym = 'break'    THEN BEGIN _CMP_EMIT1(chunk, 'jump', -999); RETURN; END;
+  IF sym = 'continue' THEN BEGIN _CMP_EMIT1(chunk, 'jump', -998); RETURN; END;
+
+  -- Function call
+  IF sym = 'call' THEN BEGIN _CMP_CALL(node, chunk, state); RETURN; END;
+
+  -- Index access: a[i]
+  IF sym = 'index' THEN BEGIN
+    _CMP_NODE(ch[0], chunk, state);
+    _CMP_NODE(ch[1], chunk, state);
+    _CMP_EMIT(chunk, 'get_index');
+    RETURN;
+  END;
+
+  -- Member access: a.field
+  IF sym = 'member' THEN BEGIN
+    _CMP_NODE(ch[0], chunk, state);
+    _CMP_EMIT1(chunk, 'get_member', _CMP_CONST_NAME(chunk, v));
+    RETURN;
+  END;
+
+  -- List literal
+  IF sym = 'list' THEN BEGIN
+    i := 0;
+    WHILE i < LENGTH(ch) DO BEGIN _CMP_NODE(ch[i], chunk, state); i := i + 1; END;
+    _CMP_EMIT1(chunk, 'make_list', LENGTH(ch));
+    RETURN;
+  END;
+
+  -- Map literal
+  IF sym = 'map' THEN BEGIN
+    i := 0;
+    WHILE i < LENGTH(ch) DO BEGIN
+      kv := ch[i];
+      _CMP_NODE(kv['children'][0], chunk, state);
+      _CMP_NODE(kv['children'][1], chunk, state);
+      i := i + 1;
+    END;
+    _CMP_EMIT1(chunk, 'make_map', LENGTH(ch));
+    RETURN;
+  END;
+
+  -- OBJECT literal
+  IF sym = 'object' THEN BEGIN
+    _CMP_EMIT(chunk, 'push_scope');
+    i := 0;
+    WHILE i < LENGTH(ch) DO BEGIN
+      kv := ch[i];
+      key_name := kv['children'][0]['val'];
+      _CMP_EMIT1(chunk, 'push_const', _CMP_CONST_NAME(chunk, UPPERCASE(key_name)));
+      _CMP_NODE(kv['children'][1], chunk, state);
+      i := i + 1;
+    END;
+    _CMP_EMIT1(chunk, 'make_object_here', LENGTH(ch));
+    _CMP_EMIT(chunk, 'pop_scope');
+    RETURN;
+  END;
+END;
+
+-- ---- Sequence: compile each child, pop all but last ----
+_CMP_SEQUENCE(children, chunk, state) := BEGIN
+  n := LENGTH(children);
+  IF n = 0 THEN BEGIN _CMP_EMIT1(chunk, 'push_const', _CMP_CONST_NULL(chunk)); RETURN; END;
+  i := 0;
+  WHILE i < n DO BEGIN
+    _CMP_NODE(children[i], chunk, state);
+    IF i < n - 1 THEN _CMP_EMIT(chunk, 'pop');
+    i := i + 1;
+  END;
+END;
+
+-- ---- Assignment ----
+_CMP_ASSIGN(node, chunk, state) := BEGIN
+  lhs := node['children'][0];
+  rhs := node['children'][1];
+
+  -- Simple variable assignment
+  IF lhs['sym'] = 'ident' THEN BEGIN
+    _CMP_NODE(rhs, chunk, state);
+    _CMP_EMIT1(chunk, 'store_var', _CMP_CONST_NAME(chunk, lhs['val']));
+    _CMP_EMIT1(chunk, 'load_var',  _CMP_CONST_NAME(chunk, lhs['val']));
+    RETURN;
+  END;
+
+  -- Function definition: f(x,y) := body
+  IF lhs['sym'] = 'call' THEN BEGIN
+    func_name := lhs['children'][0]['val'];
+    params := [];
+    i := 1;
+    WHILE i < LENGTH(lhs['children']) DO BEGIN
+      params := params + [lhs['children'][i]['val']];
+      i := i + 1;
+    END;
+    cname := _CMP_FRESH(state, func_name);
+    fn_chunk := _CMP_NEW_CHUNK(cname, params);
+    state['chunks'][cname] := fn_chunk;
+    _CMP_NODE(rhs, fn_chunk, state);
+    _CMP_EMIT(fn_chunk, 'ret');
+    _CMP_EMIT1(chunk, 'make_closure', _CMP_CONST_REF(chunk, cname));
+    _CMP_EMIT1(chunk, 'store_var', _CMP_CONST_NAME(chunk, func_name));
+    _CMP_EMIT1(chunk, 'load_var',  _CMP_CONST_NAME(chunk, func_name));
+    RETURN;
+  END;
+
+  -- Index assignment: a[i] := v
+  IF lhs['sym'] = 'index' THEN BEGIN
+    _CMP_NODE(lhs['children'][0], chunk, state);
+    _CMP_NODE(lhs['children'][1], chunk, state);
+    _CMP_NODE(rhs, chunk, state);
+    _CMP_EMIT(chunk, 'set_index');
+    RETURN;
+  END;
+
+  -- Member assignment: a.field := v
+  IF lhs['sym'] = 'member' THEN BEGIN
+    _CMP_NODE(lhs['children'][0], chunk, state);
+    _CMP_NODE(rhs, chunk, state);
+    _CMP_EMIT1(chunk, 'set_member', _CMP_CONST_NAME(chunk, lhs['val']));
+    RETURN;
+  END;
+END;
+
+-- ---- Lambda: params => body ----
+_CMP_LAMBDA(node, chunk, state) := BEGIN
+  params := node['val'];
+  body   := node['children'][0];
+  hint   := IF LENGTH(params) > 0 THEN params[0] ELSE 'lambda';
+  cname  := _CMP_FRESH(state, hint);
+  fn_chunk := _CMP_NEW_CHUNK(cname, params);
+  state['chunks'][cname] := fn_chunk;
+  _CMP_NODE(body, fn_chunk, state);
+  _CMP_EMIT(fn_chunk, 'ret');
+  _CMP_EMIT1(chunk, 'make_closure', _CMP_CONST_REF(chunk, cname));
+END;
+
+-- ---- IF ----
+_CMP_IF(node, chunk, state) := BEGIN
+  ch := node['children'];
+  _CMP_NODE(ch[0], chunk, state);            -- condition
+  jf := _CMP_JUMP(chunk, 'jump_false');
+  _CMP_NODE(ch[1], chunk, state);            -- then branch
+  IF LENGTH(ch) > 2 THEN BEGIN
+    je := _CMP_JUMP(chunk, 'jump');
+    _CMP_PATCH(chunk, jf);
+    _CMP_NODE(ch[2], chunk, state);          -- else branch
+    _CMP_PATCH(chunk, je);
+  END ELSE BEGIN
+    je := _CMP_JUMP(chunk, 'jump');
+    _CMP_PATCH(chunk, jf);
+    _CMP_EMIT1(chunk, 'push_const', _CMP_CONST_NULL(chunk));
+    _CMP_PATCH(chunk, je);
+  END;
+END;
+
+-- ---- WHILE ----
+_CMP_WHILE(node, chunk, state) := BEGIN
+  ch := node['children'];
+  loop_top := LENGTH(chunk['code']);
+  _CMP_NODE(ch[0], chunk, state);            -- condition
+  jf := _CMP_JUMP(chunk, 'jump_false');
+  body_start := LENGTH(chunk['code']);
+  _CMP_NODE(ch[1], chunk, state);            -- body
+  _CMP_EMIT(chunk, 'pop');
+  _CMP_EMIT1(chunk, 'jump', loop_top);
+  _CMP_PATCH(chunk, jf);
+  _CMP_EMIT1(chunk, 'push_const', _CMP_CONST_NULL(chunk));
+  -- Patch break/continue sentinels in the body range
+  _CMP_PATCH_LOOP(chunk, body_start, LENGTH(chunk['code'])-1, loop_top);
+END;
+
+-- ---- REPEAT/UNTIL ----
+_CMP_REPEAT(node, chunk, state) := BEGIN
+  ch := node['children'];
+  loop_top := LENGTH(chunk['code']);
+  _CMP_NODE(ch[0], chunk, state);            -- body
+  _CMP_EMIT(chunk, 'pop');
+  _CMP_NODE(ch[1], chunk, state);            -- condition (until true)
+  _CMP_EMIT1(chunk, 'jump_false', loop_top);
+  _CMP_EMIT1(chunk, 'push_const', _CMP_CONST_NULL(chunk));
+END;
+
+-- ---- FOR ----
+-- Uses registers: r0=start/i, r1=final, r2=step, r3=going_up
+-- Mirrors the Dart compiler's FOR implementation.
+_CMP_FOR(node, chunk, state) := BEGIN
+  ch       := node['children'];
+  var_name := node['val'];
+  -- Compile start, store as loop var and in r0
+  _CMP_NODE(ch[0], chunk, state);
+  _CMP_EMIT1(chunk, 'store_var', _CMP_CONST_NAME(chunk, var_name));
+  _CMP_EMIT1(chunk, 'load_var',  _CMP_CONST_NAME(chunk, var_name));
+  _CMP_EMIT1(chunk, 'store_reg', 0);
+  _CMP_EMIT(chunk, 'pop');
+  -- Compile end, store in r1
+  _CMP_NODE(ch[1], chunk, state);
+  _CMP_EMIT1(chunk, 'store_reg', 1);
+  -- Step: r2
+  IF LENGTH(ch) > 3 THEN BEGIN
+    _CMP_NODE(ch[3], chunk, state);
+    _CMP_EMIT1(chunk, 'store_reg', 2);
+  END ELSE BEGIN
+    -- Auto-detect direction: step = (start <= end) ? 1 : -1
+    _CMP_EMIT1(chunk, 'load_reg', 0);
+    _CMP_EMIT1(chunk, 'load_reg', 1);
+    _CMP_EMIT(chunk, 'cmp_lte');
+    j_up := _CMP_JUMP(chunk, 'jump_false');
+    _CMP_EMIT1(chunk, 'push_const', _CMP_CONST_INT(chunk, 1));
+    j_dn := _CMP_JUMP(chunk, 'jump');
+    _CMP_PATCH(chunk, j_up);
+    _CMP_EMIT1(chunk, 'push_const', _CMP_CONST_INT(chunk, -1));
+    _CMP_PATCH(chunk, j_dn);
+    _CMP_EMIT1(chunk, 'store_reg', 2);
+  END;
+  -- going_up = (step > 0), store in r3
+  _CMP_EMIT1(chunk, 'load_reg', 2);
+  _CMP_EMIT1(chunk, 'push_const', _CMP_CONST_INT(chunk, 0));
+  _CMP_EMIT(chunk, 'cmp_gt');
+  _CMP_EMIT1(chunk, 'store_reg', 3);
+  -- Loop condition check
+  loop_top := LENGTH(chunk['code']);
+  _CMP_EMIT1(chunk, 'load_var', _CMP_CONST_NAME(chunk, var_name));
+  _CMP_EMIT1(chunk, 'load_reg', 1);
+  -- if going_up: i <= end  else: i >= end
+  _CMP_EMIT1(chunk, 'load_reg', 3);
+  jf_up := _CMP_JUMP(chunk, 'jump_false');
+  _CMP_EMIT(chunk, 'cmp_lte');
+  je_cond := _CMP_JUMP(chunk, 'jump');
+  _CMP_PATCH(chunk, jf_up);
+  _CMP_EMIT(chunk, 'cmp_gte');
+  _CMP_PATCH(chunk, je_cond);
+  jf_exit := _CMP_JUMP(chunk, 'jump_false');
+  -- Body
+  body_start := LENGTH(chunk['code']);
+  _CMP_NODE(ch[2], chunk, state);
+  _CMP_EMIT(chunk, 'pop');
+  -- Increment: var := var + step
+  continue_addr := LENGTH(chunk['code']);
+  _CMP_EMIT1(chunk, 'load_var',  _CMP_CONST_NAME(chunk, var_name));
+  _CMP_EMIT1(chunk, 'load_reg', 2);
+  _CMP_EMIT(chunk, 'add');
+  _CMP_EMIT1(chunk, 'store_var', _CMP_CONST_NAME(chunk, var_name));
+  _CMP_EMIT(chunk, 'pop');
+  _CMP_EMIT1(chunk, 'jump', loop_top);
+  _CMP_PATCH(chunk, jf_exit);
+  _CMP_EMIT1(chunk, 'push_const', _CMP_CONST_NULL(chunk));
+  -- Patch break/continue
+  _CMP_PATCH_LOOP(chunk, body_start, LENGTH(chunk['code'])-1, continue_addr);
+END;
+
+-- Patch BREAK (-999) and CONTINUE (-998) sentinels within [from,to).
+-- break → jump to current end (after the loop_null push);
+-- continue → jump to continue_addr.
+_CMP_PATCH_LOOP(chunk, from, to_excl, continue_addr) := BEGIN
+  break_addr := to_excl;
+  i := from;
+  WHILE i < to_excl DO BEGIN
+    instr := chunk['code'][i];
+    IF instr['op'] = 'jump' AND instr['operand'] = -999 THEN
+      chunk['code'][i] := {"op": "jump", "operand": break_addr};
+    IF instr['op'] = 'jump' AND instr['operand'] = -998 THEN
+      chunk['code'][i] := {"op": "jump", "operand": continue_addr};
+    i := i + 1;
+  END;
+END;
+
+-- ---- Function call ----
+_CMP_CALL(node, chunk, state) := BEGIN
+  ch := node['children'];
+  _CMP_NODE(ch[0], chunk, state);   -- callee
+  argc := LENGTH(ch) - 1;
+  i := 1;
+  WHILE i <= argc DO BEGIN _CMP_NODE(ch[i], chunk, state); i := i + 1; END;
+  _CMP_EMIT1(chunk, 'call', argc);
+END;
+
+-- ---- Top-level compile entry ----
+_CMP_COMPILE(tree) := BEGIN
+  state := {"chunks": {}, "counter": 0};
+  main_chunk := _CMP_NEW_CHUNK('main', []);
+  state['chunks']['main'] := main_chunk;
+  _CMP_NODE(tree, main_chunk, state);
+  _CMP_EMIT(main_chunk, 'ret');
+  RETURN {"chunks": state['chunks']};
+END;
+
+compiler := OBJECT{
+  compile: (tree) => _CMP_COMPILE(tree)
+};

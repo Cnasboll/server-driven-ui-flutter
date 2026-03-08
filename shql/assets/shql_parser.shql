@@ -1,0 +1,503 @@
+-- ============================================================
+-- SHQL Parser — converts a token list (from shql_lexer) into a
+-- parse tree.
+--
+-- Parse-tree node: {"sym": S, "children": [...], "val": V}
+--
+-- Symbols used:
+--   "program"    sequence of statements
+--   "assign"     lhs ':=' rhs
+--   "lambda"     params '=>' body  (val = param name list)
+--   "or"  "xor"  "and"
+--   "not"        unary NOT
+--   "eq" "neq" "lt" "lte" "gt" "gte"
+--   "match" "not_match"
+--   "in"         membership test
+--   "add" "sub" "mul" "div" "mod" "pow"
+--   "neg"        unary minus
+--   "call"       children = [callee, arg1, arg2, ...]
+--   "index"      children = [object, key]
+--   "member"     children = [object],  val = field_name
+--   "if"         children = [cond, then]  or  [cond, then, else]
+--   "while"      children = [cond, body]
+--   "repeat"     children = [body, cond]
+--   "for"        children = [start, end, body] or [..., step]
+--                val = loop variable name
+--   "begin"      children = list of statements
+--   "return"     children = [] or [expr]
+--   "break" "continue"
+--   "list"       children = elements
+--   "map"        children = kv pairs  {"sym":"kv","children":[k,v]}
+--   "object"     children = kv pairs  (keys are idents, val=name)
+--   "int_lit"    val = integer value (as number)
+--   "float_lit"  val = float value   (as number)
+--   "str_lit"    val = string value
+--   "ident"      val = uppercased name
+--   "null_lit"
+--   "true_lit"
+--   "false_lit"
+--
+-- Each _PR_* function takes (tokens, pos) and returns
+--   {"node": N, "pos": P}.
+-- ============================================================
+
+-- ---- Helpers ----
+_PR_TT(tokens, pos) := tokens[pos]['t'];
+_PR_TV(tokens, pos) := tokens[pos]['v'];
+_PR_IS(tokens, pos, t) := tokens[pos]['t'] = t;
+_PR_NODE(sym, children) := {"sym": sym, "children": children, "val": NULL};
+_PR_LEAF(sym, val) := {"sym": sym, "children": [], "val": val};
+_PR_KV(k, v) := {"sym": "kv", "children": [k, v], "val": NULL};
+_PR_RES(node, pos) := {"node": node, "pos": pos};
+
+-- ---- Program ----
+_PR_PROGRAM(tokens) := BEGIN
+  stmts := [];
+  pos := 0;
+  -- Skip leading semicolons
+  WHILE _PR_IS(tokens, pos, ';') DO pos := pos + 1;
+  IF _PR_IS(tokens, pos, 'EOF') THEN RETURN _PR_RES(_PR_NODE('program', []), 0);
+  r := _PR_STMT(tokens, pos);
+  stmts := stmts + [r['node']];
+  pos := r['pos'];
+  WHILE _PR_IS(tokens, pos, ';') DO BEGIN
+    pos := pos + 1;
+    WHILE _PR_IS(tokens, pos, ';') DO pos := pos + 1;
+    IF _PR_IS(tokens, pos, 'EOF') THEN BREAK;
+    r := _PR_STMT(tokens, pos);
+    stmts := stmts + [r['node']];
+    pos := r['pos'];
+  END;
+  IF LENGTH(stmts) = 1 THEN RETURN _PR_RES(stmts[0], pos);
+  RETURN _PR_RES(_PR_NODE('program', stmts), pos);
+END;
+
+-- ---- Statement dispatcher ----
+_PR_STMT(tokens, pos) := BEGIN
+  tt := _PR_TT(tokens, pos);
+  IF tt = 'RETURN' THEN RETURN _PR_RETURN(tokens, pos);
+  IF tt = 'BREAK'  THEN RETURN _PR_RES(_PR_LEAF('break', NULL), pos+1);
+  IF tt = 'CONTINUE' THEN RETURN _PR_RES(_PR_LEAF('continue', NULL), pos+1);
+  RETURN _PR_ASSIGN(tokens, pos);
+END;
+
+-- ---- RETURN ----
+_PR_RETURN(tokens, pos) := BEGIN
+  pos := pos + 1;
+  tt := _PR_TT(tokens, pos);
+  IF tt = ';' OR tt = 'EOF' OR tt = 'END' THEN
+    RETURN _PR_RES(_PR_NODE('return', []), pos);
+  r := _PR_ASSIGN(tokens, pos);
+  RETURN _PR_RES(_PR_NODE('return', [r['node']]), r['pos']);
+END;
+
+-- ---- Assignment / Lambda  (lowest precedence) ----
+_PR_ASSIGN(tokens, pos) := BEGIN
+  r := _PR_OR(tokens, pos);
+  lhs := r['node'];
+  pos := r['pos'];
+  IF _PR_IS(tokens, pos, ':=') THEN BEGIN
+    pos := pos + 1;
+    r2 := _PR_ASSIGN(tokens, pos);
+    RETURN _PR_RES(_PR_NODE('assign', [lhs, r2['node']]), r2['pos']);
+  END;
+  IF _PR_IS(tokens, pos, '=>') THEN BEGIN
+    pos := pos + 1;
+    r2 := _PR_ASSIGN(tokens, pos);
+    params := _PR_EXTRACT_PARAMS(lhs);
+    node := {"sym": "lambda", "children": [r2['node']], "val": params};
+    RETURN _PR_RES(node, r2['pos']);
+  END;
+  RETURN _PR_RES(lhs, pos);
+END;
+
+-- Extract parameter names from a lambda LHS node.
+-- Single ident → ['NAME'],  tuple/args → ['A','B',...],  empty → []
+_PR_EXTRACT_PARAMS(node) := BEGIN
+  IF node['sym'] = 'ident' THEN RETURN [node['val']];
+  IF node['sym'] = 'call' THEN BEGIN
+    -- f(x,y) => body  →  params are children[1..] which are idents
+    params := [];
+    i := 1;
+    WHILE i < LENGTH(node['children']) DO BEGIN
+      ch := node['children'][i];
+      IF ch['sym'] = 'ident' THEN params := params + [ch['val']];
+      i := i + 1;
+    END;
+    RETURN params;
+  END;
+  -- tuple inside parens parsed as a list literal: (a, b)
+  IF node['sym'] = 'list' THEN BEGIN
+    params := [];
+    i := 0;
+    WHILE i < LENGTH(node['children']) DO BEGIN
+      ch := node['children'][i];
+      IF ch['sym'] = 'ident' THEN params := params + [ch['val']];
+      i := i + 1;
+    END;
+    RETURN params;
+  END;
+  RETURN [];
+END;
+
+-- ---- OR / XOR ----
+_PR_OR(tokens, pos) := BEGIN
+  r := _PR_AND(tokens, pos);
+  node := r['node'];
+  pos := r['pos'];
+  WHILE _PR_TT(tokens, pos) = 'OR' OR _PR_TT(tokens, pos) = 'XOR' DO BEGIN
+    op := IF _PR_TT(tokens, pos) = 'OR' THEN 'or' ELSE 'xor';
+    pos := pos + 1;
+    r2 := _PR_AND(tokens, pos);
+    node := _PR_NODE(op, [node, r2['node']]);
+    pos := r2['pos'];
+  END;
+  RETURN _PR_RES(node, pos);
+END;
+
+-- ---- AND ----
+_PR_AND(tokens, pos) := BEGIN
+  r := _PR_NOT(tokens, pos);
+  node := r['node'];
+  pos := r['pos'];
+  WHILE _PR_IS(tokens, pos, 'AND') DO BEGIN
+    pos := pos + 1;
+    r2 := _PR_NOT(tokens, pos);
+    node := _PR_NODE('and', [node, r2['node']]);
+    pos := r2['pos'];
+  END;
+  RETURN _PR_RES(node, pos);
+END;
+
+-- ---- NOT ----
+_PR_NOT(tokens, pos) := BEGIN
+  IF _PR_IS(tokens, pos, 'NOT') THEN BEGIN
+    pos := pos + 1;
+    r := _PR_NOT(tokens, pos);
+    RETURN _PR_RES(_PR_NODE('not', [r['node']]), r['pos']);
+  END;
+  RETURN _PR_COMP(tokens, pos);
+END;
+
+-- ---- Comparisons ----
+_PR_COMP(tokens, pos) := BEGIN
+  r := _PR_MATCH(tokens, pos);
+  node := r['node'];
+  pos := r['pos'];
+  tt := _PR_TT(tokens, pos);
+  IF tt = '='  THEN BEGIN pos:=pos+1; r2:=_PR_MATCH(tokens,pos); RETURN _PR_RES(_PR_NODE('eq',  [node,r2['node']]),r2['pos']); END;
+  IF tt = '<>' THEN BEGIN pos:=pos+1; r2:=_PR_MATCH(tokens,pos); RETURN _PR_RES(_PR_NODE('neq', [node,r2['node']]),r2['pos']); END;
+  IF tt = '<'  THEN BEGIN pos:=pos+1; r2:=_PR_MATCH(tokens,pos); RETURN _PR_RES(_PR_NODE('lt',  [node,r2['node']]),r2['pos']); END;
+  IF tt = '<=' THEN BEGIN pos:=pos+1; r2:=_PR_MATCH(tokens,pos); RETURN _PR_RES(_PR_NODE('lte', [node,r2['node']]),r2['pos']); END;
+  IF tt = '>'  THEN BEGIN pos:=pos+1; r2:=_PR_MATCH(tokens,pos); RETURN _PR_RES(_PR_NODE('gt',  [node,r2['node']]),r2['pos']); END;
+  IF tt = '>=' THEN BEGIN pos:=pos+1; r2:=_PR_MATCH(tokens,pos); RETURN _PR_RES(_PR_NODE('gte', [node,r2['node']]),r2['pos']); END;
+  RETURN _PR_RES(node, pos);
+END;
+
+-- ---- Pattern matching ----
+_PR_MATCH(tokens, pos) := BEGIN
+  r := _PR_IN(tokens, pos);
+  node := r['node'];
+  pos := r['pos'];
+  tt := _PR_TT(tokens, pos);
+  IF tt = '~'  THEN BEGIN pos:=pos+1; r2:=_PR_IN(tokens,pos); RETURN _PR_RES(_PR_NODE('match',     [node,r2['node']]),r2['pos']); END;
+  IF tt = '!~' THEN BEGIN pos:=pos+1; r2:=_PR_IN(tokens,pos); RETURN _PR_RES(_PR_NODE('not_match', [node,r2['node']]),r2['pos']); END;
+  RETURN _PR_RES(node, pos);
+END;
+
+-- ---- IN ----
+_PR_IN(tokens, pos) := BEGIN
+  r := _PR_ADD(tokens, pos);
+  node := r['node'];
+  pos := r['pos'];
+  IF _PR_IS(tokens, pos, 'IN') THEN BEGIN
+    pos := pos + 1;
+    r2 := _PR_ADD(tokens, pos);
+    RETURN _PR_RES(_PR_NODE('in', [node, r2['node']]), r2['pos']);
+  END;
+  RETURN _PR_RES(node, pos);
+END;
+
+-- ---- Addition / Subtraction ----
+_PR_ADD(tokens, pos) := BEGIN
+  r := _PR_MUL(tokens, pos);
+  node := r['node'];
+  pos := r['pos'];
+  WHILE _PR_TT(tokens, pos) = '+' OR _PR_TT(tokens, pos) = '-' DO BEGIN
+    op := IF _PR_TT(tokens, pos) = '+' THEN 'add' ELSE 'sub';
+    pos := pos + 1;
+    r2 := _PR_MUL(tokens, pos);
+    node := _PR_NODE(op, [node, r2['node']]);
+    pos := r2['pos'];
+  END;
+  RETURN _PR_RES(node, pos);
+END;
+
+-- ---- Multiplication / Division / Modulo ----
+_PR_MUL(tokens, pos) := BEGIN
+  r := _PR_POW(tokens, pos);
+  node := r['node'];
+  pos := r['pos'];
+  WHILE _PR_TT(tokens, pos) = '*' OR _PR_TT(tokens, pos) = '/' OR _PR_TT(tokens, pos) = '%' DO BEGIN
+    tt := _PR_TT(tokens, pos);
+    op := IF tt = '*' THEN 'mul' ELSE IF tt = '/' THEN 'div' ELSE 'mod';
+    pos := pos + 1;
+    r2 := _PR_POW(tokens, pos);
+    node := _PR_NODE(op, [node, r2['node']]);
+    pos := r2['pos'];
+  END;
+  RETURN _PR_RES(node, pos);
+END;
+
+-- ---- Exponentiation (right-associative) ----
+_PR_POW(tokens, pos) := BEGIN
+  r := _PR_UNARY(tokens, pos);
+  node := r['node'];
+  pos := r['pos'];
+  IF _PR_IS(tokens, pos, '^') THEN BEGIN
+    pos := pos + 1;
+    r2 := _PR_POW(tokens, pos);   -- right-recursive for right-assoc
+    RETURN _PR_RES(_PR_NODE('pow', [node, r2['node']]), r2['pos']);
+  END;
+  RETURN _PR_RES(node, pos);
+END;
+
+-- ---- Unary minus ----
+_PR_UNARY(tokens, pos) := BEGIN
+  IF _PR_IS(tokens, pos, '-') THEN BEGIN
+    pos := pos + 1;
+    r := _PR_UNARY(tokens, pos);
+    RETURN _PR_RES(_PR_NODE('neg', [r['node']]), r['pos']);
+  END;
+  IF _PR_IS(tokens, pos, '+') THEN BEGIN
+    pos := pos + 1;
+    RETURN _PR_UNARY(tokens, pos);
+  END;
+  RETURN _PR_POSTFIX(tokens, pos);
+END;
+
+-- ---- Postfix: calls, indexing, member access ----
+_PR_POSTFIX(tokens, pos) := BEGIN
+  r := _PR_PRIMARY(tokens, pos);
+  node := r['node'];
+  pos := r['pos'];
+  done := FALSE;
+  WHILE NOT done DO BEGIN
+    tt := _PR_TT(tokens, pos);
+    IF tt = '(' THEN BEGIN
+      -- function call: f(a, b, ...)
+      pos := pos + 1;
+      args := [];
+      WHILE NOT _PR_IS(tokens, pos, ')') AND NOT _PR_IS(tokens, pos, 'EOF') DO BEGIN
+        ra := _PR_ASSIGN(tokens, pos);
+        args := args + [ra['node']];
+        pos := ra['pos'];
+        IF _PR_IS(tokens, pos, ',') THEN pos := pos + 1;
+      END;
+      IF _PR_IS(tokens, pos, ')') THEN pos := pos + 1;
+      node := {"sym": "call", "children": [node] + args, "val": NULL};
+    END ELSE IF tt = '[' THEN BEGIN
+      -- index: a[i]
+      pos := pos + 1;
+      ri := _PR_ASSIGN(tokens, pos);
+      pos := ri['pos'];
+      IF _PR_IS(tokens, pos, ']') THEN pos := pos + 1;
+      node := _PR_NODE('index', [node, ri['node']]);
+    END ELSE IF tt = '.' AND _PR_TT(tokens, pos+1) = 'ID' THEN BEGIN
+      -- member access: a.field
+      field := _PR_TV(tokens, pos+1);
+      pos := pos + 2;
+      node := {"sym": "member", "children": [node], "val": field};
+    END ELSE
+      done := TRUE;
+  END;
+  RETURN _PR_RES(node, pos);
+END;
+
+-- ---- Primary expressions ----
+_PR_PRIMARY(tokens, pos) := BEGIN
+  tt := _PR_TT(tokens, pos);
+  tv := _PR_TV(tokens, pos);
+
+  -- Integer literal
+  IF tt = 'INT'   THEN RETURN _PR_RES(_PR_LEAF('int_lit',   INT(tv)),    pos+1);
+  -- Float literal
+  IF tt = 'FLOAT' THEN RETURN _PR_RES(_PR_LEAF('float_lit', DOUBLE(tv)), pos+1);
+  -- String literal
+  IF tt = 'STR'   THEN RETURN _PR_RES(_PR_LEAF('str_lit',   tv),         pos+1);
+  -- Identifier
+  IF tt = 'ID'    THEN RETURN _PR_RES(_PR_LEAF('ident', tv), pos+1);
+
+  -- Keywords that start an expression
+  IF tt = 'IF'       THEN RETURN _PR_IF(tokens, pos);
+  IF tt = 'WHILE'    THEN RETURN _PR_WHILE(tokens, pos);
+  IF tt = 'REPEAT'   THEN RETURN _PR_REPEAT(tokens, pos);
+  IF tt = 'FOR'      THEN RETURN _PR_FOR(tokens, pos);
+  IF tt = 'BEGIN'    THEN RETURN _PR_BEGIN(tokens, pos);
+  IF tt = 'OBJECT'   THEN RETURN _PR_OBJECT(tokens, pos);
+
+  -- Grouped expression or tuple/lambda-params: (...)
+  IF tt = '(' THEN BEGIN
+    pos := pos + 1;
+    IF _PR_IS(tokens, pos, ')') THEN   -- ()  empty arg list
+      RETURN _PR_RES(_PR_NODE('list', []), pos+1);
+    r := _PR_ASSIGN(tokens, pos);
+    items := [r['node']];
+    pos := r['pos'];
+    WHILE _PR_IS(tokens, pos, ',') DO BEGIN
+      pos := pos + 1;
+      r2 := _PR_ASSIGN(tokens, pos);
+      items := items + [r2['node']];
+      pos := r2['pos'];
+    END;
+    IF _PR_IS(tokens, pos, ')') THEN pos := pos + 1;
+    IF LENGTH(items) = 1 THEN RETURN _PR_RES(items[0], pos);
+    RETURN _PR_RES(_PR_NODE('list', items), pos);
+  END;
+
+  -- List literal: [...]
+  IF tt = '[' THEN BEGIN
+    pos := pos + 1;
+    items := [];
+    WHILE NOT _PR_IS(tokens, pos, ']') AND NOT _PR_IS(tokens, pos, 'EOF') DO BEGIN
+      r := _PR_ASSIGN(tokens, pos);
+      items := items + [r['node']];
+      pos := r['pos'];
+      IF _PR_IS(tokens, pos, ',') THEN pos := pos + 1;
+    END;
+    IF _PR_IS(tokens, pos, ']') THEN pos := pos + 1;
+    RETURN _PR_RES(_PR_NODE('list', items), pos);
+  END;
+
+  -- Map literal: {...}
+  IF tt = '{' THEN RETURN _PR_MAP(tokens, pos);
+
+  -- Fallback: return an error leaf
+  RETURN _PR_RES(_PR_LEAF('error', 'Unexpected token: ' + tt + ' (' + tv + ')'), pos+1);
+END;
+
+-- ---- Map literal {k: v, ...} ----
+_PR_MAP(tokens, pos) := BEGIN
+  pos := pos + 1;  -- skip '{'
+  pairs := [];
+  WHILE NOT _PR_IS(tokens, pos, '}') AND NOT _PR_IS(tokens, pos, 'EOF') DO BEGIN
+    rk := _PR_ASSIGN(tokens, pos);
+    k := rk['node'];
+    pos := rk['pos'];
+    IF _PR_IS(tokens, pos, ':') THEN pos := pos + 1;
+    rv := _PR_ASSIGN(tokens, pos);
+    v := rv['node'];
+    pos := rv['pos'];
+    pairs := pairs + [_PR_KV(k, v)];
+    IF _PR_IS(tokens, pos, ',') THEN pos := pos + 1;
+  END;
+  IF _PR_IS(tokens, pos, '}') THEN pos := pos + 1;
+  RETURN _PR_RES(_PR_NODE('map', pairs), pos);
+END;
+
+-- ---- OBJECT literal: OBJECT{ident: expr, ...} ----
+_PR_OBJECT(tokens, pos) := BEGIN
+  pos := pos + 1;  -- skip 'OBJECT'
+  IF _PR_IS(tokens, pos, '{') THEN pos := pos + 1;
+  pairs := [];
+  WHILE NOT _PR_IS(tokens, pos, '}') AND NOT _PR_IS(tokens, pos, 'EOF') DO BEGIN
+    key_name := _PR_TV(tokens, pos);
+    k := _PR_LEAF('str_lit', key_name);
+    pos := pos + 1;
+    IF _PR_IS(tokens, pos, ':') THEN pos := pos + 1;
+    rv := _PR_ASSIGN(tokens, pos);
+    v := rv['node'];
+    pos := rv['pos'];
+    pairs := pairs + [_PR_KV(k, v)];
+    IF _PR_IS(tokens, pos, ',') THEN pos := pos + 1;
+  END;
+  IF _PR_IS(tokens, pos, '}') THEN pos := pos + 1;
+  RETURN _PR_RES(_PR_NODE('object', pairs), pos);
+END;
+
+-- ---- IF/THEN/ELSE ----
+_PR_IF(tokens, pos) := BEGIN
+  pos := pos + 1;  -- skip IF
+  rc := _PR_ASSIGN(tokens, pos);
+  cond := rc['node'];
+  pos := rc['pos'];
+  IF _PR_IS(tokens, pos, 'THEN') THEN pos := pos + 1;
+  rt := _PR_STMT(tokens, pos);
+  then_br := rt['node'];
+  pos := rt['pos'];
+  IF _PR_IS(tokens, pos, 'ELSE') THEN BEGIN
+    pos := pos + 1;
+    re := _PR_STMT(tokens, pos);
+    RETURN _PR_RES(_PR_NODE('if', [cond, then_br, re['node']]), re['pos']);
+  END;
+  RETURN _PR_RES(_PR_NODE('if', [cond, then_br]), pos);
+END;
+
+-- ---- WHILE/DO ----
+_PR_WHILE(tokens, pos) := BEGIN
+  pos := pos + 1;  -- skip WHILE
+  rc := _PR_ASSIGN(tokens, pos);
+  cond := rc['node'];
+  pos := rc['pos'];
+  IF _PR_IS(tokens, pos, 'DO') THEN pos := pos + 1;
+  rb := _PR_STMT(tokens, pos);
+  RETURN _PR_RES(_PR_NODE('while', [cond, rb['node']]), rb['pos']);
+END;
+
+-- ---- REPEAT/UNTIL ----
+_PR_REPEAT(tokens, pos) := BEGIN
+  pos := pos + 1;  -- skip REPEAT
+  rb := _PR_STMT(tokens, pos);
+  pos := rb['pos'];
+  IF _PR_IS(tokens, pos, 'UNTIL') THEN pos := pos + 1;
+  rc := _PR_ASSIGN(tokens, pos);
+  RETURN _PR_RES(_PR_NODE('repeat', [rb['node'], rc['node']]), rc['pos']);
+END;
+
+-- ---- FOR var := start TO end [STEP s] DO body ----
+_PR_FOR(tokens, pos) := BEGIN
+  pos := pos + 1;  -- skip FOR
+  var_name := _PR_TV(tokens, pos);
+  pos := pos + 1;  -- skip var identifier
+  IF _PR_IS(tokens, pos, ':=') THEN pos := pos + 1;
+  rs := _PR_ASSIGN(tokens, pos);
+  start := rs['node'];
+  pos := rs['pos'];
+  IF _PR_IS(tokens, pos, 'TO') THEN pos := pos + 1;
+  re := _PR_ASSIGN(tokens, pos);
+  end_expr := re['node'];
+  pos := re['pos'];
+  step_expr := NULL;
+  IF _PR_IS(tokens, pos, 'STEP') THEN BEGIN
+    pos := pos + 1;
+    rst := _PR_ASSIGN(tokens, pos);
+    step_expr := rst['node'];
+    pos := rst['pos'];
+  END;
+  IF _PR_IS(tokens, pos, 'DO') THEN pos := pos + 1;
+  rb := _PR_STMT(tokens, pos);
+  body := rb['node'];
+  pos := rb['pos'];
+  children := [start, end_expr, body];
+  IF step_expr <> NULL THEN children := children + [step_expr];
+  RETURN _PR_RES({"sym": "for", "children": children, "val": UPPERCASE(var_name)}, pos);
+END;
+
+-- ---- BEGIN...END compound statement ----
+_PR_BEGIN(tokens, pos) := BEGIN
+  pos := pos + 1;  -- skip BEGIN
+  stmts := [];
+  WHILE _PR_IS(tokens, pos, ';') DO pos := pos + 1;
+  WHILE NOT _PR_IS(tokens, pos, 'END') AND NOT _PR_IS(tokens, pos, 'EOF') DO BEGIN
+    r := _PR_STMT(tokens, pos);
+    stmts := stmts + [r['node']];
+    pos := r['pos'];
+    WHILE _PR_IS(tokens, pos, ';') DO pos := pos + 1;
+  END;
+  IF _PR_IS(tokens, pos, 'END') THEN pos := pos + 1;
+  RETURN _PR_RES(_PR_NODE('begin', stmts), pos);
+END;
+
+parser := OBJECT{
+  parse: (tokens) => _PR_PROGRAM(tokens)['node']
+};

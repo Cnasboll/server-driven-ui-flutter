@@ -5651,4 +5651,65 @@ f()
       'pop_scope',
       'ret',
     ]);
+
+  // ---- SHQL self-hosting compiler smoke tests ----
+  // Loads the four compiler files (lexer, parser, compiler, codec) then
+  // runs the full pipeline on a simple SHQL expression.
+  group('SHQL self-hosting compiler', () {
+    late String lexerSrc, parserSrc, compilerSrc, codecSrc;
+
+    setUpAll(() async {
+      lexerSrc    = await File('assets/shql_lexer.shql').readAsString();
+      parserSrc   = await File('assets/shql_parser.shql').readAsString();
+      compilerSrc = await File('assets/shql_compiler.shql').readAsString();
+      codecSrc    = await File('assets/shql_codec.shql').readAsString();
+    });
+
+    Future<dynamic> runPipeline(String shqlSrc) async {
+      // Load all four modules into a shared runtime.
+      final cs = Runtime.prepareConstantsSet();
+      final rt = Runtime.prepareRuntime(cs);
+      for (final src in [_stdlibSrc, lexerSrc, parserSrc, compilerSrc, codecSrc]) {
+        await evalEngine(src, runtime: rt, constantsSet: cs);
+      }
+      // Now run the pipeline: tokenize → parse → compile → encode
+      final pipeline = '''
+tokens   := lexer.tokenize(src);
+tree     := parser.parse(tokens);
+program  := compiler.compile(tree);
+codec.encode(program)
+''';
+      return evalEngine(pipeline, runtime: rt, constantsSet: cs, boundValues: {'src': shqlSrc});
+    }
+
+    test('pipeline produces a non-empty string for 1+2', () async {
+      final result = await runPipeline('1+2');
+      expect(result, isA<String>());
+      expect((result as String).isNotEmpty, true);
+      expect(result, contains('push_const'));
+      expect(result, contains('add'));
+      expect(result, contains('ret'));
+    });
+
+    test('pipeline handles assignment and variable', () async {
+      final result = await runPipeline('x := 42; x');
+      expect(result, isA<String>());
+      expect(result as String, contains('store_var'));
+      expect(result, contains('load_var'));
+    });
+
+    test('tokenizer returns a list', () async {
+      final cs = Runtime.prepareConstantsSet();
+      final rt = Runtime.prepareRuntime(cs);
+      for (final src in [_stdlibSrc, lexerSrc]) {
+        await evalEngine(src, runtime: rt, constantsSet: cs);
+      }
+      final result = await evalEngine(
+        "lexer.tokenize('1+2')",
+        runtime: rt, constantsSet: cs,
+      );
+      expect(result, isA<List>());
+      expect((result as List).length, greaterThan(3));
+    });
+  });
 }

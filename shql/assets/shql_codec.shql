@@ -1,0 +1,82 @@
+-- ============================================================
+-- SHQL Codec — serializes a bytecode program (from shql_compiler)
+-- to a human-readable string.
+--
+-- Input:  {"chunks": {name: chunk, ...}}
+-- Output: multi-line string showing each chunk's constants + code.
+--
+-- Format:
+--   CHUNK main ()
+--     CONST  0: 42
+--     CONST  1: "hello"
+--     CODE:
+--       0: push_const(0)       -- 42
+--       1: add
+--       2: ret
+-- ============================================================
+
+_CDC_FMT_CONST(val) := BEGIN
+  IF val = NULL THEN RETURN 'null';
+  IF val = TRUE THEN RETURN 'true';
+  IF val = FALSE THEN RETURN 'false';
+  s := STRING(val);
+  -- ChunkRef: stored as '@chunkname' by the compiler
+  IF LENGTH(s) > 0 AND SUBSTRING(s, 0, 1) = '@' THEN RETURN '.' + SUBSTRING(s, 1, LENGTH(s));
+  RETURN s;
+END;
+
+_CDC_FMT_INSTR(instr, constants) := BEGIN
+  op  := instr['op'];
+  arg := instr['operand'];
+  IF arg = NULL THEN RETURN op;
+  -- For named-operand ops, show the resolved constant name too
+  resolved := '';
+  IF op = 'push_const' OR op = 'make_closure' THEN
+    resolved := '  -- ' + _CDC_FMT_CONST(constants[arg]);
+  IF op = 'load_var' OR op = 'store_var' OR op = 'get_member' OR op = 'set_member' THEN
+    resolved := '  -- ' + STRING(constants[arg]);
+  RETURN op + '(' + STRING(arg) + ')' + resolved;
+END;
+
+_CDC_ENCODE_CHUNK(chunk) := BEGIN
+  out := 'CHUNK ' + chunk['name'] + ' (' + STRING_JOIN(chunk['params'], ', ') + ')\n';
+  -- Constants
+  consts := chunk['constants'];
+  i := 0;
+  WHILE i < LENGTH(consts) DO BEGIN
+    out := out + '  CONST  ' + STRING(i) + ': ' + _CDC_FMT_CONST(consts[i]) + '\n';
+    i := i + 1;
+  END;
+  -- Instructions
+  code := chunk['code'];
+  out := out + '  CODE:\n';
+  i := 0;
+  WHILE i < LENGTH(code) DO BEGIN
+    out := out + '    ' + STRING(i) + ': ' + _CDC_FMT_INSTR(code[i], consts) + '\n';
+    i := i + 1;
+  END;
+  RETURN out;
+END;
+
+_CDC_ENCODE(program) := BEGIN
+  chunks := program['chunks'];
+  names  := MAP_VALUES({"main": 0});  -- start with "main" first
+  out    := '';
+  -- Main chunk first
+  IF chunks['main'] <> NULL THEN
+    out := out + _CDC_ENCODE_CHUNK(chunks['main']) + '\n';
+  -- All other chunks
+  all_names := MAP_VALUES(chunks);
+  i := 0;
+  WHILE i < LENGTH(all_names) DO BEGIN
+    c := all_names[i];
+    IF c['name'] <> 'main' THEN
+      out := out + _CDC_ENCODE_CHUNK(c) + '\n';
+    i := i + 1;
+  END;
+  RETURN out;
+END;
+
+codec := OBJECT{
+  encode: (program) => _CDC_ENCODE(program)
+};

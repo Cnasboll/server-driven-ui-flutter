@@ -1,0 +1,283 @@
+Parsed 205 tests.
+SKIP (already in engine_test): 10+2
+SKIP (already in engine_test): 10+13*37+1
+SKIP (already in engine_test): 10+13*(37+1)
+SKIP (already in engine_test): 10+13*37-1
+SKIP (already in engine_test): 10+13*37/2-1
+SKIP (already in engine_test): 9%2
+SKIP (already in engine_test): -5+11
+SKIP (already in engine_test): +5+11
+SKIP (already in engine_test): 2^10
+SKIP (already in engine_test): ANSWER
+SKIP (already in engine_test): TRUE
+SKIP (already in engine_test): FALSE
+SKIP (already in engine_test): 5*2 = 2+8
+SKIP (already in engine_test): 5*2 = 1+8
+SKIP (already in engine_test): 5*2 <> 1+8
+SKIP (already in engine_test): 5*2 != 1+8
+SKIP (already in engine_test): 5*2 <> 2+8
+SKIP (already in engine_test): 5*2 != 2+8
+SKIP (already in engine_test): 1<10
+SKIP (already in engine_test): 10<1
+SKIP (already in engine_test): 1<=10
+SKIP (already in engine_test): 10<=1
+SKIP (already in engine_test): 10>1
+SKIP (already in engine_test): 1>10
+SKIP (already in engine_test): 10>=1
+SKIP (already in engine_test): 1>=10
+SKIP (already in engine_test): 1<10 AND 2<9
+SKIP (already in engine_test): 1>10 AND 2<9
+SKIP (already in engine_test): 1<10 OCH 2<9
+SKIP (already in engine_test): 1>10 OR 2<9
+SKIP (already in engine_test): 1>10 ELLER 2<9
+SKIP (already in engine_test): 1>10 XOR 2<9
+SKIP (already in engine_test): 10>1 XOR 2<9
+SKIP (already in engine_test): 1>10 ANTINGEN_ELLER 2<9
+SKIP (already in engine_test): NOT 11
+SKIP (already in engine_test): INTE 11
+SKIP (already in engine_test): !11
+SKIP (already in engine_test): "Bat" in "Batman"
+SKIP (already in engine_test): "bat" in "Batman"
+SKIP (already in engine_test): i:=42
+SKIP (already in engine_test): 10;11
+SKIP (already in engine_test): 10;11;
+SKIP (already in engine_test): my_global := 42; GET_GLOBAL() := my_global; GET_GLOBAL()
+SKIP (already in engine_test): SQRT(4)
+SKIP (already in engine_test): POW(2,2)
+SKIP (already in engine_test): POW(2,2)+SQRT(4)
+SKIP (already in engine_test): SQRT(POW(2,2))
+SKIP (already in engine_test): SQRT(POW(2,2)+10)
+SKIP (already in engine_test): STRING(42)
+SKIP (already in engine_test): INT(3.9)
+SKIP (already in engine_test): ROUND(3.6)
+SKIP (already in engine_test): MIN(3, 7)
+SKIP (already in engine_test): MAX(3, 7)
+SKIP (already in engine_test): LENGTH([])
+SKIP (already in engine_test): my_array := [1, 2, 3]; GET_LENGTH() := LENGTH(my_array); GET_LENGTH()
+SKIP (already in engine_test): IF 1<10 THEN 42 ELSE 0
+SKIP (already in engine_test): IF 10<1 THEN 42 ELSE 0
+SKIP (already in engine_test): (5)-3
+SKIP (already in engine_test): (5)+3
+SKIP (already in engine_test): WHILE FALSE DO TRUE
+SKIP (already in engine_test): x := 0; WHILE x < 3 DO BEGIN x := x + 1; x^2 END
+SKIP (already in engine_test): sum:=0; FOR i:=0 TO 0 DO sum:=sum+1; sum
+SKIP (already in engine_test): x := 0; REPEAT BEGIN x := x + 1; x^2 END UNTIL x >= 3
+SKIP (already in engine_test): [1,2,3]
+SKIP (already in engine_test): []
+SKIP (already in engine_test): [1,2]+[3,4]
+SKIP (already in engine_test): x:=[10,20,30]; x[1]
+SKIP (already in engine_test): x:={'a':1,'b':2}; x['b']:=99; x['b']
+SKIP (already in engine_test): {'a':1,'b':2}['a']
+SKIP (already in engine_test): x:={'a':1,'b':2}; x['b']:=99; x['b']
+SKIP (already in engine_test): NULL+5
+SKIP (already in engine_test): 5+NULL
+SKIP (already in engine_test): NULL-5
+SKIP (already in engine_test): NULL*5
+SKIP (already in engine_test): NULL/5
+SKIP (already in engine_test): NULL^2
+SKIP (already in engine_test): NULL < 5
+UNRUNNABLE: x > 5 => RuntimeException: Unidentified identifier "X" used as a constant.
+
+Hint: enclose strings in quotes, e.g.          name ~ "Batman"       rather than:     name ~ Batman
+
+
+Line 1:
+x > 5
+~
+
+SKIP (already in engine_test): NOT NULL
+UNRUNNABLE: x > 5 => RuntimeException: Unidentified identifier "X" used as a constant.
+
+Hint: enclose strings in quotes, e.g.          name ~ "Batman"       rather than:     name ~ Batman
+
+
+Line 1:
+x > 5
+~
+
+UNRUNNABLE: x < 5 => RuntimeException: Unidentified identifier "X" used as a constant.
+
+Hint: enclose strings in quotes, e.g.          name ~ "Batman"       rather than:     name ~ Batman
+
+
+Line 1:
+x < 5
+~
+
+UNRUNNABLE: x >= 5 => RuntimeException: Unidentified identifier "X" used as a constant.
+
+Hint: enclose strings in quotes, e.g.          name ~ "Batman"       rather than:     name ~ Batman
+
+
+Line 1:
+x >= 5
+~
+
+UNRUNNABLE: x <= 5 => RuntimeException: Unidentified identifier "X" used as a constant.
+
+Hint: enclose strings in quotes, e.g.          name ~ "Batman"       rather than:     name ~ Batman
+
+
+Line 1:
+x <= 5
+~
+
+UNRUNNABLE: 5 > x => RuntimeException: Unidentified identifier "X" used as a constant.
+
+Hint: enclose strings in quotes, e.g.          name ~ "Batman"       rather than:     name ~ Batman
+
+
+Line 1:
+5 > x
+    ~
+
+UNRUNNABLE: x AND TRUE => RuntimeException: Unidentified identifier "X" used as a constant.
+
+Hint: enclose strings in quotes, e.g.          name ~ "Batman"       rather than:     name ~ Batman
+
+
+Line 1:
+x AND TRUE
+~
+
+UNRUNNABLE: TRUE AND x => RuntimeException: Unidentified identifier "X" used as a constant.
+
+Hint: enclose strings in quotes, e.g.          name ~ "Batman"       rather than:     name ~ Batman
+
+
+Line 1:
+TRUE AND x
+         ~
+
+UNRUNNABLE: x AND FALSE => RuntimeException: Unidentified identifier "X" used as a constant.
+
+Hint: enclose strings in quotes, e.g.          name ~ "Batman"       rather than:     name ~ Batman
+
+
+Line 1:
+x AND FALSE
+~
+
+UNRUNNABLE: (x>5) AND TRUE => RuntimeException: Unidentified identifier "X" used as a constant.
+
+Hint: enclose strings in quotes, e.g.          name ~ "Batman"       rather than:     name ~ Batman
+
+
+Line 1:
+(x>5) AND TRUE
+ ~
+
+UNRUNNABLE: x OR TRUE => RuntimeException: Unidentified identifier "X" used as a constant.
+
+Hint: enclose strings in quotes, e.g.          name ~ "Batman"       rather than:     name ~ Batman
+
+
+Line 1:
+x OR TRUE
+~
+
+UNRUNNABLE: x OR FALSE => RuntimeException: Unidentified identifier "X" used as a constant.
+
+Hint: enclose strings in quotes, e.g.          name ~ "Batman"       rather than:     name ~ Batman
+
+
+Line 1:
+x OR FALSE
+~
+
+UNRUNNABLE: x XOR TRUE => RuntimeException: Unidentified identifier "X" used as a constant.
+
+Hint: enclose strings in quotes, e.g.          name ~ "Batman"       rather than:     name ~ Batman
+
+
+Line 1:
+x XOR TRUE
+~
+
+UNRUNNABLE: x XOR FALSE => RuntimeException: Unidentified identifier "X" used as a constant.
+
+Hint: enclose strings in quotes, e.g.          name ~ "Batman"       rather than:     name ~ Batman
+
+
+Line 1:
+x XOR FALSE
+~
+
+UNRUNNABLE: NOT x => RuntimeException: Unidentified identifier "X" used as a constant.
+
+Hint: enclose strings in quotes, e.g.          name ~ "Batman"       rather than:     name ~ Batman
+
+
+Line 1:
+NOT x
+    ~
+
+UNRUNNABLE: (height > avg + 2 * stdev) AND (stdev > 0) => RuntimeException: Unidentified identifier "HEIGHT" used as a constant.
+
+Hint: enclose strings in quotes, e.g.          name ~ "Batman"       rather than:     name ~ Batman
+
+
+Line 1:
+(height > avg + 2 * stdev) AND (stdev > 0)
+ ~~~~~~
+
+SKIP (already in engine_test): IF FALSE THEN "FOO"
+SKIP (already in engine_test): WHILE FALSE DO TRUE
+SKIP (already in engine_test): x := 0; WHILE x < 3 DO BEGIN x := x + 1; x^2 END
+SKIP (already in engine_test): x := 0; REPEAT BEGIN x := x + 1; x^2 END UNTIL x >= 3
+SKIP (already in engine_test): (5)-3
+SKIP (already in engine_test): (5)+3
+SKIP (already in engine_test): 42
+SKIP (already in engine_test): null
+SKIP (already in engine_test): 1=1
+SKIP (already in engine_test): 1<>2
+SKIP (already in engine_test): 1+2
+SKIP (already in engine_test): 2^3
+SKIP (already in engine_test): IF TRUE THEN 1 ELSE 2
+UNRUNNABLE: obj.x => RuntimeException: Unidentified identifier "OBJ" used as a constant.
+
+Hint: enclose strings in quotes, e.g.          name ~ "Batman"       rather than:     name ~ Batman
+
+
+Line 1:
+obj.x
+~~~
+
+UNRUNNABLE: x[0] => RuntimeException: Unidentified identifier "X" used as a constant.
+
+Hint: enclose strings in quotes, e.g.          name ~ "Batman"       rather than:     name ~ Batman
+
+
+Line 1:
+x[0]
+~
+
+SKIP (already in engine_test): f(x):=x*2
+SKIP (already in engine_test): x=>x+1
+Runnable: 94, Undefined-var: 18
+
+=== Additions for engine_test.dart ===
+
+// COMPLEX result for: OBJECT{name:"Alice",age:30} => Object
+// COMPLEX result for: OBJECT{x:1} => Object
+// COMPLEX result for: OBJECT{x:10} => Object
+
+=== Keep in bytecode_compiler_test.dart ===
+  x > 5: x > 5
+  x > 5: x > 5
+  x < 5: x < 5
+  x >= 5: x >= 5
+  x <= 5: x <= 5
+  5 > x: 5 > x
+  x AND TRUE: x AND TRUE
+  TRUE AND x: TRUE AND x
+  x AND FALSE: x AND FALSE
+  (x>5) AND TRUE: (x>5) AND TRUE
+  x OR TRUE: x OR TRUE
+  x OR FALSE: x OR FALSE
+  x XOR TRUE: x XOR TRUE
+  x XOR FALSE: x XOR FALSE
+  NOT x: NOT x
+  (height > avg + 2 * stdev) AND (stdev > 0): (height > avg + 2 * stdev) AND (stdev > 0)
+  obj.x: obj.x
+  x[0]: x[0]
