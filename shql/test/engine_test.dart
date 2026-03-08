@@ -749,13 +749,17 @@ EXPECT(GENERATE_SAVED_HEROES_CARDS(), [])
   });
 
   group('IF without ELSE branch', () {
-    shqlBoth('IF FALSE THEN returns false', 'ASSERT_FALSE(IF FALSE THEN "FOO")');
+    shqlBoth('IF FALSE THEN returns null', 'EXPECT(IF FALSE THEN "FOO"), NULL)');
     shqlBoth('IF TRUE THEN returns value', "EXPECT(IF TRUE THEN 'FOO', 'FOO')");
   });
 
   group('WHILE loop result', () {
-    shqlBoth('WHILE that never executes returns false', 'ASSERT_FALSE(WHILE FALSE DO TRUE)');
+    shqlBoth('WHILE that never executes returns null', 'EXPECT(WHILE FALSE DO TRUE, NULL)');
     shqlBoth('WHILE returns last body expression', 'x := 0; EXPECT(WHILE x < 3 DO BEGIN x := x + 1; x^2 END, 9)');
+  });
+
+  group('REPEAT loop result', () {
+    shqlBoth('REPEAT returns last body expression', 'x := 0; EXPECT(REPEAT BEGIN x := x + 1; x^2 END UNTIL x >= 3, 9)');
   });
 
   group('IF condition ending with parenthesised sub-expression', () {
