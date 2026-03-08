@@ -1,6 +1,6 @@
 -- ============================================================
 -- SHQL Lexer — tokenizes SHQL source into a list of token maps.
--- Each token: {"t": type, "v": value}
+-- Each token: {"t": type, "v": value, "l": line, "sc": start_col, "len": length}
 --
 -- Token types:
 --   "INT"   integer literal (value is digit string)
@@ -26,7 +26,7 @@ _LX_IS_KW(s) := INDEX_OF(_LX_KEYWORDS, s) >= 0;
 _LX_IS_DIGIT(c)  := c ~ r'[0-9]';
 _LX_IS_ALPHA(c)  := c ~ r'[a-zA-Z_]';
 _LX_IS_ALNUM(c)  := c ~ r'[a-zA-Z0-9_]';
-_LX_TOK(t, v) := {"t": t, "v": v};
+_LX_TOK(t, v, line, sc, len) := {"t": t, "v": v, "l": line, "sc": sc, "len": len};
 _LX_CH(src, i) := SUBSTRING(src, i, i+1);
 _LX_CH2(src, i) := IF i+1 < LENGTH(src) THEN SUBSTRING(src, i, i+2) ELSE SUBSTRING(src, i, i+1);
 
@@ -60,80 +60,125 @@ _LX_TOKENIZE(src) := BEGIN
   tokens := [];
   i := 0;
   n := LENGTH(src);
+  line := 1;
+  col  := 1;
   WHILE i < n DO BEGIN
     c := _LX_CH(src, i);
 
-    -- Whitespace
-    IF c = ' ' OR c = '\t' OR c = '\n' OR c = '\r' THEN BEGIN i := i + 1; CONTINUE; END;
+    -- Newline: advance line counter, reset column
+    IF c = '\n' THEN BEGIN line := line + 1; col := 1; i := i + 1; CONTINUE; END;
+
+    -- Other whitespace
+    IF c = ' ' OR c = '\t' OR c = '\r' THEN BEGIN col := col + 1; i := i + 1; CONTINUE; END;
 
     -- Line comment: --
+    -- Use BREAK instead of AND to avoid eager evaluation of _LX_CH past end-of-input
     IF _LX_CH2(src, i) = '--' THEN BEGIN
-      WHILE i < n AND _LX_CH(src, i) <> '\n' DO i := i + 1;
+      WHILE i < n DO BEGIN
+        IF _LX_CH(src, i) = '\n' THEN BREAK;
+        col := col + 1; i := i + 1;
+      END;
       CONTINUE;
     END;
 
+    -- Record position at the start of this token
+    tok_line := line;
+    tok_sc   := col;
+
     -- Raw string: r'...' or r"..."
-    IF c = 'r' AND i+1 < n AND (_LX_CH(src, i+1) = "'" OR _LX_CH(src, i+1) = '"') THEN BEGIN
-      q := _LX_CH(src, i+1);
+    -- Peek at next char via a local variable to avoid eager AND over _LX_CH
+    next_ch := IF i+1 < n THEN _LX_CH(src, i+1) ELSE '';
+    IF c = 'r' AND (next_ch = "'" OR next_ch = '"') THEN BEGIN
+      q := next_ch;
+      start_i := i;
       i := i + 2;
       buf := '';
-      WHILE i < n AND _LX_CH(src, i) <> q DO BEGIN
+      WHILE i < n DO BEGIN
+        IF _LX_CH(src, i) = q THEN BREAK;
         buf := buf + _LX_CH(src, i);
         i := i + 1;
       END;
       i := i + 1;
-      tokens := tokens + [_LX_TOK('STR', buf)];
+      len := i - start_i;
+      col := col + len;
+      tokens := tokens + [_LX_TOK('STR', buf, tok_line, tok_sc, len)];
       CONTINUE;
     END;
 
     -- String literals: '...' or "..."
     IF c = "'" OR c = '"' THEN BEGIN
+      start_i := i;
       r := _LX_SCAN_STR(src, i, n, c);
-      tokens := tokens + [_LX_TOK('STR', r['buf'])];
+      len := r['i'] - start_i;
       i := r['i'];
+      col := col + len;
+      tokens := tokens + [_LX_TOK('STR', r['buf'], tok_line, tok_sc, len)];
       CONTINUE;
     END;
 
     -- Numbers
+    -- Use BREAK loops so _LX_CH is never called beyond end-of-input
     IF _LX_IS_DIGIT(c) THEN BEGIN
       start := i;
-      WHILE i < n AND _LX_IS_DIGIT(_LX_CH(src, i)) DO i := i + 1;
-      IF i < n AND _LX_CH(src, i) = '.' AND i+1 < n AND _LX_IS_DIGIT(_LX_CH(src, i+1)) THEN BEGIN
+      i := i + 1;
+      WHILE i < n DO BEGIN
+        IF NOT _LX_IS_DIGIT(_LX_CH(src, i)) THEN BREAK;
         i := i + 1;
-        WHILE i < n AND _LX_IS_DIGIT(_LX_CH(src, i)) DO i := i + 1;
-        tokens := tokens + [_LX_TOK('FLOAT', SUBSTRING(src, start, i))];
-      END ELSE
-        tokens := tokens + [_LX_TOK('INT', SUBSTRING(src, start, i))];
+      END;
+      -- Use local vars for look-ahead to avoid eager AND evaluation
+      dot_ch   := IF i   < n THEN _LX_CH(src, i)   ELSE '';
+      after_ch := IF i+1 < n THEN _LX_CH(src, i+1) ELSE '';
+      IF dot_ch = '.' AND _LX_IS_DIGIT(after_ch) THEN BEGIN
+        i := i + 1;
+        WHILE i < n DO BEGIN
+          IF NOT _LX_IS_DIGIT(_LX_CH(src, i)) THEN BREAK;
+          i := i + 1;
+        END;
+        len := i - start;
+        col := col + len;
+        tokens := tokens + [_LX_TOK('FLOAT', SUBSTRING(src, start, i), tok_line, tok_sc, len)];
+      END ELSE BEGIN
+        len := i - start;
+        col := col + len;
+        tokens := tokens + [_LX_TOK('INT', SUBSTRING(src, start, i), tok_line, tok_sc, len)];
+      END;
       CONTINUE;
     END;
 
     -- Identifiers and keywords (includes 'r' when not followed by a quote)
     IF _LX_IS_ALPHA(c) THEN BEGIN
       start := i;
-      WHILE i < n AND _LX_IS_ALNUM(_LX_CH(src, i)) DO i := i + 1;
+      i := i + 1;
+      WHILE i < n DO BEGIN
+        IF NOT _LX_IS_ALNUM(_LX_CH(src, i)) THEN BREAK;
+        i := i + 1;
+      END;
       word := UPPERCASE(SUBSTRING(src, start, i));
+      len := i - start;
+      col := col + len;
       IF _LX_IS_KW(word) THEN
-        tokens := tokens + [_LX_TOK(word, word)]
+        tokens := tokens + [_LX_TOK(word, word, tok_line, tok_sc, len)]
       ELSE
-        tokens := tokens + [_LX_TOK('ID', word)];
+        tokens := tokens + [_LX_TOK('ID', word, tok_line, tok_sc, len)];
       CONTINUE;
     END;
 
     -- Two-character operators
     c2 := _LX_CH2(src, i);
-    IF c2 = ':=' THEN BEGIN tokens := tokens + [_LX_TOK(':=',':=')]; i:=i+2; CONTINUE; END;
-    IF c2 = '=>' THEN BEGIN tokens := tokens + [_LX_TOK('=>','=>')]; i:=i+2; CONTINUE; END;
-    IF c2 = '<=' THEN BEGIN tokens := tokens + [_LX_TOK('<=','<=')]; i:=i+2; CONTINUE; END;
-    IF c2 = '>=' THEN BEGIN tokens := tokens + [_LX_TOK('>=','>=')]; i:=i+2; CONTINUE; END;
-    IF c2 = '<>' THEN BEGIN tokens := tokens + [_LX_TOK('<>','<>')]; i:=i+2; CONTINUE; END;
-    IF c2 = '!~' THEN BEGIN tokens := tokens + [_LX_TOK('!~','!~')]; i:=i+2; CONTINUE; END;
-    IF c2 = '**' THEN BEGIN tokens := tokens + [_LX_TOK('^', '^')];  i:=i+2; CONTINUE; END;
+    IF c2 = ':=' THEN BEGIN tokens := tokens + [_LX_TOK(':=',':=', tok_line, tok_sc, 2)]; i:=i+2; col:=col+2; CONTINUE; END;
+    IF c2 = '=>' THEN BEGIN tokens := tokens + [_LX_TOK('=>','=>', tok_line, tok_sc, 2)]; i:=i+2; col:=col+2; CONTINUE; END;
+    IF c2 = '<=' THEN BEGIN tokens := tokens + [_LX_TOK('<=','<=', tok_line, tok_sc, 2)]; i:=i+2; col:=col+2; CONTINUE; END;
+    IF c2 = '>=' THEN BEGIN tokens := tokens + [_LX_TOK('>=','>=', tok_line, tok_sc, 2)]; i:=i+2; col:=col+2; CONTINUE; END;
+    IF c2 = '<>' THEN BEGIN tokens := tokens + [_LX_TOK('<>','<>', tok_line, tok_sc, 2)]; i:=i+2; col:=col+2; CONTINUE; END;
+    IF c2 = '!~' THEN BEGIN tokens := tokens + [_LX_TOK('!~','!~', tok_line, tok_sc, 2)]; i:=i+2; col:=col+2; CONTINUE; END;
+    IF c2 = '**' THEN BEGIN tokens := tokens + [_LX_TOK('^', '^', tok_line, tok_sc, 2)];  i:=i+2; col:=col+2; CONTINUE; END;
 
     -- Single-character tokens
-    tokens := tokens + [_LX_TOK(c, c)];
+    tokens := tokens + [_LX_TOK(c, c, tok_line, tok_sc, 1)];
+    col := col + 1;
     i := i + 1;
   END;
-  tokens := tokens + [_LX_TOK('EOF', '')];
+  tokens := tokens + [_LX_TOK('EOF', '', line, col, 0)];
   RETURN tokens;
 END;
 

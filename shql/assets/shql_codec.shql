@@ -1,9 +1,9 @@
 -- ============================================================
 -- SHQL Codec — serializes a bytecode program (from shql_compiler)
--- to a human-readable string.
+-- to a list of human-readable lines.
 --
 -- Input:  {"chunks": {name: chunk, ...}}
--- Output: multi-line string showing each chunk's constants + code.
+-- Output: list of strings, one per line.
 --
 -- Format:
 --   CHUNK main ()
@@ -38,45 +38,44 @@ _CDC_FMT_INSTR(instr, constants) := BEGIN
   RETURN op + '(' + STRING(arg) + ')' + resolved;
 END;
 
-_CDC_ENCODE_CHUNK(chunk) := BEGIN
-  out := 'CHUNK ' + chunk['name'] + ' (' + STRING_JOIN(chunk['params'], ', ') + ')\n';
+_CDC_CHUNK_LINES(chunk) := BEGIN
+  out := ['CHUNK ' + chunk['name'] + ' (' + STRING_JOIN(chunk['params'], ', ') + ')'];
   -- Constants
   consts := chunk['constants'];
   i := 0;
   WHILE i < LENGTH(consts) DO BEGIN
-    out := out + '  CONST  ' + STRING(i) + ': ' + _CDC_FMT_CONST(consts[i]) + '\n';
+    out := out + ['  CONST  ' + STRING(i) + ': ' + _CDC_FMT_CONST(consts[i])];
     i := i + 1;
   END;
   -- Instructions
   code := chunk['code'];
-  out := out + '  CODE:\n';
+  out := out + ['  CODE:'];
   i := 0;
   WHILE i < LENGTH(code) DO BEGIN
-    out := out + '    ' + STRING(i) + ': ' + _CDC_FMT_INSTR(code[i], consts) + '\n';
+    out := out + ['    ' + STRING(i) + ': ' + _CDC_FMT_INSTR(code[i], consts)];
     i := i + 1;
   END;
   RETURN out;
 END;
 
-_CDC_ENCODE(program) := BEGIN
+_CDC_DECODE(program) := BEGIN
   chunks := program['chunks'];
-  names  := MAP_VALUES({"main": 0});  -- start with "main" first
-  out    := '';
+  out    := [];
   -- Main chunk first
   IF chunks['main'] <> NULL THEN
-    out := out + _CDC_ENCODE_CHUNK(chunks['main']) + '\n';
+    out := out + _CDC_CHUNK_LINES(chunks['main']);
   -- All other chunks
   all_names := MAP_VALUES(chunks);
   i := 0;
   WHILE i < LENGTH(all_names) DO BEGIN
     c := all_names[i];
     IF c['name'] <> 'main' THEN
-      out := out + _CDC_ENCODE_CHUNK(c) + '\n';
+      out := out + _CDC_CHUNK_LINES(c);
     i := i + 1;
   END;
   RETURN out;
 END;
 
 codec := OBJECT{
-  encode: (program) => _CDC_ENCODE(program)
+  decode: (program) => _CDC_DECODE(program)
 };

@@ -283,7 +283,8 @@ _PR_POSTFIX(tokens, pos) := BEGIN
   pos := r['pos'];
   done := FALSE;
   WHILE NOT done DO BEGIN
-    tt := _PR_TT(tokens, pos);
+    tt      := _PR_TT(tokens, pos);
+    next_tt := IF pos+1 < LENGTH(tokens) THEN _PR_TT(tokens, pos+1) ELSE '';
     IF tt = '(' THEN BEGIN
       -- function call: f(a, b, ...)
       pos := pos + 1;
@@ -303,7 +304,7 @@ _PR_POSTFIX(tokens, pos) := BEGIN
       pos := ri['pos'];
       IF _PR_IS(tokens, pos, ']') THEN pos := pos + 1;
       node := _PR_NODE('index', [node, ri['node']]);
-    END ELSE IF tt = '.' AND _PR_TT(tokens, pos+1) = 'ID' THEN BEGIN
+    END ELSE IF tt = '.' AND next_tt = 'ID' THEN BEGIN
       -- member access: a.field
       field := _PR_TV(tokens, pos+1);
       pos := pos + 2;

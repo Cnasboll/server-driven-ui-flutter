@@ -1,4 +1,5 @@
 import 'dart:io' show File;
+import 'package:shql/bytecode/bytecode.dart';
 import 'package:shql/bytecode/bytecode_codec.dart';
 import 'package:shql/bytecode/bytecode_compiler.dart';
 import 'package:shql/bytecode/bytecode_interpreter.dart';
@@ -12,8 +13,7 @@ import 'package:shql/tokenizer/tokenizer.dart';
 import 'package:test/test.dart';
 
 // ---------------------------------------------------------------------------
-// Bytecode disassembly helpers — no dependency on bytecode.dart types.
-// Uses mnemonic strings and dynamic access so this file needs no extra import.
+// Bytecode disassembly helpers
 // ---------------------------------------------------------------------------
 const _nameOpMnemonics = {'load_var', 'store_var', 'get_member', 'set_member'};
 const _constOpMnemonics = {'push_const', 'make_closure'};
@@ -80,6 +80,50 @@ Future<dynamic> evalBytecode(
     boundValues: boundValues,
     startingScope: startingScope,
   );
+}
+
+/// Compile [src] with the Dart [BytecodeCompiler] and run it on [rt] via
+/// [BytecodeInterpreter].  Multiple calls sharing the same [rt] accumulate
+/// state in [rt.globalScope] — used to load stdlib / lexer / parser / compiler
+/// incrementally before running a pipeline.
+Future<dynamic> _runOnVm(
+  String src,
+  Runtime rt,
+  ConstantsSet cs, {
+  Map<String, dynamic>? boundValues,
+}) {
+  final tree = Parser.parse(src, cs, sourceCode: src);
+  final prog = BytecodeCompiler.compile(tree, cs);
+  return BytecodeInterpreter(prog, rt).executeScoped('main', boundValues: boundValues);
+}
+
+/// Convert the Map produced by the SHQL self-hosting compiler to a typed
+/// [BytecodeProgram] that [BytecodeInterpreter] can execute.
+BytecodeProgram shqlMapToProgram(Map program) {
+  final opcodeByMnemonic = {for (final op in Opcode.values) op.mnemonic: op};
+  final chunksMap = program['chunks'] as Map;
+  final chunks = <String, BytecodeChunk>{};
+  for (final entry in chunksMap.entries) {
+    final name = entry.key as String;
+    final chunk = entry.value as Map;
+    final constants = (chunk['constants'] as List).map<dynamic>((c) {
+      if (c is String && c.startsWith('@')) return ChunkRef(c.substring(1));
+      return c;
+    }).toList();
+    final code = (chunk['code'] as List).map((instr) {
+      final m = instr as Map;
+      final op = opcodeByMnemonic[m['op'] as String]!;
+      final operand = m['operand'];
+      return Instruction(op, operand != null ? (operand as num).toInt() : 0);
+    }).toList();
+    chunks[name] = BytecodeChunk(
+      name: name,
+      constants: constants,
+      params: ((chunk['params'] as List?) ?? []).cast<String>(),
+      code: code,
+    );
+  }
+  return BytecodeProgram(chunks);
 }
 
 late String _stdlibSrc;
@@ -5653,8 +5697,8 @@ f()
     ]);
 
   // ---- SHQL self-hosting compiler smoke tests ----
-  // Loads the four compiler files (lexer, parser, compiler, codec) then
-  // runs the full pipeline on a simple SHQL expression.
+  // Everything in this group goes through _runOnVm (Dart BytecodeCompiler +
+  // BytecodeInterpreter). No evalEngine calls.
   group('SHQL self-hosting compiler', () {
     late String lexerSrc, parserSrc, compilerSrc, codecSrc;
 
@@ -5665,178 +5709,79 @@ f()
       codecSrc    = await File('assets/shql_codec.shql').readAsString();
     });
 
-    Future<dynamic> runPipeline(String shqlSrc) async {
-      // Load all four modules into a shared runtime.
-      final cs = Runtime.prepareConstantsSet();
-      final rt = Runtime.prepareRuntime(cs);
-      for (final src in [_stdlibSrc, lexerSrc, parserSrc, compilerSrc, codecSrc]) {
-        await evalEngine(src, runtime: rt, constantsSet: cs);
-      }
-      // Now run the pipeline: tokenize → parse → compile → encode
-      final pipeline = '''
-tokens   := lexer.tokenize(src);
-tree     := parser.parse(tokens);
-program  := compiler.compile(tree);
-codec.encode(program)
-''';
-      return evalEngine(pipeline, runtime: rt, constantsSet: cs, boundValues: {'src': shqlSrc});
-    }
-
-    test('pipeline produces a non-empty string for 1+2', () async {
-      final result = await runPipeline('1+2');
-      expect(result, isA<String>());
-      expect((result as String).isNotEmpty, true);
-      expect(result, contains('push_const'));
-      expect(result, contains('add'));
-      expect(result, contains('ret'));
-    });
-
-    test('pipeline handles assignment and variable', () async {
-      final result = await runPipeline('x := 42; x');
-      expect(result, isA<String>());
-      expect(result as String, contains('store_var'));
-      expect(result, contains('load_var'));
-    });
-
-    test('parser loading does not crash', () async {
-      final cs = Runtime.prepareConstantsSet();
-      final rt = Runtime.prepareRuntime(cs);
-      await evalEngine(_stdlibSrc, runtime: rt, constantsSet: cs);
-      // If this throws, loading the parser source itself has a bug
-      final parserResult = await evalEngine(parserSrc, runtime: rt, constantsSet: cs);
-      // parserResult is the OBJECT
-      expect(parserResult, isNotNull);
-    });
-
-    test('_PR_PRIMARY works directly', () async {
-      final cs = Runtime.prepareConstantsSet();
-      final rt = Runtime.prepareRuntime(cs);
-      for (final src in [_stdlibSrc, parserSrc]) {
-        await evalEngine(src, runtime: rt, constantsSet: cs);
-      }
-      final result = await evalEngine(
-        "_PR_PRIMARY([{'t':'INT','v':'42'},{'t':'EOF','v':''}], 0)",
-        runtime: rt, constantsSet: cs,
-      );
-      expect(result, isA<Map>());
-    });
-
-    test('_PR_POSTFIX works directly', () async {
-      final cs = Runtime.prepareConstantsSet();
-      final rt = Runtime.prepareRuntime(cs);
-      for (final src in [_stdlibSrc, parserSrc]) {
-        await evalEngine(src, runtime: rt, constantsSet: cs);
-      }
-      final result = await evalEngine(
-        "_PR_POSTFIX([{'t':'INT','v':'42'},{'t':'EOF','v':''}], 0)",
-        runtime: rt, constantsSet: cs,
-      );
-      expect(result, isA<Map>());
-    });
-
-    test('_PR_NOT works directly', () async {
-      final cs = Runtime.prepareConstantsSet();
-      final rt = Runtime.prepareRuntime(cs);
-      for (final src in [_stdlibSrc, parserSrc]) {
-        await evalEngine(src, runtime: rt, constantsSet: cs);
-      }
-      final result = await evalEngine(
-        "_PR_NOT([{'t':'INT','v':'42'},{'t':'EOF','v':''}], 0)",
-        runtime: rt, constantsSet: cs,
-      );
-      expect(result, isA<Map>());
-    });
-
-    test('_PR_AND works directly', () async {
-      final cs = Runtime.prepareConstantsSet();
-      final rt = Runtime.prepareRuntime(cs);
-      for (final src in [_stdlibSrc, parserSrc]) {
-        await evalEngine(src, runtime: rt, constantsSet: cs);
-      }
-      final result = await evalEngine(
-        "_PR_AND([{'t':'INT','v':'42'},{'t':'EOF','v':''}], 0)",
-        runtime: rt, constantsSet: cs,
-      );
-      expect(result, isA<Map>());
-    });
-
-    test('_PR_OR works directly', () async {
-      final cs = Runtime.prepareConstantsSet();
-      final rt = Runtime.prepareRuntime(cs);
-      for (final src in [_stdlibSrc, parserSrc]) {
-        await evalEngine(src, runtime: rt, constantsSet: cs);
-      }
-      final result = await evalEngine(
-        "_PR_OR([{'t':'INT','v':'42'},{'t':'EOF','v':''}], 0)",
-        runtime: rt, constantsSet: cs,
-      );
-      expect(result, isA<Map>());
-    });
-
-    test('_PR_ASSIGN works directly', () async {
-      final cs = Runtime.prepareConstantsSet();
-      final rt = Runtime.prepareRuntime(cs);
-      for (final src in [_stdlibSrc, parserSrc]) {
-        await evalEngine(src, runtime: rt, constantsSet: cs);
-      }
-      final result = await evalEngine(
-        "_PR_ASSIGN([{'t':'INT','v':'42'},{'t':'EOF','v':''}], 0)",
-        runtime: rt, constantsSet: cs,
-      );
-      expect(result, isA<Map>());
-    });
-
-    test('parser with hardcoded single-int token list', () async {
-      final cs = Runtime.prepareConstantsSet();
-      final rt = Runtime.prepareRuntime(cs);
-      for (final src in [_stdlibSrc, lexerSrc, parserSrc]) {
-        await evalEngine(src, runtime: rt, constantsSet: cs);
-      }
-      final result = await evalEngine(
-        "parser.parse([{'t':'INT','v':'42'},{'t':'EOF','v':''}])",
-        runtime: rt, constantsSet: cs,
-      );
-      expect(result, isA<Map>());
-    });
-
-    test('parser returns a map for 1+2', () async {
-      final cs = Runtime.prepareConstantsSet();
-      final rt = Runtime.prepareRuntime(cs);
-      for (final src in [_stdlibSrc, lexerSrc, parserSrc]) {
-        await evalEngine(src, runtime: rt, constantsSet: cs);
-      }
-      final result = await evalEngine(
-        "parser.parse(lexer.tokenize('1+2'))",
-        runtime: rt, constantsSet: cs,
-      );
-      expect(result, isA<Map>());
-    });
-
-    test('compiler returns a map for 1+2', () async {
+    /// Load SHQL source files and run the self-hosting pipeline, returning the
+    /// program Map produced by the SHQL compiler.
+    Future<Map> compile(String shqlSrc) async {
       final cs = Runtime.prepareConstantsSet();
       final rt = Runtime.prepareRuntime(cs);
       for (final src in [_stdlibSrc, lexerSrc, parserSrc, compilerSrc]) {
-        await evalEngine(src, runtime: rt, constantsSet: cs);
+        await _runOnVm(src, rt, cs);
       }
-      final result = await evalEngine(
-        "compiler.compile(parser.parse(lexer.tokenize('1+2')))",
-        runtime: rt, constantsSet: cs,
-      );
-      expect(result, isA<Map>());
-    });
+      return await _runOnVm('''
+tokens  := lexer.tokenize(src);
+tree    := parser.parse(tokens);
+compiler.compile(tree)
+''', rt, cs, boundValues: {'src': shqlSrc}) as Map;
+    }
 
-    test('tokenizer returns a list', () async {
+    /// Execute a SHQL-compiled program Map on a fresh bytecode VM.
+    Future<dynamic> run(Map program) {
+      final rt = Runtime.prepareRuntime(Runtime.prepareConstantsSet());
+      return BytecodeInterpreter(shqlMapToProgram(program), rt).executeScoped('main');
+    }
+
+    test('tokenizer: 1+2', () async {
       final cs = Runtime.prepareConstantsSet();
       final rt = Runtime.prepareRuntime(cs);
       for (final src in [_stdlibSrc, lexerSrc]) {
-        await evalEngine(src, runtime: rt, constantsSet: cs);
+        await _runOnVm(src, rt, cs);
       }
-      final result = await evalEngine(
-        "lexer.tokenize('1+2')",
-        runtime: rt, constantsSet: cs,
-      );
-      expect(result, isA<List>());
-      expect((result as List).length, greaterThan(3));
+      final result = await _runOnVm("lexer.tokenize('1+2')", rt, cs);
+      expect(result, [
+        {'t': 'INT', 'v': '1', 'l': 1, 'sc': 1, 'len': 1},
+        {'t': '+',   'v': '+', 'l': 1, 'sc': 2, 'len': 1},
+        {'t': 'INT', 'v': '2', 'l': 1, 'sc': 3, 'len': 1},
+        {'t': 'EOF', 'v': '',  'l': 1, 'sc': 4, 'len': 0},
+      ]);
+    });
+
+    test('codec: 1+2', () async {
+      final cs = Runtime.prepareConstantsSet();
+      final rt = Runtime.prepareRuntime(cs);
+      for (final src in [_stdlibSrc, lexerSrc, parserSrc, compilerSrc, codecSrc]) {
+        await _runOnVm(src, rt, cs);
+      }
+      final lines = await _runOnVm('''
+tokens  := lexer.tokenize(src);
+tree    := parser.parse(tokens);
+program := compiler.compile(tree);
+codec.decode(program)
+''', rt, cs, boundValues: {'src': '1+2'}) as List;
+      expect(lines, [
+        'CHUNK main ()',
+        '  CONST  0: 1',
+        '  CONST  1: 2',
+        '  CONST  2: null',
+        '  CODE:',
+        '    0: push_const(0)  -- 1',
+        '    1: jump_null(7)',
+        '    2: push_const(1)  -- 2',
+        '    3: jump_null(6)',
+        '    4: add',
+        '    5: jump(9)',
+        '    6: pop',
+        '    7: pop',
+        '    8: push_const(2)  -- null',
+        '    9: ret',
+      ]);
+    });
+
+    test('pipeline: 1+2', () async {
+      expect(await run(await compile('1+2')), 3);
+    });
+
+    test('pipeline: x := 42; x', () async {
+      expect(await run(await compile('x := 42; x')), 42);
     });
   });
 }
