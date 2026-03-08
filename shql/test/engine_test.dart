@@ -84,10 +84,11 @@ Future<dynamic> evalBytecode(
 
 late String _stdlibSrc;
 
-void shqlBoth(String name, String src, dynamic expected, List<String> expectedBytecode) {
-  test('$name [engine]', () async => expect(await evalEngine(src), expected));
+void shqlBoth(String name, String src, dynamic expected, List<String> expectedBytecode,
+    {Map<String, dynamic>? boundValues}) {
+  test('$name [engine]', () async => expect(await evalEngine(src, boundValues: boundValues), expected));
   test('$name [bytecode]', () async =>
-      expect(await evalBytecode(src, expectedBytecode), expected));
+      expect(await evalBytecode(src, expectedBytecode, boundValues: boundValues), expected));
 }
 
 /// Tests [src] against both the engine and bytecode VM, with stdlib pre-loaded
@@ -2196,29 +2197,8 @@ GENERATE_WIDGETS(n) := BEGIN
 END;
 """;
 
-  test("Test list utils", () async {
-    const setup = '$_listUtilsCode\nlist := [_GEN_LIST_ITEM_TEMPLATE(1)];';
-    const q1 = 'list[0]';
-    const q2 = "list[0]['props']";
-
-    final stdlibSrc = await File('assets/stdlib.shql').readAsString();
-
-    expect((await evalEngine('$stdlibSrc\n$setup $q1')) is Map, true);
-    expect((await evalEngine('$stdlibSrc\n$setup $q2')) is Map, true);
-    // Bytecode: run stdlib + setup separately, then compile q1/q2 alone.
-    {
-      final cs = Runtime.prepareConstantsSet();
-      final runtime = Runtime.prepareRuntime(cs);
-      for (final src in [stdlibSrc, setup]) {
-        final tree = Parser.parse(src, cs, sourceCode: src);
-        final prog = BytecodeCompiler.compile(tree, cs);
-        final decoded = BytecodeDecoder.decode(BytecodeEncoder.encode(prog));
-        await BytecodeInterpreter(decoded, runtime).executeScoped('main');
-      }
-      expect(await evalBytecode(q1, ['load_var(LIST)', 'push_const(0)', 'get_index', 'ret'], cs: cs, runtime: runtime), isA<Map>());
-      expect(await evalBytecode(q2, ['load_var(LIST)', 'push_const(0)', 'get_index', 'push_const("props")', 'get_index', 'ret'], cs: cs, runtime: runtime), isA<Map>());
-    }
-  });
+  shqlBothStdlib('Test list utils - item', '$_listUtilsCode\nlist := [_GEN_LIST_ITEM_TEMPLATE(1)]; list[0]', isA<Map>(), []);
+  shqlBothStdlib('Test list utils - props', "$_listUtilsCode\nlist := [_GEN_LIST_ITEM_TEMPLATE(1)]; list[0]['props']", isA<Map>(), []);
 
   shqlBoth('Test for loop with step', 'sum := 0; FOR i := 1 TO 10 STEP 2 DO sum := sum + i; sum', 25, [
       'push_const(0)',
@@ -2675,50 +2655,30 @@ POP_ROUTE()
   });
 
   group('startingScope and boundValues injection', () {
-    test('boundValues visible in engine', () async {
-      expect(await evalEngine('x + 1', boundValues: {'x': 10}), 11);
-    });
-    test('boundValues visible in bytecode', () async {
-      expect(await evalBytecode('x + 1', ['load_var(X)', 'jump_null(7)', 'push_const(1)', 'jump_null(6)', 'add', 'jump(9)', 'pop', 'pop', 'push_const(null)', 'ret'], boundValues: {'x': 10}), 11);
-    });
-    test('boundValues shadow global in engine', () async {
+    shqlBoth('boundValues visible', 'x + 1', 11,
+        ['load_var(X)', 'jump_null(7)', 'push_const(1)', 'jump_null(6)', 'add', 'jump(9)', 'pop', 'pop', 'push_const(null)', 'ret'],
+        boundValues: {'x': 10});
+    test('boundValues shadow global', () async {
       final cs = Runtime.prepareConstantsSet();
       final rt = Runtime.prepareRuntime(cs);
       rt.globalScope.setVariable(cs.identifiers.include('X'), 99);
       expect(await evalEngine('x', runtime: rt, constantsSet: cs, boundValues: {'x': 42}), 42);
-    });
-    test('boundValues shadow global in bytecode', () async {
-      final cs = Runtime.prepareConstantsSet();
-      final rt = Runtime.prepareRuntime(cs);
-      rt.globalScope.setVariable(cs.identifiers.include('X'), 99);
       expect(await evalBytecode('x', ['load_var(X)', 'ret'], runtime: rt, cs: cs, boundValues: {'x': 42}), 42);
     });
-    test('startingScope variables visible in engine', () async {
+    test('startingScope variables visible', () async {
       final cs = Runtime.prepareConstantsSet();
       final rt = Runtime.prepareRuntime(cs);
       final scope = Scope(Object(), parent: rt.globalScope);
       scope.setVariable(cs.identifiers.include('LABEL'), 'hello');
       expect(await evalEngine('label', runtime: rt, constantsSet: cs, startingScope: scope), 'hello');
-    });
-    test('startingScope variables visible in bytecode', () async {
-      final cs = Runtime.prepareConstantsSet();
-      final rt = Runtime.prepareRuntime(cs);
-      final scope = Scope(Object(), parent: rt.globalScope);
-      scope.setVariable(cs.identifiers.include('LABEL'), 'hello');
       expect(await evalBytecode('label', ['load_var(LABEL)', 'ret'], cs: cs, runtime: rt, startingScope: scope), 'hello');
     });
-    test('boundValues shadow startingScope in engine', () async {
+    test('boundValues shadow startingScope', () async {
       final cs = Runtime.prepareConstantsSet();
       final rt = Runtime.prepareRuntime(cs);
       final scope = Scope(Object(), parent: rt.globalScope);
       scope.setVariable(cs.identifiers.include('X'), 1);
       expect(await evalEngine('x', runtime: rt, constantsSet: cs, startingScope: scope, boundValues: {'x': 2}), 2);
-    });
-    test('boundValues shadow startingScope in bytecode', () async {
-      final cs = Runtime.prepareConstantsSet();
-      final rt = Runtime.prepareRuntime(cs);
-      final scope = Scope(Object(), parent: rt.globalScope);
-      scope.setVariable(cs.identifiers.include('X'), 1);
       expect(await evalBytecode('x', ['load_var(X)', 'ret'], cs: cs, runtime: rt, startingScope: scope, boundValues: {'x': 2}), 2);
     });
   });
@@ -5290,12 +5250,6 @@ GENERATE_SAVED_HEROES_CARDS()
       ]);
   });
 
-  group('Compiler drift detection', () {
-;
-;
-;
-;
-;
   shqlBoth('"Super Man" ~ r"Super\s*Man"', '"Super Man" ~ r"Supers*Man"', false, [
       'push_const("Super Man")',
       'jump_null(7)',
@@ -5308,8 +5262,6 @@ GENERATE_SAVED_HEROES_CARDS()
       'push_const(null)',
       'ret',
     ]);
-;
-;
   shqlBoth('"Batman" in ["Batman","Robin"]', '"Batman" in ["Batman","Robin"]', true, [
       'push_const("Batman")',
       'jump_null(9)',
@@ -5352,7 +5304,6 @@ GENERATE_SAVED_HEROES_CARDS()
       'push_const(null)',
       'ret',
     ]);
-;
   shqlBoth('my_global := 10; ADD(x) := BEGIN my_global := my_global + x; RETURN my_global; END; ADD(5)', 'my_global := 10; ADD(x) := BEGIN my_global := my_global + x; RETURN my_global; END; ADD(5)', 15, [
       'push_const(10)',
       'store_var(MY_GLOBAL)',
@@ -5367,12 +5318,6 @@ GENERATE_SAVED_HEROES_CARDS()
       'call(1)',
       'ret',
     ]);
-;
-;
-;
-;
-;
-;
   shqlBothStdlib('LOWERCASE("Robin") in ["batman","robin"]', 'LOWERCASE("Robin") in ["batman","robin"]', true, [
       'load_var(LOWERCASE)',
       'push_const("Robin")',
@@ -5406,17 +5351,6 @@ GENERATE_SAVED_HEROES_CARDS()
       'call(1)',
       'ret',
     ]);
-;
-;
-;
-;
-;
-;
-;
-;
-;
-;
-;
   shqlBoth('IF TRUE THEN 42', 'IF TRUE THEN 42', 42, [
       'push_const(true)',
       'jump_false(4)',
@@ -5433,15 +5367,6 @@ GENERATE_SAVED_HEROES_CARDS()
       'push_const(null)',
       'ret',
     ]);
-;
-;
-;
-;
-;
-;
-;
-;
-;
   shqlBoth('x:=[10,20,30]; x[1]:=99; x[1]', 'x:=[10,20,30]; x[1]:=99; x[1]', 99, [
       'push_const(10)',
       'push_const(20)',
@@ -5498,15 +5423,6 @@ k:='name'; {k:'Alice'}
       'make_map(1)',
       'ret',
     ]);
-;
-;
-;
-;
-;
-;
-;
-;
-;
   shqlBoth('obj:=OBJECT{n:0,inc:()=>n:=n+1}; obj.inc(); obj.n', 'obj:=OBJECT{n:0,inc:()=>n:=n+1}; obj.inc(); obj.n', 1, [
       'push_scope',
       'push_const("N")',
@@ -5553,21 +5469,6 @@ k:='name'; {k:'Alice'}
       'get_member(N)',
       'ret',
     ]);
-;
-;
-;
-;
-;
-;
-;
-;
-;
-;
-;
-;
-;
-;
-;
   shqlBoth('first IF RETURN with map', r'''
 
 
@@ -5601,8 +5502,6 @@ f()
       'push_const(null)',
       'ret',
     ]);
-;
-;
   shqlBoth('obj:=OBJECT{acc:(x)=>x+1}; obj.acc(5)', 'obj:=OBJECT{acc:(x)=>x+1}; obj.acc(5)', 6, [
       'push_scope',
       'push_const("ACC")',
@@ -5633,7 +5532,6 @@ f()
       'call(1)',
       'ret',
     ]);
-;
   shqlBoth('f0:=OBJECT{accessor:(v)=>v+1}; f1:=OBJECT{accessor:(v)=>v*2}; f0.accessor(10)+f1.accessor(10)', 'f0:=OBJECT{accessor:(v)=>v+1}; f1:=OBJECT{accessor:(v)=>v*2}; f0.accessor(10)+f1.accessor(10)', 31, [
       'push_scope',
       'push_const("ACCESSOR")',
@@ -5668,15 +5566,12 @@ f()
       'push_const(null)',
       'ret',
     ]);
-;
-;
   shqlBoth('{"a":1}', '{"a":1}', {'a': 1}, [
       'push_const("a")',
       'push_const(1)',
       'make_map(1)',
       'ret',
     ]);
-;
 
   shqlBoth('OBJECT{name:"Alice",age:30}', 'OBJECT{name:"Alice",age:30}', isA<Object>(), [
       'push_scope',
@@ -5704,5 +5599,4 @@ f()
       'pop_scope',
       'ret',
     ]);
-  });
 }
