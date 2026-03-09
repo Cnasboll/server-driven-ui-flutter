@@ -68,13 +68,13 @@ _CDC_DECODE(program) := BEGIN
   -- Main chunk first
   IF chunks['main'] <> NULL THEN
     out := out + _CDC_CHUNK_LINES(chunks['main']);
-  -- All other chunks
-  all_names := MAP_VALUES(chunks);
+  -- All other chunks sorted alphabetically (matches BytecodeEncoder canonical order)
+  sorted_names := LIST_SORT(MAP_KEYS(chunks));
   i := 0;
-  WHILE i < LENGTH(all_names) DO BEGIN
-    c := all_names[i];
-    IF c['name'] <> 'main' THEN
-      out := out + _CDC_CHUNK_LINES(c);
+  WHILE i < LENGTH(sorted_names) DO BEGIN
+    nm := sorted_names[i];
+    IF nm <> 'main' THEN
+      out := out + _CDC_CHUNK_LINES(chunks[nm]);
     i := i + 1;
   END;
   RETURN out;

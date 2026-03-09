@@ -48,7 +48,16 @@ class BytecodeEncoder {
     buf.addAll(_magic);
     buf.add(_version);
     _u16(buf, program.chunks.length);
-    for (final chunk in program.chunks.values) {
+    // Canonical order: 'main' first, remaining chunks sorted alphabetically.
+    // This makes the binary output deterministic regardless of insertion order,
+    // so Dart-compiled and SHQL-compiled programs produce identical bytes.
+    final sorted = [...program.chunks.values]
+      ..sort((a, b) => a.name == 'main'
+          ? -1
+          : b.name == 'main'
+              ? 1
+              : a.name.compareTo(b.name));
+    for (final chunk in sorted) {
       _encodeChunk(buf, chunk);
     }
     return Uint8List.fromList(buf);

@@ -1,4 +1,5 @@
 import 'dart:io' show File;
+import 'dart:typed_data' show Uint8List;
 import 'package:shql/bytecode/bytecode.dart';
 import 'package:shql/bytecode/bytecode_codec.dart';
 import 'package:shql/bytecode/bytecode_compiler.dart';
@@ -206,10 +207,19 @@ List<String> dartCodec(BytecodeProgram program) {
     return out;
   }
 
+  // Canonical order: main first, then all other chunks sorted alphabetically.
+  // Mirrors BytecodeEncoder.encode ordering so dartCodec is invariant to
+  // internal chunk insertion order.
+  final sorted = [...program.chunks.values]
+    ..sort((a, b) => a.name == 'main'
+        ? -1
+        : b.name == 'main'
+            ? 1
+            : a.name.compareTo(b.name));
   final out = <String>[];
-  if (program.hasChunk('main')) out.addAll(chunkLines(program['main']));
-  for (final chunk in program.chunks.values)
-    if (chunk.name != 'main') out.addAll(chunkLines(chunk));
+  for (final chunk in sorted) {
+    out.addAll(chunkLines(chunk));
+  }
   return out;
 }
 
@@ -232,7 +242,8 @@ BytecodeInterpreter? _pipelineVm;
 /// parser, compiler, codec), in that order.  Populated in [_ensurePipeline]
 /// alongside loading those programs into [_pipelineRt].  Used by the Stage 2
 /// bootstrap test as the golden reference.
-final List<List<String>> _pipelineBytecodes = [];
+/// Each entry is a tuple of (encoded binary, dartCodec disassembly).
+final List<(Uint8List, List<String>)> _pipelineBytecodes = [];
 
 /// Source of the pipeline invocation script — tokenize → parse → compile →
 /// decode, then return [prog, dec].  Stored as a constant so the program can
@@ -255,7 +266,8 @@ Future<void> _ensurePipeline() async {
   // golden reference before executing each program into _pipelineRt.
   for (final src in [_lexerSrc, _parserSrc, _compilerSrc, _codecSrc]) {
     final prog = BytecodeCompiler.compile(Parser.parse(src, _pipelineCs!, sourceCode: src), _pipelineCs!);
-    _pipelineBytecodes.add(dartCodec(BytecodeDecoder.decode(BytecodeEncoder.encode(prog))));
+    final encoded = BytecodeEncoder.encode(prog);
+    _pipelineBytecodes.add((encoded, dartCodec(BytecodeDecoder.decode(encoded))));
     await BytecodeInterpreter(prog, _pipelineRt!).executeScoped('main');
   }
   // Pre-compile the pipeline invocation script once so evalBytecode can reuse
@@ -6007,9 +6019,13 @@ codec.decode(program)
           'main',
           boundValues: {'src': pipelineSrcs[i], 'consts': pipelineConsts},
         ) as List;
-        final shqlLines = (out[1] as List).cast<String>();
-        expect(shqlLines, _pipelineBytecodes[i],
-            reason: 'SHQL pipeline must reproduce Dart compiler output for ${pipelineNames[i]}.shql');
+        final shqlEncoded = BytecodeEncoder.encode(shqlMapToProgram(out[0] as Map));
+        final shqlLines   = (out[1] as List).cast<String>();
+        final (dartEncoded, dartLines) = _pipelineBytecodes[i];
+        expect(shqlLines, dartLines,
+            reason: 'SHQL codec disassembly must match Dart for ${pipelineNames[i]}.shql');
+        expect(shqlEncoded, dartEncoded,
+            reason: 'SHQL binary encoding must match Dart for ${pipelineNames[i]}.shql');
       }
     });
 
