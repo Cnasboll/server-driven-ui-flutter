@@ -1,12 +1,13 @@
 /// SHQL™ Runner — executes compiled SHQL bytecode (.shqlbc) files.
 ///
-/// Usage:  dart run shql:shql [options] <program.shqlbc>
+/// Usage:  dart run shql:shql [options] <program.shqlbc> [args...]
 ///
 /// Options:
 ///   --stdlib <file>   Path to compiled stdlib (default: assets/compiled/stdlib.shqlbc)
 import 'dart:io';
 
 import 'package:shql/bytecode/bytecode_codec.dart';
+import 'package:shql/bytecode/bytecode_console.dart';
 import 'package:shql/bytecode/bytecode_interpreter.dart';
 import 'package:shql/execution/runtime/runtime.dart';
 
@@ -14,23 +15,24 @@ Future<void> main(List<String> args) async {
   // ---- Parse arguments ----
   String? stdlibPath;
   String? programPath;
+  final programArgs = <String>[];
 
   for (var i = 0; i < args.length; i++) {
     if (args[i] == '--stdlib' && i + 1 < args.length) {
       stdlibPath = args[++i];
-    } else if (args[i].startsWith('-')) {
+    } else if (programPath == null && args[i].startsWith('-')) {
       stderr.writeln('Unknown option: ${args[i]}');
       exit(1);
     } else if (programPath == null) {
       programPath = args[i];
-    } else {
-      stderr.writeln('Unexpected argument: ${args[i]}');
-      exit(1);
+      // Everything after the program path is passed to the SHQL program
+      programArgs.addAll(args.sublist(i + 1));
+      break;
     }
   }
 
   if (programPath == null) {
-    stderr.writeln('Usage: shql [--stdlib <file>] <program.shqlbc>');
+    stderr.writeln('Usage: shql [--stdlib <file>] <program.shqlbc> [args...]');
     exit(1);
   }
 
@@ -43,6 +45,7 @@ Future<void> main(List<String> args) async {
   // ---- Set up runtime ----
   final cs = Runtime.prepareConstantsSet();
   final rt = Runtime.prepareRuntime(cs);
+  registerConsoleBindings(rt, programArgs);
 
   // ---- Load stdlib ----
   final stdlibFile = File(stdlibPath);

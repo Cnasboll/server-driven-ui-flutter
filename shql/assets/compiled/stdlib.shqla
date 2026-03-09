@@ -39,41 +39,45 @@ CHUNK main ()
   CONST  37: LENGTH
   CONST  38: .__MAP_VALUES_19
   CONST  39: MAP_VALUES
-  CONST  40: .__MD5_20
-  CONST  41: .__MIN_21
-  CONST  42: MIN
-  CONST  43: .__MAX_22
-  CONST  44: MAX
-  CONST  45: .__ATAN2_23
-  CONST  46: ATAN2
-  CONST  47: .__POW_24
-  CONST  48: POW
-  CONST  49: .__DIM_25
-  CONST  50: DIM
-  CONST  51: .__MAP_REMOVE_26
-  CONST  52: MAP_REMOVE
-  CONST  53: .__SUBSTRING_27
-  CONST  54: SUBSTRING
-  CONST  55: .__INDEX_OF_28
-  CONST  56: INDEX_OF
-  CONST  57: .__SLICE_29
-  CONST  58: SLICE
-  CONST  59: .__STRING_JOIN_30
-  CONST  60: STRING_JOIN
-  CONST  61: .__NVL_31
-  CONST  62: NVL
-  CONST  63: .__IS_NULL_OR_WHITESPACE_32
-  CONST  64: IS_NULL_OR_WHITESPACE
-  CONST  65: .__SUM_33
-  CONST  66: SUM
-  CONST  67: .__AVG_34
-  CONST  68: AVG
-  CONST  69: .__STDEV_35
-  CONST  70: STDEV
-  CONST  71: .__STATS_36
-  CONST  72: STATS
-  CONST  73: .__PLOT_37
-  CONST  74: PLOT
+  CONST  40: .__MAP_KEYS_20
+  CONST  41: MAP_KEYS
+  CONST  42: .__LIST_SORT_21
+  CONST  43: LIST_SORT
+  CONST  44: .__MD5_22
+  CONST  45: .__MIN_23
+  CONST  46: MIN
+  CONST  47: .__MAX_24
+  CONST  48: MAX
+  CONST  49: .__ATAN2_25
+  CONST  50: ATAN2
+  CONST  51: .__POW_26
+  CONST  52: POW
+  CONST  53: .__DIM_27
+  CONST  54: DIM
+  CONST  55: .__MAP_REMOVE_28
+  CONST  56: MAP_REMOVE
+  CONST  57: .__SUBSTRING_29
+  CONST  58: SUBSTRING
+  CONST  59: .__INDEX_OF_30
+  CONST  60: INDEX_OF
+  CONST  61: .__SLICE_31
+  CONST  62: SLICE
+  CONST  63: .__STRING_JOIN_32
+  CONST  64: STRING_JOIN
+  CONST  65: .__NVL_33
+  CONST  66: NVL
+  CONST  67: .__IS_NULL_OR_WHITESPACE_34
+  CONST  68: IS_NULL_OR_WHITESPACE
+  CONST  69: .__SUM_35
+  CONST  70: SUM
+  CONST  71: .__AVG_36
+  CONST  72: AVG
+  CONST  73: .__STDEV_37
+  CONST  74: STDEV
+  CONST  75: .__STATS_38
+  CONST  76: STATS
+  CONST  77: .__PLOT_39
+  CONST  78: PLOT
   CODE:
     0: make_closure(0)  -- .__CLONE_0
     1: store_var(1)  -- CLONE
@@ -155,78 +159,86 @@ CHUNK main ()
     77: store_var(39)  -- MAP_VALUES
     78: load_var(39)  -- MAP_VALUES
     79: pop
-    80: make_closure(40)  -- .__MD5_20
-    81: store_var(3)  -- MD5
-    82: load_var(3)  -- MD5
+    80: make_closure(40)  -- .__MAP_KEYS_20
+    81: store_var(41)  -- MAP_KEYS
+    82: load_var(41)  -- MAP_KEYS
     83: pop
-    84: make_closure(41)  -- .__MIN_21
-    85: store_var(42)  -- MIN
-    86: load_var(42)  -- MIN
+    84: make_closure(42)  -- .__LIST_SORT_21
+    85: store_var(43)  -- LIST_SORT
+    86: load_var(43)  -- LIST_SORT
     87: pop
-    88: make_closure(43)  -- .__MAX_22
-    89: store_var(44)  -- MAX
-    90: load_var(44)  -- MAX
+    88: make_closure(44)  -- .__MD5_22
+    89: store_var(3)  -- MD5
+    90: load_var(3)  -- MD5
     91: pop
-    92: make_closure(45)  -- .__ATAN2_23
-    93: store_var(46)  -- ATAN2
-    94: load_var(46)  -- ATAN2
+    92: make_closure(45)  -- .__MIN_23
+    93: store_var(46)  -- MIN
+    94: load_var(46)  -- MIN
     95: pop
-    96: make_closure(47)  -- .__POW_24
-    97: store_var(48)  -- POW
-    98: load_var(48)  -- POW
+    96: make_closure(47)  -- .__MAX_24
+    97: store_var(48)  -- MAX
+    98: load_var(48)  -- MAX
     99: pop
-    100: make_closure(49)  -- .__DIM_25
-    101: store_var(50)  -- DIM
-    102: load_var(50)  -- DIM
+    100: make_closure(49)  -- .__ATAN2_25
+    101: store_var(50)  -- ATAN2
+    102: load_var(50)  -- ATAN2
     103: pop
-    104: make_closure(51)  -- .__MAP_REMOVE_26
-    105: store_var(52)  -- MAP_REMOVE
-    106: load_var(52)  -- MAP_REMOVE
+    104: make_closure(51)  -- .__POW_26
+    105: store_var(52)  -- POW
+    106: load_var(52)  -- POW
     107: pop
-    108: make_closure(53)  -- .__SUBSTRING_27
-    109: store_var(54)  -- SUBSTRING
-    110: load_var(54)  -- SUBSTRING
+    108: make_closure(53)  -- .__DIM_27
+    109: store_var(54)  -- DIM
+    110: load_var(54)  -- DIM
     111: pop
-    112: make_closure(55)  -- .__INDEX_OF_28
-    113: store_var(56)  -- INDEX_OF
-    114: load_var(56)  -- INDEX_OF
+    112: make_closure(55)  -- .__MAP_REMOVE_28
+    113: store_var(56)  -- MAP_REMOVE
+    114: load_var(56)  -- MAP_REMOVE
     115: pop
-    116: make_closure(57)  -- .__SLICE_29
-    117: store_var(58)  -- SLICE
-    118: load_var(58)  -- SLICE
+    116: make_closure(57)  -- .__SUBSTRING_29
+    117: store_var(58)  -- SUBSTRING
+    118: load_var(58)  -- SUBSTRING
     119: pop
-    120: make_closure(59)  -- .__STRING_JOIN_30
-    121: store_var(60)  -- STRING_JOIN
-    122: load_var(60)  -- STRING_JOIN
+    120: make_closure(59)  -- .__INDEX_OF_30
+    121: store_var(60)  -- INDEX_OF
+    122: load_var(60)  -- INDEX_OF
     123: pop
-    124: make_closure(61)  -- .__NVL_31
-    125: store_var(62)  -- NVL
-    126: load_var(62)  -- NVL
+    124: make_closure(61)  -- .__SLICE_31
+    125: store_var(62)  -- SLICE
+    126: load_var(62)  -- SLICE
     127: pop
-    128: make_closure(63)  -- .__IS_NULL_OR_WHITESPACE_32
-    129: store_var(64)  -- IS_NULL_OR_WHITESPACE
-    130: load_var(64)  -- IS_NULL_OR_WHITESPACE
+    128: make_closure(63)  -- .__STRING_JOIN_32
+    129: store_var(64)  -- STRING_JOIN
+    130: load_var(64)  -- STRING_JOIN
     131: pop
-    132: make_closure(65)  -- .__SUM_33
-    133: store_var(66)  -- SUM
-    134: load_var(66)  -- SUM
+    132: make_closure(65)  -- .__NVL_33
+    133: store_var(66)  -- NVL
+    134: load_var(66)  -- NVL
     135: pop
-    136: make_closure(67)  -- .__AVG_34
-    137: store_var(68)  -- AVG
-    138: load_var(68)  -- AVG
+    136: make_closure(67)  -- .__IS_NULL_OR_WHITESPACE_34
+    137: store_var(68)  -- IS_NULL_OR_WHITESPACE
+    138: load_var(68)  -- IS_NULL_OR_WHITESPACE
     139: pop
-    140: make_closure(69)  -- .__STDEV_35
-    141: store_var(70)  -- STDEV
-    142: load_var(70)  -- STDEV
+    140: make_closure(69)  -- .__SUM_35
+    141: store_var(70)  -- SUM
+    142: load_var(70)  -- SUM
     143: pop
-    144: make_closure(71)  -- .__STATS_36
-    145: store_var(72)  -- STATS
-    146: load_var(72)  -- STATS
+    144: make_closure(71)  -- .__AVG_36
+    145: store_var(72)  -- AVG
+    146: load_var(72)  -- AVG
     147: pop
-    148: make_closure(73)  -- .__PLOT_37
-    149: store_var(74)  -- PLOT
-    150: load_var(74)  -- PLOT
-    151: ret
+    148: make_closure(73)  -- .__STDEV_37
+    149: store_var(74)  -- STDEV
+    150: load_var(74)  -- STDEV
+    151: pop
+    152: make_closure(75)  -- .__STATS_38
+    153: store_var(76)  -- STATS
+    154: load_var(76)  -- STATS
+    155: pop
+    156: make_closure(77)  -- .__PLOT_39
+    157: store_var(78)  -- PLOT
+    158: load_var(78)  -- PLOT
+    159: ret
 CHUNK __ACOS_5 (A)
   CONST  0: _EXTERN
   CONST  1: ACOS
@@ -249,7 +261,7 @@ CHUNK __ASIN_6 (A)
     3: make_list(1)
     4: call(2)
     5: ret
-CHUNK __ATAN2_23 (A, B)
+CHUNK __ATAN2_25 (A, B)
   CONST  0: _EXTERN
   CONST  1: ATAN2
   CONST  2: A
@@ -273,7 +285,7 @@ CHUNK __ATAN_7 (A)
     3: make_list(1)
     4: call(2)
     5: ret
-CHUNK __AVG_34 (LIST, EXTRACTOR)
+CHUNK __AVG_36 (LIST, EXTRACTOR)
   CONST  0: LENGTH
   CONST  1: LIST
   CONST  2: 0
@@ -451,7 +463,7 @@ CHUNK __COS_3 (A)
     3: make_list(1)
     4: call(2)
     5: ret
-CHUNK __DIM_25 (A, B)
+CHUNK __DIM_27 (A, B)
   CONST  0: _EXTERN
   CONST  1: DIM
   CONST  2: A
@@ -486,7 +498,7 @@ CHUNK __EXP_9 (A)
     3: make_list(1)
     4: call(2)
     5: ret
-CHUNK __INDEX_OF_28 (LIST, ITEM)
+CHUNK __INDEX_OF_30 (LIST, ITEM)
   CONST  0: 0
   CONST  1: I
   CONST  2: false
@@ -588,7 +600,7 @@ CHUNK __INT_14 (A)
     3: make_list(1)
     4: call(2)
     5: ret
-CHUNK __IS_NULL_OR_WHITESPACE_32 (S)
+CHUNK __IS_NULL_OR_WHITESPACE_34 (S)
   CONST  0: S
   CONST  1: null
   CONST  2: LENGTH
@@ -618,6 +630,17 @@ CHUNK __LENGTH_18 (A)
     3: make_list(1)
     4: call(2)
     5: ret
+CHUNK __LIST_SORT_21 (A)
+  CONST  0: _EXTERN
+  CONST  1: LIST_SORT
+  CONST  2: A
+  CODE:
+    0: load_var(0)  -- _EXTERN
+    1: push_const(1)  -- LIST_SORT
+    2: load_var(2)  -- A
+    3: make_list(1)
+    4: call(2)
+    5: ret
 CHUNK __LOG_10 (A)
   CONST  0: _EXTERN
   CONST  1: LOG
@@ -640,7 +663,18 @@ CHUNK __LOWERCASE_11 (A)
     3: make_list(1)
     4: call(2)
     5: ret
-CHUNK __MAP_REMOVE_26 (A, B)
+CHUNK __MAP_KEYS_20 (A)
+  CONST  0: _EXTERN
+  CONST  1: MAP_KEYS
+  CONST  2: A
+  CODE:
+    0: load_var(0)  -- _EXTERN
+    1: push_const(1)  -- MAP_KEYS
+    2: load_var(2)  -- A
+    3: make_list(1)
+    4: call(2)
+    5: ret
+CHUNK __MAP_REMOVE_28 (A, B)
   CONST  0: _EXTERN
   CONST  1: MAP_REMOVE
   CONST  2: A
@@ -664,7 +698,7 @@ CHUNK __MAP_VALUES_19 (A)
     3: make_list(1)
     4: call(2)
     5: ret
-CHUNK __MAX_22 (A, B)
+CHUNK __MAX_24 (A, B)
   CONST  0: _EXTERN
   CONST  1: MAX
   CONST  2: A
@@ -688,7 +722,7 @@ CHUNK __MD5_1 (A)
     3: make_list(1)
     4: call(2)
     5: ret
-CHUNK __MD5_20 (A)
+CHUNK __MD5_22 (A)
   CONST  0: _EXTERN
   CONST  1: MD5
   CONST  2: A
@@ -699,7 +733,7 @@ CHUNK __MD5_20 (A)
     3: make_list(1)
     4: call(2)
     5: ret
-CHUNK __MIN_21 (A, B)
+CHUNK __MIN_23 (A, B)
   CONST  0: _EXTERN
   CONST  1: MIN
   CONST  2: A
@@ -712,7 +746,7 @@ CHUNK __MIN_21 (A, B)
     4: make_list(2)
     5: call(2)
     6: ret
-CHUNK __NVL_31 (OBJ, F, DEFAULT_VALUE)
+CHUNK __NVL_33 (OBJ, F, DEFAULT_VALUE)
   CONST  0: OBJ
   CONST  1: null
   CONST  2: DEFAULT_VALUE
@@ -728,7 +762,7 @@ CHUNK __NVL_31 (OBJ, F, DEFAULT_VALUE)
     7: load_var(0)  -- OBJ
     8: call(1)
     9: ret
-CHUNK __PLOT_37 (F, X1, X2)
+CHUNK __PLOT_39 (F, X1, X2)
   CONST  0: X_VECTOR
   CONST  1: Y_VECTOR
   CONST  2: DOUBLE
@@ -736,17 +770,13 @@ CHUNK __PLOT_37 (F, X1, X2)
   CONST  4: X1
   CONST  5: null
   CONST  6: RANGE
-  CONST  7: MAX
-  CONST  8: 0.1
-  CONST  9: 100.0
-  CONST  10: STEP
-  CONST  11: START
-  CONST  12: X
-  CONST  13: false
-  CONST  14: F
-  CONST  15: _DISPLAY_GRAPH
-  CONST  16: PRINT
-  CONST  17: Type HIDE_GRAPH to hide graph again
+  CONST  7: START
+  CONST  8: X
+  CONST  9: false
+  CONST  10: F
+  CONST  11: _DISPLAY_GRAPH
+  CONST  12: PRINT
+  CONST  13: Type HIDE_GRAPH to hide graph again
   CODE:
     0: push_scope
     1: make_list(0)
@@ -773,128 +803,113 @@ CHUNK __PLOT_37 (F, X1, X2)
     22: store_var(6)  -- RANGE
     23: load_var(6)  -- RANGE
     24: pop
-    25: load_var(7)  -- MAX
-    26: push_const(8)  -- 0.1
-    27: load_var(6)  -- RANGE
-    28: jump_null(34)
-    29: push_const(9)  -- 100.0
-    30: jump_null(33)
-    31: div
-    32: jump(36)
-    33: pop
-    34: pop
-    35: push_const(5)  -- null
-    36: call(2)
-    37: store_var(10)  -- STEP
-    38: load_var(10)  -- STEP
-    39: pop
-    40: load_var(2)  -- DOUBLE
-    41: load_var(4)  -- X1
-    42: call(1)
-    43: store_var(11)  -- START
-    44: load_var(11)  -- START
-    45: pop
-    46: load_var(11)  -- START
-    47: store_var(12)  -- X
-    48: load_var(12)  -- X
+    25: pop
+    26: load_var(2)  -- DOUBLE
+    27: load_var(4)  -- X1
+    28: call(1)
+    29: store_var(7)  -- START
+    30: load_var(7)  -- START
+    31: pop
+    32: load_var(7)  -- START
+    33: store_var(8)  -- X
+    34: load_var(8)  -- X
+    35: pop
+    36: load_var(8)  -- X
+    37: store_reg(0)
+    38: push_const(9)  -- false
+    39: store_reg(1)
+    40: push_scope
+    41: load_var(0)  -- X_VECTOR
+    42: jump_null(49)
+    43: load_var(8)  -- X
+    44: make_list(1)
+    45: jump_null(48)
+    46: add
+    47: jump(51)
+    48: pop
     49: pop
-    50: load_var(12)  -- X
-    51: store_reg(0)
-    52: push_const(13)  -- false
-    53: store_reg(1)
-    54: push_scope
-    55: load_var(0)  -- X_VECTOR
-    56: jump_null(63)
-    57: load_var(12)  -- X
-    58: make_list(1)
-    59: jump_null(62)
-    60: add
-    61: jump(65)
-    62: pop
+    50: push_const(5)  -- null
+    51: store_var(0)  -- X_VECTOR
+    52: load_var(0)  -- X_VECTOR
+    53: pop
+    54: load_var(1)  -- Y_VECTOR
+    55: jump_null(64)
+    56: load_var(10)  -- F
+    57: load_var(8)  -- X
+    58: call(1)
+    59: make_list(1)
+    60: jump_null(63)
+    61: add
+    62: jump(66)
     63: pop
-    64: push_const(5)  -- null
-    65: store_var(0)  -- X_VECTOR
-    66: load_var(0)  -- X_VECTOR
-    67: pop
-    68: load_var(1)  -- Y_VECTOR
-    69: jump_null(78)
-    70: load_var(14)  -- F
-    71: load_var(12)  -- X
-    72: call(1)
-    73: make_list(1)
-    74: jump_null(77)
-    75: add
-    76: jump(80)
-    77: pop
-    78: pop
-    79: push_const(5)  -- null
-    80: store_var(1)  -- Y_VECTOR
+    64: pop
+    65: push_const(5)  -- null
+    66: store_var(1)  -- Y_VECTOR
+    67: load_var(1)  -- Y_VECTOR
+    68: pop
+    69: load_var(8)  -- X
+    70: jump_null(76)
+    71: load_var(7)  -- START
+    72: jump_null(75)
+    73: cmp_gt
+    74: jump(78)
+    75: pop
+    76: pop
+    77: push_const(5)  -- null
+    78: jump_false(84)
+    79: load_var(11)  -- _DISPLAY_GRAPH
+    80: load_var(0)  -- X_VECTOR
     81: load_var(1)  -- Y_VECTOR
-    82: pop
-    83: load_var(12)  -- X
-    84: jump_null(90)
-    85: load_var(11)  -- START
-    86: jump_null(89)
-    87: cmp_gt
-    88: jump(92)
-    89: pop
-    90: pop
-    91: push_const(5)  -- null
-    92: jump_false(98)
-    93: load_var(15)  -- _DISPLAY_GRAPH
-    94: load_var(0)  -- X_VECTOR
-    95: load_var(1)  -- Y_VECTOR
-    96: call(2)
-    97: jump(99)
-    98: push_const(5)  -- null
-    99: pop_scope
-    100: pop
-    101: load_reg(1)
-    102: jump_true(139)
-    103: load_var(3)  -- X2
-    104: store_reg(2)
-    105: load_reg(2)
-    106: load_reg(0)
-    107: cmp_gte
-    108: store_reg(3)
-    109: load_var(10)  -- STEP
-    110: store_reg(4)
-    111: load_var(12)  -- X
-    112: load_reg(4)
-    113: add
-    114: store_reg(5)
-    115: load_reg(3)
-    116: load_reg(5)
-    117: load_reg(2)
-    118: cmp_gt
-    119: log_and
-    120: load_reg(3)
-    121: log_not
-    122: load_reg(5)
-    123: load_reg(2)
-    124: cmp_lt
-    125: log_and
-    126: log_or
-    127: store_reg(6)
-    128: load_reg(6)
-    129: load_reg(5)
-    130: load_reg(2)
-    131: cmp_eq
-    132: log_or
-    133: store_reg(1)
-    134: load_reg(6)
-    135: jump_true(139)
-    136: load_reg(5)
-    137: store_var(12)  -- X
-    138: jump(54)
-    139: push_const(5)  -- null
-    140: pop
-    141: load_var(16)  -- PRINT
-    142: push_const(17)  -- Type HIDE_GRAPH to hide graph again
-    143: call(1)
-    144: pop_scope
-    145: ret
-CHUNK __POW_24 (A, B)
+    82: call(2)
+    83: jump(85)
+    84: push_const(5)  -- null
+    85: pop_scope
+    86: pop
+    87: load_reg(1)
+    88: jump_true(124)
+    89: load_var(3)  -- X2
+    90: store_reg(2)
+    91: load_reg(2)
+    92: load_reg(0)
+    93: cmp_gte
+    94: store_reg(3)
+    95: store_reg(4)
+    96: load_var(8)  -- X
+    97: load_reg(4)
+    98: add
+    99: store_reg(5)
+    100: load_reg(3)
+    101: load_reg(5)
+    102: load_reg(2)
+    103: cmp_gt
+    104: log_and
+    105: load_reg(3)
+    106: log_not
+    107: load_reg(5)
+    108: load_reg(2)
+    109: cmp_lt
+    110: log_and
+    111: log_or
+    112: store_reg(6)
+    113: load_reg(6)
+    114: load_reg(5)
+    115: load_reg(2)
+    116: cmp_eq
+    117: log_or
+    118: store_reg(1)
+    119: load_reg(6)
+    120: jump_true(124)
+    121: load_reg(5)
+    122: store_var(8)  -- X
+    123: jump(40)
+    124: push_const(5)  -- null
+    125: pop
+    126: load_var(12)  -- PRINT
+    127: push_const(13)  -- Type HIDE_GRAPH to hide graph again
+    128: call(1)
+    129: pop_scope
+    130: ret
+CHUNK __POW_26 (A, B)
   CONST  0: _EXTERN
   CONST  1: POW
   CONST  2: A
@@ -929,7 +944,7 @@ CHUNK __SIN_2 (A)
     3: make_list(1)
     4: call(2)
     5: ret
-CHUNK __SLICE_29 (LIST, START_IDX, END_IDX)
+CHUNK __SLICE_31 (LIST, START_IDX, END_IDX)
   CONST  0: RESULT
   CONST  1: LENGTH
   CONST  2: LIST
@@ -1067,7 +1082,7 @@ CHUNK __SQRT_8 (A)
     3: make_list(1)
     4: call(2)
     5: ret
-CHUNK __STATS_36 (LIST, ACCESSOR)
+CHUNK __STATS_38 (LIST, ACCESSOR)
   CONST  0: LENGTH
   CONST  1: LIST
   CONST  2: 0
@@ -1482,7 +1497,7 @@ CHUNK __STATS_36 (LIST, ACCESSOR)
     383: ret
     384: pop_scope
     385: ret
-CHUNK __STDEV_35 (LIST, EXTRACTOR)
+CHUNK __STDEV_37 (LIST, EXTRACTOR)
   CONST  0: LENGTH
   CONST  1: LIST
   CONST  2: 0
@@ -1684,7 +1699,7 @@ CHUNK __STRING_16 (A)
     3: make_list(1)
     4: call(2)
     5: ret
-CHUNK __STRING_JOIN_30 (ARR, SEPARATOR)
+CHUNK __STRING_JOIN_32 (ARR, SEPARATOR)
   CONST  0: LENGTH
   CONST  1: ARR
   CONST  2: LEN
@@ -1824,7 +1839,7 @@ CHUNK __STRING_JOIN_30 (ARR, SEPARATOR)
     122: ret
     123: pop_scope
     124: ret
-CHUNK __SUBSTRING_27 (A, B, C)
+CHUNK __SUBSTRING_29 (A, B, C)
   CONST  0: _EXTERN
   CONST  1: SUBSTRING
   CONST  2: A
@@ -1839,7 +1854,7 @@ CHUNK __SUBSTRING_27 (A, B, C)
     5: make_list(3)
     6: call(2)
     7: ret
-CHUNK __SUM_33 (LIST, EXTRACTOR)
+CHUNK __SUM_35 (LIST, EXTRACTOR)
   CONST  0: LENGTH
   CONST  1: LIST
   CONST  2: 0

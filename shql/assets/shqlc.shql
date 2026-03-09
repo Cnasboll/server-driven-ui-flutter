@@ -1,0 +1,99 @@
+--- SHQLC — the SHQL™ compiler program.
+--- Compiles SHQL source files to binary bytecode (.shqlbc) and
+--- canonical disassembly (.shqla).
+---
+--- Expects:
+---   ARGS       - list of command-line arguments
+---   __CONSTS   - runtime constants map for the SHQL compiler
+---
+--- The pipeline (lexer, parser, compiler, codec) must be loaded
+--- into the runtime before this program runs.
+
+-- Parse arguments
+_toolchain_dir := NULL;
+_output_dir := NULL;
+_source_files := [];
+_i := 0;
+WHILE _i < LENGTH(ARGS) DO BEGIN
+    _arg := ARGS[_i];
+    IF _arg = "--toolchain" AND _i + 1 < LENGTH(ARGS) THEN BEGIN
+        _i := _i + 1;
+        _toolchain_dir := ARGS[_i];
+    END
+    ELSE IF (_arg = "-o" OR _arg = "--output") AND _i + 1 < LENGTH(ARGS) THEN BEGIN
+        _i := _i + 1;
+        _output_dir := ARGS[_i];
+    END
+    ELSE IF SUBSTRING(_arg, 0, 1) = "-" THEN BEGIN
+        STDERR("Unknown option: " + _arg);
+        EXIT(1);
+    END
+    ELSE
+        _source_files := _source_files + [_arg];
+    _i := _i + 1;
+END;
+
+IF LENGTH(_source_files) = 0 THEN BEGIN
+    STDERR("Usage: shqlc [--toolchain <dir>] [-o <dir>] <source.shql> ...");
+    EXIT(1);
+END;
+
+-- Helper: extract base name from a file path (strip directory and extension)
+_BASE_NAME(path) := BEGIN
+    -- Find last separator
+    _last_sep := -1;
+    FOR _j := 0 TO LENGTH(path) - 1 DO
+        IF SUBSTRING(path, _j, _j + 1) = "/" OR SUBSTRING(path, _j, _j + 1) = "\\" THEN
+            _last_sep := _j;
+    _name := IF _last_sep >= 0 THEN SUBSTRING(path, _last_sep + 1, LENGTH(path)) ELSE path;
+    -- Find last dot
+    _last_dot := -1;
+    FOR _j := 0 TO LENGTH(_name) - 1 DO
+        IF SUBSTRING(_name, _j, _j + 1) = "." THEN
+            _last_dot := _j;
+    IF _last_dot > 0 THEN RETURN SUBSTRING(_name, 0, _last_dot);
+    RETURN _name;
+END;
+
+-- Helper: extract directory from a file path
+_DIR_NAME(path) := BEGIN
+    _last_sep := -1;
+    FOR _j := 0 TO LENGTH(path) - 1 DO
+        IF SUBSTRING(path, _j, _j + 1) = "/" OR SUBSTRING(path, _j, _j + 1) = "\\" THEN
+            _last_sep := _j;
+    IF _last_sep >= 0 THEN RETURN SUBSTRING(path, 0, _last_sep);
+    RETURN ".";
+END;
+
+-- Compile each source file
+FOR _fi := 0 TO LENGTH(_source_files) - 1 DO BEGIN
+    _src_path := _source_files[_fi];
+    IF NOT FILE_EXISTS(_src_path) THEN BEGIN
+        STDERR("File not found: " + _src_path);
+        EXIT(1);
+    END;
+    _src := FILE_READ(_src_path);
+    _base_name := _BASE_NAME(_src_path);
+    _out_dir := IF _output_dir <> NULL THEN _output_dir ELSE _DIR_NAME(_src_path);
+
+    -- Run the pipeline
+    _tokens := lexer.tokenize(_src);
+    _tree := parser.parse(_tokens);
+    _prog := compiler.compile_with_consts(_tree, __CONSTS);
+    _dec := codec.decode(_prog);
+
+    -- Encode to binary
+    _encoded := _ENCODE_PROGRAM(_prog);
+
+    -- Write binary bytecode
+    _bc_path := _out_dir + "/" + _base_name + ".shqlbc";
+    FILE_WRITE_BYTES(_bc_path, _encoded);
+
+    -- Write canonical disassembly
+    _asm_path := _out_dir + "/" + _base_name + ".shqla";
+    FILE_WRITE(_asm_path, STRING_JOIN(_dec, "
+") + "
+");
+
+    PRINT("  " + _src_path + " -> " + _base_name + ".shqlbc (" + STRING(LENGTH(_encoded)) + " bytes) + " + _base_name + ".shqla");
+END;

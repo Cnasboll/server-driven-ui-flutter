@@ -158,7 +158,7 @@ class ShqlTestRunner {
     runtime.setBinaryFunction('LOAD_STATE', (ctx, caller, key, defaultValue) async => defaultValue);
     runtime.setUnaryFunction('NAVIGATE', (ctx, caller, route) async {});
     runtime.setBinaryFunction('SET', (ctx, caller, name, value) {
-      caller.scope.setVariable(runtime.identifiers.include((name as String).toUpperCase()), value);
+      caller!.scope.setVariable(runtime.identifiers.include((name as String).toUpperCase()), value);
     });
     runtime.setUnaryFunction('PUBLISH', (ctx, caller, name) {});
     runtime.setUnaryFunction('DEBUG_LOG', (ctx, caller, msg) {});

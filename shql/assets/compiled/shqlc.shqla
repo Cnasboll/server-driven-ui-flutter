@@ -1,0 +1,993 @@
+CHUNK main ()
+  CONST  0: null
+  CONST  1: _TOOLCHAIN_DIR
+  CONST  2: _OUTPUT_DIR
+  CONST  3: _SOURCE_FILES
+  CONST  4: 0
+  CONST  5: _I
+  CONST  6: LENGTH
+  CONST  7: ARGS
+  CONST  8: _ARG
+  CONST  9: --toolchain
+  CONST  10: 1
+  CONST  11: -o
+  CONST  12: --output
+  CONST  13: SUBSTRING
+  CONST  14: -
+  CONST  15: STDERR
+  CONST  16: Unknown option: 
+  CONST  17: EXIT
+  CONST  18: Usage: shqlc [--toolchain <dir>] [-o <dir>] <source.shql> ...
+  CONST  19: .___BASE_NAME_0
+  CONST  20: _BASE_NAME
+  CONST  21: .___DIR_NAME_1
+  CONST  22: _DIR_NAME
+  CONST  23: _FI
+  CONST  24: false
+  CONST  25: _SRC_PATH
+  CONST  26: FILE_EXISTS
+  CONST  27: File not found: 
+  CONST  28: FILE_READ
+  CONST  29: _SRC
+  CONST  30: _OUT_DIR
+  CONST  31: LEXER
+  CONST  32: TOKENIZE
+  CONST  33: _TOKENS
+  CONST  34: PARSER
+  CONST  35: PARSE
+  CONST  36: _TREE
+  CONST  37: COMPILER
+  CONST  38: COMPILE_WITH_CONSTS
+  CONST  39: __CONSTS
+  CONST  40: _PROG
+  CONST  41: CODEC
+  CONST  42: DECODE
+  CONST  43: _DEC
+  CONST  44: _ENCODE_PROGRAM
+  CONST  45: _ENCODED
+  CONST  46: /
+  CONST  47: .shqlbc
+  CONST  48: _BC_PATH
+  CONST  49: FILE_WRITE_BYTES
+  CONST  50: .shqla
+  CONST  51: _ASM_PATH
+  CONST  52: FILE_WRITE
+  CONST  53: STRING_JOIN
+  CONST  54: 
+
+  CONST  55: PRINT
+  CONST  56:   
+  CONST  57:  -> 
+  CONST  58: .shqlbc (
+  CONST  59: STRING
+  CONST  60:  bytes) + 
+  CONST  61: -1
+  CODE:
+    0: push_const(0)  -- null
+    1: store_var(1)  -- _TOOLCHAIN_DIR
+    2: load_var(1)  -- _TOOLCHAIN_DIR
+    3: pop
+    4: push_const(0)  -- null
+    5: store_var(2)  -- _OUTPUT_DIR
+    6: load_var(2)  -- _OUTPUT_DIR
+    7: pop
+    8: make_list(0)
+    9: store_var(3)  -- _SOURCE_FILES
+    10: load_var(3)  -- _SOURCE_FILES
+    11: pop
+    12: push_const(4)  -- 0
+    13: store_var(5)  -- _I
+    14: load_var(5)  -- _I
+    15: pop
+    16: push_const(0)  -- null
+    17: store_reg(0)
+    18: load_var(5)  -- _I
+    19: jump_null(27)
+    20: load_var(6)  -- LENGTH
+    21: load_var(7)  -- ARGS
+    22: call(1)
+    23: jump_null(26)
+    24: cmp_lt
+    25: jump(29)
+    26: pop
+    27: pop
+    28: push_const(0)  -- null
+    29: jump_false(182)
+    30: push_scope
+    31: load_var(7)  -- ARGS
+    32: load_var(5)  -- _I
+    33: get_index
+    34: store_var(8)  -- _ARG
+    35: load_var(8)  -- _ARG
+    36: pop
+    37: load_var(8)  -- _ARG
+    38: push_const(9)  -- --toolchain
+    39: cmp_eq
+    40: load_var(5)  -- _I
+    41: jump_null(47)
+    42: push_const(10)  -- 1
+    43: jump_null(46)
+    44: add
+    45: jump(49)
+    46: pop
+    47: pop
+    48: push_const(0)  -- null
+    49: jump_null(57)
+    50: load_var(6)  -- LENGTH
+    51: load_var(7)  -- ARGS
+    52: call(1)
+    53: jump_null(56)
+    54: cmp_lt
+    55: jump(59)
+    56: pop
+    57: pop
+    58: push_const(0)  -- null
+    59: log_and
+    60: jump_false(81)
+    61: push_scope
+    62: load_var(5)  -- _I
+    63: jump_null(69)
+    64: push_const(10)  -- 1
+    65: jump_null(68)
+    66: add
+    67: jump(71)
+    68: pop
+    69: pop
+    70: push_const(0)  -- null
+    71: store_var(5)  -- _I
+    72: load_var(5)  -- _I
+    73: pop
+    74: load_var(7)  -- ARGS
+    75: load_var(5)  -- _I
+    76: get_index
+    77: store_var(1)  -- _TOOLCHAIN_DIR
+    78: load_var(1)  -- _TOOLCHAIN_DIR
+    79: pop_scope
+    80: jump(167)
+    81: load_var(8)  -- _ARG
+    82: push_const(11)  -- -o
+    83: cmp_eq
+    84: load_var(8)  -- _ARG
+    85: push_const(12)  -- --output
+    86: cmp_eq
+    87: log_or
+    88: load_var(5)  -- _I
+    89: jump_null(95)
+    90: push_const(10)  -- 1
+    91: jump_null(94)
+    92: add
+    93: jump(97)
+    94: pop
+    95: pop
+    96: push_const(0)  -- null
+    97: jump_null(105)
+    98: load_var(6)  -- LENGTH
+    99: load_var(7)  -- ARGS
+    100: call(1)
+    101: jump_null(104)
+    102: cmp_lt
+    103: jump(107)
+    104: pop
+    105: pop
+    106: push_const(0)  -- null
+    107: log_and
+    108: jump_false(129)
+    109: push_scope
+    110: load_var(5)  -- _I
+    111: jump_null(117)
+    112: push_const(10)  -- 1
+    113: jump_null(116)
+    114: add
+    115: jump(119)
+    116: pop
+    117: pop
+    118: push_const(0)  -- null
+    119: store_var(5)  -- _I
+    120: load_var(5)  -- _I
+    121: pop
+    122: load_var(7)  -- ARGS
+    123: load_var(5)  -- _I
+    124: get_index
+    125: store_var(2)  -- _OUTPUT_DIR
+    126: load_var(2)  -- _OUTPUT_DIR
+    127: pop_scope
+    128: jump(167)
+    129: load_var(13)  -- SUBSTRING
+    130: load_var(8)  -- _ARG
+    131: push_const(4)  -- 0
+    132: push_const(10)  -- 1
+    133: call(3)
+    134: push_const(14)  -- -
+    135: cmp_eq
+    136: jump_false(155)
+    137: push_scope
+    138: load_var(15)  -- STDERR
+    139: push_const(16)  -- Unknown option: 
+    140: jump_null(146)
+    141: load_var(8)  -- _ARG
+    142: jump_null(145)
+    143: add
+    144: jump(148)
+    145: pop
+    146: pop
+    147: push_const(0)  -- null
+    148: call(1)
+    149: pop
+    150: load_var(17)  -- EXIT
+    151: push_const(10)  -- 1
+    152: call(1)
+    153: pop_scope
+    154: jump(167)
+    155: load_var(3)  -- _SOURCE_FILES
+    156: jump_null(163)
+    157: load_var(8)  -- _ARG
+    158: make_list(1)
+    159: jump_null(162)
+    160: add
+    161: jump(165)
+    162: pop
+    163: pop
+    164: push_const(0)  -- null
+    165: store_var(3)  -- _SOURCE_FILES
+    166: load_var(3)  -- _SOURCE_FILES
+    167: pop
+    168: load_var(5)  -- _I
+    169: jump_null(175)
+    170: push_const(10)  -- 1
+    171: jump_null(174)
+    172: add
+    173: jump(177)
+    174: pop
+    175: pop
+    176: push_const(0)  -- null
+    177: store_var(5)  -- _I
+    178: load_var(5)  -- _I
+    179: pop_scope
+    180: store_reg(0)
+    181: jump(18)
+    182: load_reg(0)
+    183: pop
+    184: load_var(6)  -- LENGTH
+    185: load_var(3)  -- _SOURCE_FILES
+    186: call(1)
+    187: push_const(4)  -- 0
+    188: cmp_eq
+    189: jump_false(200)
+    190: push_scope
+    191: load_var(15)  -- STDERR
+    192: push_const(18)  -- Usage: shqlc [--toolchain <dir>] [-o <dir>] <source.shql> ...
+    193: call(1)
+    194: pop
+    195: load_var(17)  -- EXIT
+    196: push_const(10)  -- 1
+    197: call(1)
+    198: pop_scope
+    199: jump(201)
+    200: push_const(0)  -- null
+    201: pop
+    202: make_closure(19)  -- .___BASE_NAME_0
+    203: store_var(20)  -- _BASE_NAME
+    204: load_var(20)  -- _BASE_NAME
+    205: pop
+    206: make_closure(21)  -- .___DIR_NAME_1
+    207: store_var(22)  -- _DIR_NAME
+    208: load_var(22)  -- _DIR_NAME
+    209: pop
+    210: push_const(4)  -- 0
+    211: store_var(23)  -- _FI
+    212: load_var(23)  -- _FI
+    213: pop
+    214: load_var(23)  -- _FI
+    215: store_reg(1)
+    216: push_const(24)  -- false
+    217: store_reg(2)
+    218: push_scope
+    219: load_var(3)  -- _SOURCE_FILES
+    220: load_var(23)  -- _FI
+    221: get_index
+    222: store_var(25)  -- _SRC_PATH
+    223: load_var(25)  -- _SRC_PATH
+    224: pop
+    225: load_var(26)  -- FILE_EXISTS
+    226: load_var(25)  -- _SRC_PATH
+    227: call(1)
+    228: jump_null(230)
+    229: log_not
+    230: jump_false(249)
+    231: push_scope
+    232: load_var(15)  -- STDERR
+    233: push_const(27)  -- File not found: 
+    234: jump_null(240)
+    235: load_var(25)  -- _SRC_PATH
+    236: jump_null(239)
+    237: add
+    238: jump(242)
+    239: pop
+    240: pop
+    241: push_const(0)  -- null
+    242: call(1)
+    243: pop
+    244: load_var(17)  -- EXIT
+    245: push_const(10)  -- 1
+    246: call(1)
+    247: pop_scope
+    248: jump(250)
+    249: push_const(0)  -- null
+    250: pop
+    251: load_var(28)  -- FILE_READ
+    252: load_var(25)  -- _SRC_PATH
+    253: call(1)
+    254: store_var(29)  -- _SRC
+    255: load_var(29)  -- _SRC
+    256: pop
+    257: load_var(20)  -- _BASE_NAME
+    258: load_var(25)  -- _SRC_PATH
+    259: call(1)
+    260: store_var(20)  -- _BASE_NAME
+    261: load_var(20)  -- _BASE_NAME
+    262: pop
+    263: load_var(2)  -- _OUTPUT_DIR
+    264: push_const(0)  -- null
+    265: cmp_neq
+    266: jump_false(269)
+    267: load_var(2)  -- _OUTPUT_DIR
+    268: jump(272)
+    269: load_var(22)  -- _DIR_NAME
+    270: load_var(25)  -- _SRC_PATH
+    271: call(1)
+    272: store_var(30)  -- _OUT_DIR
+    273: load_var(30)  -- _OUT_DIR
+    274: pop
+    275: load_var(31)  -- LEXER
+    276: get_member(32)  -- TOKENIZE
+    277: load_var(29)  -- _SRC
+    278: call(1)
+    279: store_var(33)  -- _TOKENS
+    280: load_var(33)  -- _TOKENS
+    281: pop
+    282: load_var(34)  -- PARSER
+    283: get_member(35)  -- PARSE
+    284: load_var(33)  -- _TOKENS
+    285: call(1)
+    286: store_var(36)  -- _TREE
+    287: load_var(36)  -- _TREE
+    288: pop
+    289: load_var(37)  -- COMPILER
+    290: get_member(38)  -- COMPILE_WITH_CONSTS
+    291: load_var(36)  -- _TREE
+    292: load_var(39)  -- __CONSTS
+    293: call(2)
+    294: store_var(40)  -- _PROG
+    295: load_var(40)  -- _PROG
+    296: pop
+    297: load_var(41)  -- CODEC
+    298: get_member(42)  -- DECODE
+    299: load_var(40)  -- _PROG
+    300: call(1)
+    301: store_var(43)  -- _DEC
+    302: load_var(43)  -- _DEC
+    303: pop
+    304: load_var(44)  -- _ENCODE_PROGRAM
+    305: load_var(40)  -- _PROG
+    306: call(1)
+    307: store_var(45)  -- _ENCODED
+    308: load_var(45)  -- _ENCODED
+    309: pop
+    310: load_var(30)  -- _OUT_DIR
+    311: jump_null(317)
+    312: push_const(46)  -- /
+    313: jump_null(316)
+    314: add
+    315: jump(319)
+    316: pop
+    317: pop
+    318: push_const(0)  -- null
+    319: jump_null(325)
+    320: load_var(20)  -- _BASE_NAME
+    321: jump_null(324)
+    322: add
+    323: jump(327)
+    324: pop
+    325: pop
+    326: push_const(0)  -- null
+    327: jump_null(333)
+    328: push_const(47)  -- .shqlbc
+    329: jump_null(332)
+    330: add
+    331: jump(335)
+    332: pop
+    333: pop
+    334: push_const(0)  -- null
+    335: store_var(48)  -- _BC_PATH
+    336: load_var(48)  -- _BC_PATH
+    337: pop
+    338: load_var(49)  -- FILE_WRITE_BYTES
+    339: load_var(48)  -- _BC_PATH
+    340: load_var(45)  -- _ENCODED
+    341: call(2)
+    342: pop
+    343: load_var(30)  -- _OUT_DIR
+    344: jump_null(350)
+    345: push_const(46)  -- /
+    346: jump_null(349)
+    347: add
+    348: jump(352)
+    349: pop
+    350: pop
+    351: push_const(0)  -- null
+    352: jump_null(358)
+    353: load_var(20)  -- _BASE_NAME
+    354: jump_null(357)
+    355: add
+    356: jump(360)
+    357: pop
+    358: pop
+    359: push_const(0)  -- null
+    360: jump_null(366)
+    361: push_const(50)  -- .shqla
+    362: jump_null(365)
+    363: add
+    364: jump(368)
+    365: pop
+    366: pop
+    367: push_const(0)  -- null
+    368: store_var(51)  -- _ASM_PATH
+    369: load_var(51)  -- _ASM_PATH
+    370: pop
+    371: load_var(52)  -- FILE_WRITE
+    372: load_var(51)  -- _ASM_PATH
+    373: load_var(53)  -- STRING_JOIN
+    374: load_var(43)  -- _DEC
+    375: push_const(54)  -- 
+
+    376: call(2)
+    377: jump_null(383)
+    378: push_const(54)  -- 
+
+    379: jump_null(382)
+    380: add
+    381: jump(385)
+    382: pop
+    383: pop
+    384: push_const(0)  -- null
+    385: call(2)
+    386: pop
+    387: load_var(55)  -- PRINT
+    388: push_const(56)  --   
+    389: jump_null(395)
+    390: load_var(25)  -- _SRC_PATH
+    391: jump_null(394)
+    392: add
+    393: jump(397)
+    394: pop
+    395: pop
+    396: push_const(0)  -- null
+    397: jump_null(403)
+    398: push_const(57)  --  -> 
+    399: jump_null(402)
+    400: add
+    401: jump(405)
+    402: pop
+    403: pop
+    404: push_const(0)  -- null
+    405: jump_null(411)
+    406: load_var(20)  -- _BASE_NAME
+    407: jump_null(410)
+    408: add
+    409: jump(413)
+    410: pop
+    411: pop
+    412: push_const(0)  -- null
+    413: jump_null(419)
+    414: push_const(58)  -- .shqlbc (
+    415: jump_null(418)
+    416: add
+    417: jump(421)
+    418: pop
+    419: pop
+    420: push_const(0)  -- null
+    421: jump_null(431)
+    422: load_var(59)  -- STRING
+    423: load_var(6)  -- LENGTH
+    424: load_var(45)  -- _ENCODED
+    425: call(1)
+    426: call(1)
+    427: jump_null(430)
+    428: add
+    429: jump(433)
+    430: pop
+    431: pop
+    432: push_const(0)  -- null
+    433: jump_null(439)
+    434: push_const(60)  --  bytes) + 
+    435: jump_null(438)
+    436: add
+    437: jump(441)
+    438: pop
+    439: pop
+    440: push_const(0)  -- null
+    441: jump_null(447)
+    442: load_var(20)  -- _BASE_NAME
+    443: jump_null(446)
+    444: add
+    445: jump(449)
+    446: pop
+    447: pop
+    448: push_const(0)  -- null
+    449: jump_null(455)
+    450: push_const(50)  -- .shqla
+    451: jump_null(454)
+    452: add
+    453: jump(457)
+    454: pop
+    455: pop
+    456: push_const(0)  -- null
+    457: call(1)
+    458: pop_scope
+    459: pop
+    460: load_reg(2)
+    461: jump_true(512)
+    462: load_var(6)  -- LENGTH
+    463: load_var(3)  -- _SOURCE_FILES
+    464: call(1)
+    465: jump_null(471)
+    466: push_const(10)  -- 1
+    467: jump_null(470)
+    468: sub
+    469: jump(473)
+    470: pop
+    471: pop
+    472: push_const(0)  -- null
+    473: store_reg(3)
+    474: load_reg(3)
+    475: load_reg(1)
+    476: cmp_gte
+    477: store_reg(4)
+    478: load_reg(4)
+    479: jump_false(482)
+    480: push_const(10)  -- 1
+    481: jump(483)
+    482: push_const(61)  -- -1
+    483: store_reg(5)
+    484: load_var(23)  -- _FI
+    485: load_reg(5)
+    486: add
+    487: store_reg(6)
+    488: load_reg(4)
+    489: load_reg(6)
+    490: load_reg(3)
+    491: cmp_gt
+    492: log_and
+    493: load_reg(4)
+    494: log_not
+    495: load_reg(6)
+    496: load_reg(3)
+    497: cmp_lt
+    498: log_and
+    499: log_or
+    500: store_reg(7)
+    501: load_reg(7)
+    502: load_reg(6)
+    503: load_reg(3)
+    504: cmp_eq
+    505: log_or
+    506: store_reg(2)
+    507: load_reg(7)
+    508: jump_true(512)
+    509: load_reg(6)
+    510: store_var(23)  -- _FI
+    511: jump(218)
+    512: push_const(0)  -- null
+    513: ret
+CHUNK ___BASE_NAME_0 (PATH)
+  CONST  0: 1
+  CONST  1: _LAST_SEP
+  CONST  2: 0
+  CONST  3: _J
+  CONST  4: false
+  CONST  5: SUBSTRING
+  CONST  6: PATH
+  CONST  7: null
+  CONST  8: /
+  CONST  9: \
+  CONST  10: LENGTH
+  CONST  11: -1
+  CONST  12: _NAME
+  CONST  13: _LAST_DOT
+  CONST  14: .
+  CODE:
+    0: push_scope
+    1: push_const(0)  -- 1
+    2: jump_null(4)
+    3: neg
+    4: store_var(1)  -- _LAST_SEP
+    5: load_var(1)  -- _LAST_SEP
+    6: pop
+    7: push_const(2)  -- 0
+    8: store_var(3)  -- _J
+    9: load_var(3)  -- _J
+    10: pop
+    11: load_var(3)  -- _J
+    12: store_reg(0)
+    13: push_const(4)  -- false
+    14: store_reg(1)
+    15: load_var(5)  -- SUBSTRING
+    16: load_var(6)  -- PATH
+    17: load_var(3)  -- _J
+    18: load_var(3)  -- _J
+    19: jump_null(25)
+    20: push_const(0)  -- 1
+    21: jump_null(24)
+    22: add
+    23: jump(27)
+    24: pop
+    25: pop
+    26: push_const(7)  -- null
+    27: call(3)
+    28: push_const(8)  -- /
+    29: cmp_eq
+    30: load_var(5)  -- SUBSTRING
+    31: load_var(6)  -- PATH
+    32: load_var(3)  -- _J
+    33: load_var(3)  -- _J
+    34: jump_null(40)
+    35: push_const(0)  -- 1
+    36: jump_null(39)
+    37: add
+    38: jump(42)
+    39: pop
+    40: pop
+    41: push_const(7)  -- null
+    42: call(3)
+    43: push_const(9)  -- \
+    44: cmp_eq
+    45: log_or
+    46: jump_false(51)
+    47: load_var(3)  -- _J
+    48: store_var(1)  -- _LAST_SEP
+    49: load_var(1)  -- _LAST_SEP
+    50: jump(52)
+    51: push_const(7)  -- null
+    52: pop
+    53: load_reg(1)
+    54: jump_true(105)
+    55: load_var(10)  -- LENGTH
+    56: load_var(6)  -- PATH
+    57: call(1)
+    58: jump_null(64)
+    59: push_const(0)  -- 1
+    60: jump_null(63)
+    61: sub
+    62: jump(66)
+    63: pop
+    64: pop
+    65: push_const(7)  -- null
+    66: store_reg(2)
+    67: load_reg(2)
+    68: load_reg(0)
+    69: cmp_gte
+    70: store_reg(3)
+    71: load_reg(3)
+    72: jump_false(75)
+    73: push_const(0)  -- 1
+    74: jump(76)
+    75: push_const(11)  -- -1
+    76: store_reg(4)
+    77: load_var(3)  -- _J
+    78: load_reg(4)
+    79: add
+    80: store_reg(5)
+    81: load_reg(3)
+    82: load_reg(5)
+    83: load_reg(2)
+    84: cmp_gt
+    85: log_and
+    86: load_reg(3)
+    87: log_not
+    88: load_reg(5)
+    89: load_reg(2)
+    90: cmp_lt
+    91: log_and
+    92: log_or
+    93: store_reg(6)
+    94: load_reg(6)
+    95: load_reg(5)
+    96: load_reg(2)
+    97: cmp_eq
+    98: log_or
+    99: store_reg(1)
+    100: load_reg(6)
+    101: jump_true(105)
+    102: load_reg(5)
+    103: store_var(3)  -- _J
+    104: jump(15)
+    105: push_const(7)  -- null
+    106: pop
+    107: load_var(1)  -- _LAST_SEP
+    108: jump_null(114)
+    109: push_const(2)  -- 0
+    110: jump_null(113)
+    111: cmp_gte
+    112: jump(116)
+    113: pop
+    114: pop
+    115: push_const(7)  -- null
+    116: jump_false(133)
+    117: load_var(5)  -- SUBSTRING
+    118: load_var(6)  -- PATH
+    119: load_var(1)  -- _LAST_SEP
+    120: jump_null(126)
+    121: push_const(0)  -- 1
+    122: jump_null(125)
+    123: add
+    124: jump(128)
+    125: pop
+    126: pop
+    127: push_const(7)  -- null
+    128: load_var(10)  -- LENGTH
+    129: load_var(6)  -- PATH
+    130: call(1)
+    131: call(3)
+    132: jump(134)
+    133: load_var(6)  -- PATH
+    134: store_var(12)  -- _NAME
+    135: load_var(12)  -- _NAME
+    136: pop
+    137: push_const(0)  -- 1
+    138: jump_null(140)
+    139: neg
+    140: store_var(13)  -- _LAST_DOT
+    141: load_var(13)  -- _LAST_DOT
+    142: pop
+    143: push_const(2)  -- 0
+    144: store_var(3)  -- _J
+    145: load_var(3)  -- _J
+    146: pop
+    147: load_var(3)  -- _J
+    148: store_reg(7)
+    149: push_const(4)  -- false
+    150: store_reg(8)
+    151: load_var(5)  -- SUBSTRING
+    152: load_var(12)  -- _NAME
+    153: load_var(3)  -- _J
+    154: load_var(3)  -- _J
+    155: jump_null(161)
+    156: push_const(0)  -- 1
+    157: jump_null(160)
+    158: add
+    159: jump(163)
+    160: pop
+    161: pop
+    162: push_const(7)  -- null
+    163: call(3)
+    164: push_const(14)  -- .
+    165: cmp_eq
+    166: jump_false(171)
+    167: load_var(3)  -- _J
+    168: store_var(13)  -- _LAST_DOT
+    169: load_var(13)  -- _LAST_DOT
+    170: jump(172)
+    171: push_const(7)  -- null
+    172: pop
+    173: load_reg(8)
+    174: jump_true(225)
+    175: load_var(10)  -- LENGTH
+    176: load_var(12)  -- _NAME
+    177: call(1)
+    178: jump_null(184)
+    179: push_const(0)  -- 1
+    180: jump_null(183)
+    181: sub
+    182: jump(186)
+    183: pop
+    184: pop
+    185: push_const(7)  -- null
+    186: store_reg(9)
+    187: load_reg(9)
+    188: load_reg(7)
+    189: cmp_gte
+    190: store_reg(10)
+    191: load_reg(10)
+    192: jump_false(195)
+    193: push_const(0)  -- 1
+    194: jump(196)
+    195: push_const(11)  -- -1
+    196: store_reg(11)
+    197: load_var(3)  -- _J
+    198: load_reg(11)
+    199: add
+    200: store_reg(12)
+    201: load_reg(10)
+    202: load_reg(12)
+    203: load_reg(9)
+    204: cmp_gt
+    205: log_and
+    206: load_reg(10)
+    207: log_not
+    208: load_reg(12)
+    209: load_reg(9)
+    210: cmp_lt
+    211: log_and
+    212: log_or
+    213: store_reg(13)
+    214: load_reg(13)
+    215: load_reg(12)
+    216: load_reg(9)
+    217: cmp_eq
+    218: log_or
+    219: store_reg(8)
+    220: load_reg(13)
+    221: jump_true(225)
+    222: load_reg(12)
+    223: store_var(3)  -- _J
+    224: jump(151)
+    225: push_const(7)  -- null
+    226: pop
+    227: load_var(13)  -- _LAST_DOT
+    228: jump_null(234)
+    229: push_const(2)  -- 0
+    230: jump_null(233)
+    231: cmp_gt
+    232: jump(236)
+    233: pop
+    234: pop
+    235: push_const(7)  -- null
+    236: jump_false(244)
+    237: load_var(5)  -- SUBSTRING
+    238: load_var(12)  -- _NAME
+    239: push_const(2)  -- 0
+    240: load_var(13)  -- _LAST_DOT
+    241: call(3)
+    242: ret
+    243: jump(245)
+    244: push_const(7)  -- null
+    245: pop
+    246: load_var(12)  -- _NAME
+    247: ret
+    248: pop_scope
+    249: ret
+CHUNK ___DIR_NAME_1 (PATH)
+  CONST  0: 1
+  CONST  1: _LAST_SEP
+  CONST  2: 0
+  CONST  3: _J
+  CONST  4: false
+  CONST  5: SUBSTRING
+  CONST  6: PATH
+  CONST  7: null
+  CONST  8: /
+  CONST  9: \
+  CONST  10: LENGTH
+  CONST  11: -1
+  CONST  12: .
+  CODE:
+    0: push_scope
+    1: push_const(0)  -- 1
+    2: jump_null(4)
+    3: neg
+    4: store_var(1)  -- _LAST_SEP
+    5: load_var(1)  -- _LAST_SEP
+    6: pop
+    7: push_const(2)  -- 0
+    8: store_var(3)  -- _J
+    9: load_var(3)  -- _J
+    10: pop
+    11: load_var(3)  -- _J
+    12: store_reg(0)
+    13: push_const(4)  -- false
+    14: store_reg(1)
+    15: load_var(5)  -- SUBSTRING
+    16: load_var(6)  -- PATH
+    17: load_var(3)  -- _J
+    18: load_var(3)  -- _J
+    19: jump_null(25)
+    20: push_const(0)  -- 1
+    21: jump_null(24)
+    22: add
+    23: jump(27)
+    24: pop
+    25: pop
+    26: push_const(7)  -- null
+    27: call(3)
+    28: push_const(8)  -- /
+    29: cmp_eq
+    30: load_var(5)  -- SUBSTRING
+    31: load_var(6)  -- PATH
+    32: load_var(3)  -- _J
+    33: load_var(3)  -- _J
+    34: jump_null(40)
+    35: push_const(0)  -- 1
+    36: jump_null(39)
+    37: add
+    38: jump(42)
+    39: pop
+    40: pop
+    41: push_const(7)  -- null
+    42: call(3)
+    43: push_const(9)  -- \
+    44: cmp_eq
+    45: log_or
+    46: jump_false(51)
+    47: load_var(3)  -- _J
+    48: store_var(1)  -- _LAST_SEP
+    49: load_var(1)  -- _LAST_SEP
+    50: jump(52)
+    51: push_const(7)  -- null
+    52: pop
+    53: load_reg(1)
+    54: jump_true(105)
+    55: load_var(10)  -- LENGTH
+    56: load_var(6)  -- PATH
+    57: call(1)
+    58: jump_null(64)
+    59: push_const(0)  -- 1
+    60: jump_null(63)
+    61: sub
+    62: jump(66)
+    63: pop
+    64: pop
+    65: push_const(7)  -- null
+    66: store_reg(2)
+    67: load_reg(2)
+    68: load_reg(0)
+    69: cmp_gte
+    70: store_reg(3)
+    71: load_reg(3)
+    72: jump_false(75)
+    73: push_const(0)  -- 1
+    74: jump(76)
+    75: push_const(11)  -- -1
+    76: store_reg(4)
+    77: load_var(3)  -- _J
+    78: load_reg(4)
+    79: add
+    80: store_reg(5)
+    81: load_reg(3)
+    82: load_reg(5)
+    83: load_reg(2)
+    84: cmp_gt
+    85: log_and
+    86: load_reg(3)
+    87: log_not
+    88: load_reg(5)
+    89: load_reg(2)
+    90: cmp_lt
+    91: log_and
+    92: log_or
+    93: store_reg(6)
+    94: load_reg(6)
+    95: load_reg(5)
+    96: load_reg(2)
+    97: cmp_eq
+    98: log_or
+    99: store_reg(1)
+    100: load_reg(6)
+    101: jump_true(105)
+    102: load_reg(5)
+    103: store_var(3)  -- _J
+    104: jump(15)
+    105: push_const(7)  -- null
+    106: pop
+    107: load_var(1)  -- _LAST_SEP
+    108: jump_null(114)
+    109: push_const(2)  -- 0
+    110: jump_null(113)
+    111: cmp_gte
+    112: jump(116)
+    113: pop
+    114: pop
+    115: push_const(7)  -- null
+    116: jump_false(124)
+    117: load_var(5)  -- SUBSTRING
+    118: load_var(6)  -- PATH
+    119: push_const(2)  -- 0
+    120: load_var(1)  -- _LAST_SEP
+    121: call(3)
+    122: ret
+    123: jump(125)
+    124: push_const(7)  -- null
+    125: pop
+    126: push_const(12)  -- .
+    127: ret
+    128: pop_scope
+    129: ret

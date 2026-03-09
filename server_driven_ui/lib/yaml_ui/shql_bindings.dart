@@ -54,7 +54,7 @@ class ShqlBindings {
     _runtime.setUnaryFunction('DEBUG_LOG', (ctx, caller, message) => debugLog?.call(message.toString()));
     // SET writes a variable and notifies observers.
     _runtime.setBinaryFunction('SET', (ctx, caller, name, value) {
-      caller.scope.setVariable(_runtime.identifiers.include((name as String).toUpperCase()), value);
+      caller!.scope.setVariable(_runtime.identifiers.include((name as String).toUpperCase()), value);
       notifyListeners(name);
     });
     // PUBLISH notifies observers without writing a variable.

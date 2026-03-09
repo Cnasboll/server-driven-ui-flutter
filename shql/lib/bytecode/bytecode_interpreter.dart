@@ -101,6 +101,10 @@ class BytecodeThread {
 
   bool get isRunning => callStack.isNotEmpty;
   BytecodeFrame get currentFrame => callStack.last;
+
+  /// Set by native calls that return a Future; the execute loop awaits this
+  /// and pushes the resolved value onto the current frame's stack.
+  Future<dynamic>? pendingFuture;
 }
 
 // ---------------------------------------------------------------------------
@@ -174,11 +178,10 @@ class BytecodeInterpreter {
   /// with `null` — all current implementations ignore them for the operations
   /// that the bytecode VM exercises.
   void _bridgeRuntime() {
-    // Nullary: String name → (ctx, caller) fn
+    // Nullary: String name → (ctx?, caller?) fn
     for (final e in runtime.nullaryFunctionEntries) {
       final id = runtime.identifiers.include(e.key);
-      final dynamic fn = e.value;
-      _nativeFunctions[id] = (_) => fn(null, null);
+      _nativeFunctions[id] = (_) => e.value(null, null);
     }
 
     // Static unary: String name → (caller?, p1) fn
@@ -187,10 +190,9 @@ class BytecodeInterpreter {
       _nativeFunctions[id] = (args) => e.value(null, args[0]);
     }
 
-    // Instance unary: int id → (ctx, caller, p1) fn
+    // Instance unary: int id → (ctx?, caller?, p1) fn
     for (final e in runtime.unaryFunctionRegistrations.entries) {
-      final dynamic fn = e.value;
-      _nativeFunctions[e.key] = (args) => fn(null, null, args[0]);
+      _nativeFunctions[e.key] = (args) => e.value(null, null, args[0]);
     }
 
     // Static binary: String name → (p1, p2) fn
@@ -222,8 +224,7 @@ class BytecodeInterpreter {
     };
     for (final e in runtime.binaryFunctionRegistrations.entries) {
       if (e.key == externId) continue; // already registered above
-      final dynamic fn = e.value;
-      _nativeFunctions[e.key] = (args) => fn(null, null, args[0], args[1]);
+      _nativeFunctions[e.key] = (args) => e.value(null, null, args[0], args[1]);
     }
 
     // Static ternary: String name → (p1, p2, p3) fn
@@ -232,11 +233,9 @@ class BytecodeInterpreter {
       _nativeFunctions[id] = (args) => e.value(args[0], args[1], args[2]);
     }
 
-    // Instance ternary: int id → (ctx, caller, p1, p2, p3) fn
+    // Instance ternary: int id → (ctx?, caller?, p1, p2, p3) fn
     for (final e in runtime.ternaryFunctionRegistrations.entries) {
-      final dynamic fn = e.value;
-      _nativeFunctions[e.key] = (args) =>
-          fn(null, null, args[0], args[1], args[2]);
+      _nativeFunctions[e.key] = (args) => e.value(null, null, args[0], args[1], args[2]);
     }
   }
 
@@ -286,13 +285,18 @@ class BytecodeInterpreter {
   Future<dynamic> execute([
     String chunkName = 'main',
     List<dynamic> args = const [],
-  ]) {
+  ]) async {
     final thread = createThread(chunkName, args);
     while (thread.isRunning) {
       _tickOne(thread);
+      if (thread.pendingFuture != null) {
+        final value = await thread.pendingFuture!;
+        thread.pendingFuture = null;
+        if (thread.isRunning) thread.currentFrame.stack.add(value);
+      }
     }
     if (thread.error != null) throw thread.error!;
-    return Future.value(thread.result);
+    return thread.result;
   }
 
   /// Like [execute] but with an optional injected [startingScope] and
@@ -308,7 +312,7 @@ class BytecodeInterpreter {
     List<dynamic> args = const [],
     Scope? startingScope,
     Map<String, dynamic>? boundValues,
-  }) {
+  }) async {
     final frameScope = _buildParentScope(
       startingScope: startingScope,
       boundValues: boundValues,
@@ -319,9 +323,14 @@ class BytecodeInterpreter {
     );
     while (thread.isRunning) {
       _tickOne(thread);
+      if (thread.pendingFuture != null) {
+        final value = await thread.pendingFuture!;
+        thread.pendingFuture = null;
+        if (thread.isRunning) thread.currentFrame.stack.add(value);
+      }
     }
     if (thread.error != null) throw thread.error!;
-    return Future.value(thread.result);
+    return thread.result;
   }
 
   /// Evaluate [expression] like [Engine.evalExpr]: compile and run the
@@ -336,7 +345,7 @@ class BytecodeInterpreter {
     String expression, {
     Runtime? runtime,
     ConstantsSet? constantsSet,
-  }) {
+  }) async {
     constantsSet ??= Runtime.prepareConstantsSet();
     runtime ??= Runtime.prepareRuntime(constantsSet);
     final tree = Parser.parse(expression, constantsSet, sourceCode: expression);
@@ -346,10 +355,15 @@ class BytecodeInterpreter {
     final thread = interp.createThread('main', const []);
     while (thread.isRunning) {
       interp._tickOne(thread);
+      if (thread.pendingFuture != null) {
+        final value = await thread.pendingFuture!;
+        thread.pendingFuture = null;
+        if (thread.isRunning) thread.currentFrame.stack.add(value);
+      }
     }
-    if (thread.error is _EvalExprStopped) return Future.value(null);
+    if (thread.error is _EvalExprStopped) return null;
     if (thread.error != null) throw thread.error!;
-    return Future.value(thread.result);
+    return thread.result;
   }
 
   /// Execute at most [quantum] instructions of [thread].
@@ -381,9 +395,9 @@ class BytecodeInterpreter {
   void _tickOne(BytecodeThread thread) {
     try {
       _dispatch(thread);
-    } catch (e) {
+    } catch (e, st) {
       thread.error =
-          e is BytecodeRuntimeError ? e : BytecodeRuntimeError('$e');
+          e is BytecodeRuntimeError ? e : BytecodeRuntimeError('$e\n$st');
       thread.callStack.clear(); // terminate thread on error
     }
   }
@@ -566,7 +580,12 @@ class BytecodeInterpreter {
             _makeFrame(callable.chunk, callArgs, callable.capturedScope),
           );
         } else if (callable is _NativeCallable) {
-          stack.add(callable.fn(callArgs));
+          final result = callable.fn(callArgs);
+          if (result is Future) {
+            thread.pendingFuture = result;
+            return; // caller will await and push result
+          }
+          stack.add(result);
         } else if (callable is num && argCount == 1 && callArgs[0] is num) {
           // Implicit multiplication — the core SHQL calculator feature.
           // `42(2)` means `42 * 2`, matching CallExecutionNode's runtime fallback.

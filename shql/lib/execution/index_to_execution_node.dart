@@ -20,6 +20,10 @@ class IndexToExecutionNode extends ExecutionNode {
     CancellationToken? cancellationToken,
   ) {
     try {
+      if (index == null) {
+        error = RuntimeError('Null index on ${indexable.runtimeType} (value: ${indexable is List ? "List(${indexable.length})" : indexable})');
+        return Future.value(TickResult.completed);
+      }
       result = indexable[index];
     } on RangeError {
       final type = indexable.runtimeType;

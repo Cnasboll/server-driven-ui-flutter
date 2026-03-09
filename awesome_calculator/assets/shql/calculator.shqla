@@ -1,0 +1,470 @@
+CHUNK main ()
+  CONST  0: .__ADD_0
+  CONST  1: ADD
+  CONST  2: .__SUB_1
+  CONST  3: SUB
+  CONST  4: .__MUL_2
+  CONST  5: MUL
+  CONST  6: .__DIV_3
+  CONST  7: DIV
+  CONST  8: .__GCD_4
+  CONST  9: GCD
+  CONST  10: .__LCM_5
+  CONST  11: LCM
+  CONST  12: FUNCS
+  CONST  13: PRINT
+  CONST  14: Welcome to Calculator 2.0
+  CONST  15: Disclaimer: This was made by a student as a first assigment in the SHQL™ course
+  CONST  16: null
+  CONST  17: true
+  CONST  18: PROMPT
+  CONST  19: Please select a function:
+
+  CONST  20: Enter:
+1 for 'addition',
+
+  CONST  21: 2 for 'subtraction',
+
+  CONST  22: 3 for 'muliplication',
+
+  CONST  23: 4 for 'division',
+
+  CONST  24: 5 for 'greatest common divisor',
+
+  CONST  25: 6 for 'least common multiple' or 'Q' to quit
+:
+  CONST  26: INPUT
+  CONST  27: UPPERCASE
+  CONST  28: Q
+  CONST  29: INT
+  CONST  30: 1
+  CONST  31: INDEX
+  CONST  32: 0
+  CONST  33: 5
+  CONST  34: Please enter a number in the range 1 to 5
+  CONST  35: FUNC
+  CONST  36: 4
+  CONST  37: DOUBLE
+  CONST  38: CONVERTER
+  CONST  39: Please enter the first number (or q to quit)
+:
+  CONST  40: A
+  CONST  41: Please enter the second number (or q to quit)
+:
+  CONST  42: B
+  CONST  43: RESULT
+  CONST  44: STRING
+  CONST  45: FORMATTED_RESULT
+  CONST  46: The result is: 
+  CONST  47: 
+Press enter to continue (or q to quit):
+  CODE:
+    0: make_closure(0)  -- .__ADD_0
+    1: store_var(1)  -- ADD
+    2: load_var(1)  -- ADD
+    3: pop
+    4: make_closure(2)  -- .__SUB_1
+    5: store_var(3)  -- SUB
+    6: load_var(3)  -- SUB
+    7: pop
+    8: make_closure(4)  -- .__MUL_2
+    9: store_var(5)  -- MUL
+    10: load_var(5)  -- MUL
+    11: pop
+    12: make_closure(6)  -- .__DIV_3
+    13: store_var(7)  -- DIV
+    14: load_var(7)  -- DIV
+    15: pop
+    16: make_closure(8)  -- .__GCD_4
+    17: store_var(9)  -- GCD
+    18: load_var(9)  -- GCD
+    19: pop
+    20: make_closure(10)  -- .__LCM_5
+    21: store_var(11)  -- LCM
+    22: load_var(11)  -- LCM
+    23: pop
+    24: load_var(1)  -- ADD
+    25: load_var(3)  -- SUB
+    26: load_var(5)  -- MUL
+    27: load_var(7)  -- DIV
+    28: load_var(9)  -- GCD
+    29: load_var(11)  -- LCM
+    30: make_list(6)
+    31: store_var(12)  -- FUNCS
+    32: load_var(12)  -- FUNCS
+    33: pop
+    34: load_var(13)  -- PRINT
+    35: push_const(14)  -- Welcome to Calculator 2.0
+    36: call(1)
+    37: pop
+    38: load_var(13)  -- PRINT
+    39: push_const(15)  -- Disclaimer: This was made by a student as a first assigment in the SHQL™ course
+    40: call(1)
+    41: pop
+    42: push_const(16)  -- null
+    43: store_reg(0)
+    44: push_const(17)  -- true
+    45: jump_false(283)
+    46: push_scope
+    47: load_var(18)  -- PROMPT
+    48: push_const(19)  -- Please select a function:
+
+    49: jump_null(55)
+    50: push_const(20)  -- Enter:
+1 for 'addition',
+
+    51: jump_null(54)
+    52: add
+    53: jump(57)
+    54: pop
+    55: pop
+    56: push_const(16)  -- null
+    57: jump_null(63)
+    58: push_const(21)  -- 2 for 'subtraction',
+
+    59: jump_null(62)
+    60: add
+    61: jump(65)
+    62: pop
+    63: pop
+    64: push_const(16)  -- null
+    65: jump_null(71)
+    66: push_const(22)  -- 3 for 'muliplication',
+
+    67: jump_null(70)
+    68: add
+    69: jump(73)
+    70: pop
+    71: pop
+    72: push_const(16)  -- null
+    73: jump_null(79)
+    74: push_const(23)  -- 4 for 'division',
+
+    75: jump_null(78)
+    76: add
+    77: jump(81)
+    78: pop
+    79: pop
+    80: push_const(16)  -- null
+    81: jump_null(87)
+    82: push_const(24)  -- 5 for 'greatest common divisor',
+
+    83: jump_null(86)
+    84: add
+    85: jump(89)
+    86: pop
+    87: pop
+    88: push_const(16)  -- null
+    89: jump_null(95)
+    90: push_const(25)  -- 6 for 'least common multiple' or 'Q' to quit
+:
+    91: jump_null(94)
+    92: add
+    93: jump(97)
+    94: pop
+    95: pop
+    96: push_const(16)  -- null
+    97: call(1)
+    98: store_var(26)  -- INPUT
+    99: load_var(26)  -- INPUT
+    100: pop
+    101: load_var(27)  -- UPPERCASE
+    102: load_var(26)  -- INPUT
+    103: call(1)
+    104: push_const(28)  -- Q
+    105: cmp_eq
+    106: jump_false(109)
+    107: jump(283)
+    108: jump(110)
+    109: push_const(16)  -- null
+    110: pop
+    111: load_var(29)  -- INT
+    112: load_var(26)  -- INPUT
+    113: call(1)
+    114: jump_null(120)
+    115: push_const(30)  -- 1
+    116: jump_null(119)
+    117: sub
+    118: jump(122)
+    119: pop
+    120: pop
+    121: push_const(16)  -- null
+    122: store_var(31)  -- INDEX
+    123: load_var(31)  -- INDEX
+    124: pop
+    125: load_var(31)  -- INDEX
+    126: jump_null(132)
+    127: push_const(32)  -- 0
+    128: jump_null(131)
+    129: cmp_lt
+    130: jump(134)
+    131: pop
+    132: pop
+    133: push_const(16)  -- null
+    134: load_var(31)  -- INDEX
+    135: jump_null(141)
+    136: push_const(33)  -- 5
+    137: jump_null(140)
+    138: cmp_gt
+    139: jump(143)
+    140: pop
+    141: pop
+    142: push_const(16)  -- null
+    143: log_or
+    144: jump_false(153)
+    145: push_scope
+    146: load_var(13)  -- PRINT
+    147: push_const(34)  -- Please enter a number in the range 1 to 5
+    148: call(1)
+    149: pop
+    150: jump(44)
+    151: pop_scope
+    152: jump(154)
+    153: push_const(16)  -- null
+    154: pop
+    155: load_var(12)  -- FUNCS
+    156: load_var(31)  -- INDEX
+    157: get_index
+    158: store_var(35)  -- FUNC
+    159: load_var(35)  -- FUNC
+    160: pop
+    161: load_var(31)  -- INDEX
+    162: jump_null(168)
+    163: push_const(36)  -- 4
+    164: jump_null(167)
+    165: cmp_gte
+    166: jump(170)
+    167: pop
+    168: pop
+    169: push_const(16)  -- null
+    170: jump_false(173)
+    171: load_var(29)  -- INT
+    172: jump(174)
+    173: load_var(37)  -- DOUBLE
+    174: store_var(38)  -- CONVERTER
+    175: load_var(38)  -- CONVERTER
+    176: pop
+    177: load_var(18)  -- PROMPT
+    178: push_const(39)  -- Please enter the first number (or q to quit)
+:
+    179: call(1)
+    180: store_var(26)  -- INPUT
+    181: load_var(26)  -- INPUT
+    182: pop
+    183: load_var(27)  -- UPPERCASE
+    184: load_var(26)  -- INPUT
+    185: call(1)
+    186: push_const(28)  -- Q
+    187: cmp_eq
+    188: jump_false(191)
+    189: jump(283)
+    190: jump(192)
+    191: push_const(16)  -- null
+    192: pop
+    193: load_var(38)  -- CONVERTER
+    194: load_var(26)  -- INPUT
+    195: call(1)
+    196: store_var(40)  -- A
+    197: load_var(40)  -- A
+    198: pop
+    199: load_var(18)  -- PROMPT
+    200: push_const(41)  -- Please enter the second number (or q to quit)
+:
+    201: call(1)
+    202: store_var(26)  -- INPUT
+    203: load_var(26)  -- INPUT
+    204: pop
+    205: load_var(27)  -- UPPERCASE
+    206: load_var(26)  -- INPUT
+    207: call(1)
+    208: push_const(28)  -- Q
+    209: cmp_eq
+    210: jump_false(213)
+    211: jump(283)
+    212: jump(214)
+    213: push_const(16)  -- null
+    214: pop
+    215: load_var(38)  -- CONVERTER
+    216: load_var(26)  -- INPUT
+    217: call(1)
+    218: store_var(42)  -- B
+    219: load_var(42)  -- B
+    220: pop
+    221: load_var(35)  -- FUNC
+    222: load_var(40)  -- A
+    223: load_var(42)  -- B
+    224: call(2)
+    225: store_var(43)  -- RESULT
+    226: load_var(43)  -- RESULT
+    227: pop
+    228: load_var(44)  -- STRING
+    229: load_var(43)  -- RESULT
+    230: load_var(31)  -- INDEX
+    231: jump_null(237)
+    232: push_const(36)  -- 4
+    233: jump_null(236)
+    234: cmp_gte
+    235: jump(239)
+    236: pop
+    237: pop
+    238: push_const(16)  -- null
+    239: jump_false(244)
+    240: load_var(29)  -- INT
+    241: load_var(43)  -- RESULT
+    242: call(1)
+    243: jump(245)
+    244: load_var(43)  -- RESULT
+    245: call(2)
+    246: store_var(45)  -- FORMATTED_RESULT
+    247: load_var(45)  -- FORMATTED_RESULT
+    248: pop
+    249: load_var(18)  -- PROMPT
+    250: push_const(46)  -- The result is: 
+    251: jump_null(257)
+    252: load_var(45)  -- FORMATTED_RESULT
+    253: jump_null(256)
+    254: add
+    255: jump(259)
+    256: pop
+    257: pop
+    258: push_const(16)  -- null
+    259: jump_null(265)
+    260: push_const(47)  -- 
+Press enter to continue (or q to quit):
+    261: jump_null(264)
+    262: add
+    263: jump(267)
+    264: pop
+    265: pop
+    266: push_const(16)  -- null
+    267: call(1)
+    268: store_var(26)  -- INPUT
+    269: load_var(26)  -- INPUT
+    270: pop
+    271: load_var(27)  -- UPPERCASE
+    272: load_var(26)  -- INPUT
+    273: call(1)
+    274: push_const(28)  -- Q
+    275: cmp_eq
+    276: jump_false(279)
+    277: jump(283)
+    278: jump(280)
+    279: push_const(16)  -- null
+    280: pop_scope
+    281: store_reg(0)
+    282: jump(44)
+    283: load_reg(0)
+    284: ret
+CHUNK __ADD_0 (A, B)
+  CONST  0: A
+  CONST  1: B
+  CONST  2: null
+  CODE:
+    0: load_var(0)  -- A
+    1: jump_null(7)
+    2: load_var(1)  -- B
+    3: jump_null(6)
+    4: add
+    5: jump(9)
+    6: pop
+    7: pop
+    8: push_const(2)  -- null
+    9: ret
+CHUNK __DIV_3 (A, B)
+  CONST  0: A
+  CONST  1: B
+  CONST  2: null
+  CODE:
+    0: load_var(0)  -- A
+    1: jump_null(7)
+    2: load_var(1)  -- B
+    3: jump_null(6)
+    4: div
+    5: jump(9)
+    6: pop
+    7: pop
+    8: push_const(2)  -- null
+    9: ret
+CHUNK __GCD_4 (A, B)
+  CONST  0: B
+  CONST  1: 0
+  CONST  2: A
+  CONST  3: GCD
+  CONST  4: null
+  CODE:
+    0: load_var(0)  -- B
+    1: push_const(1)  -- 0
+    2: cmp_eq
+    3: jump_false(6)
+    4: load_var(2)  -- A
+    5: jump(18)
+    6: load_var(3)  -- GCD
+    7: load_var(0)  -- B
+    8: load_var(2)  -- A
+    9: jump_null(15)
+    10: load_var(0)  -- B
+    11: jump_null(14)
+    12: mod
+    13: jump(17)
+    14: pop
+    15: pop
+    16: push_const(4)  -- null
+    17: call(2)
+    18: ret
+CHUNK __LCM_5 (A, B)
+  CONST  0: A
+  CONST  1: B
+  CONST  2: null
+  CONST  3: GCD
+  CODE:
+    0: load_var(0)  -- A
+    1: jump_null(7)
+    2: load_var(1)  -- B
+    3: jump_null(6)
+    4: mul
+    5: jump(9)
+    6: pop
+    7: pop
+    8: push_const(2)  -- null
+    9: jump_null(18)
+    10: load_var(3)  -- GCD
+    11: load_var(0)  -- A
+    12: load_var(1)  -- B
+    13: call(2)
+    14: jump_null(17)
+    15: div
+    16: jump(20)
+    17: pop
+    18: pop
+    19: push_const(2)  -- null
+    20: ret
+CHUNK __MUL_2 (A, B)
+  CONST  0: A
+  CONST  1: B
+  CONST  2: null
+  CODE:
+    0: load_var(0)  -- A
+    1: jump_null(7)
+    2: load_var(1)  -- B
+    3: jump_null(6)
+    4: mul
+    5: jump(9)
+    6: pop
+    7: pop
+    8: push_const(2)  -- null
+    9: ret
+CHUNK __SUB_1 (A, B)
+  CONST  0: A
+  CONST  1: B
+  CONST  2: null
+  CODE:
+    0: load_var(0)  -- A
+    1: jump_null(7)
+    2: load_var(1)  -- B
+    3: jump_null(6)
+    4: sub
+    5: jump(9)
+    6: pop
+    7: pop
+    8: push_const(2)  -- null
+    9: ret

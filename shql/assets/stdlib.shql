@@ -19,6 +19,8 @@ STRING(a) := _EXTERN("STRING", [a]);
 ROUND(a) := _EXTERN("ROUND", [a]);
 LENGTH(a) := _EXTERN("LENGTH", [a]);
 MAP_VALUES(a) := _EXTERN("MAP_VALUES", [a]);
+MAP_KEYS(a) := _EXTERN("MAP_KEYS", [a]);
+LIST_SORT(a) := _EXTERN("LIST_SORT", [a]);
 MD5(a) := _EXTERN("MD5", [a]);
 
 -- External binary functions

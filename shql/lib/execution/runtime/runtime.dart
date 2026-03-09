@@ -33,7 +33,7 @@ class UserFunction extends Callable {
 }
 
 class NullaryFunction extends Callable {
-  final Function(ExecutionContext executionContext, ExecutionNode caller)
+  final Function(ExecutionContext? executionContext, ExecutionNode? caller)
   function;
 
   NullaryFunction({
@@ -45,8 +45,8 @@ class NullaryFunction extends Callable {
 
 class UnaryFunction extends Callable {
   final Function(
-    ExecutionContext executionContext,
-    ExecutionNode caller,
+    ExecutionContext? executionContext,
+    ExecutionNode? caller,
     dynamic p1,
   )
   function;
@@ -60,8 +60,8 @@ class UnaryFunction extends Callable {
 
 class BinaryFunction extends Callable {
   final Function(
-    ExecutionContext executionContext,
-    ExecutionNode caller,
+    ExecutionContext? executionContext,
+    ExecutionNode? caller,
     dynamic p1,
     dynamic p2,
   )
@@ -76,8 +76,8 @@ class BinaryFunction extends Callable {
 
 class TernaryFunction extends Callable {
   final Function(
-    ExecutionContext executionContext,
-    ExecutionNode caller,
+    ExecutionContext? executionContext,
+    ExecutionNode? caller,
     dynamic p1,
     dynamic p2,
     dynamic p3,
@@ -493,14 +493,14 @@ class Runtime {
   late final ConstantsTable<String> _identifiers;
   final Map<
     String,
-    Function(ExecutionContext executionContext, ExecutionNode caller)
+    Function(ExecutionContext? executionContext, ExecutionNode? caller)
   >
   _nullaryFunctions = {};
   late final Map<
     int,
     Function(
-      ExecutionContext executionContext,
-      ExecutionNode caller,
+      ExecutionContext? executionContext,
+      ExecutionNode? caller,
       dynamic p1,
     )
   >
@@ -508,8 +508,8 @@ class Runtime {
   late final Map<
     int,
     Function(
-      ExecutionContext executionContext,
-      ExecutionNode caller,
+      ExecutionContext? executionContext,
+      ExecutionNode? caller,
       dynamic p1,
       dynamic p2,
     )
@@ -518,8 +518,8 @@ class Runtime {
   late final Map<
     int,
     Function(
-      ExecutionContext executionContext,
-      ExecutionNode caller,
+      ExecutionContext? executionContext,
+      ExecutionNode? caller,
       dynamic p1,
       dynamic p2,
       dynamic p3,
@@ -599,14 +599,14 @@ class Runtime {
     return _nullaryFunctions.containsKey(name);
   }
 
-  Function(ExecutionContext executionContext, ExecutionNode caller)?
+  Function(ExecutionContext? executionContext, ExecutionNode? caller)?
   getNullaryFunction(String name) {
     return _nullaryFunctions[name];
   }
 
   void setNullaryFunction(
     String name,
-    dynamic Function(ExecutionContext executionContext, ExecutionNode caller)
+    dynamic Function(ExecutionContext? executionContext, ExecutionNode? caller)
     nullaryFunction,
   ) {
     _nullaryFunctions[name] = nullaryFunction;
@@ -616,7 +616,7 @@ class Runtime {
     return _unaryFunctions.containsKey(identifier);
   }
 
-  Function(ExecutionContext executionContext, ExecutionNode caller, dynamic p1)?
+  Function(ExecutionContext? executionContext, ExecutionNode? caller, dynamic p1)?
   getUnaryFunction(int identifier) {
     return _unaryFunctions[identifier];
   }
@@ -624,8 +624,8 @@ class Runtime {
   void setUnaryFunction(
     String name,
     dynamic Function(
-      ExecutionContext executionContext,
-      ExecutionNode caller,
+      ExecutionContext? executionContext,
+      ExecutionNode? caller,
       dynamic p1,
     )
     unaryFunction,
@@ -634,8 +634,8 @@ class Runtime {
   }
 
   Function(
-    ExecutionContext executionContext,
-    ExecutionNode caller,
+    ExecutionContext? executionContext,
+    ExecutionNode? caller,
     dynamic p1,
     dynamic p2,
   )?
@@ -650,8 +650,8 @@ class Runtime {
   void setBinaryFunction(
     String name,
     dynamic Function(
-      ExecutionContext executionContext,
-      ExecutionNode caller,
+      ExecutionContext? executionContext,
+      ExecutionNode? caller,
       dynamic p1,
       dynamic p2,
     )
@@ -661,8 +661,8 @@ class Runtime {
   }
 
   Function(
-    ExecutionContext executionContext,
-    ExecutionNode caller,
+    ExecutionContext? executionContext,
+    ExecutionNode? caller,
     dynamic p1,
     dynamic p2,
     dynamic p3,
@@ -678,8 +678,8 @@ class Runtime {
   void setTernaryFunction(
     String name,
     dynamic Function(
-      ExecutionContext executionContext,
-      ExecutionNode caller,
+      ExecutionContext? executionContext,
+      ExecutionNode? caller,
       dynamic p1,
       dynamic p2,
       dynamic p3,
@@ -690,8 +690,8 @@ class Runtime {
   }
 
   void print(
-    ExecutionContext executionContext,
-    ExecutionNode caller,
+    ExecutionContext? executionContext,
+    ExecutionNode? caller,
     dynamic value,
   ) {
     if (sandboxed) {
@@ -702,8 +702,8 @@ class Runtime {
   }
 
   Future<String> prompt(
-    ExecutionContext executionContext,
-    ExecutionNode caller,
+    ExecutionContext? executionContext,
+    ExecutionNode? caller,
     dynamic prompt,
   ) async {
     if (sandboxed) {
@@ -714,8 +714,8 @@ class Runtime {
   }
 
   Future<String> readLine(
-    ExecutionContext executionContext,
-    ExecutionNode caller,
+    ExecutionContext? executionContext,
+    ExecutionNode? caller,
   ) async {
     if (sandboxed) {
       return "";
@@ -725,8 +725,8 @@ class Runtime {
   }
 
   Future<void> plot(
-    ExecutionContext executionContext,
-    ExecutionNode caller,
+    ExecutionContext? executionContext,
+    ExecutionNode? caller,
     dynamic xVector,
     dynamic yVector,
   ) async {
@@ -737,8 +737,8 @@ class Runtime {
   }
 
   Future<void> cls(
-    ExecutionContext executionContext,
-    ExecutionNode caller,
+    ExecutionContext? executionContext,
+    ExecutionNode? caller,
   ) async {
     if (sandboxed) {
       return;
@@ -748,8 +748,8 @@ class Runtime {
   }
 
   Future<void> hideGraph(
-    ExecutionContext executionContext,
-    ExecutionNode caller,
+    ExecutionContext? executionContext,
+    ExecutionNode? caller,
   ) async {
     if (sandboxed) {
       return;
@@ -759,28 +759,28 @@ class Runtime {
   }
 
   Future<Thread> startThread(
-    ExecutionContext executionContext,
-    ExecutionNode caller,
+    ExecutionContext? executionContext,
+    ExecutionNode? caller,
     dynamic userFunction,
   ) async {
-    return executionContext.startThread(caller, userFunction);
+    return executionContext!.startThread(caller!, userFunction);
   }
 
   void joinThread(
-    ExecutionContext executionContext,
-    ExecutionNode caller,
+    ExecutionContext? executionContext,
+    ExecutionNode? caller,
     dynamic thread,
   ) {
     if (sandboxed) {
       return;
     }
 
-    caller.thread.join(thread);
+    caller!.thread.join(thread);
   }
 
   dynamic extern(
-    ExecutionContext executionContext,
-    ExecutionNode caller,
+    ExecutionContext? executionContext,
+    ExecutionNode? caller,
     dynamic name,
     dynamic args,
   ) {
@@ -863,6 +863,7 @@ class Runtime {
       binaryFunctions: binaryFns,
       ternaryFunctions: ternaryFns,
     );
+
     return runtime;
   }
 
