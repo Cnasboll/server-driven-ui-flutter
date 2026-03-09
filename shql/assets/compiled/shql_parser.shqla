@@ -1,0 +1,4564 @@
+CHUNK main ()
+  CONST  0: .___PR_TT_0
+  CONST  1: _PR_TT
+  CONST  2: .___PR_TV_1
+  CONST  3: _PR_TV
+  CONST  4: .___PR_IS_2
+  CONST  5: _PR_IS
+  CONST  6: .___PR_NODE_3
+  CONST  7: _PR_NODE
+  CONST  8: .___PR_LEAF_4
+  CONST  9: _PR_LEAF
+  CONST  10: .___PR_KV_5
+  CONST  11: _PR_KV
+  CONST  12: .___PR_RES_6
+  CONST  13: _PR_RES
+  CONST  14: .___PR_PROGRAM_7
+  CONST  15: _PR_PROGRAM
+  CONST  16: .___PR_STMT_8
+  CONST  17: _PR_STMT
+  CONST  18: .___PR_RETURN_9
+  CONST  19: _PR_RETURN
+  CONST  20: .___PR_ASSIGN_10
+  CONST  21: _PR_ASSIGN
+  CONST  22: .___PR_EXTRACT_PARAMS_11
+  CONST  23: _PR_EXTRACT_PARAMS
+  CONST  24: .___PR_OR_12
+  CONST  25: _PR_OR
+  CONST  26: .___PR_AND_13
+  CONST  27: _PR_AND
+  CONST  28: .___PR_NOT_14
+  CONST  29: _PR_NOT
+  CONST  30: .___PR_COMP_15
+  CONST  31: _PR_COMP
+  CONST  32: .___PR_MATCH_16
+  CONST  33: _PR_MATCH
+  CONST  34: .___PR_IN_17
+  CONST  35: _PR_IN
+  CONST  36: .___PR_ADD_18
+  CONST  37: _PR_ADD
+  CONST  38: .___PR_MUL_19
+  CONST  39: _PR_MUL
+  CONST  40: .___PR_POW_20
+  CONST  41: _PR_POW
+  CONST  42: .___PR_UNARY_21
+  CONST  43: _PR_UNARY
+  CONST  44: .___PR_POSTFIX_22
+  CONST  45: _PR_POSTFIX
+  CONST  46: .___PR_PRIMARY_23
+  CONST  47: _PR_PRIMARY
+  CONST  48: .___PR_MAP_24
+  CONST  49: _PR_MAP
+  CONST  50: .___PR_OBJECT_25
+  CONST  51: _PR_OBJECT
+  CONST  52: .___PR_IF_26
+  CONST  53: _PR_IF
+  CONST  54: .___PR_WHILE_27
+  CONST  55: _PR_WHILE
+  CONST  56: .___PR_REPEAT_28
+  CONST  57: _PR_REPEAT
+  CONST  58: .___PR_FOR_29
+  CONST  59: _PR_FOR
+  CONST  60: .___PR_BEGIN_30
+  CONST  61: _PR_BEGIN
+  CONST  62: PARSE
+  CONST  63: .__lambda_31
+  CONST  64: PARSER
+  CODE:
+    0: make_closure(0)  -- .___PR_TT_0
+    1: store_var(1)  -- _PR_TT
+    2: load_var(1)  -- _PR_TT
+    3: pop
+    4: make_closure(2)  -- .___PR_TV_1
+    5: store_var(3)  -- _PR_TV
+    6: load_var(3)  -- _PR_TV
+    7: pop
+    8: make_closure(4)  -- .___PR_IS_2
+    9: store_var(5)  -- _PR_IS
+    10: load_var(5)  -- _PR_IS
+    11: pop
+    12: make_closure(6)  -- .___PR_NODE_3
+    13: store_var(7)  -- _PR_NODE
+    14: load_var(7)  -- _PR_NODE
+    15: pop
+    16: make_closure(8)  -- .___PR_LEAF_4
+    17: store_var(9)  -- _PR_LEAF
+    18: load_var(9)  -- _PR_LEAF
+    19: pop
+    20: make_closure(10)  -- .___PR_KV_5
+    21: store_var(11)  -- _PR_KV
+    22: load_var(11)  -- _PR_KV
+    23: pop
+    24: make_closure(12)  -- .___PR_RES_6
+    25: store_var(13)  -- _PR_RES
+    26: load_var(13)  -- _PR_RES
+    27: pop
+    28: make_closure(14)  -- .___PR_PROGRAM_7
+    29: store_var(15)  -- _PR_PROGRAM
+    30: load_var(15)  -- _PR_PROGRAM
+    31: pop
+    32: make_closure(16)  -- .___PR_STMT_8
+    33: store_var(17)  -- _PR_STMT
+    34: load_var(17)  -- _PR_STMT
+    35: pop
+    36: make_closure(18)  -- .___PR_RETURN_9
+    37: store_var(19)  -- _PR_RETURN
+    38: load_var(19)  -- _PR_RETURN
+    39: pop
+    40: make_closure(20)  -- .___PR_ASSIGN_10
+    41: store_var(21)  -- _PR_ASSIGN
+    42: load_var(21)  -- _PR_ASSIGN
+    43: pop
+    44: make_closure(22)  -- .___PR_EXTRACT_PARAMS_11
+    45: store_var(23)  -- _PR_EXTRACT_PARAMS
+    46: load_var(23)  -- _PR_EXTRACT_PARAMS
+    47: pop
+    48: make_closure(24)  -- .___PR_OR_12
+    49: store_var(25)  -- _PR_OR
+    50: load_var(25)  -- _PR_OR
+    51: pop
+    52: make_closure(26)  -- .___PR_AND_13
+    53: store_var(27)  -- _PR_AND
+    54: load_var(27)  -- _PR_AND
+    55: pop
+    56: make_closure(28)  -- .___PR_NOT_14
+    57: store_var(29)  -- _PR_NOT
+    58: load_var(29)  -- _PR_NOT
+    59: pop
+    60: make_closure(30)  -- .___PR_COMP_15
+    61: store_var(31)  -- _PR_COMP
+    62: load_var(31)  -- _PR_COMP
+    63: pop
+    64: make_closure(32)  -- .___PR_MATCH_16
+    65: store_var(33)  -- _PR_MATCH
+    66: load_var(33)  -- _PR_MATCH
+    67: pop
+    68: make_closure(34)  -- .___PR_IN_17
+    69: store_var(35)  -- _PR_IN
+    70: load_var(35)  -- _PR_IN
+    71: pop
+    72: make_closure(36)  -- .___PR_ADD_18
+    73: store_var(37)  -- _PR_ADD
+    74: load_var(37)  -- _PR_ADD
+    75: pop
+    76: make_closure(38)  -- .___PR_MUL_19
+    77: store_var(39)  -- _PR_MUL
+    78: load_var(39)  -- _PR_MUL
+    79: pop
+    80: make_closure(40)  -- .___PR_POW_20
+    81: store_var(41)  -- _PR_POW
+    82: load_var(41)  -- _PR_POW
+    83: pop
+    84: make_closure(42)  -- .___PR_UNARY_21
+    85: store_var(43)  -- _PR_UNARY
+    86: load_var(43)  -- _PR_UNARY
+    87: pop
+    88: make_closure(44)  -- .___PR_POSTFIX_22
+    89: store_var(45)  -- _PR_POSTFIX
+    90: load_var(45)  -- _PR_POSTFIX
+    91: pop
+    92: make_closure(46)  -- .___PR_PRIMARY_23
+    93: store_var(47)  -- _PR_PRIMARY
+    94: load_var(47)  -- _PR_PRIMARY
+    95: pop
+    96: make_closure(48)  -- .___PR_MAP_24
+    97: store_var(49)  -- _PR_MAP
+    98: load_var(49)  -- _PR_MAP
+    99: pop
+    100: make_closure(50)  -- .___PR_OBJECT_25
+    101: store_var(51)  -- _PR_OBJECT
+    102: load_var(51)  -- _PR_OBJECT
+    103: pop
+    104: make_closure(52)  -- .___PR_IF_26
+    105: store_var(53)  -- _PR_IF
+    106: load_var(53)  -- _PR_IF
+    107: pop
+    108: make_closure(54)  -- .___PR_WHILE_27
+    109: store_var(55)  -- _PR_WHILE
+    110: load_var(55)  -- _PR_WHILE
+    111: pop
+    112: make_closure(56)  -- .___PR_REPEAT_28
+    113: store_var(57)  -- _PR_REPEAT
+    114: load_var(57)  -- _PR_REPEAT
+    115: pop
+    116: make_closure(58)  -- .___PR_FOR_29
+    117: store_var(59)  -- _PR_FOR
+    118: load_var(59)  -- _PR_FOR
+    119: pop
+    120: make_closure(60)  -- .___PR_BEGIN_30
+    121: store_var(61)  -- _PR_BEGIN
+    122: load_var(61)  -- _PR_BEGIN
+    123: pop
+    124: push_scope
+    125: push_const(62)  -- PARSE
+    126: make_closure(63)  -- .__lambda_31
+    127: make_object_here(1)
+    128: pop_scope
+    129: store_var(64)  -- PARSER
+    130: load_var(64)  -- PARSER
+    131: ret
+CHUNK ___PR_ADD_18 (TOKENS, POS)
+  CONST  0: _PR_MUL
+  CONST  1: TOKENS
+  CONST  2: POS
+  CONST  3: R
+  CONST  4: node
+  CONST  5: NODE
+  CONST  6: pos
+  CONST  7: null
+  CONST  8: _PR_TT
+  CONST  9: +
+  CONST  10: -
+  CONST  11: add
+  CONST  12: sub
+  CONST  13: OP
+  CONST  14: 1
+  CONST  15: R2
+  CONST  16: _PR_NODE
+  CONST  17: _PR_RES
+  CODE:
+    0: push_scope
+    1: load_var(0)  -- _PR_MUL
+    2: load_var(1)  -- TOKENS
+    3: load_var(2)  -- POS
+    4: call(2)
+    5: store_var(3)  -- R
+    6: load_var(3)  -- R
+    7: pop
+    8: load_var(3)  -- R
+    9: push_const(4)  -- node
+    10: get_index
+    11: store_var(5)  -- NODE
+    12: load_var(5)  -- NODE
+    13: pop
+    14: load_var(3)  -- R
+    15: push_const(6)  -- pos
+    16: get_index
+    17: store_var(2)  -- POS
+    18: load_var(2)  -- POS
+    19: pop
+    20: push_const(7)  -- null
+    21: store_reg(0)
+    22: load_var(8)  -- _PR_TT
+    23: load_var(1)  -- TOKENS
+    24: load_var(2)  -- POS
+    25: call(2)
+    26: push_const(9)  -- +
+    27: cmp_eq
+    28: load_var(8)  -- _PR_TT
+    29: load_var(1)  -- TOKENS
+    30: load_var(2)  -- POS
+    31: call(2)
+    32: push_const(10)  -- -
+    33: cmp_eq
+    34: log_or
+    35: jump_false(88)
+    36: push_scope
+    37: load_var(8)  -- _PR_TT
+    38: load_var(1)  -- TOKENS
+    39: load_var(2)  -- POS
+    40: call(2)
+    41: push_const(9)  -- +
+    42: cmp_eq
+    43: jump_false(46)
+    44: push_const(11)  -- add
+    45: jump(47)
+    46: push_const(12)  -- sub
+    47: store_var(13)  -- OP
+    48: load_var(13)  -- OP
+    49: pop
+    50: load_var(2)  -- POS
+    51: jump_null(57)
+    52: push_const(14)  -- 1
+    53: jump_null(56)
+    54: add
+    55: jump(59)
+    56: pop
+    57: pop
+    58: push_const(7)  -- null
+    59: store_var(2)  -- POS
+    60: load_var(2)  -- POS
+    61: pop
+    62: load_var(0)  -- _PR_MUL
+    63: load_var(1)  -- TOKENS
+    64: load_var(2)  -- POS
+    65: call(2)
+    66: store_var(15)  -- R2
+    67: load_var(15)  -- R2
+    68: pop
+    69: load_var(16)  -- _PR_NODE
+    70: load_var(13)  -- OP
+    71: load_var(5)  -- NODE
+    72: load_var(15)  -- R2
+    73: push_const(4)  -- node
+    74: get_index
+    75: make_list(2)
+    76: call(2)
+    77: store_var(5)  -- NODE
+    78: load_var(5)  -- NODE
+    79: pop
+    80: load_var(15)  -- R2
+    81: push_const(6)  -- pos
+    82: get_index
+    83: store_var(2)  -- POS
+    84: load_var(2)  -- POS
+    85: pop_scope
+    86: store_reg(0)
+    87: jump(22)
+    88: load_reg(0)
+    89: pop
+    90: load_var(17)  -- _PR_RES
+    91: load_var(5)  -- NODE
+    92: load_var(2)  -- POS
+    93: call(2)
+    94: ret
+    95: pop_scope
+    96: ret
+CHUNK ___PR_AND_13 (TOKENS, POS)
+  CONST  0: _PR_NOT
+  CONST  1: TOKENS
+  CONST  2: POS
+  CONST  3: R
+  CONST  4: node
+  CONST  5: NODE
+  CONST  6: pos
+  CONST  7: null
+  CONST  8: _PR_IS
+  CONST  9: AND
+  CONST  10: 1
+  CONST  11: R2
+  CONST  12: _PR_NODE
+  CONST  13: and
+  CONST  14: _PR_RES
+  CODE:
+    0: push_scope
+    1: load_var(0)  -- _PR_NOT
+    2: load_var(1)  -- TOKENS
+    3: load_var(2)  -- POS
+    4: call(2)
+    5: store_var(3)  -- R
+    6: load_var(3)  -- R
+    7: pop
+    8: load_var(3)  -- R
+    9: push_const(4)  -- node
+    10: get_index
+    11: store_var(5)  -- NODE
+    12: load_var(5)  -- NODE
+    13: pop
+    14: load_var(3)  -- R
+    15: push_const(6)  -- pos
+    16: get_index
+    17: store_var(2)  -- POS
+    18: load_var(2)  -- POS
+    19: pop
+    20: push_const(7)  -- null
+    21: store_reg(0)
+    22: load_var(8)  -- _PR_IS
+    23: load_var(1)  -- TOKENS
+    24: load_var(2)  -- POS
+    25: push_const(9)  -- AND
+    26: call(3)
+    27: jump_false(67)
+    28: push_scope
+    29: load_var(2)  -- POS
+    30: jump_null(36)
+    31: push_const(10)  -- 1
+    32: jump_null(35)
+    33: add
+    34: jump(38)
+    35: pop
+    36: pop
+    37: push_const(7)  -- null
+    38: store_var(2)  -- POS
+    39: load_var(2)  -- POS
+    40: pop
+    41: load_var(0)  -- _PR_NOT
+    42: load_var(1)  -- TOKENS
+    43: load_var(2)  -- POS
+    44: call(2)
+    45: store_var(11)  -- R2
+    46: load_var(11)  -- R2
+    47: pop
+    48: load_var(12)  -- _PR_NODE
+    49: push_const(13)  -- and
+    50: load_var(5)  -- NODE
+    51: load_var(11)  -- R2
+    52: push_const(4)  -- node
+    53: get_index
+    54: make_list(2)
+    55: call(2)
+    56: store_var(5)  -- NODE
+    57: load_var(5)  -- NODE
+    58: pop
+    59: load_var(11)  -- R2
+    60: push_const(6)  -- pos
+    61: get_index
+    62: store_var(2)  -- POS
+    63: load_var(2)  -- POS
+    64: pop_scope
+    65: store_reg(0)
+    66: jump(22)
+    67: load_reg(0)
+    68: pop
+    69: load_var(14)  -- _PR_RES
+    70: load_var(5)  -- NODE
+    71: load_var(2)  -- POS
+    72: call(2)
+    73: ret
+    74: pop_scope
+    75: ret
+CHUNK ___PR_ASSIGN_10 (TOKENS, POS)
+  CONST  0: _PR_OR
+  CONST  1: TOKENS
+  CONST  2: POS
+  CONST  3: R
+  CONST  4: node
+  CONST  5: LHS
+  CONST  6: pos
+  CONST  7: _PR_IS
+  CONST  8: :=
+  CONST  9: 1
+  CONST  10: null
+  CONST  11: _PR_ASSIGN
+  CONST  12: R2
+  CONST  13: _PR_RES
+  CONST  14: _PR_NODE
+  CONST  15: assign
+  CONST  16: =>
+  CONST  17: _PR_EXTRACT_PARAMS
+  CONST  18: PARAMS
+  CONST  19: sym
+  CONST  20: lambda
+  CONST  21: children
+  CONST  22: val
+  CONST  23: NODE
+  CODE:
+    0: push_scope
+    1: load_var(0)  -- _PR_OR
+    2: load_var(1)  -- TOKENS
+    3: load_var(2)  -- POS
+    4: call(2)
+    5: store_var(3)  -- R
+    6: load_var(3)  -- R
+    7: pop
+    8: load_var(3)  -- R
+    9: push_const(4)  -- node
+    10: get_index
+    11: store_var(5)  -- LHS
+    12: load_var(5)  -- LHS
+    13: pop
+    14: load_var(3)  -- R
+    15: push_const(6)  -- pos
+    16: get_index
+    17: store_var(2)  -- POS
+    18: load_var(2)  -- POS
+    19: pop
+    20: load_var(7)  -- _PR_IS
+    21: load_var(1)  -- TOKENS
+    22: load_var(2)  -- POS
+    23: push_const(8)  -- :=
+    24: call(3)
+    25: jump_false(62)
+    26: push_scope
+    27: load_var(2)  -- POS
+    28: jump_null(34)
+    29: push_const(9)  -- 1
+    30: jump_null(33)
+    31: add
+    32: jump(36)
+    33: pop
+    34: pop
+    35: push_const(10)  -- null
+    36: store_var(2)  -- POS
+    37: load_var(2)  -- POS
+    38: pop
+    39: load_var(11)  -- _PR_ASSIGN
+    40: load_var(1)  -- TOKENS
+    41: load_var(2)  -- POS
+    42: call(2)
+    43: store_var(12)  -- R2
+    44: load_var(12)  -- R2
+    45: pop
+    46: load_var(13)  -- _PR_RES
+    47: load_var(14)  -- _PR_NODE
+    48: push_const(15)  -- assign
+    49: load_var(5)  -- LHS
+    50: load_var(12)  -- R2
+    51: push_const(4)  -- node
+    52: get_index
+    53: make_list(2)
+    54: call(2)
+    55: load_var(12)  -- R2
+    56: push_const(6)  -- pos
+    57: get_index
+    58: call(2)
+    59: ret
+    60: pop_scope
+    61: jump(63)
+    62: push_const(10)  -- null
+    63: pop
+    64: load_var(7)  -- _PR_IS
+    65: load_var(1)  -- TOKENS
+    66: load_var(2)  -- POS
+    67: push_const(16)  -- =>
+    68: call(3)
+    69: jump_false(118)
+    70: push_scope
+    71: load_var(2)  -- POS
+    72: jump_null(78)
+    73: push_const(9)  -- 1
+    74: jump_null(77)
+    75: add
+    76: jump(80)
+    77: pop
+    78: pop
+    79: push_const(10)  -- null
+    80: store_var(2)  -- POS
+    81: load_var(2)  -- POS
+    82: pop
+    83: load_var(11)  -- _PR_ASSIGN
+    84: load_var(1)  -- TOKENS
+    85: load_var(2)  -- POS
+    86: call(2)
+    87: store_var(12)  -- R2
+    88: load_var(12)  -- R2
+    89: pop
+    90: load_var(17)  -- _PR_EXTRACT_PARAMS
+    91: load_var(5)  -- LHS
+    92: call(1)
+    93: store_var(18)  -- PARAMS
+    94: load_var(18)  -- PARAMS
+    95: pop
+    96: push_const(19)  -- sym
+    97: push_const(20)  -- lambda
+    98: push_const(21)  -- children
+    99: load_var(12)  -- R2
+    100: push_const(4)  -- node
+    101: get_index
+    102: make_list(1)
+    103: push_const(22)  -- val
+    104: load_var(18)  -- PARAMS
+    105: make_map(3)
+    106: store_var(23)  -- NODE
+    107: load_var(23)  -- NODE
+    108: pop
+    109: load_var(13)  -- _PR_RES
+    110: load_var(23)  -- NODE
+    111: load_var(12)  -- R2
+    112: push_const(6)  -- pos
+    113: get_index
+    114: call(2)
+    115: ret
+    116: pop_scope
+    117: jump(119)
+    118: push_const(10)  -- null
+    119: pop
+    120: load_var(13)  -- _PR_RES
+    121: load_var(5)  -- LHS
+    122: load_var(2)  -- POS
+    123: call(2)
+    124: ret
+    125: pop_scope
+    126: ret
+CHUNK ___PR_BEGIN_30 (TOKENS, POS)
+  CONST  0: POS
+  CONST  1: 1
+  CONST  2: null
+  CONST  3: STMTS
+  CONST  4: _PR_IS
+  CONST  5: TOKENS
+  CONST  6: ;
+  CONST  7: END
+  CONST  8: EOF
+  CONST  9: _PR_STMT
+  CONST  10: R
+  CONST  11: node
+  CONST  12: pos
+  CONST  13: _PR_RES
+  CONST  14: _PR_NODE
+  CONST  15: begin
+  CODE:
+    0: push_scope
+    1: load_var(0)  -- POS
+    2: jump_null(8)
+    3: push_const(1)  -- 1
+    4: jump_null(7)
+    5: add
+    6: jump(10)
+    7: pop
+    8: pop
+    9: push_const(2)  -- null
+    10: store_var(0)  -- POS
+    11: load_var(0)  -- POS
+    12: pop
+    13: make_list(0)
+    14: store_var(3)  -- STMTS
+    15: load_var(3)  -- STMTS
+    16: pop
+    17: push_const(2)  -- null
+    18: store_reg(0)
+    19: load_var(4)  -- _PR_IS
+    20: load_var(5)  -- TOKENS
+    21: load_var(0)  -- POS
+    22: push_const(6)  -- ;
+    23: call(3)
+    24: jump_false(38)
+    25: load_var(0)  -- POS
+    26: jump_null(32)
+    27: push_const(1)  -- 1
+    28: jump_null(31)
+    29: add
+    30: jump(34)
+    31: pop
+    32: pop
+    33: push_const(2)  -- null
+    34: store_var(0)  -- POS
+    35: load_var(0)  -- POS
+    36: store_reg(0)
+    37: jump(19)
+    38: load_reg(0)
+    39: pop
+    40: push_const(2)  -- null
+    41: store_reg(1)
+    42: load_var(4)  -- _PR_IS
+    43: load_var(5)  -- TOKENS
+    44: load_var(0)  -- POS
+    45: push_const(7)  -- END
+    46: call(3)
+    47: jump_null(49)
+    48: log_not
+    49: load_var(4)  -- _PR_IS
+    50: load_var(5)  -- TOKENS
+    51: load_var(0)  -- POS
+    52: push_const(8)  -- EOF
+    53: call(3)
+    54: jump_null(56)
+    55: log_not
+    56: log_and
+    57: jump_false(112)
+    58: push_scope
+    59: load_var(9)  -- _PR_STMT
+    60: load_var(5)  -- TOKENS
+    61: load_var(0)  -- POS
+    62: call(2)
+    63: store_var(10)  -- R
+    64: load_var(10)  -- R
+    65: pop
+    66: load_var(3)  -- STMTS
+    67: jump_null(76)
+    68: load_var(10)  -- R
+    69: push_const(11)  -- node
+    70: get_index
+    71: make_list(1)
+    72: jump_null(75)
+    73: add
+    74: jump(78)
+    75: pop
+    76: pop
+    77: push_const(2)  -- null
+    78: store_var(3)  -- STMTS
+    79: load_var(3)  -- STMTS
+    80: pop
+    81: load_var(10)  -- R
+    82: push_const(12)  -- pos
+    83: get_index
+    84: store_var(0)  -- POS
+    85: load_var(0)  -- POS
+    86: pop
+    87: push_const(2)  -- null
+    88: store_reg(2)
+    89: load_var(4)  -- _PR_IS
+    90: load_var(5)  -- TOKENS
+    91: load_var(0)  -- POS
+    92: push_const(6)  -- ;
+    93: call(3)
+    94: jump_false(108)
+    95: load_var(0)  -- POS
+    96: jump_null(102)
+    97: push_const(1)  -- 1
+    98: jump_null(101)
+    99: add
+    100: jump(104)
+    101: pop
+    102: pop
+    103: push_const(2)  -- null
+    104: store_var(0)  -- POS
+    105: load_var(0)  -- POS
+    106: store_reg(2)
+    107: jump(89)
+    108: load_reg(2)
+    109: pop_scope
+    110: store_reg(1)
+    111: jump(42)
+    112: load_reg(1)
+    113: pop
+    114: load_var(4)  -- _PR_IS
+    115: load_var(5)  -- TOKENS
+    116: load_var(0)  -- POS
+    117: push_const(7)  -- END
+    118: call(3)
+    119: jump_false(132)
+    120: load_var(0)  -- POS
+    121: jump_null(127)
+    122: push_const(1)  -- 1
+    123: jump_null(126)
+    124: add
+    125: jump(129)
+    126: pop
+    127: pop
+    128: push_const(2)  -- null
+    129: store_var(0)  -- POS
+    130: load_var(0)  -- POS
+    131: jump(133)
+    132: push_const(2)  -- null
+    133: pop
+    134: load_var(13)  -- _PR_RES
+    135: load_var(14)  -- _PR_NODE
+    136: push_const(15)  -- begin
+    137: load_var(3)  -- STMTS
+    138: call(2)
+    139: load_var(0)  -- POS
+    140: call(2)
+    141: ret
+    142: pop_scope
+    143: ret
+CHUNK ___PR_COMP_15 (TOKENS, POS)
+  CONST  0: _PR_MATCH
+  CONST  1: TOKENS
+  CONST  2: POS
+  CONST  3: R
+  CONST  4: node
+  CONST  5: NODE
+  CONST  6: pos
+  CONST  7: _PR_TT
+  CONST  8: TT
+  CONST  9: =
+  CONST  10: 1
+  CONST  11: null
+  CONST  12: R2
+  CONST  13: _PR_RES
+  CONST  14: _PR_NODE
+  CONST  15: eq
+  CONST  16: <>
+  CONST  17: neq
+  CONST  18: <
+  CONST  19: lt
+  CONST  20: <=
+  CONST  21: lte
+  CONST  22: >
+  CONST  23: gt
+  CONST  24: >=
+  CONST  25: gte
+  CODE:
+    0: push_scope
+    1: load_var(0)  -- _PR_MATCH
+    2: load_var(1)  -- TOKENS
+    3: load_var(2)  -- POS
+    4: call(2)
+    5: store_var(3)  -- R
+    6: load_var(3)  -- R
+    7: pop
+    8: load_var(3)  -- R
+    9: push_const(4)  -- node
+    10: get_index
+    11: store_var(5)  -- NODE
+    12: load_var(5)  -- NODE
+    13: pop
+    14: load_var(3)  -- R
+    15: push_const(6)  -- pos
+    16: get_index
+    17: store_var(2)  -- POS
+    18: load_var(2)  -- POS
+    19: pop
+    20: load_var(7)  -- _PR_TT
+    21: load_var(1)  -- TOKENS
+    22: load_var(2)  -- POS
+    23: call(2)
+    24: store_var(8)  -- TT
+    25: load_var(8)  -- TT
+    26: pop
+    27: load_var(8)  -- TT
+    28: push_const(9)  -- =
+    29: cmp_eq
+    30: jump_false(67)
+    31: push_scope
+    32: load_var(2)  -- POS
+    33: jump_null(39)
+    34: push_const(10)  -- 1
+    35: jump_null(38)
+    36: add
+    37: jump(41)
+    38: pop
+    39: pop
+    40: push_const(11)  -- null
+    41: store_var(2)  -- POS
+    42: load_var(2)  -- POS
+    43: pop
+    44: load_var(0)  -- _PR_MATCH
+    45: load_var(1)  -- TOKENS
+    46: load_var(2)  -- POS
+    47: call(2)
+    48: store_var(12)  -- R2
+    49: load_var(12)  -- R2
+    50: pop
+    51: load_var(13)  -- _PR_RES
+    52: load_var(14)  -- _PR_NODE
+    53: push_const(15)  -- eq
+    54: load_var(5)  -- NODE
+    55: load_var(12)  -- R2
+    56: push_const(4)  -- node
+    57: get_index
+    58: make_list(2)
+    59: call(2)
+    60: load_var(12)  -- R2
+    61: push_const(6)  -- pos
+    62: get_index
+    63: call(2)
+    64: ret
+    65: pop_scope
+    66: jump(68)
+    67: push_const(11)  -- null
+    68: pop
+    69: load_var(8)  -- TT
+    70: push_const(16)  -- <>
+    71: cmp_eq
+    72: jump_false(109)
+    73: push_scope
+    74: load_var(2)  -- POS
+    75: jump_null(81)
+    76: push_const(10)  -- 1
+    77: jump_null(80)
+    78: add
+    79: jump(83)
+    80: pop
+    81: pop
+    82: push_const(11)  -- null
+    83: store_var(2)  -- POS
+    84: load_var(2)  -- POS
+    85: pop
+    86: load_var(0)  -- _PR_MATCH
+    87: load_var(1)  -- TOKENS
+    88: load_var(2)  -- POS
+    89: call(2)
+    90: store_var(12)  -- R2
+    91: load_var(12)  -- R2
+    92: pop
+    93: load_var(13)  -- _PR_RES
+    94: load_var(14)  -- _PR_NODE
+    95: push_const(17)  -- neq
+    96: load_var(5)  -- NODE
+    97: load_var(12)  -- R2
+    98: push_const(4)  -- node
+    99: get_index
+    100: make_list(2)
+    101: call(2)
+    102: load_var(12)  -- R2
+    103: push_const(6)  -- pos
+    104: get_index
+    105: call(2)
+    106: ret
+    107: pop_scope
+    108: jump(110)
+    109: push_const(11)  -- null
+    110: pop
+    111: load_var(8)  -- TT
+    112: push_const(18)  -- <
+    113: cmp_eq
+    114: jump_false(151)
+    115: push_scope
+    116: load_var(2)  -- POS
+    117: jump_null(123)
+    118: push_const(10)  -- 1
+    119: jump_null(122)
+    120: add
+    121: jump(125)
+    122: pop
+    123: pop
+    124: push_const(11)  -- null
+    125: store_var(2)  -- POS
+    126: load_var(2)  -- POS
+    127: pop
+    128: load_var(0)  -- _PR_MATCH
+    129: load_var(1)  -- TOKENS
+    130: load_var(2)  -- POS
+    131: call(2)
+    132: store_var(12)  -- R2
+    133: load_var(12)  -- R2
+    134: pop
+    135: load_var(13)  -- _PR_RES
+    136: load_var(14)  -- _PR_NODE
+    137: push_const(19)  -- lt
+    138: load_var(5)  -- NODE
+    139: load_var(12)  -- R2
+    140: push_const(4)  -- node
+    141: get_index
+    142: make_list(2)
+    143: call(2)
+    144: load_var(12)  -- R2
+    145: push_const(6)  -- pos
+    146: get_index
+    147: call(2)
+    148: ret
+    149: pop_scope
+    150: jump(152)
+    151: push_const(11)  -- null
+    152: pop
+    153: load_var(8)  -- TT
+    154: push_const(20)  -- <=
+    155: cmp_eq
+    156: jump_false(193)
+    157: push_scope
+    158: load_var(2)  -- POS
+    159: jump_null(165)
+    160: push_const(10)  -- 1
+    161: jump_null(164)
+    162: add
+    163: jump(167)
+    164: pop
+    165: pop
+    166: push_const(11)  -- null
+    167: store_var(2)  -- POS
+    168: load_var(2)  -- POS
+    169: pop
+    170: load_var(0)  -- _PR_MATCH
+    171: load_var(1)  -- TOKENS
+    172: load_var(2)  -- POS
+    173: call(2)
+    174: store_var(12)  -- R2
+    175: load_var(12)  -- R2
+    176: pop
+    177: load_var(13)  -- _PR_RES
+    178: load_var(14)  -- _PR_NODE
+    179: push_const(21)  -- lte
+    180: load_var(5)  -- NODE
+    181: load_var(12)  -- R2
+    182: push_const(4)  -- node
+    183: get_index
+    184: make_list(2)
+    185: call(2)
+    186: load_var(12)  -- R2
+    187: push_const(6)  -- pos
+    188: get_index
+    189: call(2)
+    190: ret
+    191: pop_scope
+    192: jump(194)
+    193: push_const(11)  -- null
+    194: pop
+    195: load_var(8)  -- TT
+    196: push_const(22)  -- >
+    197: cmp_eq
+    198: jump_false(235)
+    199: push_scope
+    200: load_var(2)  -- POS
+    201: jump_null(207)
+    202: push_const(10)  -- 1
+    203: jump_null(206)
+    204: add
+    205: jump(209)
+    206: pop
+    207: pop
+    208: push_const(11)  -- null
+    209: store_var(2)  -- POS
+    210: load_var(2)  -- POS
+    211: pop
+    212: load_var(0)  -- _PR_MATCH
+    213: load_var(1)  -- TOKENS
+    214: load_var(2)  -- POS
+    215: call(2)
+    216: store_var(12)  -- R2
+    217: load_var(12)  -- R2
+    218: pop
+    219: load_var(13)  -- _PR_RES
+    220: load_var(14)  -- _PR_NODE
+    221: push_const(23)  -- gt
+    222: load_var(5)  -- NODE
+    223: load_var(12)  -- R2
+    224: push_const(4)  -- node
+    225: get_index
+    226: make_list(2)
+    227: call(2)
+    228: load_var(12)  -- R2
+    229: push_const(6)  -- pos
+    230: get_index
+    231: call(2)
+    232: ret
+    233: pop_scope
+    234: jump(236)
+    235: push_const(11)  -- null
+    236: pop
+    237: load_var(8)  -- TT
+    238: push_const(24)  -- >=
+    239: cmp_eq
+    240: jump_false(277)
+    241: push_scope
+    242: load_var(2)  -- POS
+    243: jump_null(249)
+    244: push_const(10)  -- 1
+    245: jump_null(248)
+    246: add
+    247: jump(251)
+    248: pop
+    249: pop
+    250: push_const(11)  -- null
+    251: store_var(2)  -- POS
+    252: load_var(2)  -- POS
+    253: pop
+    254: load_var(0)  -- _PR_MATCH
+    255: load_var(1)  -- TOKENS
+    256: load_var(2)  -- POS
+    257: call(2)
+    258: store_var(12)  -- R2
+    259: load_var(12)  -- R2
+    260: pop
+    261: load_var(13)  -- _PR_RES
+    262: load_var(14)  -- _PR_NODE
+    263: push_const(25)  -- gte
+    264: load_var(5)  -- NODE
+    265: load_var(12)  -- R2
+    266: push_const(4)  -- node
+    267: get_index
+    268: make_list(2)
+    269: call(2)
+    270: load_var(12)  -- R2
+    271: push_const(6)  -- pos
+    272: get_index
+    273: call(2)
+    274: ret
+    275: pop_scope
+    276: jump(278)
+    277: push_const(11)  -- null
+    278: pop
+    279: load_var(13)  -- _PR_RES
+    280: load_var(5)  -- NODE
+    281: load_var(2)  -- POS
+    282: call(2)
+    283: ret
+    284: pop_scope
+    285: ret
+CHUNK ___PR_EXTRACT_PARAMS_11 (NODE)
+  CONST  0: NODE
+  CONST  1: sym
+  CONST  2: ident
+  CONST  3: val
+  CONST  4: null
+  CONST  5: call
+  CONST  6: PARAMS
+  CONST  7: 1
+  CONST  8: I
+  CONST  9: LENGTH
+  CONST  10: children
+  CONST  11: CH
+  CONST  12: list
+  CONST  13: 0
+  CODE:
+    0: push_scope
+    1: load_var(0)  -- NODE
+    2: push_const(1)  -- sym
+    3: get_index
+    4: push_const(2)  -- ident
+    5: cmp_eq
+    6: jump_false(13)
+    7: load_var(0)  -- NODE
+    8: push_const(3)  -- val
+    9: get_index
+    10: make_list(1)
+    11: ret
+    12: jump(14)
+    13: push_const(4)  -- null
+    14: pop
+    15: load_var(0)  -- NODE
+    16: push_const(1)  -- sym
+    17: get_index
+    18: push_const(5)  -- call
+    19: cmp_eq
+    20: jump_false(98)
+    21: push_scope
+    22: make_list(0)
+    23: store_var(6)  -- PARAMS
+    24: load_var(6)  -- PARAMS
+    25: pop
+    26: push_const(7)  -- 1
+    27: store_var(8)  -- I
+    28: load_var(8)  -- I
+    29: pop
+    30: push_const(4)  -- null
+    31: store_reg(0)
+    32: load_var(8)  -- I
+    33: jump_null(43)
+    34: load_var(9)  -- LENGTH
+    35: load_var(0)  -- NODE
+    36: push_const(10)  -- children
+    37: get_index
+    38: call(1)
+    39: jump_null(42)
+    40: cmp_lt
+    41: jump(45)
+    42: pop
+    43: pop
+    44: push_const(4)  -- null
+    45: jump_false(92)
+    46: push_scope
+    47: load_var(0)  -- NODE
+    48: push_const(10)  -- children
+    49: get_index
+    50: load_var(8)  -- I
+    51: get_index
+    52: store_var(11)  -- CH
+    53: load_var(11)  -- CH
+    54: pop
+    55: load_var(11)  -- CH
+    56: push_const(1)  -- sym
+    57: get_index
+    58: push_const(2)  -- ident
+    59: cmp_eq
+    60: jump_false(76)
+    61: load_var(6)  -- PARAMS
+    62: jump_null(71)
+    63: load_var(11)  -- CH
+    64: push_const(3)  -- val
+    65: get_index
+    66: make_list(1)
+    67: jump_null(70)
+    68: add
+    69: jump(73)
+    70: pop
+    71: pop
+    72: push_const(4)  -- null
+    73: store_var(6)  -- PARAMS
+    74: load_var(6)  -- PARAMS
+    75: jump(77)
+    76: push_const(4)  -- null
+    77: pop
+    78: load_var(8)  -- I
+    79: jump_null(85)
+    80: push_const(7)  -- 1
+    81: jump_null(84)
+    82: add
+    83: jump(87)
+    84: pop
+    85: pop
+    86: push_const(4)  -- null
+    87: store_var(8)  -- I
+    88: load_var(8)  -- I
+    89: pop_scope
+    90: store_reg(0)
+    91: jump(32)
+    92: load_reg(0)
+    93: pop
+    94: load_var(6)  -- PARAMS
+    95: ret
+    96: pop_scope
+    97: jump(99)
+    98: push_const(4)  -- null
+    99: pop
+    100: load_var(0)  -- NODE
+    101: push_const(1)  -- sym
+    102: get_index
+    103: push_const(12)  -- list
+    104: cmp_eq
+    105: jump_false(183)
+    106: push_scope
+    107: make_list(0)
+    108: store_var(6)  -- PARAMS
+    109: load_var(6)  -- PARAMS
+    110: pop
+    111: push_const(13)  -- 0
+    112: store_var(8)  -- I
+    113: load_var(8)  -- I
+    114: pop
+    115: push_const(4)  -- null
+    116: store_reg(1)
+    117: load_var(8)  -- I
+    118: jump_null(128)
+    119: load_var(9)  -- LENGTH
+    120: load_var(0)  -- NODE
+    121: push_const(10)  -- children
+    122: get_index
+    123: call(1)
+    124: jump_null(127)
+    125: cmp_lt
+    126: jump(130)
+    127: pop
+    128: pop
+    129: push_const(4)  -- null
+    130: jump_false(177)
+    131: push_scope
+    132: load_var(0)  -- NODE
+    133: push_const(10)  -- children
+    134: get_index
+    135: load_var(8)  -- I
+    136: get_index
+    137: store_var(11)  -- CH
+    138: load_var(11)  -- CH
+    139: pop
+    140: load_var(11)  -- CH
+    141: push_const(1)  -- sym
+    142: get_index
+    143: push_const(2)  -- ident
+    144: cmp_eq
+    145: jump_false(161)
+    146: load_var(6)  -- PARAMS
+    147: jump_null(156)
+    148: load_var(11)  -- CH
+    149: push_const(3)  -- val
+    150: get_index
+    151: make_list(1)
+    152: jump_null(155)
+    153: add
+    154: jump(158)
+    155: pop
+    156: pop
+    157: push_const(4)  -- null
+    158: store_var(6)  -- PARAMS
+    159: load_var(6)  -- PARAMS
+    160: jump(162)
+    161: push_const(4)  -- null
+    162: pop
+    163: load_var(8)  -- I
+    164: jump_null(170)
+    165: push_const(7)  -- 1
+    166: jump_null(169)
+    167: add
+    168: jump(172)
+    169: pop
+    170: pop
+    171: push_const(4)  -- null
+    172: store_var(8)  -- I
+    173: load_var(8)  -- I
+    174: pop_scope
+    175: store_reg(1)
+    176: jump(117)
+    177: load_reg(1)
+    178: pop
+    179: load_var(6)  -- PARAMS
+    180: ret
+    181: pop_scope
+    182: jump(184)
+    183: push_const(4)  -- null
+    184: pop
+    185: make_list(0)
+    186: ret
+    187: pop_scope
+    188: ret
+CHUNK ___PR_FOR_29 (TOKENS, POS)
+  CONST  0: POS
+  CONST  1: 1
+  CONST  2: null
+  CONST  3: _PR_TV
+  CONST  4: TOKENS
+  CONST  5: VAR_NAME
+  CONST  6: _PR_IS
+  CONST  7: :=
+  CONST  8: _PR_ASSIGN
+  CONST  9: RS
+  CONST  10: node
+  CONST  11: START
+  CONST  12: pos
+  CONST  13: TO
+  CONST  14: RE
+  CONST  15: END_EXPR
+  CONST  16: STEP_EXPR
+  CONST  17: STEP
+  CONST  18: RST
+  CONST  19: DO
+  CONST  20: _PR_STMT
+  CONST  21: RB
+  CONST  22: BODY
+  CONST  23: CHILDREN
+  CONST  24: _PR_RES
+  CONST  25: sym
+  CONST  26: for
+  CONST  27: children
+  CONST  28: val
+  CONST  29: UPPERCASE
+  CODE:
+    0: push_scope
+    1: load_var(0)  -- POS
+    2: jump_null(8)
+    3: push_const(1)  -- 1
+    4: jump_null(7)
+    5: add
+    6: jump(10)
+    7: pop
+    8: pop
+    9: push_const(2)  -- null
+    10: store_var(0)  -- POS
+    11: load_var(0)  -- POS
+    12: pop
+    13: load_var(3)  -- _PR_TV
+    14: load_var(4)  -- TOKENS
+    15: load_var(0)  -- POS
+    16: call(2)
+    17: store_var(5)  -- VAR_NAME
+    18: load_var(5)  -- VAR_NAME
+    19: pop
+    20: load_var(0)  -- POS
+    21: jump_null(27)
+    22: push_const(1)  -- 1
+    23: jump_null(26)
+    24: add
+    25: jump(29)
+    26: pop
+    27: pop
+    28: push_const(2)  -- null
+    29: store_var(0)  -- POS
+    30: load_var(0)  -- POS
+    31: pop
+    32: load_var(6)  -- _PR_IS
+    33: load_var(4)  -- TOKENS
+    34: load_var(0)  -- POS
+    35: push_const(7)  -- :=
+    36: call(3)
+    37: jump_false(50)
+    38: load_var(0)  -- POS
+    39: jump_null(45)
+    40: push_const(1)  -- 1
+    41: jump_null(44)
+    42: add
+    43: jump(47)
+    44: pop
+    45: pop
+    46: push_const(2)  -- null
+    47: store_var(0)  -- POS
+    48: load_var(0)  -- POS
+    49: jump(51)
+    50: push_const(2)  -- null
+    51: pop
+    52: load_var(8)  -- _PR_ASSIGN
+    53: load_var(4)  -- TOKENS
+    54: load_var(0)  -- POS
+    55: call(2)
+    56: store_var(9)  -- RS
+    57: load_var(9)  -- RS
+    58: pop
+    59: load_var(9)  -- RS
+    60: push_const(10)  -- node
+    61: get_index
+    62: store_var(11)  -- START
+    63: load_var(11)  -- START
+    64: pop
+    65: load_var(9)  -- RS
+    66: push_const(12)  -- pos
+    67: get_index
+    68: store_var(0)  -- POS
+    69: load_var(0)  -- POS
+    70: pop
+    71: load_var(6)  -- _PR_IS
+    72: load_var(4)  -- TOKENS
+    73: load_var(0)  -- POS
+    74: push_const(13)  -- TO
+    75: call(3)
+    76: jump_false(89)
+    77: load_var(0)  -- POS
+    78: jump_null(84)
+    79: push_const(1)  -- 1
+    80: jump_null(83)
+    81: add
+    82: jump(86)
+    83: pop
+    84: pop
+    85: push_const(2)  -- null
+    86: store_var(0)  -- POS
+    87: load_var(0)  -- POS
+    88: jump(90)
+    89: push_const(2)  -- null
+    90: pop
+    91: load_var(8)  -- _PR_ASSIGN
+    92: load_var(4)  -- TOKENS
+    93: load_var(0)  -- POS
+    94: call(2)
+    95: store_var(14)  -- RE
+    96: load_var(14)  -- RE
+    97: pop
+    98: load_var(14)  -- RE
+    99: push_const(10)  -- node
+    100: get_index
+    101: store_var(15)  -- END_EXPR
+    102: load_var(15)  -- END_EXPR
+    103: pop
+    104: load_var(14)  -- RE
+    105: push_const(12)  -- pos
+    106: get_index
+    107: store_var(0)  -- POS
+    108: load_var(0)  -- POS
+    109: pop
+    110: push_const(2)  -- null
+    111: store_var(16)  -- STEP_EXPR
+    112: load_var(16)  -- STEP_EXPR
+    113: pop
+    114: load_var(6)  -- _PR_IS
+    115: load_var(4)  -- TOKENS
+    116: load_var(0)  -- POS
+    117: push_const(17)  -- STEP
+    118: call(3)
+    119: jump_false(153)
+    120: push_scope
+    121: load_var(0)  -- POS
+    122: jump_null(128)
+    123: push_const(1)  -- 1
+    124: jump_null(127)
+    125: add
+    126: jump(130)
+    127: pop
+    128: pop
+    129: push_const(2)  -- null
+    130: store_var(0)  -- POS
+    131: load_var(0)  -- POS
+    132: pop
+    133: load_var(8)  -- _PR_ASSIGN
+    134: load_var(4)  -- TOKENS
+    135: load_var(0)  -- POS
+    136: call(2)
+    137: store_var(18)  -- RST
+    138: load_var(18)  -- RST
+    139: pop
+    140: load_var(18)  -- RST
+    141: push_const(10)  -- node
+    142: get_index
+    143: store_var(16)  -- STEP_EXPR
+    144: load_var(16)  -- STEP_EXPR
+    145: pop
+    146: load_var(18)  -- RST
+    147: push_const(12)  -- pos
+    148: get_index
+    149: store_var(0)  -- POS
+    150: load_var(0)  -- POS
+    151: pop_scope
+    152: jump(154)
+    153: push_const(2)  -- null
+    154: pop
+    155: load_var(6)  -- _PR_IS
+    156: load_var(4)  -- TOKENS
+    157: load_var(0)  -- POS
+    158: push_const(19)  -- DO
+    159: call(3)
+    160: jump_false(173)
+    161: load_var(0)  -- POS
+    162: jump_null(168)
+    163: push_const(1)  -- 1
+    164: jump_null(167)
+    165: add
+    166: jump(170)
+    167: pop
+    168: pop
+    169: push_const(2)  -- null
+    170: store_var(0)  -- POS
+    171: load_var(0)  -- POS
+    172: jump(174)
+    173: push_const(2)  -- null
+    174: pop
+    175: load_var(20)  -- _PR_STMT
+    176: load_var(4)  -- TOKENS
+    177: load_var(0)  -- POS
+    178: call(2)
+    179: store_var(21)  -- RB
+    180: load_var(21)  -- RB
+    181: pop
+    182: load_var(21)  -- RB
+    183: push_const(10)  -- node
+    184: get_index
+    185: store_var(22)  -- BODY
+    186: load_var(22)  -- BODY
+    187: pop
+    188: load_var(21)  -- RB
+    189: push_const(12)  -- pos
+    190: get_index
+    191: store_var(0)  -- POS
+    192: load_var(0)  -- POS
+    193: pop
+    194: load_var(11)  -- START
+    195: load_var(15)  -- END_EXPR
+    196: load_var(22)  -- BODY
+    197: make_list(3)
+    198: store_var(23)  -- CHILDREN
+    199: load_var(23)  -- CHILDREN
+    200: pop
+    201: load_var(16)  -- STEP_EXPR
+    202: push_const(2)  -- null
+    203: cmp_neq
+    204: jump_false(218)
+    205: load_var(23)  -- CHILDREN
+    206: jump_null(213)
+    207: load_var(16)  -- STEP_EXPR
+    208: make_list(1)
+    209: jump_null(212)
+    210: add
+    211: jump(215)
+    212: pop
+    213: pop
+    214: push_const(2)  -- null
+    215: store_var(23)  -- CHILDREN
+    216: load_var(23)  -- CHILDREN
+    217: jump(219)
+    218: push_const(2)  -- null
+    219: pop
+    220: load_var(24)  -- _PR_RES
+    221: push_const(25)  -- sym
+    222: push_const(26)  -- for
+    223: push_const(27)  -- children
+    224: load_var(23)  -- CHILDREN
+    225: push_const(28)  -- val
+    226: load_var(29)  -- UPPERCASE
+    227: load_var(5)  -- VAR_NAME
+    228: call(1)
+    229: make_map(3)
+    230: load_var(0)  -- POS
+    231: call(2)
+    232: ret
+    233: pop_scope
+    234: ret
+CHUNK ___PR_IF_26 (TOKENS, POS)
+  CONST  0: POS
+  CONST  1: 1
+  CONST  2: null
+  CONST  3: _PR_ASSIGN
+  CONST  4: TOKENS
+  CONST  5: RC
+  CONST  6: node
+  CONST  7: COND
+  CONST  8: pos
+  CONST  9: _PR_IS
+  CONST  10: THEN
+  CONST  11: _PR_STMT
+  CONST  12: RT
+  CONST  13: THEN_BR
+  CONST  14: ELSE
+  CONST  15: RE
+  CONST  16: _PR_RES
+  CONST  17: _PR_NODE
+  CONST  18: if
+  CODE:
+    0: push_scope
+    1: load_var(0)  -- POS
+    2: jump_null(8)
+    3: push_const(1)  -- 1
+    4: jump_null(7)
+    5: add
+    6: jump(10)
+    7: pop
+    8: pop
+    9: push_const(2)  -- null
+    10: store_var(0)  -- POS
+    11: load_var(0)  -- POS
+    12: pop
+    13: load_var(3)  -- _PR_ASSIGN
+    14: load_var(4)  -- TOKENS
+    15: load_var(0)  -- POS
+    16: call(2)
+    17: store_var(5)  -- RC
+    18: load_var(5)  -- RC
+    19: pop
+    20: load_var(5)  -- RC
+    21: push_const(6)  -- node
+    22: get_index
+    23: store_var(7)  -- COND
+    24: load_var(7)  -- COND
+    25: pop
+    26: load_var(5)  -- RC
+    27: push_const(8)  -- pos
+    28: get_index
+    29: store_var(0)  -- POS
+    30: load_var(0)  -- POS
+    31: pop
+    32: load_var(9)  -- _PR_IS
+    33: load_var(4)  -- TOKENS
+    34: load_var(0)  -- POS
+    35: push_const(10)  -- THEN
+    36: call(3)
+    37: jump_false(50)
+    38: load_var(0)  -- POS
+    39: jump_null(45)
+    40: push_const(1)  -- 1
+    41: jump_null(44)
+    42: add
+    43: jump(47)
+    44: pop
+    45: pop
+    46: push_const(2)  -- null
+    47: store_var(0)  -- POS
+    48: load_var(0)  -- POS
+    49: jump(51)
+    50: push_const(2)  -- null
+    51: pop
+    52: load_var(11)  -- _PR_STMT
+    53: load_var(4)  -- TOKENS
+    54: load_var(0)  -- POS
+    55: call(2)
+    56: store_var(12)  -- RT
+    57: load_var(12)  -- RT
+    58: pop
+    59: load_var(12)  -- RT
+    60: push_const(6)  -- node
+    61: get_index
+    62: store_var(13)  -- THEN_BR
+    63: load_var(13)  -- THEN_BR
+    64: pop
+    65: load_var(12)  -- RT
+    66: push_const(8)  -- pos
+    67: get_index
+    68: store_var(0)  -- POS
+    69: load_var(0)  -- POS
+    70: pop
+    71: load_var(9)  -- _PR_IS
+    72: load_var(4)  -- TOKENS
+    73: load_var(0)  -- POS
+    74: push_const(14)  -- ELSE
+    75: call(3)
+    76: jump_false(114)
+    77: push_scope
+    78: load_var(0)  -- POS
+    79: jump_null(85)
+    80: push_const(1)  -- 1
+    81: jump_null(84)
+    82: add
+    83: jump(87)
+    84: pop
+    85: pop
+    86: push_const(2)  -- null
+    87: store_var(0)  -- POS
+    88: load_var(0)  -- POS
+    89: pop
+    90: load_var(11)  -- _PR_STMT
+    91: load_var(4)  -- TOKENS
+    92: load_var(0)  -- POS
+    93: call(2)
+    94: store_var(15)  -- RE
+    95: load_var(15)  -- RE
+    96: pop
+    97: load_var(16)  -- _PR_RES
+    98: load_var(17)  -- _PR_NODE
+    99: push_const(18)  -- if
+    100: load_var(7)  -- COND
+    101: load_var(13)  -- THEN_BR
+    102: load_var(15)  -- RE
+    103: push_const(6)  -- node
+    104: get_index
+    105: make_list(3)
+    106: call(2)
+    107: load_var(15)  -- RE
+    108: push_const(8)  -- pos
+    109: get_index
+    110: call(2)
+    111: ret
+    112: pop_scope
+    113: jump(115)
+    114: push_const(2)  -- null
+    115: pop
+    116: load_var(16)  -- _PR_RES
+    117: load_var(17)  -- _PR_NODE
+    118: push_const(18)  -- if
+    119: load_var(7)  -- COND
+    120: load_var(13)  -- THEN_BR
+    121: make_list(2)
+    122: call(2)
+    123: load_var(0)  -- POS
+    124: call(2)
+    125: ret
+    126: pop_scope
+    127: ret
+CHUNK ___PR_IN_17 (TOKENS, POS)
+  CONST  0: _PR_ADD
+  CONST  1: TOKENS
+  CONST  2: POS
+  CONST  3: R
+  CONST  4: node
+  CONST  5: NODE
+  CONST  6: pos
+  CONST  7: _PR_IS
+  CONST  8: IN
+  CONST  9: 1
+  CONST  10: null
+  CONST  11: R2
+  CONST  12: _PR_RES
+  CONST  13: _PR_NODE
+  CONST  14: in
+  CODE:
+    0: push_scope
+    1: load_var(0)  -- _PR_ADD
+    2: load_var(1)  -- TOKENS
+    3: load_var(2)  -- POS
+    4: call(2)
+    5: store_var(3)  -- R
+    6: load_var(3)  -- R
+    7: pop
+    8: load_var(3)  -- R
+    9: push_const(4)  -- node
+    10: get_index
+    11: store_var(5)  -- NODE
+    12: load_var(5)  -- NODE
+    13: pop
+    14: load_var(3)  -- R
+    15: push_const(6)  -- pos
+    16: get_index
+    17: store_var(2)  -- POS
+    18: load_var(2)  -- POS
+    19: pop
+    20: load_var(7)  -- _PR_IS
+    21: load_var(1)  -- TOKENS
+    22: load_var(2)  -- POS
+    23: push_const(8)  -- IN
+    24: call(3)
+    25: jump_false(62)
+    26: push_scope
+    27: load_var(2)  -- POS
+    28: jump_null(34)
+    29: push_const(9)  -- 1
+    30: jump_null(33)
+    31: add
+    32: jump(36)
+    33: pop
+    34: pop
+    35: push_const(10)  -- null
+    36: store_var(2)  -- POS
+    37: load_var(2)  -- POS
+    38: pop
+    39: load_var(0)  -- _PR_ADD
+    40: load_var(1)  -- TOKENS
+    41: load_var(2)  -- POS
+    42: call(2)
+    43: store_var(11)  -- R2
+    44: load_var(11)  -- R2
+    45: pop
+    46: load_var(12)  -- _PR_RES
+    47: load_var(13)  -- _PR_NODE
+    48: push_const(14)  -- in
+    49: load_var(5)  -- NODE
+    50: load_var(11)  -- R2
+    51: push_const(4)  -- node
+    52: get_index
+    53: make_list(2)
+    54: call(2)
+    55: load_var(11)  -- R2
+    56: push_const(6)  -- pos
+    57: get_index
+    58: call(2)
+    59: ret
+    60: pop_scope
+    61: jump(63)
+    62: push_const(10)  -- null
+    63: pop
+    64: load_var(12)  -- _PR_RES
+    65: load_var(5)  -- NODE
+    66: load_var(2)  -- POS
+    67: call(2)
+    68: ret
+    69: pop_scope
+    70: ret
+CHUNK ___PR_IS_2 (TOKENS, POS, T)
+  CONST  0: TOKENS
+  CONST  1: POS
+  CONST  2: t
+  CONST  3: T
+  CODE:
+    0: load_var(0)  -- TOKENS
+    1: load_var(1)  -- POS
+    2: get_index
+    3: push_const(2)  -- t
+    4: get_index
+    5: load_var(3)  -- T
+    6: cmp_eq
+    7: ret
+CHUNK ___PR_KV_5 (K, V)
+  CONST  0: sym
+  CONST  1: kv
+  CONST  2: children
+  CONST  3: K
+  CONST  4: V
+  CONST  5: val
+  CONST  6: null
+  CODE:
+    0: push_const(0)  -- sym
+    1: push_const(1)  -- kv
+    2: push_const(2)  -- children
+    3: load_var(3)  -- K
+    4: load_var(4)  -- V
+    5: make_list(2)
+    6: push_const(5)  -- val
+    7: push_const(6)  -- null
+    8: make_map(3)
+    9: ret
+CHUNK ___PR_LEAF_4 (SYM, VAL)
+  CONST  0: sym
+  CONST  1: SYM
+  CONST  2: children
+  CONST  3: val
+  CONST  4: VAL
+  CODE:
+    0: push_const(0)  -- sym
+    1: load_var(1)  -- SYM
+    2: push_const(2)  -- children
+    3: make_list(0)
+    4: push_const(3)  -- val
+    5: load_var(4)  -- VAL
+    6: make_map(3)
+    7: ret
+CHUNK ___PR_MAP_24 (TOKENS, POS)
+  CONST  0: POS
+  CONST  1: 1
+  CONST  2: null
+  CONST  3: PAIRS
+  CONST  4: _PR_IS
+  CONST  5: TOKENS
+  CONST  6: }
+  CONST  7: EOF
+  CONST  8: _PR_ASSIGN
+  CONST  9: RK
+  CONST  10: node
+  CONST  11: K
+  CONST  12: pos
+  CONST  13: :
+  CONST  14: RV
+  CONST  15: V
+  CONST  16: _PR_KV
+  CONST  17: ,
+  CONST  18: _PR_RES
+  CONST  19: _PR_NODE
+  CONST  20: map
+  CODE:
+    0: push_scope
+    1: load_var(0)  -- POS
+    2: jump_null(8)
+    3: push_const(1)  -- 1
+    4: jump_null(7)
+    5: add
+    6: jump(10)
+    7: pop
+    8: pop
+    9: push_const(2)  -- null
+    10: store_var(0)  -- POS
+    11: load_var(0)  -- POS
+    12: pop
+    13: make_list(0)
+    14: store_var(3)  -- PAIRS
+    15: load_var(3)  -- PAIRS
+    16: pop
+    17: push_const(2)  -- null
+    18: store_reg(0)
+    19: load_var(4)  -- _PR_IS
+    20: load_var(5)  -- TOKENS
+    21: load_var(0)  -- POS
+    22: push_const(6)  -- }
+    23: call(3)
+    24: jump_null(26)
+    25: log_not
+    26: load_var(4)  -- _PR_IS
+    27: load_var(5)  -- TOKENS
+    28: load_var(0)  -- POS
+    29: push_const(7)  -- EOF
+    30: call(3)
+    31: jump_null(33)
+    32: log_not
+    33: log_and
+    34: jump_false(132)
+    35: push_scope
+    36: load_var(8)  -- _PR_ASSIGN
+    37: load_var(5)  -- TOKENS
+    38: load_var(0)  -- POS
+    39: call(2)
+    40: store_var(9)  -- RK
+    41: load_var(9)  -- RK
+    42: pop
+    43: load_var(9)  -- RK
+    44: push_const(10)  -- node
+    45: get_index
+    46: store_var(11)  -- K
+    47: load_var(11)  -- K
+    48: pop
+    49: load_var(9)  -- RK
+    50: push_const(12)  -- pos
+    51: get_index
+    52: store_var(0)  -- POS
+    53: load_var(0)  -- POS
+    54: pop
+    55: load_var(4)  -- _PR_IS
+    56: load_var(5)  -- TOKENS
+    57: load_var(0)  -- POS
+    58: push_const(13)  -- :
+    59: call(3)
+    60: jump_false(73)
+    61: load_var(0)  -- POS
+    62: jump_null(68)
+    63: push_const(1)  -- 1
+    64: jump_null(67)
+    65: add
+    66: jump(70)
+    67: pop
+    68: pop
+    69: push_const(2)  -- null
+    70: store_var(0)  -- POS
+    71: load_var(0)  -- POS
+    72: jump(74)
+    73: push_const(2)  -- null
+    74: pop
+    75: load_var(8)  -- _PR_ASSIGN
+    76: load_var(5)  -- TOKENS
+    77: load_var(0)  -- POS
+    78: call(2)
+    79: store_var(14)  -- RV
+    80: load_var(14)  -- RV
+    81: pop
+    82: load_var(14)  -- RV
+    83: push_const(10)  -- node
+    84: get_index
+    85: store_var(15)  -- V
+    86: load_var(15)  -- V
+    87: pop
+    88: load_var(14)  -- RV
+    89: push_const(12)  -- pos
+    90: get_index
+    91: store_var(0)  -- POS
+    92: load_var(0)  -- POS
+    93: pop
+    94: load_var(3)  -- PAIRS
+    95: jump_null(105)
+    96: load_var(16)  -- _PR_KV
+    97: load_var(11)  -- K
+    98: load_var(15)  -- V
+    99: call(2)
+    100: make_list(1)
+    101: jump_null(104)
+    102: add
+    103: jump(107)
+    104: pop
+    105: pop
+    106: push_const(2)  -- null
+    107: store_var(3)  -- PAIRS
+    108: load_var(3)  -- PAIRS
+    109: pop
+    110: load_var(4)  -- _PR_IS
+    111: load_var(5)  -- TOKENS
+    112: load_var(0)  -- POS
+    113: push_const(17)  -- ,
+    114: call(3)
+    115: jump_false(128)
+    116: load_var(0)  -- POS
+    117: jump_null(123)
+    118: push_const(1)  -- 1
+    119: jump_null(122)
+    120: add
+    121: jump(125)
+    122: pop
+    123: pop
+    124: push_const(2)  -- null
+    125: store_var(0)  -- POS
+    126: load_var(0)  -- POS
+    127: jump(129)
+    128: push_const(2)  -- null
+    129: pop_scope
+    130: store_reg(0)
+    131: jump(19)
+    132: load_reg(0)
+    133: pop
+    134: load_var(4)  -- _PR_IS
+    135: load_var(5)  -- TOKENS
+    136: load_var(0)  -- POS
+    137: push_const(6)  -- }
+    138: call(3)
+    139: jump_false(152)
+    140: load_var(0)  -- POS
+    141: jump_null(147)
+    142: push_const(1)  -- 1
+    143: jump_null(146)
+    144: add
+    145: jump(149)
+    146: pop
+    147: pop
+    148: push_const(2)  -- null
+    149: store_var(0)  -- POS
+    150: load_var(0)  -- POS
+    151: jump(153)
+    152: push_const(2)  -- null
+    153: pop
+    154: load_var(18)  -- _PR_RES
+    155: load_var(19)  -- _PR_NODE
+    156: push_const(20)  -- map
+    157: load_var(3)  -- PAIRS
+    158: call(2)
+    159: load_var(0)  -- POS
+    160: call(2)
+    161: ret
+    162: pop_scope
+    163: ret
+CHUNK ___PR_MATCH_16 (TOKENS, POS)
+  CONST  0: _PR_IN
+  CONST  1: TOKENS
+  CONST  2: POS
+  CONST  3: R
+  CONST  4: node
+  CONST  5: NODE
+  CONST  6: pos
+  CONST  7: _PR_TT
+  CONST  8: TT
+  CONST  9: ~
+  CONST  10: 1
+  CONST  11: null
+  CONST  12: R2
+  CONST  13: _PR_RES
+  CONST  14: _PR_NODE
+  CONST  15: match
+  CONST  16: !~
+  CONST  17: not_match
+  CODE:
+    0: push_scope
+    1: load_var(0)  -- _PR_IN
+    2: load_var(1)  -- TOKENS
+    3: load_var(2)  -- POS
+    4: call(2)
+    5: store_var(3)  -- R
+    6: load_var(3)  -- R
+    7: pop
+    8: load_var(3)  -- R
+    9: push_const(4)  -- node
+    10: get_index
+    11: store_var(5)  -- NODE
+    12: load_var(5)  -- NODE
+    13: pop
+    14: load_var(3)  -- R
+    15: push_const(6)  -- pos
+    16: get_index
+    17: store_var(2)  -- POS
+    18: load_var(2)  -- POS
+    19: pop
+    20: load_var(7)  -- _PR_TT
+    21: load_var(1)  -- TOKENS
+    22: load_var(2)  -- POS
+    23: call(2)
+    24: store_var(8)  -- TT
+    25: load_var(8)  -- TT
+    26: pop
+    27: load_var(8)  -- TT
+    28: push_const(9)  -- ~
+    29: cmp_eq
+    30: jump_false(67)
+    31: push_scope
+    32: load_var(2)  -- POS
+    33: jump_null(39)
+    34: push_const(10)  -- 1
+    35: jump_null(38)
+    36: add
+    37: jump(41)
+    38: pop
+    39: pop
+    40: push_const(11)  -- null
+    41: store_var(2)  -- POS
+    42: load_var(2)  -- POS
+    43: pop
+    44: load_var(0)  -- _PR_IN
+    45: load_var(1)  -- TOKENS
+    46: load_var(2)  -- POS
+    47: call(2)
+    48: store_var(12)  -- R2
+    49: load_var(12)  -- R2
+    50: pop
+    51: load_var(13)  -- _PR_RES
+    52: load_var(14)  -- _PR_NODE
+    53: push_const(15)  -- match
+    54: load_var(5)  -- NODE
+    55: load_var(12)  -- R2
+    56: push_const(4)  -- node
+    57: get_index
+    58: make_list(2)
+    59: call(2)
+    60: load_var(12)  -- R2
+    61: push_const(6)  -- pos
+    62: get_index
+    63: call(2)
+    64: ret
+    65: pop_scope
+    66: jump(68)
+    67: push_const(11)  -- null
+    68: pop
+    69: load_var(8)  -- TT
+    70: push_const(16)  -- !~
+    71: cmp_eq
+    72: jump_false(109)
+    73: push_scope
+    74: load_var(2)  -- POS
+    75: jump_null(81)
+    76: push_const(10)  -- 1
+    77: jump_null(80)
+    78: add
+    79: jump(83)
+    80: pop
+    81: pop
+    82: push_const(11)  -- null
+    83: store_var(2)  -- POS
+    84: load_var(2)  -- POS
+    85: pop
+    86: load_var(0)  -- _PR_IN
+    87: load_var(1)  -- TOKENS
+    88: load_var(2)  -- POS
+    89: call(2)
+    90: store_var(12)  -- R2
+    91: load_var(12)  -- R2
+    92: pop
+    93: load_var(13)  -- _PR_RES
+    94: load_var(14)  -- _PR_NODE
+    95: push_const(17)  -- not_match
+    96: load_var(5)  -- NODE
+    97: load_var(12)  -- R2
+    98: push_const(4)  -- node
+    99: get_index
+    100: make_list(2)
+    101: call(2)
+    102: load_var(12)  -- R2
+    103: push_const(6)  -- pos
+    104: get_index
+    105: call(2)
+    106: ret
+    107: pop_scope
+    108: jump(110)
+    109: push_const(11)  -- null
+    110: pop
+    111: load_var(13)  -- _PR_RES
+    112: load_var(5)  -- NODE
+    113: load_var(2)  -- POS
+    114: call(2)
+    115: ret
+    116: pop_scope
+    117: ret
+CHUNK ___PR_MUL_19 (TOKENS, POS)
+  CONST  0: _PR_POW
+  CONST  1: TOKENS
+  CONST  2: POS
+  CONST  3: R
+  CONST  4: node
+  CONST  5: NODE
+  CONST  6: pos
+  CONST  7: null
+  CONST  8: _PR_TT
+  CONST  9: *
+  CONST  10: /
+  CONST  11: %
+  CONST  12: TT
+  CONST  13: mul
+  CONST  14: div
+  CONST  15: mod
+  CONST  16: OP
+  CONST  17: 1
+  CONST  18: R2
+  CONST  19: _PR_NODE
+  CONST  20: _PR_RES
+  CODE:
+    0: push_scope
+    1: load_var(0)  -- _PR_POW
+    2: load_var(1)  -- TOKENS
+    3: load_var(2)  -- POS
+    4: call(2)
+    5: store_var(3)  -- R
+    6: load_var(3)  -- R
+    7: pop
+    8: load_var(3)  -- R
+    9: push_const(4)  -- node
+    10: get_index
+    11: store_var(5)  -- NODE
+    12: load_var(5)  -- NODE
+    13: pop
+    14: load_var(3)  -- R
+    15: push_const(6)  -- pos
+    16: get_index
+    17: store_var(2)  -- POS
+    18: load_var(2)  -- POS
+    19: pop
+    20: push_const(7)  -- null
+    21: store_reg(0)
+    22: load_var(8)  -- _PR_TT
+    23: load_var(1)  -- TOKENS
+    24: load_var(2)  -- POS
+    25: call(2)
+    26: push_const(9)  -- *
+    27: cmp_eq
+    28: load_var(8)  -- _PR_TT
+    29: load_var(1)  -- TOKENS
+    30: load_var(2)  -- POS
+    31: call(2)
+    32: push_const(10)  -- /
+    33: cmp_eq
+    34: log_or
+    35: load_var(8)  -- _PR_TT
+    36: load_var(1)  -- TOKENS
+    37: load_var(2)  -- POS
+    38: call(2)
+    39: push_const(11)  -- %
+    40: cmp_eq
+    41: log_or
+    42: jump_false(105)
+    43: push_scope
+    44: load_var(8)  -- _PR_TT
+    45: load_var(1)  -- TOKENS
+    46: load_var(2)  -- POS
+    47: call(2)
+    48: store_var(12)  -- TT
+    49: load_var(12)  -- TT
+    50: pop
+    51: load_var(12)  -- TT
+    52: push_const(9)  -- *
+    53: cmp_eq
+    54: jump_false(57)
+    55: push_const(13)  -- mul
+    56: jump(64)
+    57: load_var(12)  -- TT
+    58: push_const(10)  -- /
+    59: cmp_eq
+    60: jump_false(63)
+    61: push_const(14)  -- div
+    62: jump(64)
+    63: push_const(15)  -- mod
+    64: store_var(16)  -- OP
+    65: load_var(16)  -- OP
+    66: pop
+    67: load_var(2)  -- POS
+    68: jump_null(74)
+    69: push_const(17)  -- 1
+    70: jump_null(73)
+    71: add
+    72: jump(76)
+    73: pop
+    74: pop
+    75: push_const(7)  -- null
+    76: store_var(2)  -- POS
+    77: load_var(2)  -- POS
+    78: pop
+    79: load_var(0)  -- _PR_POW
+    80: load_var(1)  -- TOKENS
+    81: load_var(2)  -- POS
+    82: call(2)
+    83: store_var(18)  -- R2
+    84: load_var(18)  -- R2
+    85: pop
+    86: load_var(19)  -- _PR_NODE
+    87: load_var(16)  -- OP
+    88: load_var(5)  -- NODE
+    89: load_var(18)  -- R2
+    90: push_const(4)  -- node
+    91: get_index
+    92: make_list(2)
+    93: call(2)
+    94: store_var(5)  -- NODE
+    95: load_var(5)  -- NODE
+    96: pop
+    97: load_var(18)  -- R2
+    98: push_const(6)  -- pos
+    99: get_index
+    100: store_var(2)  -- POS
+    101: load_var(2)  -- POS
+    102: pop_scope
+    103: store_reg(0)
+    104: jump(22)
+    105: load_reg(0)
+    106: pop
+    107: load_var(20)  -- _PR_RES
+    108: load_var(5)  -- NODE
+    109: load_var(2)  -- POS
+    110: call(2)
+    111: ret
+    112: pop_scope
+    113: ret
+CHUNK ___PR_NODE_3 (SYM, CHILDREN)
+  CONST  0: sym
+  CONST  1: SYM
+  CONST  2: children
+  CONST  3: CHILDREN
+  CONST  4: val
+  CONST  5: null
+  CODE:
+    0: push_const(0)  -- sym
+    1: load_var(1)  -- SYM
+    2: push_const(2)  -- children
+    3: load_var(3)  -- CHILDREN
+    4: push_const(4)  -- val
+    5: push_const(5)  -- null
+    6: make_map(3)
+    7: ret
+CHUNK ___PR_NOT_14 (TOKENS, POS)
+  CONST  0: _PR_IS
+  CONST  1: TOKENS
+  CONST  2: POS
+  CONST  3: NOT
+  CONST  4: 1
+  CONST  5: null
+  CONST  6: _PR_NOT
+  CONST  7: R
+  CONST  8: _PR_RES
+  CONST  9: _PR_NODE
+  CONST  10: not
+  CONST  11: node
+  CONST  12: pos
+  CONST  13: _PR_COMP
+  CODE:
+    0: push_scope
+    1: load_var(0)  -- _PR_IS
+    2: load_var(1)  -- TOKENS
+    3: load_var(2)  -- POS
+    4: push_const(3)  -- NOT
+    5: call(3)
+    6: jump_false(42)
+    7: push_scope
+    8: load_var(2)  -- POS
+    9: jump_null(15)
+    10: push_const(4)  -- 1
+    11: jump_null(14)
+    12: add
+    13: jump(17)
+    14: pop
+    15: pop
+    16: push_const(5)  -- null
+    17: store_var(2)  -- POS
+    18: load_var(2)  -- POS
+    19: pop
+    20: load_var(6)  -- _PR_NOT
+    21: load_var(1)  -- TOKENS
+    22: load_var(2)  -- POS
+    23: call(2)
+    24: store_var(7)  -- R
+    25: load_var(7)  -- R
+    26: pop
+    27: load_var(8)  -- _PR_RES
+    28: load_var(9)  -- _PR_NODE
+    29: push_const(10)  -- not
+    30: load_var(7)  -- R
+    31: push_const(11)  -- node
+    32: get_index
+    33: make_list(1)
+    34: call(2)
+    35: load_var(7)  -- R
+    36: push_const(12)  -- pos
+    37: get_index
+    38: call(2)
+    39: ret
+    40: pop_scope
+    41: jump(43)
+    42: push_const(5)  -- null
+    43: pop
+    44: load_var(13)  -- _PR_COMP
+    45: load_var(1)  -- TOKENS
+    46: load_var(2)  -- POS
+    47: call(2)
+    48: ret
+    49: pop_scope
+    50: ret
+CHUNK ___PR_OBJECT_25 (TOKENS, POS)
+  CONST  0: POS
+  CONST  1: 1
+  CONST  2: null
+  CONST  3: _PR_IS
+  CONST  4: TOKENS
+  CONST  5: {
+  CONST  6: PAIRS
+  CONST  7: }
+  CONST  8: EOF
+  CONST  9: _PR_TV
+  CONST  10: KEY_NAME
+  CONST  11: _PR_LEAF
+  CONST  12: str_lit
+  CONST  13: K
+  CONST  14: :
+  CONST  15: _PR_ASSIGN
+  CONST  16: RV
+  CONST  17: node
+  CONST  18: V
+  CONST  19: pos
+  CONST  20: _PR_KV
+  CONST  21: ,
+  CONST  22: _PR_RES
+  CONST  23: _PR_NODE
+  CONST  24: object
+  CODE:
+    0: push_scope
+    1: load_var(0)  -- POS
+    2: jump_null(8)
+    3: push_const(1)  -- 1
+    4: jump_null(7)
+    5: add
+    6: jump(10)
+    7: pop
+    8: pop
+    9: push_const(2)  -- null
+    10: store_var(0)  -- POS
+    11: load_var(0)  -- POS
+    12: pop
+    13: load_var(3)  -- _PR_IS
+    14: load_var(4)  -- TOKENS
+    15: load_var(0)  -- POS
+    16: push_const(5)  -- {
+    17: call(3)
+    18: jump_false(31)
+    19: load_var(0)  -- POS
+    20: jump_null(26)
+    21: push_const(1)  -- 1
+    22: jump_null(25)
+    23: add
+    24: jump(28)
+    25: pop
+    26: pop
+    27: push_const(2)  -- null
+    28: store_var(0)  -- POS
+    29: load_var(0)  -- POS
+    30: jump(32)
+    31: push_const(2)  -- null
+    32: pop
+    33: make_list(0)
+    34: store_var(6)  -- PAIRS
+    35: load_var(6)  -- PAIRS
+    36: pop
+    37: push_const(2)  -- null
+    38: store_reg(0)
+    39: load_var(3)  -- _PR_IS
+    40: load_var(4)  -- TOKENS
+    41: load_var(0)  -- POS
+    42: push_const(7)  -- }
+    43: call(3)
+    44: jump_null(46)
+    45: log_not
+    46: load_var(3)  -- _PR_IS
+    47: load_var(4)  -- TOKENS
+    48: load_var(0)  -- POS
+    49: push_const(8)  -- EOF
+    50: call(3)
+    51: jump_null(53)
+    52: log_not
+    53: log_and
+    54: jump_false(159)
+    55: push_scope
+    56: load_var(9)  -- _PR_TV
+    57: load_var(4)  -- TOKENS
+    58: load_var(0)  -- POS
+    59: call(2)
+    60: store_var(10)  -- KEY_NAME
+    61: load_var(10)  -- KEY_NAME
+    62: pop
+    63: load_var(11)  -- _PR_LEAF
+    64: push_const(12)  -- str_lit
+    65: load_var(10)  -- KEY_NAME
+    66: call(2)
+    67: store_var(13)  -- K
+    68: load_var(13)  -- K
+    69: pop
+    70: load_var(0)  -- POS
+    71: jump_null(77)
+    72: push_const(1)  -- 1
+    73: jump_null(76)
+    74: add
+    75: jump(79)
+    76: pop
+    77: pop
+    78: push_const(2)  -- null
+    79: store_var(0)  -- POS
+    80: load_var(0)  -- POS
+    81: pop
+    82: load_var(3)  -- _PR_IS
+    83: load_var(4)  -- TOKENS
+    84: load_var(0)  -- POS
+    85: push_const(14)  -- :
+    86: call(3)
+    87: jump_false(100)
+    88: load_var(0)  -- POS
+    89: jump_null(95)
+    90: push_const(1)  -- 1
+    91: jump_null(94)
+    92: add
+    93: jump(97)
+    94: pop
+    95: pop
+    96: push_const(2)  -- null
+    97: store_var(0)  -- POS
+    98: load_var(0)  -- POS
+    99: jump(101)
+    100: push_const(2)  -- null
+    101: pop
+    102: load_var(15)  -- _PR_ASSIGN
+    103: load_var(4)  -- TOKENS
+    104: load_var(0)  -- POS
+    105: call(2)
+    106: store_var(16)  -- RV
+    107: load_var(16)  -- RV
+    108: pop
+    109: load_var(16)  -- RV
+    110: push_const(17)  -- node
+    111: get_index
+    112: store_var(18)  -- V
+    113: load_var(18)  -- V
+    114: pop
+    115: load_var(16)  -- RV
+    116: push_const(19)  -- pos
+    117: get_index
+    118: store_var(0)  -- POS
+    119: load_var(0)  -- POS
+    120: pop
+    121: load_var(6)  -- PAIRS
+    122: jump_null(132)
+    123: load_var(20)  -- _PR_KV
+    124: load_var(13)  -- K
+    125: load_var(18)  -- V
+    126: call(2)
+    127: make_list(1)
+    128: jump_null(131)
+    129: add
+    130: jump(134)
+    131: pop
+    132: pop
+    133: push_const(2)  -- null
+    134: store_var(6)  -- PAIRS
+    135: load_var(6)  -- PAIRS
+    136: pop
+    137: load_var(3)  -- _PR_IS
+    138: load_var(4)  -- TOKENS
+    139: load_var(0)  -- POS
+    140: push_const(21)  -- ,
+    141: call(3)
+    142: jump_false(155)
+    143: load_var(0)  -- POS
+    144: jump_null(150)
+    145: push_const(1)  -- 1
+    146: jump_null(149)
+    147: add
+    148: jump(152)
+    149: pop
+    150: pop
+    151: push_const(2)  -- null
+    152: store_var(0)  -- POS
+    153: load_var(0)  -- POS
+    154: jump(156)
+    155: push_const(2)  -- null
+    156: pop_scope
+    157: store_reg(0)
+    158: jump(39)
+    159: load_reg(0)
+    160: pop
+    161: load_var(3)  -- _PR_IS
+    162: load_var(4)  -- TOKENS
+    163: load_var(0)  -- POS
+    164: push_const(7)  -- }
+    165: call(3)
+    166: jump_false(179)
+    167: load_var(0)  -- POS
+    168: jump_null(174)
+    169: push_const(1)  -- 1
+    170: jump_null(173)
+    171: add
+    172: jump(176)
+    173: pop
+    174: pop
+    175: push_const(2)  -- null
+    176: store_var(0)  -- POS
+    177: load_var(0)  -- POS
+    178: jump(180)
+    179: push_const(2)  -- null
+    180: pop
+    181: load_var(22)  -- _PR_RES
+    182: load_var(23)  -- _PR_NODE
+    183: push_const(24)  -- object
+    184: load_var(6)  -- PAIRS
+    185: call(2)
+    186: load_var(0)  -- POS
+    187: call(2)
+    188: ret
+    189: pop_scope
+    190: ret
+CHUNK ___PR_OR_12 (TOKENS, POS)
+  CONST  0: _PR_AND
+  CONST  1: TOKENS
+  CONST  2: POS
+  CONST  3: R
+  CONST  4: node
+  CONST  5: NODE
+  CONST  6: pos
+  CONST  7: null
+  CONST  8: _PR_TT
+  CONST  9: OR
+  CONST  10: XOR
+  CONST  11: or
+  CONST  12: xor
+  CONST  13: OP
+  CONST  14: 1
+  CONST  15: R2
+  CONST  16: _PR_NODE
+  CONST  17: _PR_RES
+  CODE:
+    0: push_scope
+    1: load_var(0)  -- _PR_AND
+    2: load_var(1)  -- TOKENS
+    3: load_var(2)  -- POS
+    4: call(2)
+    5: store_var(3)  -- R
+    6: load_var(3)  -- R
+    7: pop
+    8: load_var(3)  -- R
+    9: push_const(4)  -- node
+    10: get_index
+    11: store_var(5)  -- NODE
+    12: load_var(5)  -- NODE
+    13: pop
+    14: load_var(3)  -- R
+    15: push_const(6)  -- pos
+    16: get_index
+    17: store_var(2)  -- POS
+    18: load_var(2)  -- POS
+    19: pop
+    20: push_const(7)  -- null
+    21: store_reg(0)
+    22: load_var(8)  -- _PR_TT
+    23: load_var(1)  -- TOKENS
+    24: load_var(2)  -- POS
+    25: call(2)
+    26: push_const(9)  -- OR
+    27: cmp_eq
+    28: load_var(8)  -- _PR_TT
+    29: load_var(1)  -- TOKENS
+    30: load_var(2)  -- POS
+    31: call(2)
+    32: push_const(10)  -- XOR
+    33: cmp_eq
+    34: log_or
+    35: jump_false(88)
+    36: push_scope
+    37: load_var(8)  -- _PR_TT
+    38: load_var(1)  -- TOKENS
+    39: load_var(2)  -- POS
+    40: call(2)
+    41: push_const(9)  -- OR
+    42: cmp_eq
+    43: jump_false(46)
+    44: push_const(11)  -- or
+    45: jump(47)
+    46: push_const(12)  -- xor
+    47: store_var(13)  -- OP
+    48: load_var(13)  -- OP
+    49: pop
+    50: load_var(2)  -- POS
+    51: jump_null(57)
+    52: push_const(14)  -- 1
+    53: jump_null(56)
+    54: add
+    55: jump(59)
+    56: pop
+    57: pop
+    58: push_const(7)  -- null
+    59: store_var(2)  -- POS
+    60: load_var(2)  -- POS
+    61: pop
+    62: load_var(0)  -- _PR_AND
+    63: load_var(1)  -- TOKENS
+    64: load_var(2)  -- POS
+    65: call(2)
+    66: store_var(15)  -- R2
+    67: load_var(15)  -- R2
+    68: pop
+    69: load_var(16)  -- _PR_NODE
+    70: load_var(13)  -- OP
+    71: load_var(5)  -- NODE
+    72: load_var(15)  -- R2
+    73: push_const(4)  -- node
+    74: get_index
+    75: make_list(2)
+    76: call(2)
+    77: store_var(5)  -- NODE
+    78: load_var(5)  -- NODE
+    79: pop
+    80: load_var(15)  -- R2
+    81: push_const(6)  -- pos
+    82: get_index
+    83: store_var(2)  -- POS
+    84: load_var(2)  -- POS
+    85: pop_scope
+    86: store_reg(0)
+    87: jump(22)
+    88: load_reg(0)
+    89: pop
+    90: load_var(17)  -- _PR_RES
+    91: load_var(5)  -- NODE
+    92: load_var(2)  -- POS
+    93: call(2)
+    94: ret
+    95: pop_scope
+    96: ret
+CHUNK ___PR_POSTFIX_22 (TOKENS, POS)
+  CONST  0: _PR_PRIMARY
+  CONST  1: TOKENS
+  CONST  2: POS
+  CONST  3: R
+  CONST  4: node
+  CONST  5: NODE
+  CONST  6: pos
+  CONST  7: false
+  CONST  8: DONE
+  CONST  9: null
+  CONST  10: _PR_TT
+  CONST  11: TT
+  CONST  12: 1
+  CONST  13: LENGTH
+  CONST  14: 
+  CONST  15: NEXT_TT
+  CONST  16: (
+  CONST  17: ARGS
+  CONST  18: _PR_IS
+  CONST  19: )
+  CONST  20: EOF
+  CONST  21: _PR_ASSIGN
+  CONST  22: RA
+  CONST  23: ,
+  CONST  24: sym
+  CONST  25: call
+  CONST  26: children
+  CONST  27: val
+  CONST  28: [
+  CONST  29: RI
+  CONST  30: ]
+  CONST  31: _PR_NODE
+  CONST  32: index
+  CONST  33: .
+  CONST  34: ID
+  CONST  35: _PR_TV
+  CONST  36: FIELD
+  CONST  37: 2
+  CONST  38: member
+  CONST  39: true
+  CONST  40: _PR_RES
+  CODE:
+    0: push_scope
+    1: load_var(0)  -- _PR_PRIMARY
+    2: load_var(1)  -- TOKENS
+    3: load_var(2)  -- POS
+    4: call(2)
+    5: store_var(3)  -- R
+    6: load_var(3)  -- R
+    7: pop
+    8: load_var(3)  -- R
+    9: push_const(4)  -- node
+    10: get_index
+    11: store_var(5)  -- NODE
+    12: load_var(5)  -- NODE
+    13: pop
+    14: load_var(3)  -- R
+    15: push_const(6)  -- pos
+    16: get_index
+    17: store_var(2)  -- POS
+    18: load_var(2)  -- POS
+    19: pop
+    20: push_const(7)  -- false
+    21: store_var(8)  -- DONE
+    22: load_var(8)  -- DONE
+    23: pop
+    24: push_const(9)  -- null
+    25: store_reg(0)
+    26: load_var(8)  -- DONE
+    27: jump_null(29)
+    28: log_not
+    29: jump_false(323)
+    30: push_scope
+    31: load_var(10)  -- _PR_TT
+    32: load_var(1)  -- TOKENS
+    33: load_var(2)  -- POS
+    34: call(2)
+    35: store_var(11)  -- TT
+    36: load_var(11)  -- TT
+    37: pop
+    38: load_var(2)  -- POS
+    39: jump_null(45)
+    40: push_const(12)  -- 1
+    41: jump_null(44)
+    42: add
+    43: jump(47)
+    44: pop
+    45: pop
+    46: push_const(9)  -- null
+    47: jump_null(55)
+    48: load_var(13)  -- LENGTH
+    49: load_var(1)  -- TOKENS
+    50: call(1)
+    51: jump_null(54)
+    52: cmp_lt
+    53: jump(57)
+    54: pop
+    55: pop
+    56: push_const(9)  -- null
+    57: jump_false(71)
+    58: load_var(10)  -- _PR_TT
+    59: load_var(1)  -- TOKENS
+    60: load_var(2)  -- POS
+    61: jump_null(67)
+    62: push_const(12)  -- 1
+    63: jump_null(66)
+    64: add
+    65: jump(69)
+    66: pop
+    67: pop
+    68: push_const(9)  -- null
+    69: call(2)
+    70: jump(72)
+    71: push_const(14)  -- 
+    72: store_var(15)  -- NEXT_TT
+    73: load_var(15)  -- NEXT_TT
+    74: pop
+    75: load_var(11)  -- TT
+    76: push_const(16)  -- (
+    77: cmp_eq
+    78: jump_false(207)
+    79: push_scope
+    80: load_var(2)  -- POS
+    81: jump_null(87)
+    82: push_const(12)  -- 1
+    83: jump_null(86)
+    84: add
+    85: jump(89)
+    86: pop
+    87: pop
+    88: push_const(9)  -- null
+    89: store_var(2)  -- POS
+    90: load_var(2)  -- POS
+    91: pop
+    92: make_list(0)
+    93: store_var(17)  -- ARGS
+    94: load_var(17)  -- ARGS
+    95: pop
+    96: push_const(9)  -- null
+    97: store_reg(1)
+    98: load_var(18)  -- _PR_IS
+    99: load_var(1)  -- TOKENS
+    100: load_var(2)  -- POS
+    101: push_const(19)  -- )
+    102: call(3)
+    103: jump_null(105)
+    104: log_not
+    105: load_var(18)  -- _PR_IS
+    106: load_var(1)  -- TOKENS
+    107: load_var(2)  -- POS
+    108: push_const(20)  -- EOF
+    109: call(3)
+    110: jump_null(112)
+    111: log_not
+    112: log_and
+    113: jump_false(165)
+    114: push_scope
+    115: load_var(21)  -- _PR_ASSIGN
+    116: load_var(1)  -- TOKENS
+    117: load_var(2)  -- POS
+    118: call(2)
+    119: store_var(22)  -- RA
+    120: load_var(22)  -- RA
+    121: pop
+    122: load_var(17)  -- ARGS
+    123: jump_null(132)
+    124: load_var(22)  -- RA
+    125: push_const(4)  -- node
+    126: get_index
+    127: make_list(1)
+    128: jump_null(131)
+    129: add
+    130: jump(134)
+    131: pop
+    132: pop
+    133: push_const(9)  -- null
+    134: store_var(17)  -- ARGS
+    135: load_var(17)  -- ARGS
+    136: pop
+    137: load_var(22)  -- RA
+    138: push_const(6)  -- pos
+    139: get_index
+    140: store_var(2)  -- POS
+    141: load_var(2)  -- POS
+    142: pop
+    143: load_var(18)  -- _PR_IS
+    144: load_var(1)  -- TOKENS
+    145: load_var(2)  -- POS
+    146: push_const(23)  -- ,
+    147: call(3)
+    148: jump_false(161)
+    149: load_var(2)  -- POS
+    150: jump_null(156)
+    151: push_const(12)  -- 1
+    152: jump_null(155)
+    153: add
+    154: jump(158)
+    155: pop
+    156: pop
+    157: push_const(9)  -- null
+    158: store_var(2)  -- POS
+    159: load_var(2)  -- POS
+    160: jump(162)
+    161: push_const(9)  -- null
+    162: pop_scope
+    163: store_reg(1)
+    164: jump(98)
+    165: load_reg(1)
+    166: pop
+    167: load_var(18)  -- _PR_IS
+    168: load_var(1)  -- TOKENS
+    169: load_var(2)  -- POS
+    170: push_const(19)  -- )
+    171: call(3)
+    172: jump_false(185)
+    173: load_var(2)  -- POS
+    174: jump_null(180)
+    175: push_const(12)  -- 1
+    176: jump_null(179)
+    177: add
+    178: jump(182)
+    179: pop
+    180: pop
+    181: push_const(9)  -- null
+    182: store_var(2)  -- POS
+    183: load_var(2)  -- POS
+    184: jump(186)
+    185: push_const(9)  -- null
+    186: pop
+    187: push_const(24)  -- sym
+    188: push_const(25)  -- call
+    189: push_const(26)  -- children
+    190: load_var(5)  -- NODE
+    191: make_list(1)
+    192: jump_null(198)
+    193: load_var(17)  -- ARGS
+    194: jump_null(197)
+    195: add
+    196: jump(200)
+    197: pop
+    198: pop
+    199: push_const(9)  -- null
+    200: push_const(27)  -- val
+    201: push_const(9)  -- null
+    202: make_map(3)
+    203: store_var(5)  -- NODE
+    204: load_var(5)  -- NODE
+    205: pop_scope
+    206: jump(320)
+    207: load_var(11)  -- TT
+    208: push_const(28)  -- [
+    209: cmp_eq
+    210: jump_false(269)
+    211: push_scope
+    212: load_var(2)  -- POS
+    213: jump_null(219)
+    214: push_const(12)  -- 1
+    215: jump_null(218)
+    216: add
+    217: jump(221)
+    218: pop
+    219: pop
+    220: push_const(9)  -- null
+    221: store_var(2)  -- POS
+    222: load_var(2)  -- POS
+    223: pop
+    224: load_var(21)  -- _PR_ASSIGN
+    225: load_var(1)  -- TOKENS
+    226: load_var(2)  -- POS
+    227: call(2)
+    228: store_var(29)  -- RI
+    229: load_var(29)  -- RI
+    230: pop
+    231: load_var(29)  -- RI
+    232: push_const(6)  -- pos
+    233: get_index
+    234: store_var(2)  -- POS
+    235: load_var(2)  -- POS
+    236: pop
+    237: load_var(18)  -- _PR_IS
+    238: load_var(1)  -- TOKENS
+    239: load_var(2)  -- POS
+    240: push_const(30)  -- ]
+    241: call(3)
+    242: jump_false(255)
+    243: load_var(2)  -- POS
+    244: jump_null(250)
+    245: push_const(12)  -- 1
+    246: jump_null(249)
+    247: add
+    248: jump(252)
+    249: pop
+    250: pop
+    251: push_const(9)  -- null
+    252: store_var(2)  -- POS
+    253: load_var(2)  -- POS
+    254: jump(256)
+    255: push_const(9)  -- null
+    256: pop
+    257: load_var(31)  -- _PR_NODE
+    258: push_const(32)  -- index
+    259: load_var(5)  -- NODE
+    260: load_var(29)  -- RI
+    261: push_const(4)  -- node
+    262: get_index
+    263: make_list(2)
+    264: call(2)
+    265: store_var(5)  -- NODE
+    266: load_var(5)  -- NODE
+    267: pop_scope
+    268: jump(320)
+    269: load_var(11)  -- TT
+    270: push_const(33)  -- .
+    271: cmp_eq
+    272: load_var(15)  -- NEXT_TT
+    273: push_const(34)  -- ID
+    274: cmp_eq
+    275: log_and
+    276: jump_false(317)
+    277: push_scope
+    278: load_var(35)  -- _PR_TV
+    279: load_var(1)  -- TOKENS
+    280: load_var(2)  -- POS
+    281: jump_null(287)
+    282: push_const(12)  -- 1
+    283: jump_null(286)
+    284: add
+    285: jump(289)
+    286: pop
+    287: pop
+    288: push_const(9)  -- null
+    289: call(2)
+    290: store_var(36)  -- FIELD
+    291: load_var(36)  -- FIELD
+    292: pop
+    293: load_var(2)  -- POS
+    294: jump_null(300)
+    295: push_const(37)  -- 2
+    296: jump_null(299)
+    297: add
+    298: jump(302)
+    299: pop
+    300: pop
+    301: push_const(9)  -- null
+    302: store_var(2)  -- POS
+    303: load_var(2)  -- POS
+    304: pop
+    305: push_const(24)  -- sym
+    306: push_const(38)  -- member
+    307: push_const(26)  -- children
+    308: load_var(5)  -- NODE
+    309: make_list(1)
+    310: push_const(27)  -- val
+    311: load_var(36)  -- FIELD
+    312: make_map(3)
+    313: store_var(5)  -- NODE
+    314: load_var(5)  -- NODE
+    315: pop_scope
+    316: jump(320)
+    317: push_const(39)  -- true
+    318: store_var(8)  -- DONE
+    319: load_var(8)  -- DONE
+    320: pop_scope
+    321: store_reg(0)
+    322: jump(26)
+    323: load_reg(0)
+    324: pop
+    325: load_var(40)  -- _PR_RES
+    326: load_var(5)  -- NODE
+    327: load_var(2)  -- POS
+    328: call(2)
+    329: ret
+    330: pop_scope
+    331: ret
+CHUNK ___PR_POW_20 (TOKENS, POS)
+  CONST  0: _PR_UNARY
+  CONST  1: TOKENS
+  CONST  2: POS
+  CONST  3: R
+  CONST  4: node
+  CONST  5: NODE
+  CONST  6: pos
+  CONST  7: _PR_IS
+  CONST  8: ^
+  CONST  9: 1
+  CONST  10: null
+  CONST  11: _PR_POW
+  CONST  12: R2
+  CONST  13: _PR_RES
+  CONST  14: _PR_NODE
+  CONST  15: pow
+  CODE:
+    0: push_scope
+    1: load_var(0)  -- _PR_UNARY
+    2: load_var(1)  -- TOKENS
+    3: load_var(2)  -- POS
+    4: call(2)
+    5: store_var(3)  -- R
+    6: load_var(3)  -- R
+    7: pop
+    8: load_var(3)  -- R
+    9: push_const(4)  -- node
+    10: get_index
+    11: store_var(5)  -- NODE
+    12: load_var(5)  -- NODE
+    13: pop
+    14: load_var(3)  -- R
+    15: push_const(6)  -- pos
+    16: get_index
+    17: store_var(2)  -- POS
+    18: load_var(2)  -- POS
+    19: pop
+    20: load_var(7)  -- _PR_IS
+    21: load_var(1)  -- TOKENS
+    22: load_var(2)  -- POS
+    23: push_const(8)  -- ^
+    24: call(3)
+    25: jump_false(62)
+    26: push_scope
+    27: load_var(2)  -- POS
+    28: jump_null(34)
+    29: push_const(9)  -- 1
+    30: jump_null(33)
+    31: add
+    32: jump(36)
+    33: pop
+    34: pop
+    35: push_const(10)  -- null
+    36: store_var(2)  -- POS
+    37: load_var(2)  -- POS
+    38: pop
+    39: load_var(11)  -- _PR_POW
+    40: load_var(1)  -- TOKENS
+    41: load_var(2)  -- POS
+    42: call(2)
+    43: store_var(12)  -- R2
+    44: load_var(12)  -- R2
+    45: pop
+    46: load_var(13)  -- _PR_RES
+    47: load_var(14)  -- _PR_NODE
+    48: push_const(15)  -- pow
+    49: load_var(5)  -- NODE
+    50: load_var(12)  -- R2
+    51: push_const(4)  -- node
+    52: get_index
+    53: make_list(2)
+    54: call(2)
+    55: load_var(12)  -- R2
+    56: push_const(6)  -- pos
+    57: get_index
+    58: call(2)
+    59: ret
+    60: pop_scope
+    61: jump(63)
+    62: push_const(10)  -- null
+    63: pop
+    64: load_var(13)  -- _PR_RES
+    65: load_var(5)  -- NODE
+    66: load_var(2)  -- POS
+    67: call(2)
+    68: ret
+    69: pop_scope
+    70: ret
+CHUNK ___PR_PRIMARY_23 (TOKENS, POS)
+  CONST  0: _PR_TT
+  CONST  1: TOKENS
+  CONST  2: POS
+  CONST  3: TT
+  CONST  4: _PR_TV
+  CONST  5: TV
+  CONST  6: INT
+  CONST  7: _PR_RES
+  CONST  8: _PR_LEAF
+  CONST  9: int_lit
+  CONST  10: 1
+  CONST  11: null
+  CONST  12: FLOAT
+  CONST  13: float_lit
+  CONST  14: DOUBLE
+  CONST  15: STR
+  CONST  16: str_lit
+  CONST  17: ID
+  CONST  18: NULL
+  CONST  19: null_lit
+  CONST  20: TRUE
+  CONST  21: true_lit
+  CONST  22: true
+  CONST  23: FALSE
+  CONST  24: false_lit
+  CONST  25: false
+  CONST  26: ident
+  CONST  27: IF
+  CONST  28: _PR_IF
+  CONST  29: WHILE
+  CONST  30: _PR_WHILE
+  CONST  31: REPEAT
+  CONST  32: _PR_REPEAT
+  CONST  33: FOR
+  CONST  34: _PR_FOR
+  CONST  35: BEGIN
+  CONST  36: _PR_BEGIN
+  CONST  37: OBJECT
+  CONST  38: _PR_OBJECT
+  CONST  39: (
+  CONST  40: _PR_IS
+  CONST  41: )
+  CONST  42: _PR_NODE
+  CONST  43: list
+  CONST  44: _PR_ASSIGN
+  CONST  45: R
+  CONST  46: node
+  CONST  47: ITEMS
+  CONST  48: pos
+  CONST  49: ,
+  CONST  50: R2
+  CONST  51: LENGTH
+  CONST  52: NTT
+  CONST  53: _PR_POSTFIX
+  CONST  54: mul
+  CONST  55: 0
+  CONST  56: [
+  CONST  57: ]
+  CONST  58: EOF
+  CONST  59: {
+  CONST  60: _PR_MAP
+  CONST  61: error
+  CONST  62: Unexpected token: 
+  CONST  63:  (
+  CODE:
+    0: push_scope
+    1: load_var(0)  -- _PR_TT
+    2: load_var(1)  -- TOKENS
+    3: load_var(2)  -- POS
+    4: call(2)
+    5: store_var(3)  -- TT
+    6: load_var(3)  -- TT
+    7: pop
+    8: load_var(4)  -- _PR_TV
+    9: load_var(1)  -- TOKENS
+    10: load_var(2)  -- POS
+    11: call(2)
+    12: store_var(5)  -- TV
+    13: load_var(5)  -- TV
+    14: pop
+    15: load_var(3)  -- TT
+    16: push_const(6)  -- INT
+    17: cmp_eq
+    18: jump_false(38)
+    19: load_var(7)  -- _PR_RES
+    20: load_var(8)  -- _PR_LEAF
+    21: push_const(9)  -- int_lit
+    22: load_var(6)  -- INT
+    23: load_var(5)  -- TV
+    24: call(1)
+    25: call(2)
+    26: load_var(2)  -- POS
+    27: jump_null(33)
+    28: push_const(10)  -- 1
+    29: jump_null(32)
+    30: add
+    31: jump(35)
+    32: pop
+    33: pop
+    34: push_const(11)  -- null
+    35: call(2)
+    36: ret
+    37: jump(39)
+    38: push_const(11)  -- null
+    39: pop
+    40: load_var(3)  -- TT
+    41: push_const(12)  -- FLOAT
+    42: cmp_eq
+    43: jump_false(63)
+    44: load_var(7)  -- _PR_RES
+    45: load_var(8)  -- _PR_LEAF
+    46: push_const(13)  -- float_lit
+    47: load_var(14)  -- DOUBLE
+    48: load_var(5)  -- TV
+    49: call(1)
+    50: call(2)
+    51: load_var(2)  -- POS
+    52: jump_null(58)
+    53: push_const(10)  -- 1
+    54: jump_null(57)
+    55: add
+    56: jump(60)
+    57: pop
+    58: pop
+    59: push_const(11)  -- null
+    60: call(2)
+    61: ret
+    62: jump(64)
+    63: push_const(11)  -- null
+    64: pop
+    65: load_var(3)  -- TT
+    66: push_const(15)  -- STR
+    67: cmp_eq
+    68: jump_false(86)
+    69: load_var(7)  -- _PR_RES
+    70: load_var(8)  -- _PR_LEAF
+    71: push_const(16)  -- str_lit
+    72: load_var(5)  -- TV
+    73: call(2)
+    74: load_var(2)  -- POS
+    75: jump_null(81)
+    76: push_const(10)  -- 1
+    77: jump_null(80)
+    78: add
+    79: jump(83)
+    80: pop
+    81: pop
+    82: push_const(11)  -- null
+    83: call(2)
+    84: ret
+    85: jump(87)
+    86: push_const(11)  -- null
+    87: pop
+    88: load_var(3)  -- TT
+    89: push_const(17)  -- ID
+    90: cmp_eq
+    91: jump_false(180)
+    92: push_scope
+    93: load_var(5)  -- TV
+    94: push_const(18)  -- NULL
+    95: cmp_eq
+    96: jump_false(114)
+    97: load_var(7)  -- _PR_RES
+    98: load_var(8)  -- _PR_LEAF
+    99: push_const(19)  -- null_lit
+    100: push_const(11)  -- null
+    101: call(2)
+    102: load_var(2)  -- POS
+    103: jump_null(109)
+    104: push_const(10)  -- 1
+    105: jump_null(108)
+    106: add
+    107: jump(111)
+    108: pop
+    109: pop
+    110: push_const(11)  -- null
+    111: call(2)
+    112: ret
+    113: jump(115)
+    114: push_const(11)  -- null
+    115: pop
+    116: load_var(5)  -- TV
+    117: push_const(20)  -- TRUE
+    118: cmp_eq
+    119: jump_false(137)
+    120: load_var(7)  -- _PR_RES
+    121: load_var(8)  -- _PR_LEAF
+    122: push_const(21)  -- true_lit
+    123: push_const(22)  -- true
+    124: call(2)
+    125: load_var(2)  -- POS
+    126: jump_null(132)
+    127: push_const(10)  -- 1
+    128: jump_null(131)
+    129: add
+    130: jump(134)
+    131: pop
+    132: pop
+    133: push_const(11)  -- null
+    134: call(2)
+    135: ret
+    136: jump(138)
+    137: push_const(11)  -- null
+    138: pop
+    139: load_var(5)  -- TV
+    140: push_const(23)  -- FALSE
+    141: cmp_eq
+    142: jump_false(160)
+    143: load_var(7)  -- _PR_RES
+    144: load_var(8)  -- _PR_LEAF
+    145: push_const(24)  -- false_lit
+    146: push_const(25)  -- false
+    147: call(2)
+    148: load_var(2)  -- POS
+    149: jump_null(155)
+    150: push_const(10)  -- 1
+    151: jump_null(154)
+    152: add
+    153: jump(157)
+    154: pop
+    155: pop
+    156: push_const(11)  -- null
+    157: call(2)
+    158: ret
+    159: jump(161)
+    160: push_const(11)  -- null
+    161: pop
+    162: load_var(7)  -- _PR_RES
+    163: load_var(8)  -- _PR_LEAF
+    164: push_const(26)  -- ident
+    165: load_var(5)  -- TV
+    166: call(2)
+    167: load_var(2)  -- POS
+    168: jump_null(174)
+    169: push_const(10)  -- 1
+    170: jump_null(173)
+    171: add
+    172: jump(176)
+    173: pop
+    174: pop
+    175: push_const(11)  -- null
+    176: call(2)
+    177: ret
+    178: pop_scope
+    179: jump(181)
+    180: push_const(11)  -- null
+    181: pop
+    182: load_var(3)  -- TT
+    183: push_const(27)  -- IF
+    184: cmp_eq
+    185: jump_false(192)
+    186: load_var(28)  -- _PR_IF
+    187: load_var(1)  -- TOKENS
+    188: load_var(2)  -- POS
+    189: call(2)
+    190: ret
+    191: jump(193)
+    192: push_const(11)  -- null
+    193: pop
+    194: load_var(3)  -- TT
+    195: push_const(29)  -- WHILE
+    196: cmp_eq
+    197: jump_false(204)
+    198: load_var(30)  -- _PR_WHILE
+    199: load_var(1)  -- TOKENS
+    200: load_var(2)  -- POS
+    201: call(2)
+    202: ret
+    203: jump(205)
+    204: push_const(11)  -- null
+    205: pop
+    206: load_var(3)  -- TT
+    207: push_const(31)  -- REPEAT
+    208: cmp_eq
+    209: jump_false(216)
+    210: load_var(32)  -- _PR_REPEAT
+    211: load_var(1)  -- TOKENS
+    212: load_var(2)  -- POS
+    213: call(2)
+    214: ret
+    215: jump(217)
+    216: push_const(11)  -- null
+    217: pop
+    218: load_var(3)  -- TT
+    219: push_const(33)  -- FOR
+    220: cmp_eq
+    221: jump_false(228)
+    222: load_var(34)  -- _PR_FOR
+    223: load_var(1)  -- TOKENS
+    224: load_var(2)  -- POS
+    225: call(2)
+    226: ret
+    227: jump(229)
+    228: push_const(11)  -- null
+    229: pop
+    230: load_var(3)  -- TT
+    231: push_const(35)  -- BEGIN
+    232: cmp_eq
+    233: jump_false(240)
+    234: load_var(36)  -- _PR_BEGIN
+    235: load_var(1)  -- TOKENS
+    236: load_var(2)  -- POS
+    237: call(2)
+    238: ret
+    239: jump(241)
+    240: push_const(11)  -- null
+    241: pop
+    242: load_var(3)  -- TT
+    243: push_const(37)  -- OBJECT
+    244: cmp_eq
+    245: jump_false(252)
+    246: load_var(38)  -- _PR_OBJECT
+    247: load_var(1)  -- TOKENS
+    248: load_var(2)  -- POS
+    249: call(2)
+    250: ret
+    251: jump(253)
+    252: push_const(11)  -- null
+    253: pop
+    254: load_var(3)  -- TT
+    255: push_const(39)  -- (
+    256: cmp_eq
+    257: jump_false(468)
+    258: push_scope
+    259: load_var(2)  -- POS
+    260: jump_null(266)
+    261: push_const(10)  -- 1
+    262: jump_null(265)
+    263: add
+    264: jump(268)
+    265: pop
+    266: pop
+    267: push_const(11)  -- null
+    268: store_var(2)  -- POS
+    269: load_var(2)  -- POS
+    270: pop
+    271: load_var(40)  -- _PR_IS
+    272: load_var(1)  -- TOKENS
+    273: load_var(2)  -- POS
+    274: push_const(41)  -- )
+    275: call(3)
+    276: jump_false(294)
+    277: load_var(7)  -- _PR_RES
+    278: load_var(42)  -- _PR_NODE
+    279: push_const(43)  -- list
+    280: make_list(0)
+    281: call(2)
+    282: load_var(2)  -- POS
+    283: jump_null(289)
+    284: push_const(10)  -- 1
+    285: jump_null(288)
+    286: add
+    287: jump(291)
+    288: pop
+    289: pop
+    290: push_const(11)  -- null
+    291: call(2)
+    292: ret
+    293: jump(295)
+    294: push_const(11)  -- null
+    295: pop
+    296: load_var(44)  -- _PR_ASSIGN
+    297: load_var(1)  -- TOKENS
+    298: load_var(2)  -- POS
+    299: call(2)
+    300: store_var(45)  -- R
+    301: load_var(45)  -- R
+    302: pop
+    303: load_var(45)  -- R
+    304: push_const(46)  -- node
+    305: get_index
+    306: make_list(1)
+    307: store_var(47)  -- ITEMS
+    308: load_var(47)  -- ITEMS
+    309: pop
+    310: load_var(45)  -- R
+    311: push_const(48)  -- pos
+    312: get_index
+    313: store_var(2)  -- POS
+    314: load_var(2)  -- POS
+    315: pop
+    316: push_const(11)  -- null
+    317: store_reg(0)
+    318: load_var(40)  -- _PR_IS
+    319: load_var(1)  -- TOKENS
+    320: load_var(2)  -- POS
+    321: push_const(49)  -- ,
+    322: call(3)
+    323: jump_false(367)
+    324: push_scope
+    325: load_var(2)  -- POS
+    326: jump_null(332)
+    327: push_const(10)  -- 1
+    328: jump_null(331)
+    329: add
+    330: jump(334)
+    331: pop
+    332: pop
+    333: push_const(11)  -- null
+    334: store_var(2)  -- POS
+    335: load_var(2)  -- POS
+    336: pop
+    337: load_var(44)  -- _PR_ASSIGN
+    338: load_var(1)  -- TOKENS
+    339: load_var(2)  -- POS
+    340: call(2)
+    341: store_var(50)  -- R2
+    342: load_var(50)  -- R2
+    343: pop
+    344: load_var(47)  -- ITEMS
+    345: jump_null(354)
+    346: load_var(50)  -- R2
+    347: push_const(46)  -- node
+    348: get_index
+    349: make_list(1)
+    350: jump_null(353)
+    351: add
+    352: jump(356)
+    353: pop
+    354: pop
+    355: push_const(11)  -- null
+    356: store_var(47)  -- ITEMS
+    357: load_var(47)  -- ITEMS
+    358: pop
+    359: load_var(50)  -- R2
+    360: push_const(48)  -- pos
+    361: get_index
+    362: store_var(2)  -- POS
+    363: load_var(2)  -- POS
+    364: pop_scope
+    365: store_reg(0)
+    366: jump(318)
+    367: load_reg(0)
+    368: pop
+    369: load_var(40)  -- _PR_IS
+    370: load_var(1)  -- TOKENS
+    371: load_var(2)  -- POS
+    372: push_const(41)  -- )
+    373: call(3)
+    374: jump_false(387)
+    375: load_var(2)  -- POS
+    376: jump_null(382)
+    377: push_const(10)  -- 1
+    378: jump_null(381)
+    379: add
+    380: jump(384)
+    381: pop
+    382: pop
+    383: push_const(11)  -- null
+    384: store_var(2)  -- POS
+    385: load_var(2)  -- POS
+    386: jump(388)
+    387: push_const(11)  -- null
+    388: pop
+    389: load_var(51)  -- LENGTH
+    390: load_var(47)  -- ITEMS
+    391: call(1)
+    392: push_const(10)  -- 1
+    393: cmp_eq
+    394: jump_false(456)
+    395: push_scope
+    396: load_var(0)  -- _PR_TT
+    397: load_var(1)  -- TOKENS
+    398: load_var(2)  -- POS
+    399: call(2)
+    400: store_var(52)  -- NTT
+    401: load_var(52)  -- NTT
+    402: pop
+    403: load_var(52)  -- NTT
+    404: push_const(17)  -- ID
+    405: cmp_eq
+    406: load_var(52)  -- NTT
+    407: push_const(6)  -- INT
+    408: cmp_eq
+    409: log_or
+    410: load_var(52)  -- NTT
+    411: push_const(12)  -- FLOAT
+    412: cmp_eq
+    413: log_or
+    414: load_var(52)  -- NTT
+    415: push_const(27)  -- IF
+    416: cmp_eq
+    417: log_or
+    418: jump_false(445)
+    419: push_scope
+    420: load_var(53)  -- _PR_POSTFIX
+    421: load_var(1)  -- TOKENS
+    422: load_var(2)  -- POS
+    423: call(2)
+    424: store_var(50)  -- R2
+    425: load_var(50)  -- R2
+    426: pop
+    427: load_var(7)  -- _PR_RES
+    428: load_var(42)  -- _PR_NODE
+    429: push_const(54)  -- mul
+    430: load_var(47)  -- ITEMS
+    431: push_const(55)  -- 0
+    432: get_index
+    433: load_var(50)  -- R2
+    434: push_const(46)  -- node
+    435: get_index
+    436: make_list(2)
+    437: call(2)
+    438: load_var(50)  -- R2
+    439: push_const(48)  -- pos
+    440: get_index
+    441: call(2)
+    442: ret
+    443: pop_scope
+    444: jump(446)
+    445: push_const(11)  -- null
+    446: pop
+    447: load_var(7)  -- _PR_RES
+    448: load_var(47)  -- ITEMS
+    449: push_const(55)  -- 0
+    450: get_index
+    451: load_var(2)  -- POS
+    452: call(2)
+    453: ret
+    454: pop_scope
+    455: jump(457)
+    456: push_const(11)  -- null
+    457: pop
+    458: load_var(7)  -- _PR_RES
+    459: load_var(42)  -- _PR_NODE
+    460: push_const(43)  -- list
+    461: load_var(47)  -- ITEMS
+    462: call(2)
+    463: load_var(2)  -- POS
+    464: call(2)
+    465: ret
+    466: pop_scope
+    467: jump(469)
+    468: push_const(11)  -- null
+    469: pop
+    470: load_var(3)  -- TT
+    471: push_const(56)  -- [
+    472: cmp_eq
+    473: jump_false(592)
+    474: push_scope
+    475: load_var(2)  -- POS
+    476: jump_null(482)
+    477: push_const(10)  -- 1
+    478: jump_null(481)
+    479: add
+    480: jump(484)
+    481: pop
+    482: pop
+    483: push_const(11)  -- null
+    484: store_var(2)  -- POS
+    485: load_var(2)  -- POS
+    486: pop
+    487: make_list(0)
+    488: store_var(47)  -- ITEMS
+    489: load_var(47)  -- ITEMS
+    490: pop
+    491: push_const(11)  -- null
+    492: store_reg(1)
+    493: load_var(40)  -- _PR_IS
+    494: load_var(1)  -- TOKENS
+    495: load_var(2)  -- POS
+    496: push_const(57)  -- ]
+    497: call(3)
+    498: jump_null(500)
+    499: log_not
+    500: load_var(40)  -- _PR_IS
+    501: load_var(1)  -- TOKENS
+    502: load_var(2)  -- POS
+    503: push_const(58)  -- EOF
+    504: call(3)
+    505: jump_null(507)
+    506: log_not
+    507: log_and
+    508: jump_false(560)
+    509: push_scope
+    510: load_var(44)  -- _PR_ASSIGN
+    511: load_var(1)  -- TOKENS
+    512: load_var(2)  -- POS
+    513: call(2)
+    514: store_var(45)  -- R
+    515: load_var(45)  -- R
+    516: pop
+    517: load_var(47)  -- ITEMS
+    518: jump_null(527)
+    519: load_var(45)  -- R
+    520: push_const(46)  -- node
+    521: get_index
+    522: make_list(1)
+    523: jump_null(526)
+    524: add
+    525: jump(529)
+    526: pop
+    527: pop
+    528: push_const(11)  -- null
+    529: store_var(47)  -- ITEMS
+    530: load_var(47)  -- ITEMS
+    531: pop
+    532: load_var(45)  -- R
+    533: push_const(48)  -- pos
+    534: get_index
+    535: store_var(2)  -- POS
+    536: load_var(2)  -- POS
+    537: pop
+    538: load_var(40)  -- _PR_IS
+    539: load_var(1)  -- TOKENS
+    540: load_var(2)  -- POS
+    541: push_const(49)  -- ,
+    542: call(3)
+    543: jump_false(556)
+    544: load_var(2)  -- POS
+    545: jump_null(551)
+    546: push_const(10)  -- 1
+    547: jump_null(550)
+    548: add
+    549: jump(553)
+    550: pop
+    551: pop
+    552: push_const(11)  -- null
+    553: store_var(2)  -- POS
+    554: load_var(2)  -- POS
+    555: jump(557)
+    556: push_const(11)  -- null
+    557: pop_scope
+    558: store_reg(1)
+    559: jump(493)
+    560: load_reg(1)
+    561: pop
+    562: load_var(40)  -- _PR_IS
+    563: load_var(1)  -- TOKENS
+    564: load_var(2)  -- POS
+    565: push_const(57)  -- ]
+    566: call(3)
+    567: jump_false(580)
+    568: load_var(2)  -- POS
+    569: jump_null(575)
+    570: push_const(10)  -- 1
+    571: jump_null(574)
+    572: add
+    573: jump(577)
+    574: pop
+    575: pop
+    576: push_const(11)  -- null
+    577: store_var(2)  -- POS
+    578: load_var(2)  -- POS
+    579: jump(581)
+    580: push_const(11)  -- null
+    581: pop
+    582: load_var(7)  -- _PR_RES
+    583: load_var(42)  -- _PR_NODE
+    584: push_const(43)  -- list
+    585: load_var(47)  -- ITEMS
+    586: call(2)
+    587: load_var(2)  -- POS
+    588: call(2)
+    589: ret
+    590: pop_scope
+    591: jump(593)
+    592: push_const(11)  -- null
+    593: pop
+    594: load_var(3)  -- TT
+    595: push_const(59)  -- {
+    596: cmp_eq
+    597: jump_false(604)
+    598: load_var(60)  -- _PR_MAP
+    599: load_var(1)  -- TOKENS
+    600: load_var(2)  -- POS
+    601: call(2)
+    602: ret
+    603: jump(605)
+    604: push_const(11)  -- null
+    605: pop
+    606: load_var(7)  -- _PR_RES
+    607: load_var(8)  -- _PR_LEAF
+    608: push_const(61)  -- error
+    609: push_const(62)  -- Unexpected token: 
+    610: jump_null(616)
+    611: load_var(3)  -- TT
+    612: jump_null(615)
+    613: add
+    614: jump(618)
+    615: pop
+    616: pop
+    617: push_const(11)  -- null
+    618: jump_null(624)
+    619: push_const(63)  --  (
+    620: jump_null(623)
+    621: add
+    622: jump(626)
+    623: pop
+    624: pop
+    625: push_const(11)  -- null
+    626: jump_null(632)
+    627: load_var(5)  -- TV
+    628: jump_null(631)
+    629: add
+    630: jump(634)
+    631: pop
+    632: pop
+    633: push_const(11)  -- null
+    634: jump_null(640)
+    635: push_const(41)  -- )
+    636: jump_null(639)
+    637: add
+    638: jump(642)
+    639: pop
+    640: pop
+    641: push_const(11)  -- null
+    642: call(2)
+    643: load_var(2)  -- POS
+    644: jump_null(650)
+    645: push_const(10)  -- 1
+    646: jump_null(649)
+    647: add
+    648: jump(652)
+    649: pop
+    650: pop
+    651: push_const(11)  -- null
+    652: call(2)
+    653: ret
+    654: pop_scope
+    655: ret
+CHUNK ___PR_PROGRAM_7 (TOKENS)
+  CONST  0: STMTS
+  CONST  1: 0
+  CONST  2: POS
+  CONST  3: null
+  CONST  4: _PR_IS
+  CONST  5: TOKENS
+  CONST  6: ;
+  CONST  7: 1
+  CONST  8: EOF
+  CONST  9: _PR_RES
+  CONST  10: _PR_NODE
+  CONST  11: program
+  CONST  12: _PR_STMT
+  CONST  13: R
+  CONST  14: node
+  CONST  15: pos
+  CONST  16: LENGTH
+  CODE:
+    0: push_scope
+    1: make_list(0)
+    2: store_var(0)  -- STMTS
+    3: load_var(0)  -- STMTS
+    4: pop
+    5: push_const(1)  -- 0
+    6: store_var(2)  -- POS
+    7: load_var(2)  -- POS
+    8: pop
+    9: push_const(3)  -- null
+    10: store_reg(0)
+    11: load_var(4)  -- _PR_IS
+    12: load_var(5)  -- TOKENS
+    13: load_var(2)  -- POS
+    14: push_const(6)  -- ;
+    15: call(3)
+    16: jump_false(30)
+    17: load_var(2)  -- POS
+    18: jump_null(24)
+    19: push_const(7)  -- 1
+    20: jump_null(23)
+    21: add
+    22: jump(26)
+    23: pop
+    24: pop
+    25: push_const(3)  -- null
+    26: store_var(2)  -- POS
+    27: load_var(2)  -- POS
+    28: store_reg(0)
+    29: jump(11)
+    30: load_reg(0)
+    31: pop
+    32: load_var(4)  -- _PR_IS
+    33: load_var(5)  -- TOKENS
+    34: load_var(2)  -- POS
+    35: push_const(8)  -- EOF
+    36: call(3)
+    37: jump_false(47)
+    38: load_var(9)  -- _PR_RES
+    39: load_var(10)  -- _PR_NODE
+    40: push_const(11)  -- program
+    41: make_list(0)
+    42: call(2)
+    43: push_const(1)  -- 0
+    44: call(2)
+    45: ret
+    46: jump(48)
+    47: push_const(3)  -- null
+    48: pop
+    49: load_var(12)  -- _PR_STMT
+    50: load_var(5)  -- TOKENS
+    51: load_var(2)  -- POS
+    52: call(2)
+    53: store_var(13)  -- R
+    54: load_var(13)  -- R
+    55: pop
+    56: load_var(0)  -- STMTS
+    57: jump_null(66)
+    58: load_var(13)  -- R
+    59: push_const(14)  -- node
+    60: get_index
+    61: make_list(1)
+    62: jump_null(65)
+    63: add
+    64: jump(68)
+    65: pop
+    66: pop
+    67: push_const(3)  -- null
+    68: store_var(0)  -- STMTS
+    69: load_var(0)  -- STMTS
+    70: pop
+    71: load_var(13)  -- R
+    72: push_const(15)  -- pos
+    73: get_index
+    74: store_var(2)  -- POS
+    75: load_var(2)  -- POS
+    76: pop
+    77: push_const(3)  -- null
+    78: store_reg(1)
+    79: load_var(4)  -- _PR_IS
+    80: load_var(5)  -- TOKENS
+    81: load_var(2)  -- POS
+    82: push_const(6)  -- ;
+    83: call(3)
+    84: jump_false(161)
+    85: push_scope
+    86: load_var(2)  -- POS
+    87: jump_null(93)
+    88: push_const(7)  -- 1
+    89: jump_null(92)
+    90: add
+    91: jump(95)
+    92: pop
+    93: pop
+    94: push_const(3)  -- null
+    95: store_var(2)  -- POS
+    96: load_var(2)  -- POS
+    97: pop
+    98: push_const(3)  -- null
+    99: store_reg(2)
+    100: load_var(4)  -- _PR_IS
+    101: load_var(5)  -- TOKENS
+    102: load_var(2)  -- POS
+    103: push_const(6)  -- ;
+    104: call(3)
+    105: jump_false(119)
+    106: load_var(2)  -- POS
+    107: jump_null(113)
+    108: push_const(7)  -- 1
+    109: jump_null(112)
+    110: add
+    111: jump(115)
+    112: pop
+    113: pop
+    114: push_const(3)  -- null
+    115: store_var(2)  -- POS
+    116: load_var(2)  -- POS
+    117: store_reg(2)
+    118: jump(100)
+    119: load_reg(2)
+    120: pop
+    121: load_var(4)  -- _PR_IS
+    122: load_var(5)  -- TOKENS
+    123: load_var(2)  -- POS
+    124: push_const(8)  -- EOF
+    125: call(3)
+    126: jump_false(129)
+    127: jump(161)
+    128: jump(130)
+    129: push_const(3)  -- null
+    130: pop
+    131: load_var(12)  -- _PR_STMT
+    132: load_var(5)  -- TOKENS
+    133: load_var(2)  -- POS
+    134: call(2)
+    135: store_var(13)  -- R
+    136: load_var(13)  -- R
+    137: pop
+    138: load_var(0)  -- STMTS
+    139: jump_null(148)
+    140: load_var(13)  -- R
+    141: push_const(14)  -- node
+    142: get_index
+    143: make_list(1)
+    144: jump_null(147)
+    145: add
+    146: jump(150)
+    147: pop
+    148: pop
+    149: push_const(3)  -- null
+    150: store_var(0)  -- STMTS
+    151: load_var(0)  -- STMTS
+    152: pop
+    153: load_var(13)  -- R
+    154: push_const(15)  -- pos
+    155: get_index
+    156: store_var(2)  -- POS
+    157: load_var(2)  -- POS
+    158: pop_scope
+    159: store_reg(1)
+    160: jump(79)
+    161: load_reg(1)
+    162: pop
+    163: load_var(16)  -- LENGTH
+    164: load_var(0)  -- STMTS
+    165: call(1)
+    166: push_const(7)  -- 1
+    167: cmp_eq
+    168: jump_false(177)
+    169: load_var(9)  -- _PR_RES
+    170: load_var(0)  -- STMTS
+    171: push_const(1)  -- 0
+    172: get_index
+    173: load_var(2)  -- POS
+    174: call(2)
+    175: ret
+    176: jump(178)
+    177: push_const(3)  -- null
+    178: pop
+    179: load_var(9)  -- _PR_RES
+    180: load_var(10)  -- _PR_NODE
+    181: push_const(11)  -- program
+    182: load_var(0)  -- STMTS
+    183: call(2)
+    184: load_var(2)  -- POS
+    185: call(2)
+    186: ret
+    187: pop_scope
+    188: ret
+CHUNK ___PR_REPEAT_28 (TOKENS, POS)
+  CONST  0: POS
+  CONST  1: 1
+  CONST  2: null
+  CONST  3: _PR_STMT
+  CONST  4: TOKENS
+  CONST  5: RB
+  CONST  6: pos
+  CONST  7: _PR_IS
+  CONST  8: UNTIL
+  CONST  9: _PR_ASSIGN
+  CONST  10: RC
+  CONST  11: _PR_RES
+  CONST  12: _PR_NODE
+  CONST  13: repeat
+  CONST  14: node
+  CODE:
+    0: push_scope
+    1: load_var(0)  -- POS
+    2: jump_null(8)
+    3: push_const(1)  -- 1
+    4: jump_null(7)
+    5: add
+    6: jump(10)
+    7: pop
+    8: pop
+    9: push_const(2)  -- null
+    10: store_var(0)  -- POS
+    11: load_var(0)  -- POS
+    12: pop
+    13: load_var(3)  -- _PR_STMT
+    14: load_var(4)  -- TOKENS
+    15: load_var(0)  -- POS
+    16: call(2)
+    17: store_var(5)  -- RB
+    18: load_var(5)  -- RB
+    19: pop
+    20: load_var(5)  -- RB
+    21: push_const(6)  -- pos
+    22: get_index
+    23: store_var(0)  -- POS
+    24: load_var(0)  -- POS
+    25: pop
+    26: load_var(7)  -- _PR_IS
+    27: load_var(4)  -- TOKENS
+    28: load_var(0)  -- POS
+    29: push_const(8)  -- UNTIL
+    30: call(3)
+    31: jump_false(44)
+    32: load_var(0)  -- POS
+    33: jump_null(39)
+    34: push_const(1)  -- 1
+    35: jump_null(38)
+    36: add
+    37: jump(41)
+    38: pop
+    39: pop
+    40: push_const(2)  -- null
+    41: store_var(0)  -- POS
+    42: load_var(0)  -- POS
+    43: jump(45)
+    44: push_const(2)  -- null
+    45: pop
+    46: load_var(9)  -- _PR_ASSIGN
+    47: load_var(4)  -- TOKENS
+    48: load_var(0)  -- POS
+    49: call(2)
+    50: store_var(10)  -- RC
+    51: load_var(10)  -- RC
+    52: pop
+    53: load_var(11)  -- _PR_RES
+    54: load_var(12)  -- _PR_NODE
+    55: push_const(13)  -- repeat
+    56: load_var(5)  -- RB
+    57: push_const(14)  -- node
+    58: get_index
+    59: load_var(10)  -- RC
+    60: push_const(14)  -- node
+    61: get_index
+    62: make_list(2)
+    63: call(2)
+    64: load_var(10)  -- RC
+    65: push_const(6)  -- pos
+    66: get_index
+    67: call(2)
+    68: ret
+    69: pop_scope
+    70: ret
+CHUNK ___PR_RES_6 (NODE, POS)
+  CONST  0: node
+  CONST  1: NODE
+  CONST  2: pos
+  CONST  3: POS
+  CODE:
+    0: push_const(0)  -- node
+    1: load_var(1)  -- NODE
+    2: push_const(2)  -- pos
+    3: load_var(3)  -- POS
+    4: make_map(2)
+    5: ret
+CHUNK ___PR_RETURN_9 (TOKENS, POS)
+  CONST  0: POS
+  CONST  1: 1
+  CONST  2: null
+  CONST  3: _PR_TT
+  CONST  4: TOKENS
+  CONST  5: TT
+  CONST  6: ;
+  CONST  7: EOF
+  CONST  8: END
+  CONST  9: _PR_RES
+  CONST  10: _PR_NODE
+  CONST  11: return
+  CONST  12: _PR_ASSIGN
+  CONST  13: R
+  CONST  14: node
+  CONST  15: pos
+  CODE:
+    0: push_scope
+    1: load_var(0)  -- POS
+    2: jump_null(8)
+    3: push_const(1)  -- 1
+    4: jump_null(7)
+    5: add
+    6: jump(10)
+    7: pop
+    8: pop
+    9: push_const(2)  -- null
+    10: store_var(0)  -- POS
+    11: load_var(0)  -- POS
+    12: pop
+    13: load_var(3)  -- _PR_TT
+    14: load_var(4)  -- TOKENS
+    15: load_var(0)  -- POS
+    16: call(2)
+    17: store_var(5)  -- TT
+    18: load_var(5)  -- TT
+    19: pop
+    20: load_var(5)  -- TT
+    21: push_const(6)  -- ;
+    22: cmp_eq
+    23: load_var(5)  -- TT
+    24: push_const(7)  -- EOF
+    25: cmp_eq
+    26: log_or
+    27: load_var(5)  -- TT
+    28: push_const(8)  -- END
+    29: cmp_eq
+    30: log_or
+    31: jump_false(41)
+    32: load_var(9)  -- _PR_RES
+    33: load_var(10)  -- _PR_NODE
+    34: push_const(11)  -- return
+    35: make_list(0)
+    36: call(2)
+    37: load_var(0)  -- POS
+    38: call(2)
+    39: ret
+    40: jump(42)
+    41: push_const(2)  -- null
+    42: pop
+    43: load_var(12)  -- _PR_ASSIGN
+    44: load_var(4)  -- TOKENS
+    45: load_var(0)  -- POS
+    46: call(2)
+    47: store_var(13)  -- R
+    48: load_var(13)  -- R
+    49: pop
+    50: load_var(9)  -- _PR_RES
+    51: load_var(10)  -- _PR_NODE
+    52: push_const(11)  -- return
+    53: load_var(13)  -- R
+    54: push_const(14)  -- node
+    55: get_index
+    56: make_list(1)
+    57: call(2)
+    58: load_var(13)  -- R
+    59: push_const(15)  -- pos
+    60: get_index
+    61: call(2)
+    62: ret
+    63: pop_scope
+    64: ret
+CHUNK ___PR_STMT_8 (TOKENS, POS)
+  CONST  0: _PR_TT
+  CONST  1: TOKENS
+  CONST  2: POS
+  CONST  3: TT
+  CONST  4: RETURN
+  CONST  5: _PR_RETURN
+  CONST  6: null
+  CONST  7: BREAK
+  CONST  8: _PR_RES
+  CONST  9: _PR_LEAF
+  CONST  10: break
+  CONST  11: 1
+  CONST  12: CONTINUE
+  CONST  13: continue
+  CONST  14: _PR_ASSIGN
+  CODE:
+    0: push_scope
+    1: load_var(0)  -- _PR_TT
+    2: load_var(1)  -- TOKENS
+    3: load_var(2)  -- POS
+    4: call(2)
+    5: store_var(3)  -- TT
+    6: load_var(3)  -- TT
+    7: pop
+    8: load_var(3)  -- TT
+    9: push_const(4)  -- RETURN
+    10: cmp_eq
+    11: jump_false(18)
+    12: load_var(5)  -- _PR_RETURN
+    13: load_var(1)  -- TOKENS
+    14: load_var(2)  -- POS
+    15: call(2)
+    16: ret
+    17: jump(19)
+    18: push_const(6)  -- null
+    19: pop
+    20: load_var(3)  -- TT
+    21: push_const(7)  -- BREAK
+    22: cmp_eq
+    23: jump_false(41)
+    24: load_var(8)  -- _PR_RES
+    25: load_var(9)  -- _PR_LEAF
+    26: push_const(10)  -- break
+    27: push_const(6)  -- null
+    28: call(2)
+    29: load_var(2)  -- POS
+    30: jump_null(36)
+    31: push_const(11)  -- 1
+    32: jump_null(35)
+    33: add
+    34: jump(38)
+    35: pop
+    36: pop
+    37: push_const(6)  -- null
+    38: call(2)
+    39: ret
+    40: jump(42)
+    41: push_const(6)  -- null
+    42: pop
+    43: load_var(3)  -- TT
+    44: push_const(12)  -- CONTINUE
+    45: cmp_eq
+    46: jump_false(64)
+    47: load_var(8)  -- _PR_RES
+    48: load_var(9)  -- _PR_LEAF
+    49: push_const(13)  -- continue
+    50: push_const(6)  -- null
+    51: call(2)
+    52: load_var(2)  -- POS
+    53: jump_null(59)
+    54: push_const(11)  -- 1
+    55: jump_null(58)
+    56: add
+    57: jump(61)
+    58: pop
+    59: pop
+    60: push_const(6)  -- null
+    61: call(2)
+    62: ret
+    63: jump(65)
+    64: push_const(6)  -- null
+    65: pop
+    66: load_var(14)  -- _PR_ASSIGN
+    67: load_var(1)  -- TOKENS
+    68: load_var(2)  -- POS
+    69: call(2)
+    70: ret
+    71: pop_scope
+    72: ret
+CHUNK ___PR_TT_0 (TOKENS, POS)
+  CONST  0: TOKENS
+  CONST  1: POS
+  CONST  2: t
+  CODE:
+    0: load_var(0)  -- TOKENS
+    1: load_var(1)  -- POS
+    2: get_index
+    3: push_const(2)  -- t
+    4: get_index
+    5: ret
+CHUNK ___PR_TV_1 (TOKENS, POS)
+  CONST  0: TOKENS
+  CONST  1: POS
+  CONST  2: v
+  CODE:
+    0: load_var(0)  -- TOKENS
+    1: load_var(1)  -- POS
+    2: get_index
+    3: push_const(2)  -- v
+    4: get_index
+    5: ret
+CHUNK ___PR_UNARY_21 (TOKENS, POS)
+  CONST  0: _PR_IS
+  CONST  1: TOKENS
+  CONST  2: POS
+  CONST  3: -
+  CONST  4: 1
+  CONST  5: null
+  CONST  6: _PR_UNARY
+  CONST  7: R
+  CONST  8: _PR_RES
+  CONST  9: _PR_NODE
+  CONST  10: neg
+  CONST  11: node
+  CONST  12: pos
+  CONST  13: +
+  CONST  14: _PR_POSTFIX
+  CODE:
+    0: push_scope
+    1: load_var(0)  -- _PR_IS
+    2: load_var(1)  -- TOKENS
+    3: load_var(2)  -- POS
+    4: push_const(3)  -- -
+    5: call(3)
+    6: jump_false(42)
+    7: push_scope
+    8: load_var(2)  -- POS
+    9: jump_null(15)
+    10: push_const(4)  -- 1
+    11: jump_null(14)
+    12: add
+    13: jump(17)
+    14: pop
+    15: pop
+    16: push_const(5)  -- null
+    17: store_var(2)  -- POS
+    18: load_var(2)  -- POS
+    19: pop
+    20: load_var(6)  -- _PR_UNARY
+    21: load_var(1)  -- TOKENS
+    22: load_var(2)  -- POS
+    23: call(2)
+    24: store_var(7)  -- R
+    25: load_var(7)  -- R
+    26: pop
+    27: load_var(8)  -- _PR_RES
+    28: load_var(9)  -- _PR_NODE
+    29: push_const(10)  -- neg
+    30: load_var(7)  -- R
+    31: push_const(11)  -- node
+    32: get_index
+    33: make_list(1)
+    34: call(2)
+    35: load_var(7)  -- R
+    36: push_const(12)  -- pos
+    37: get_index
+    38: call(2)
+    39: ret
+    40: pop_scope
+    41: jump(43)
+    42: push_const(5)  -- null
+    43: pop
+    44: load_var(0)  -- _PR_IS
+    45: load_var(1)  -- TOKENS
+    46: load_var(2)  -- POS
+    47: push_const(13)  -- +
+    48: call(3)
+    49: jump_false(70)
+    50: push_scope
+    51: load_var(2)  -- POS
+    52: jump_null(58)
+    53: push_const(4)  -- 1
+    54: jump_null(57)
+    55: add
+    56: jump(60)
+    57: pop
+    58: pop
+    59: push_const(5)  -- null
+    60: store_var(2)  -- POS
+    61: load_var(2)  -- POS
+    62: pop
+    63: load_var(6)  -- _PR_UNARY
+    64: load_var(1)  -- TOKENS
+    65: load_var(2)  -- POS
+    66: call(2)
+    67: ret
+    68: pop_scope
+    69: jump(71)
+    70: push_const(5)  -- null
+    71: pop
+    72: load_var(14)  -- _PR_POSTFIX
+    73: load_var(1)  -- TOKENS
+    74: load_var(2)  -- POS
+    75: call(2)
+    76: ret
+    77: pop_scope
+    78: ret
+CHUNK ___PR_WHILE_27 (TOKENS, POS)
+  CONST  0: POS
+  CONST  1: 1
+  CONST  2: null
+  CONST  3: _PR_ASSIGN
+  CONST  4: TOKENS
+  CONST  5: RC
+  CONST  6: node
+  CONST  7: COND
+  CONST  8: pos
+  CONST  9: _PR_IS
+  CONST  10: DO
+  CONST  11: _PR_STMT
+  CONST  12: RB
+  CONST  13: _PR_RES
+  CONST  14: _PR_NODE
+  CONST  15: while
+  CODE:
+    0: push_scope
+    1: load_var(0)  -- POS
+    2: jump_null(8)
+    3: push_const(1)  -- 1
+    4: jump_null(7)
+    5: add
+    6: jump(10)
+    7: pop
+    8: pop
+    9: push_const(2)  -- null
+    10: store_var(0)  -- POS
+    11: load_var(0)  -- POS
+    12: pop
+    13: load_var(3)  -- _PR_ASSIGN
+    14: load_var(4)  -- TOKENS
+    15: load_var(0)  -- POS
+    16: call(2)
+    17: store_var(5)  -- RC
+    18: load_var(5)  -- RC
+    19: pop
+    20: load_var(5)  -- RC
+    21: push_const(6)  -- node
+    22: get_index
+    23: store_var(7)  -- COND
+    24: load_var(7)  -- COND
+    25: pop
+    26: load_var(5)  -- RC
+    27: push_const(8)  -- pos
+    28: get_index
+    29: store_var(0)  -- POS
+    30: load_var(0)  -- POS
+    31: pop
+    32: load_var(9)  -- _PR_IS
+    33: load_var(4)  -- TOKENS
+    34: load_var(0)  -- POS
+    35: push_const(10)  -- DO
+    36: call(3)
+    37: jump_false(50)
+    38: load_var(0)  -- POS
+    39: jump_null(45)
+    40: push_const(1)  -- 1
+    41: jump_null(44)
+    42: add
+    43: jump(47)
+    44: pop
+    45: pop
+    46: push_const(2)  -- null
+    47: store_var(0)  -- POS
+    48: load_var(0)  -- POS
+    49: jump(51)
+    50: push_const(2)  -- null
+    51: pop
+    52: load_var(11)  -- _PR_STMT
+    53: load_var(4)  -- TOKENS
+    54: load_var(0)  -- POS
+    55: call(2)
+    56: store_var(12)  -- RB
+    57: load_var(12)  -- RB
+    58: pop
+    59: load_var(13)  -- _PR_RES
+    60: load_var(14)  -- _PR_NODE
+    61: push_const(15)  -- while
+    62: load_var(7)  -- COND
+    63: load_var(12)  -- RB
+    64: push_const(6)  -- node
+    65: get_index
+    66: make_list(2)
+    67: call(2)
+    68: load_var(12)  -- RB
+    69: push_const(8)  -- pos
+    70: get_index
+    71: call(2)
+    72: ret
+    73: pop_scope
+    74: ret
+CHUNK __lambda_31 (TOKENS)
+  CONST  0: _PR_PROGRAM
+  CONST  1: TOKENS
+  CONST  2: node
+  CODE:
+    0: load_var(0)  -- _PR_PROGRAM
+    1: load_var(1)  -- TOKENS
+    2: call(1)
+    3: push_const(2)  -- node
+    4: get_index
+    5: ret

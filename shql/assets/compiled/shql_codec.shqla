@@ -1,0 +1,674 @@
+CHUNK main ()
+  CONST  0: .___CDC_FMT_CONST_0
+  CONST  1: _CDC_FMT_CONST
+  CONST  2: .___CDC_FMT_INSTR_1
+  CONST  3: _CDC_FMT_INSTR
+  CONST  4: .___CDC_CHUNK_LINES_2
+  CONST  5: _CDC_CHUNK_LINES
+  CONST  6: .___CDC_DECODE_3
+  CONST  7: _CDC_DECODE
+  CONST  8: DECODE
+  CONST  9: .__lambda_4
+  CONST  10: CODEC
+  CODE:
+    0: make_closure(0)  -- .___CDC_FMT_CONST_0
+    1: store_var(1)  -- _CDC_FMT_CONST
+    2: load_var(1)  -- _CDC_FMT_CONST
+    3: pop
+    4: make_closure(2)  -- .___CDC_FMT_INSTR_1
+    5: store_var(3)  -- _CDC_FMT_INSTR
+    6: load_var(3)  -- _CDC_FMT_INSTR
+    7: pop
+    8: make_closure(4)  -- .___CDC_CHUNK_LINES_2
+    9: store_var(5)  -- _CDC_CHUNK_LINES
+    10: load_var(5)  -- _CDC_CHUNK_LINES
+    11: pop
+    12: make_closure(6)  -- .___CDC_DECODE_3
+    13: store_var(7)  -- _CDC_DECODE
+    14: load_var(7)  -- _CDC_DECODE
+    15: pop
+    16: push_scope
+    17: push_const(8)  -- DECODE
+    18: make_closure(9)  -- .__lambda_4
+    19: make_object_here(1)
+    20: pop_scope
+    21: store_var(10)  -- CODEC
+    22: load_var(10)  -- CODEC
+    23: ret
+CHUNK ___CDC_CHUNK_LINES_2 (CHUNK)
+  CONST  0: CHUNK 
+  CONST  1: CHUNK
+  CONST  2: name
+  CONST  3: null
+  CONST  4:  (
+  CONST  5: STRING_JOIN
+  CONST  6: params
+  CONST  7: , 
+  CONST  8: )
+  CONST  9: OUT
+  CONST  10: constants
+  CONST  11: CONSTS
+  CONST  12: 0
+  CONST  13: I
+  CONST  14: LENGTH
+  CONST  15:   CONST  
+  CONST  16: STRING
+  CONST  17: : 
+  CONST  18: _CDC_FMT_CONST
+  CONST  19: 1
+  CONST  20: code
+  CONST  21: CODE
+  CONST  22:   CODE:
+  CONST  23:     
+  CONST  24: _CDC_FMT_INSTR
+  CODE:
+    0: push_scope
+    1: push_const(0)  -- CHUNK 
+    2: jump_null(10)
+    3: load_var(1)  -- CHUNK
+    4: push_const(2)  -- name
+    5: get_index
+    6: jump_null(9)
+    7: add
+    8: jump(12)
+    9: pop
+    10: pop
+    11: push_const(3)  -- null
+    12: jump_null(18)
+    13: push_const(4)  --  (
+    14: jump_null(17)
+    15: add
+    16: jump(20)
+    17: pop
+    18: pop
+    19: push_const(3)  -- null
+    20: jump_null(31)
+    21: load_var(5)  -- STRING_JOIN
+    22: load_var(1)  -- CHUNK
+    23: push_const(6)  -- params
+    24: get_index
+    25: push_const(7)  -- , 
+    26: call(2)
+    27: jump_null(30)
+    28: add
+    29: jump(33)
+    30: pop
+    31: pop
+    32: push_const(3)  -- null
+    33: jump_null(39)
+    34: push_const(8)  -- )
+    35: jump_null(38)
+    36: add
+    37: jump(41)
+    38: pop
+    39: pop
+    40: push_const(3)  -- null
+    41: make_list(1)
+    42: store_var(9)  -- OUT
+    43: load_var(9)  -- OUT
+    44: pop
+    45: load_var(1)  -- CHUNK
+    46: push_const(10)  -- constants
+    47: get_index
+    48: store_var(11)  -- CONSTS
+    49: load_var(11)  -- CONSTS
+    50: pop
+    51: push_const(12)  -- 0
+    52: store_var(13)  -- I
+    53: load_var(13)  -- I
+    54: pop
+    55: push_const(3)  -- null
+    56: store_reg(0)
+    57: load_var(13)  -- I
+    58: jump_null(66)
+    59: load_var(14)  -- LENGTH
+    60: load_var(11)  -- CONSTS
+    61: call(1)
+    62: jump_null(65)
+    63: cmp_lt
+    64: jump(68)
+    65: pop
+    66: pop
+    67: push_const(3)  -- null
+    68: jump_false(127)
+    69: push_scope
+    70: load_var(9)  -- OUT
+    71: jump_null(108)
+    72: push_const(15)  --   CONST  
+    73: jump_null(81)
+    74: load_var(16)  -- STRING
+    75: load_var(13)  -- I
+    76: call(1)
+    77: jump_null(80)
+    78: add
+    79: jump(83)
+    80: pop
+    81: pop
+    82: push_const(3)  -- null
+    83: jump_null(89)
+    84: push_const(17)  -- : 
+    85: jump_null(88)
+    86: add
+    87: jump(91)
+    88: pop
+    89: pop
+    90: push_const(3)  -- null
+    91: jump_null(101)
+    92: load_var(18)  -- _CDC_FMT_CONST
+    93: load_var(11)  -- CONSTS
+    94: load_var(13)  -- I
+    95: get_index
+    96: call(1)
+    97: jump_null(100)
+    98: add
+    99: jump(103)
+    100: pop
+    101: pop
+    102: push_const(3)  -- null
+    103: make_list(1)
+    104: jump_null(107)
+    105: add
+    106: jump(110)
+    107: pop
+    108: pop
+    109: push_const(3)  -- null
+    110: store_var(9)  -- OUT
+    111: load_var(9)  -- OUT
+    112: pop
+    113: load_var(13)  -- I
+    114: jump_null(120)
+    115: push_const(19)  -- 1
+    116: jump_null(119)
+    117: add
+    118: jump(122)
+    119: pop
+    120: pop
+    121: push_const(3)  -- null
+    122: store_var(13)  -- I
+    123: load_var(13)  -- I
+    124: pop_scope
+    125: store_reg(0)
+    126: jump(57)
+    127: load_reg(0)
+    128: pop
+    129: load_var(1)  -- CHUNK
+    130: push_const(20)  -- code
+    131: get_index
+    132: store_var(21)  -- CODE
+    133: load_var(21)  -- CODE
+    134: pop
+    135: load_var(9)  -- OUT
+    136: jump_null(143)
+    137: push_const(22)  --   CODE:
+    138: make_list(1)
+    139: jump_null(142)
+    140: add
+    141: jump(145)
+    142: pop
+    143: pop
+    144: push_const(3)  -- null
+    145: store_var(9)  -- OUT
+    146: load_var(9)  -- OUT
+    147: pop
+    148: push_const(12)  -- 0
+    149: store_var(13)  -- I
+    150: load_var(13)  -- I
+    151: pop
+    152: push_const(3)  -- null
+    153: store_reg(1)
+    154: load_var(13)  -- I
+    155: jump_null(163)
+    156: load_var(14)  -- LENGTH
+    157: load_var(21)  -- CODE
+    158: call(1)
+    159: jump_null(162)
+    160: cmp_lt
+    161: jump(165)
+    162: pop
+    163: pop
+    164: push_const(3)  -- null
+    165: jump_false(225)
+    166: push_scope
+    167: load_var(9)  -- OUT
+    168: jump_null(206)
+    169: push_const(23)  --     
+    170: jump_null(178)
+    171: load_var(16)  -- STRING
+    172: load_var(13)  -- I
+    173: call(1)
+    174: jump_null(177)
+    175: add
+    176: jump(180)
+    177: pop
+    178: pop
+    179: push_const(3)  -- null
+    180: jump_null(186)
+    181: push_const(17)  -- : 
+    182: jump_null(185)
+    183: add
+    184: jump(188)
+    185: pop
+    186: pop
+    187: push_const(3)  -- null
+    188: jump_null(199)
+    189: load_var(24)  -- _CDC_FMT_INSTR
+    190: load_var(21)  -- CODE
+    191: load_var(13)  -- I
+    192: get_index
+    193: load_var(11)  -- CONSTS
+    194: call(2)
+    195: jump_null(198)
+    196: add
+    197: jump(201)
+    198: pop
+    199: pop
+    200: push_const(3)  -- null
+    201: make_list(1)
+    202: jump_null(205)
+    203: add
+    204: jump(208)
+    205: pop
+    206: pop
+    207: push_const(3)  -- null
+    208: store_var(9)  -- OUT
+    209: load_var(9)  -- OUT
+    210: pop
+    211: load_var(13)  -- I
+    212: jump_null(218)
+    213: push_const(19)  -- 1
+    214: jump_null(217)
+    215: add
+    216: jump(220)
+    217: pop
+    218: pop
+    219: push_const(3)  -- null
+    220: store_var(13)  -- I
+    221: load_var(13)  -- I
+    222: pop_scope
+    223: store_reg(1)
+    224: jump(154)
+    225: load_reg(1)
+    226: pop
+    227: load_var(9)  -- OUT
+    228: ret
+    229: pop_scope
+    230: ret
+CHUNK ___CDC_DECODE_3 (PROGRAM)
+  CONST  0: PROGRAM
+  CONST  1: chunks
+  CONST  2: CHUNKS
+  CONST  3: OUT
+  CONST  4: main
+  CONST  5: null
+  CONST  6: _CDC_CHUNK_LINES
+  CONST  7: LIST_SORT
+  CONST  8: MAP_KEYS
+  CONST  9: SORTED_NAMES
+  CONST  10: 0
+  CONST  11: I
+  CONST  12: LENGTH
+  CONST  13: NM
+  CONST  14: 1
+  CODE:
+    0: push_scope
+    1: load_var(0)  -- PROGRAM
+    2: push_const(1)  -- chunks
+    3: get_index
+    4: store_var(2)  -- CHUNKS
+    5: load_var(2)  -- CHUNKS
+    6: pop
+    7: make_list(0)
+    8: store_var(3)  -- OUT
+    9: load_var(3)  -- OUT
+    10: pop
+    11: load_var(2)  -- CHUNKS
+    12: push_const(4)  -- main
+    13: get_index
+    14: push_const(5)  -- null
+    15: cmp_neq
+    16: jump_false(33)
+    17: load_var(3)  -- OUT
+    18: jump_null(28)
+    19: load_var(6)  -- _CDC_CHUNK_LINES
+    20: load_var(2)  -- CHUNKS
+    21: push_const(4)  -- main
+    22: get_index
+    23: call(1)
+    24: jump_null(27)
+    25: add
+    26: jump(30)
+    27: pop
+    28: pop
+    29: push_const(5)  -- null
+    30: store_var(3)  -- OUT
+    31: load_var(3)  -- OUT
+    32: jump(34)
+    33: push_const(5)  -- null
+    34: pop
+    35: load_var(7)  -- LIST_SORT
+    36: load_var(8)  -- MAP_KEYS
+    37: load_var(2)  -- CHUNKS
+    38: call(1)
+    39: call(1)
+    40: store_var(9)  -- SORTED_NAMES
+    41: load_var(9)  -- SORTED_NAMES
+    42: pop
+    43: push_const(10)  -- 0
+    44: store_var(11)  -- I
+    45: load_var(11)  -- I
+    46: pop
+    47: push_const(5)  -- null
+    48: store_reg(0)
+    49: load_var(11)  -- I
+    50: jump_null(58)
+    51: load_var(12)  -- LENGTH
+    52: load_var(9)  -- SORTED_NAMES
+    53: call(1)
+    54: jump_null(57)
+    55: cmp_lt
+    56: jump(60)
+    57: pop
+    58: pop
+    59: push_const(5)  -- null
+    60: jump_false(104)
+    61: push_scope
+    62: load_var(9)  -- SORTED_NAMES
+    63: load_var(11)  -- I
+    64: get_index
+    65: store_var(13)  -- NM
+    66: load_var(13)  -- NM
+    67: pop
+    68: load_var(13)  -- NM
+    69: push_const(4)  -- main
+    70: cmp_neq
+    71: jump_false(88)
+    72: load_var(3)  -- OUT
+    73: jump_null(83)
+    74: load_var(6)  -- _CDC_CHUNK_LINES
+    75: load_var(2)  -- CHUNKS
+    76: load_var(13)  -- NM
+    77: get_index
+    78: call(1)
+    79: jump_null(82)
+    80: add
+    81: jump(85)
+    82: pop
+    83: pop
+    84: push_const(5)  -- null
+    85: store_var(3)  -- OUT
+    86: load_var(3)  -- OUT
+    87: jump(89)
+    88: push_const(5)  -- null
+    89: pop
+    90: load_var(11)  -- I
+    91: jump_null(97)
+    92: push_const(14)  -- 1
+    93: jump_null(96)
+    94: add
+    95: jump(99)
+    96: pop
+    97: pop
+    98: push_const(5)  -- null
+    99: store_var(11)  -- I
+    100: load_var(11)  -- I
+    101: pop_scope
+    102: store_reg(0)
+    103: jump(49)
+    104: load_reg(0)
+    105: pop
+    106: load_var(3)  -- OUT
+    107: ret
+    108: pop_scope
+    109: ret
+CHUNK ___CDC_FMT_CONST_0 (VAL)
+  CONST  0: VAL
+  CONST  1: null
+  CONST  2: null
+  CONST  3: true
+  CONST  4: true
+  CONST  5: false
+  CONST  6: false
+  CONST  7: STRING
+  CONST  8: S
+  CONST  9: LENGTH
+  CONST  10: 1
+  CONST  11: SUBSTRING
+  CONST  12: 0
+  CONST  13: @
+  CONST  14: .
+  CODE:
+    0: push_scope
+    1: load_var(0)  -- VAL
+    2: push_const(1)  -- null
+    3: cmp_eq
+    4: jump_false(8)
+    5: push_const(2)  -- null
+    6: ret
+    7: jump(9)
+    8: push_const(1)  -- null
+    9: pop
+    10: load_var(0)  -- VAL
+    11: push_const(3)  -- true
+    12: cmp_eq
+    13: jump_false(17)
+    14: push_const(4)  -- true
+    15: ret
+    16: jump(18)
+    17: push_const(1)  -- null
+    18: pop
+    19: load_var(0)  -- VAL
+    20: push_const(5)  -- false
+    21: cmp_eq
+    22: jump_false(26)
+    23: push_const(6)  -- false
+    24: ret
+    25: jump(27)
+    26: push_const(1)  -- null
+    27: pop
+    28: load_var(7)  -- STRING
+    29: load_var(0)  -- VAL
+    30: call(1)
+    31: store_var(8)  -- S
+    32: load_var(8)  -- S
+    33: pop
+    34: load_var(9)  -- LENGTH
+    35: load_var(8)  -- S
+    36: call(1)
+    37: jump_null(43)
+    38: push_const(10)  -- 1
+    39: jump_null(42)
+    40: cmp_gt
+    41: jump(45)
+    42: pop
+    43: pop
+    44: push_const(1)  -- null
+    45: jump_false(75)
+    46: push_scope
+    47: load_var(11)  -- SUBSTRING
+    48: load_var(8)  -- S
+    49: push_const(12)  -- 0
+    50: push_const(10)  -- 1
+    51: call(3)
+    52: push_const(13)  -- @
+    53: cmp_eq
+    54: jump_false(72)
+    55: push_const(14)  -- .
+    56: jump_null(68)
+    57: load_var(11)  -- SUBSTRING
+    58: load_var(8)  -- S
+    59: push_const(10)  -- 1
+    60: load_var(9)  -- LENGTH
+    61: load_var(8)  -- S
+    62: call(1)
+    63: call(3)
+    64: jump_null(67)
+    65: add
+    66: jump(70)
+    67: pop
+    68: pop
+    69: push_const(1)  -- null
+    70: ret
+    71: jump(73)
+    72: push_const(1)  -- null
+    73: pop_scope
+    74: jump(76)
+    75: push_const(1)  -- null
+    76: pop
+    77: load_var(8)  -- S
+    78: ret
+    79: pop_scope
+    80: ret
+CHUNK ___CDC_FMT_INSTR_1 (INSTR, CONSTANTS)
+  CONST  0: INSTR
+  CONST  1: op
+  CONST  2: OP
+  CONST  3: operand
+  CONST  4: ARG
+  CONST  5: null
+  CONST  6: 
+  CONST  7: RESOLVED
+  CONST  8: push_const
+  CONST  9: make_closure
+  CONST  10:   -- 
+  CONST  11: _CDC_FMT_CONST
+  CONST  12: CONSTANTS
+  CONST  13: load_var
+  CONST  14: store_var
+  CONST  15: get_member
+  CONST  16: set_member
+  CONST  17: STRING
+  CONST  18: (
+  CONST  19: )
+  CODE:
+    0: push_scope
+    1: load_var(0)  -- INSTR
+    2: push_const(1)  -- op
+    3: get_index
+    4: store_var(2)  -- OP
+    5: load_var(2)  -- OP
+    6: pop
+    7: load_var(0)  -- INSTR
+    8: push_const(3)  -- operand
+    9: get_index
+    10: store_var(4)  -- ARG
+    11: load_var(4)  -- ARG
+    12: pop
+    13: load_var(4)  -- ARG
+    14: push_const(5)  -- null
+    15: cmp_eq
+    16: jump_false(20)
+    17: load_var(2)  -- OP
+    18: ret
+    19: jump(21)
+    20: push_const(5)  -- null
+    21: pop
+    22: push_const(6)  -- 
+    23: store_var(7)  -- RESOLVED
+    24: load_var(7)  -- RESOLVED
+    25: pop
+    26: load_var(2)  -- OP
+    27: push_const(8)  -- push_const
+    28: cmp_eq
+    29: load_var(2)  -- OP
+    30: push_const(9)  -- make_closure
+    31: cmp_eq
+    32: log_or
+    33: jump_false(50)
+    34: push_const(10)  --   -- 
+    35: jump_null(45)
+    36: load_var(11)  -- _CDC_FMT_CONST
+    37: load_var(12)  -- CONSTANTS
+    38: load_var(4)  -- ARG
+    39: get_index
+    40: call(1)
+    41: jump_null(44)
+    42: add
+    43: jump(47)
+    44: pop
+    45: pop
+    46: push_const(5)  -- null
+    47: store_var(7)  -- RESOLVED
+    48: load_var(7)  -- RESOLVED
+    49: jump(51)
+    50: push_const(5)  -- null
+    51: pop
+    52: load_var(2)  -- OP
+    53: push_const(13)  -- load_var
+    54: cmp_eq
+    55: load_var(2)  -- OP
+    56: push_const(14)  -- store_var
+    57: cmp_eq
+    58: log_or
+    59: load_var(2)  -- OP
+    60: push_const(15)  -- get_member
+    61: cmp_eq
+    62: log_or
+    63: load_var(2)  -- OP
+    64: push_const(16)  -- set_member
+    65: cmp_eq
+    66: log_or
+    67: jump_false(84)
+    68: push_const(10)  --   -- 
+    69: jump_null(79)
+    70: load_var(17)  -- STRING
+    71: load_var(12)  -- CONSTANTS
+    72: load_var(4)  -- ARG
+    73: get_index
+    74: call(1)
+    75: jump_null(78)
+    76: add
+    77: jump(81)
+    78: pop
+    79: pop
+    80: push_const(5)  -- null
+    81: store_var(7)  -- RESOLVED
+    82: load_var(7)  -- RESOLVED
+    83: jump(85)
+    84: push_const(5)  -- null
+    85: pop
+    86: load_var(2)  -- OP
+    87: jump_null(93)
+    88: push_const(18)  -- (
+    89: jump_null(92)
+    90: add
+    91: jump(95)
+    92: pop
+    93: pop
+    94: push_const(5)  -- null
+    95: jump_null(103)
+    96: load_var(17)  -- STRING
+    97: load_var(4)  -- ARG
+    98: call(1)
+    99: jump_null(102)
+    100: add
+    101: jump(105)
+    102: pop
+    103: pop
+    104: push_const(5)  -- null
+    105: jump_null(111)
+    106: push_const(19)  -- )
+    107: jump_null(110)
+    108: add
+    109: jump(113)
+    110: pop
+    111: pop
+    112: push_const(5)  -- null
+    113: jump_null(119)
+    114: load_var(7)  -- RESOLVED
+    115: jump_null(118)
+    116: add
+    117: jump(121)
+    118: pop
+    119: pop
+    120: push_const(5)  -- null
+    121: ret
+    122: pop_scope
+    123: ret
+CHUNK __lambda_4 (PROGRAM)
+  CONST  0: _CDC_DECODE
+  CONST  1: PROGRAM
+  CODE:
+    0: load_var(0)  -- _CDC_DECODE
+    1: load_var(1)  -- PROGRAM
+    2: call(1)
+    3: ret

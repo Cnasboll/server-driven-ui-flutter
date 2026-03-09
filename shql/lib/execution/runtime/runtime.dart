@@ -381,11 +381,11 @@ class Thread {
   }
 
   (ReturnTarget?, RuntimeError?) pushReturnTarget() {
-    if (_returnTargets.length >= 10) {
+    if (_returnTargets.length >= 100) {
       return (
         null,
         RuntimeError(
-          'Stack overflow. Too many nested function calls. 10 is the reasonable, chronological maximum allowed for a steam driven computing machine.',
+          'Stack overflow. Too many nested function calls.',
         ),
       );
     }
@@ -938,6 +938,8 @@ class Runtime {
     "STRING": (caller, a) => a.toString(),
     "ROUND": (caller, a) => a is double ? a.round() : a,
     "MAP_VALUES": (caller, a) => (a is Map) ? a.values.toList() : [],
+    "MAP_KEYS": (caller, a) => (a is Map) ? a.keys.toList() : [],
+    "LIST_SORT": (caller, a) => (a is List) ? ([...a]..sort((x, y) => x.toString().compareTo(y.toString()))) : a,
     "LENGTH": (caller, a) {
       if (a is String) {
         return a.length;

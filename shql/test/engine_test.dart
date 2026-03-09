@@ -1,9 +1,9 @@
 import 'dart:io' show File;
 import 'dart:typed_data' show Uint8List;
-import 'package:shql/bytecode/bytecode.dart';
 import 'package:shql/bytecode/bytecode_codec.dart';
 import 'package:shql/bytecode/bytecode_compiler.dart';
 import 'package:shql/bytecode/bytecode_interpreter.dart';
+import 'package:shql/bytecode/bytecode_pipeline.dart';
 import 'package:shql/engine/engine.dart';
 import 'package:shql/execution/runtime/runtime.dart';
 import 'package:shql/parser/constants_set.dart';
@@ -102,7 +102,7 @@ Future<dynamic> evalBytecode(
         .executeScoped('main', boundValues: {'src': src, 'consts': consts}) as List;
     final shqlProgMap    = shqlOutput[0] as Map;
     final shqlLines      = (shqlOutput[1] as List).cast<String>();
-    expect(shqlLines, dartCodec(roundTripped),
+    expect(shqlLines, canonicalCodec(roundTripped),
         reason: 'SHQL compiler + codec must produce identical output to Dart compiler + codec');
     // Execute the SHQL-compiled program on the same per-test runtime used by
     // the Dart path — keeping _pipelineRt dedicated to compilation only.
@@ -138,89 +138,6 @@ Future<dynamic> _runOnVm(
   final tree = Parser.parse(src, cs, sourceCode: src);
   final prog = BytecodeCompiler.compile(tree, cs);
   return BytecodeInterpreter(prog, rt).executeScoped('main', boundValues: boundValues);
-}
-
-/// Convert the Map produced by the SHQL self-hosting compiler to a typed
-/// [BytecodeProgram] that [BytecodeInterpreter] can execute.
-BytecodeProgram shqlMapToProgram(Map program) {
-  final opcodeByMnemonic = {for (final op in Opcode.values) op.mnemonic: op};
-  final chunksMap = program['chunks'] as Map;
-  final chunks = <String, BytecodeChunk>{};
-  for (final entry in chunksMap.entries) {
-    final name = entry.key as String;
-    final chunk = entry.value as Map;
-    final constants = (chunk['constants'] as List).map<dynamic>((c) {
-      // Chunk refs are stored as '@' + chunkName (non-empty name).
-      // A bare '@' string literal must NOT be converted to ChunkRef("").
-      if (c is String && c.length > 1 && c.startsWith('@')) return ChunkRef(c.substring(1));
-      return c;
-    }).toList();
-    final code = (chunk['code'] as List).map((instr) {
-      final m = instr as Map;
-      final op = opcodeByMnemonic[m['op'] as String]!;
-      final operand = m['operand'];
-      return Instruction(op, operand != null ? (operand as num).toInt() : 0);
-    }).toList();
-    chunks[name] = BytecodeChunk(
-      name: name,
-      constants: constants,
-      params: ((chunk['params'] as List?) ?? []).cast<String>(),
-      code: code,
-    );
-  }
-  return BytecodeProgram(chunks);
-}
-
-/// Dart implementation of the SHQL codec — produces the same human-readable
-/// listing format as [shql_codec.shql]'s `codec.decode()`, so the Dart and
-/// SHQL codec implementations can be compared directly (no format mismatch).
-List<String> dartCodec(BytecodeProgram program) {
-  String fmtConst(dynamic val) {
-    if (val == null) return 'null';
-    if (val == true) return 'true';
-    if (val == false) return 'false';
-    if (val is ChunkRef) return '.${val.name}';
-    return val.toString(); // int, double, String — no extra quotes, matches STRING() in SHQL
-  }
-
-  String fmtInstr(Instruction instr, List<dynamic> constants) {
-    final op = instr.op;
-    if (!op.hasOperand) return op.mnemonic;
-    final arg = instr.operand;
-    var resolved = '';
-    if (op == Opcode.pushConst || op == Opcode.makeClosure)
-      resolved = '  -- ${fmtConst(constants[arg])}';
-    else if (op == Opcode.loadVar || op == Opcode.storeVar ||
-             op == Opcode.getMember || op == Opcode.setMember)
-      resolved = '  -- ${constants[arg]}';
-    return '${op.mnemonic}($arg)$resolved';
-  }
-
-  List<String> chunkLines(BytecodeChunk chunk) {
-    final out = <String>[];
-    out.add('CHUNK ${chunk.name} (${chunk.params.join(', ')})');
-    for (var i = 0; i < chunk.constants.length; i++)
-      out.add('  CONST  $i: ${fmtConst(chunk.constants[i])}');
-    out.add('  CODE:');
-    for (var i = 0; i < chunk.code.length; i++)
-      out.add('    $i: ${fmtInstr(chunk.code[i], chunk.constants)}');
-    return out;
-  }
-
-  // Canonical order: main first, then all other chunks sorted alphabetically.
-  // Mirrors BytecodeEncoder.encode ordering so dartCodec is invariant to
-  // internal chunk insertion order.
-  final sorted = [...program.chunks.values]
-    ..sort((a, b) => a.name == 'main'
-        ? -1
-        : b.name == 'main'
-            ? 1
-            : a.name.compareTo(b.name));
-  final out = <String>[];
-  for (final chunk in sorted) {
-    out.addAll(chunkLines(chunk));
-  }
-  return out;
 }
 
 late String _stdlibSrc;
@@ -267,7 +184,7 @@ Future<void> _ensurePipeline() async {
   for (final src in [_lexerSrc, _parserSrc, _compilerSrc, _codecSrc]) {
     final prog = BytecodeCompiler.compile(Parser.parse(src, _pipelineCs!, sourceCode: src), _pipelineCs!);
     final encoded = BytecodeEncoder.encode(prog);
-    _pipelineBytecodes.add((encoded, dartCodec(BytecodeDecoder.decode(encoded))));
+    _pipelineBytecodes.add((encoded, canonicalCodec(BytecodeDecoder.decode(encoded))));
     await BytecodeInterpreter(prog, _pipelineRt!).executeScoped('main');
   }
   // Pre-compile the pipeline invocation script once so evalBytecode can reuse
