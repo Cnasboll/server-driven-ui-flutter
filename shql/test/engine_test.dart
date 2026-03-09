@@ -228,6 +228,12 @@ ConstantsSet? _pipelineCs;
 /// pipeline runtime's global scope is never polluted by per-test variables.
 BytecodeInterpreter? _pipelineVm;
 
+/// [dartCodec] output for each of the four pipeline source files (lexer,
+/// parser, compiler, codec), in that order.  Populated in [_ensurePipeline]
+/// alongside loading those programs into [_pipelineRt].  Used by the Stage 2
+/// bootstrap test as the golden reference.
+final List<List<String>> _pipelineBytecodes = [];
+
 /// Source of the pipeline invocation script — tokenize → parse → compile →
 /// decode, then return [prog, dec].  Stored as a constant so the program can
 /// be compiled once and reused.
@@ -243,8 +249,14 @@ Future<void> _ensurePipeline() async {
   if (_pipelineRt != null) return;
   _pipelineCs = Runtime.prepareConstantsSet();
   _pipelineRt = Runtime.prepareRuntime(_pipelineCs!);
-  for (final src in [_stdlibSrc, _lexerSrc, _parserSrc, _compilerSrc, _codecSrc]) {
-    await _runOnVm(src, _pipelineRt!, _pipelineCs!);
+  // stdlib has no golden bytecode — it wraps native ops and is only loaded.
+  await _runOnVm(_stdlibSrc, _pipelineRt!, _pipelineCs!);
+  // For the four pipeline files, save the Dart-compiled bytecode as the
+  // golden reference before executing each program into _pipelineRt.
+  for (final src in [_lexerSrc, _parserSrc, _compilerSrc, _codecSrc]) {
+    final prog = BytecodeCompiler.compile(Parser.parse(src, _pipelineCs!, sourceCode: src), _pipelineCs!);
+    _pipelineBytecodes.add(dartCodec(BytecodeDecoder.decode(BytecodeEncoder.encode(prog))));
+    await BytecodeInterpreter(prog, _pipelineRt!).executeScoped('main');
   }
   // Pre-compile the pipeline invocation script once so evalBytecode can reuse
   // the BytecodeProgram directly without re-parsing/re-compiling per test.
@@ -5978,53 +5990,28 @@ codec.decode(program)
     // toolchain — the classical definition of a self-hosting compiler.
     test('Stage 2 bootstrap — full pipeline compiled by SHQL, not Dart', () async {
       await _ensurePipeline();
-      final consts = {
-        for (final e in Runtime.allConstants.entries)
-          if (e.value is! bool) e.key: e.value,
-      };
 
-      // Build a Stage-2 runtime: stdlib only via Dart (it wraps native ops),
-      // then compile each pipeline file through the SHQL pipeline and execute
-      // the result in stage2Rt — in dependency order.
-      final stage2Cs = Runtime.prepareConstantsSet();
-      final stage2Rt = Runtime.prepareRuntime(stage2Cs);
-      await _runOnVm(_stdlibSrc, stage2Rt, stage2Cs); // stdlib: Dart-compiled foundation
-      for (final src in [_lexerSrc, _parserSrc, _compilerSrc, _codecSrc]) {
-        // Pipeline files are standalone programs — they must not be compiled
-        // with runtime constants (PI, E, ANSWER, …), because any local variable
-        // whose uppercased name matches a constant (e.g. `e` → E = 2.718…)
-        // would be wrongly inlined instead of treated as a load_var.
-        final out = await _pipelineVm!
-            .executeScoped('main', boundValues: {'src': src, 'consts': <String, dynamic>{}}) as List;
-        await BytecodeInterpreter(
-          shqlMapToProgram(out[0] as Map), stage2Rt,
-        ).executeScoped('main');
+      // Pipeline files are compiled with empty consts (avoid e→E inlining, etc.).
+      const pipelineConsts = <String, dynamic>{};
+
+      final pipelineNames = ['lexer', 'parser', 'compiler', 'codec'];
+      final pipelineSrcs  = [_lexerSrc, _parserSrc, _compilerSrc, _codecSrc];
+
+      // For each pipeline source file: ask the SHQL pipeline (_pipelineVm) to
+      // compile it, then compare the resulting bytecode against the Dart
+      // compiler's golden output saved in _pipelineBytecodes during setup.
+      // This is the bootstrap equivalence check: the SHQL compiler compiling
+      // itself must reproduce exactly what the Dart compiler produced.
+      for (var i = 0; i < pipelineSrcs.length; i++) {
+        final out = await _pipelineVm!.executeScoped(
+          'main',
+          boundValues: {'src': pipelineSrcs[i], 'consts': pipelineConsts},
+        ) as List;
+        final shqlLines = (out[1] as List).cast<String>();
+        expect(shqlLines, _pipelineBytecodes[i],
+            reason: 'SHQL pipeline must reproduce Dart compiler output for ${pipelineNames[i]}.shql');
       }
-      // stage2Rt now has: stdlib (Dart) + lexer/parser/compiler/codec (all SHQL-compiled).
-
-      // Stage 2: compile a test expression using the all-SHQL pipeline.
-      const testSrc = 'x := 42; x * 2';
-      final invocTree = Parser.parse(_pipelineInvocSrc, stage2Cs, sourceCode: _pipelineInvocSrc);
-      final stage2Out = await BytecodeInterpreter(
-        BytecodeCompiler.compile(invocTree, stage2Cs), stage2Rt,
-      ).executeScoped('main', boundValues: {'src': testSrc, 'consts': consts}) as List;
-
-      // Stage 1 reference: original SHQL pipeline compiling the same source.
-      final stage1Out = await _pipelineVm!
-          .executeScoped('main', boundValues: {'src': testSrc, 'consts': consts}) as List;
-
-      expect(
-        (stage2Out[1] as List).cast<String>(),
-        (stage1Out[1] as List).cast<String>(),
-        reason: 'Stage 2: all-SHQL-compiled pipeline must produce identical bytecode to Stage 1',
-      );
-
-      // Execute the Stage-2 compiled program and verify the result.
-      final stage2Result = await BytecodeInterpreter(
-        shqlMapToProgram(stage2Out[0] as Map),
-        Runtime.prepareRuntime(Runtime.prepareConstantsSet()),
-      ).executeScoped('main');
-      expect(stage2Result, 84); // 42 * 2
     });
+
   });
 }

@@ -56,7 +56,7 @@ _CMP_CONST_NULL(chunk)    := _CMP_CONST(chunk, 'null', NULL);
 _CMP_CONST_BOOL(chunk, b) := _CMP_CONST(chunk, 'b:' + STRING(b), b);
 _CMP_CONST_INT(chunk, n)  := _CMP_CONST(chunk, 'i:' + STRING(n), n);
 _CMP_CONST_FLT(chunk, f)  := _CMP_CONST(chunk, 'f:' + STRING(f), f);
-_CMP_CONST_STR(chunk, s)  := _CMP_CONST(chunk, '"' + s, s);
+_CMP_CONST_STR(chunk, s)  := _CMP_CONST(chunk, 'n:' + s, s);
 _CMP_CONST_REF(chunk, n)  := _CMP_CONST(chunk, '&' + n, '@' + n);
 _CMP_CONST_NAME(chunk, n) := _CMP_CONST(chunk, 'n:' + n, n);  -- identifier name
 
