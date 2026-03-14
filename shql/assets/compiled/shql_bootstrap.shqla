@@ -1,0 +1,361 @@
+CHUNK main ()
+  CONST  0: stdlib
+  CONST  1: console_io
+  CONST  2: shql_lexer
+  CONST  3: shql_parser
+  CONST  4: shql_compiler
+  CONST  5: shql_codec
+  CONST  6: shqlc
+  CONST  7: shql_bootstrap
+  CONST  8: _ALL_FILES
+  CONST  9: DIR_CREATE
+  CONST  10: __OUTPUT_DIR
+  CONST  11: 0
+  CONST  12: _FI
+  CONST  13: false
+  CONST  14: _NAME
+  CONST  15: FILE_READ
+  CONST  16: __ASSETS_DIR
+  CONST  17: /
+  CONST  18: null
+  CONST  19: .shql
+  CONST  20: _SRC
+  CONST  21: LEXER
+  CONST  22: TOKENIZE
+  CONST  23: _TOKENS
+  CONST  24: PARSER
+  CONST  25: PARSE
+  CONST  26: _TREE
+  CONST  27: COMPILER
+  CONST  28: COMPILE_WITH_CONSTS
+  CONST  29: __CONSTS
+  CONST  30: _PROG
+  CONST  31: CODEC
+  CONST  32: DECODE
+  CONST  33: _DEC
+  CONST  34: _ENCODE_PROGRAM
+  CONST  35: _ENCODED
+  CONST  36: FILE_WRITE_BYTES
+  CONST  37: .shqlbc
+  CONST  38: FILE_WRITE
+  CONST  39: .shqla
+  CONST  40: STRING_JOIN
+  CONST  41: 
+
+  CONST  42: PRINT
+  CONST  43:   
+  CONST  44: .shql -> 
+  CONST  45: .shqlbc (
+  CONST  46: STRING
+  CONST  47: LENGTH
+  CONST  48:  bytes) + 
+  CONST  49: 1
+  CONST  50: -1
+  CONST  51: Bootstrap complete: 
+  CODE:
+    0: push_const(0)  -- stdlib
+    1: push_const(1)  -- console_io
+    2: push_const(2)  -- shql_lexer
+    3: push_const(3)  -- shql_parser
+    4: push_const(4)  -- shql_compiler
+    5: push_const(5)  -- shql_codec
+    6: push_const(6)  -- shqlc
+    7: push_const(7)  -- shql_bootstrap
+    8: make_list(8)
+    9: store_var(8)  -- _ALL_FILES
+    10: load_var(8)  -- _ALL_FILES
+    11: pop
+    12: load_var(9)  -- DIR_CREATE
+    13: load_var(10)  -- __OUTPUT_DIR
+    14: call(1)
+    15: pop
+    16: push_const(11)  -- 0
+    17: store_var(12)  -- _FI
+    18: load_var(12)  -- _FI
+    19: pop
+    20: load_var(12)  -- _FI
+    21: store_reg(0)
+    22: push_const(13)  -- false
+    23: store_reg(1)
+    24: push_scope
+    25: load_var(8)  -- _ALL_FILES
+    26: load_var(12)  -- _FI
+    27: get_index
+    28: store_var(14)  -- _NAME
+    29: load_var(14)  -- _NAME
+    30: pop
+    31: load_var(15)  -- FILE_READ
+    32: load_var(16)  -- __ASSETS_DIR
+    33: jump_null(39)
+    34: push_const(17)  -- /
+    35: jump_null(38)
+    36: add
+    37: jump(41)
+    38: pop
+    39: pop
+    40: push_const(18)  -- null
+    41: jump_null(47)
+    42: load_var(14)  -- _NAME
+    43: jump_null(46)
+    44: add
+    45: jump(49)
+    46: pop
+    47: pop
+    48: push_const(18)  -- null
+    49: jump_null(55)
+    50: push_const(19)  -- .shql
+    51: jump_null(54)
+    52: add
+    53: jump(57)
+    54: pop
+    55: pop
+    56: push_const(18)  -- null
+    57: call(1)
+    58: store_var(20)  -- _SRC
+    59: load_var(20)  -- _SRC
+    60: pop
+    61: load_var(21)  -- LEXER
+    62: get_member(22)  -- TOKENIZE
+    63: load_var(20)  -- _SRC
+    64: call(1)
+    65: store_var(23)  -- _TOKENS
+    66: load_var(23)  -- _TOKENS
+    67: pop
+    68: load_var(24)  -- PARSER
+    69: get_member(25)  -- PARSE
+    70: load_var(23)  -- _TOKENS
+    71: call(1)
+    72: store_var(26)  -- _TREE
+    73: load_var(26)  -- _TREE
+    74: pop
+    75: load_var(27)  -- COMPILER
+    76: get_member(28)  -- COMPILE_WITH_CONSTS
+    77: load_var(26)  -- _TREE
+    78: load_var(29)  -- __CONSTS
+    79: call(2)
+    80: store_var(30)  -- _PROG
+    81: load_var(30)  -- _PROG
+    82: pop
+    83: load_var(31)  -- CODEC
+    84: get_member(32)  -- DECODE
+    85: load_var(30)  -- _PROG
+    86: call(1)
+    87: store_var(33)  -- _DEC
+    88: load_var(33)  -- _DEC
+    89: pop
+    90: load_var(34)  -- _ENCODE_PROGRAM
+    91: load_var(30)  -- _PROG
+    92: call(1)
+    93: store_var(35)  -- _ENCODED
+    94: load_var(35)  -- _ENCODED
+    95: pop
+    96: load_var(36)  -- FILE_WRITE_BYTES
+    97: load_var(10)  -- __OUTPUT_DIR
+    98: jump_null(104)
+    99: push_const(17)  -- /
+    100: jump_null(103)
+    101: add
+    102: jump(106)
+    103: pop
+    104: pop
+    105: push_const(18)  -- null
+    106: jump_null(112)
+    107: load_var(14)  -- _NAME
+    108: jump_null(111)
+    109: add
+    110: jump(114)
+    111: pop
+    112: pop
+    113: push_const(18)  -- null
+    114: jump_null(120)
+    115: push_const(37)  -- .shqlbc
+    116: jump_null(119)
+    117: add
+    118: jump(122)
+    119: pop
+    120: pop
+    121: push_const(18)  -- null
+    122: load_var(35)  -- _ENCODED
+    123: call(2)
+    124: pop
+    125: load_var(38)  -- FILE_WRITE
+    126: load_var(10)  -- __OUTPUT_DIR
+    127: jump_null(133)
+    128: push_const(17)  -- /
+    129: jump_null(132)
+    130: add
+    131: jump(135)
+    132: pop
+    133: pop
+    134: push_const(18)  -- null
+    135: jump_null(141)
+    136: load_var(14)  -- _NAME
+    137: jump_null(140)
+    138: add
+    139: jump(143)
+    140: pop
+    141: pop
+    142: push_const(18)  -- null
+    143: jump_null(149)
+    144: push_const(39)  -- .shqla
+    145: jump_null(148)
+    146: add
+    147: jump(151)
+    148: pop
+    149: pop
+    150: push_const(18)  -- null
+    151: load_var(40)  -- STRING_JOIN
+    152: load_var(33)  -- _DEC
+    153: push_const(41)  -- 
+
+    154: call(2)
+    155: jump_null(161)
+    156: push_const(41)  -- 
+
+    157: jump_null(160)
+    158: add
+    159: jump(163)
+    160: pop
+    161: pop
+    162: push_const(18)  -- null
+    163: call(2)
+    164: pop
+    165: load_var(42)  -- PRINT
+    166: push_const(43)  --   
+    167: jump_null(173)
+    168: load_var(14)  -- _NAME
+    169: jump_null(172)
+    170: add
+    171: jump(175)
+    172: pop
+    173: pop
+    174: push_const(18)  -- null
+    175: jump_null(181)
+    176: push_const(44)  -- .shql -> 
+    177: jump_null(180)
+    178: add
+    179: jump(183)
+    180: pop
+    181: pop
+    182: push_const(18)  -- null
+    183: jump_null(189)
+    184: load_var(14)  -- _NAME
+    185: jump_null(188)
+    186: add
+    187: jump(191)
+    188: pop
+    189: pop
+    190: push_const(18)  -- null
+    191: jump_null(197)
+    192: push_const(45)  -- .shqlbc (
+    193: jump_null(196)
+    194: add
+    195: jump(199)
+    196: pop
+    197: pop
+    198: push_const(18)  -- null
+    199: jump_null(209)
+    200: load_var(46)  -- STRING
+    201: load_var(47)  -- LENGTH
+    202: load_var(35)  -- _ENCODED
+    203: call(1)
+    204: call(1)
+    205: jump_null(208)
+    206: add
+    207: jump(211)
+    208: pop
+    209: pop
+    210: push_const(18)  -- null
+    211: jump_null(217)
+    212: push_const(48)  --  bytes) + 
+    213: jump_null(216)
+    214: add
+    215: jump(219)
+    216: pop
+    217: pop
+    218: push_const(18)  -- null
+    219: jump_null(225)
+    220: load_var(14)  -- _NAME
+    221: jump_null(224)
+    222: add
+    223: jump(227)
+    224: pop
+    225: pop
+    226: push_const(18)  -- null
+    227: jump_null(233)
+    228: push_const(39)  -- .shqla
+    229: jump_null(232)
+    230: add
+    231: jump(235)
+    232: pop
+    233: pop
+    234: push_const(18)  -- null
+    235: call(1)
+    236: pop_scope
+    237: pop
+    238: load_reg(1)
+    239: jump_true(290)
+    240: load_var(47)  -- LENGTH
+    241: load_var(8)  -- _ALL_FILES
+    242: call(1)
+    243: jump_null(249)
+    244: push_const(49)  -- 1
+    245: jump_null(248)
+    246: sub
+    247: jump(251)
+    248: pop
+    249: pop
+    250: push_const(18)  -- null
+    251: store_reg(2)
+    252: load_reg(2)
+    253: load_reg(0)
+    254: cmp_gte
+    255: store_reg(3)
+    256: load_reg(3)
+    257: jump_false(260)
+    258: push_const(49)  -- 1
+    259: jump(261)
+    260: push_const(50)  -- -1
+    261: store_reg(4)
+    262: load_var(12)  -- _FI
+    263: load_reg(4)
+    264: add
+    265: store_reg(5)
+    266: load_reg(3)
+    267: load_reg(5)
+    268: load_reg(2)
+    269: cmp_gt
+    270: log_and
+    271: load_reg(3)
+    272: log_not
+    273: load_reg(5)
+    274: load_reg(2)
+    275: cmp_lt
+    276: log_and
+    277: log_or
+    278: store_reg(6)
+    279: load_reg(6)
+    280: load_reg(5)
+    281: load_reg(2)
+    282: cmp_eq
+    283: log_or
+    284: store_reg(1)
+    285: load_reg(6)
+    286: jump_true(290)
+    287: load_reg(5)
+    288: store_var(12)  -- _FI
+    289: jump(24)
+    290: push_const(18)  -- null
+    291: pop
+    292: load_var(42)  -- PRINT
+    293: push_const(51)  -- Bootstrap complete: 
+    294: jump_null(300)
+    295: load_var(10)  -- __OUTPUT_DIR
+    296: jump_null(299)
+    297: add
+    298: jump(302)
+    299: pop
+    300: pop
+    301: push_const(18)  -- null
+    302: call(1)
+    303: ret

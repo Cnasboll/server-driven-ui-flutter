@@ -1,0 +1,40 @@
+--- SHQL™ Bootstrap — compiles the self-hosting pipeline using the SHQL
+--- compiler itself.
+---
+--- Expects:
+---   __CONSTS      - runtime constants map for the SHQL compiler
+---   __ASSETS_DIR  - path to assets directory (with .shql sources)
+---   __OUTPUT_DIR  - path to output directory (for .shqlbc and .shqla)
+---
+--- The pipeline (lexer, parser, compiler, codec) must be loaded
+--- into the runtime before this program runs.
+
+_all_files := ["stdlib", "console_io", "shql_lexer", "shql_parser", "shql_compiler", "shql_codec", "shqlc", "shql_bootstrap"];
+
+DIR_CREATE(__OUTPUT_DIR);
+
+FOR _fi := 0 TO LENGTH(_all_files) - 1 DO BEGIN
+    _name := _all_files[_fi];
+    _src := FILE_READ(__ASSETS_DIR + "/" + _name + ".shql");
+
+    -- Run the pipeline
+    _tokens := lexer.tokenize(_src);
+    _tree := parser.parse(_tokens);
+    _prog := compiler.compile_with_consts(_tree, __CONSTS);
+    _dec := codec.decode(_prog);
+
+    -- Encode to binary
+    _encoded := _ENCODE_PROGRAM(_prog);
+
+    -- Write binary bytecode
+    FILE_WRITE_BYTES(__OUTPUT_DIR + "/" + _name + ".shqlbc", _encoded);
+
+    -- Write canonical disassembly
+    FILE_WRITE(__OUTPUT_DIR + "/" + _name + ".shqla", STRING_JOIN(_dec, "
+") + "
+");
+
+    PRINT("  " + _name + ".shql -> " + _name + ".shqlbc (" + STRING(LENGTH(_encoded)) + " bytes) + " + _name + ".shqla");
+END;
+
+PRINT("Bootstrap complete: " + __OUTPUT_DIR);

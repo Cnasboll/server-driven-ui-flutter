@@ -18,6 +18,7 @@ import 'package:shql/execution/runtime/runtime.dart';
 
 const _pipelineFiles = [
   'stdlib',
+  'console_io',
   'shql_lexer',
   'shql_parser',
   'shql_compiler',

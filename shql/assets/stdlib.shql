@@ -12,6 +12,7 @@ EXP(a) := _EXTERN("EXP", [a]);
 LOG(a) := _EXTERN("LOG", [a]);
 LOWERCASE(a) := _EXTERN("LOWERCASE", [a]);
 UPPERCASE(a) := _EXTERN("UPPERCASE", [a]);
+CHAR_CODE(a) := _EXTERN("CHAR_CODE", [a]);
 TRIM(a) := _EXTERN("TRIM", [a]);
 INT(a) := _EXTERN("INT", [a]);
 DOUBLE(a) := _EXTERN("DOUBLE", [a]);

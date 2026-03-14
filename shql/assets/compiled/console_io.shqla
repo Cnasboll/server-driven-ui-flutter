@@ -1,0 +1,176 @@
+CHUNK main ()
+  CONST  0: .__FILE_READ_0
+  CONST  1: FILE_READ
+  CONST  2: .__FILE_READ_BYTES_1
+  CONST  3: FILE_READ_BYTES
+  CONST  4: .__FILE_EXISTS_2
+  CONST  5: FILE_EXISTS
+  CONST  6: .__DIR_CREATE_3
+  CONST  7: DIR_CREATE
+  CONST  8: .__EXIT_4
+  CONST  9: EXIT
+  CONST  10: .__ENV_5
+  CONST  11: ENV
+  CONST  12: .__STDERR_6
+  CONST  13: STDERR
+  CONST  14: .__FILE_WRITE_7
+  CONST  15: FILE_WRITE
+  CONST  16: .__FILE_WRITE_BYTES_8
+  CONST  17: FILE_WRITE_BYTES
+  CONST  18: .___ENCODE_PROGRAM_9
+  CONST  19: _ENCODE_PROGRAM
+  CODE:
+    0: make_closure(0)  -- .__FILE_READ_0
+    1: store_var(1)  -- FILE_READ
+    2: load_var(1)  -- FILE_READ
+    3: pop
+    4: make_closure(2)  -- .__FILE_READ_BYTES_1
+    5: store_var(3)  -- FILE_READ_BYTES
+    6: load_var(3)  -- FILE_READ_BYTES
+    7: pop
+    8: make_closure(4)  -- .__FILE_EXISTS_2
+    9: store_var(5)  -- FILE_EXISTS
+    10: load_var(5)  -- FILE_EXISTS
+    11: pop
+    12: make_closure(6)  -- .__DIR_CREATE_3
+    13: store_var(7)  -- DIR_CREATE
+    14: load_var(7)  -- DIR_CREATE
+    15: pop
+    16: make_closure(8)  -- .__EXIT_4
+    17: store_var(9)  -- EXIT
+    18: load_var(9)  -- EXIT
+    19: pop
+    20: make_closure(10)  -- .__ENV_5
+    21: store_var(11)  -- ENV
+    22: load_var(11)  -- ENV
+    23: pop
+    24: make_closure(12)  -- .__STDERR_6
+    25: store_var(13)  -- STDERR
+    26: load_var(13)  -- STDERR
+    27: pop
+    28: make_closure(14)  -- .__FILE_WRITE_7
+    29: store_var(15)  -- FILE_WRITE
+    30: load_var(15)  -- FILE_WRITE
+    31: pop
+    32: make_closure(16)  -- .__FILE_WRITE_BYTES_8
+    33: store_var(17)  -- FILE_WRITE_BYTES
+    34: load_var(17)  -- FILE_WRITE_BYTES
+    35: pop
+    36: make_closure(18)  -- .___ENCODE_PROGRAM_9
+    37: store_var(19)  -- _ENCODE_PROGRAM
+    38: load_var(19)  -- _ENCODE_PROGRAM
+    39: ret
+CHUNK __DIR_CREATE_3 (A)
+  CONST  0: _EXTERN
+  CONST  1: DIR_CREATE
+  CONST  2: A
+  CODE:
+    0: load_var(0)  -- _EXTERN
+    1: push_const(1)  -- DIR_CREATE
+    2: load_var(2)  -- A
+    3: make_list(1)
+    4: call(2)
+    5: ret
+CHUNK __ENV_5 (A)
+  CONST  0: _EXTERN
+  CONST  1: ENV
+  CONST  2: A
+  CODE:
+    0: load_var(0)  -- _EXTERN
+    1: push_const(1)  -- ENV
+    2: load_var(2)  -- A
+    3: make_list(1)
+    4: call(2)
+    5: ret
+CHUNK __EXIT_4 (A)
+  CONST  0: _EXTERN
+  CONST  1: EXIT
+  CONST  2: A
+  CODE:
+    0: load_var(0)  -- _EXTERN
+    1: push_const(1)  -- EXIT
+    2: load_var(2)  -- A
+    3: make_list(1)
+    4: call(2)
+    5: ret
+CHUNK __FILE_EXISTS_2 (A)
+  CONST  0: _EXTERN
+  CONST  1: FILE_EXISTS
+  CONST  2: A
+  CODE:
+    0: load_var(0)  -- _EXTERN
+    1: push_const(1)  -- FILE_EXISTS
+    2: load_var(2)  -- A
+    3: make_list(1)
+    4: call(2)
+    5: ret
+CHUNK __FILE_READ_0 (A)
+  CONST  0: _EXTERN
+  CONST  1: FILE_READ
+  CONST  2: A
+  CODE:
+    0: load_var(0)  -- _EXTERN
+    1: push_const(1)  -- FILE_READ
+    2: load_var(2)  -- A
+    3: make_list(1)
+    4: call(2)
+    5: ret
+CHUNK __FILE_READ_BYTES_1 (A)
+  CONST  0: _EXTERN
+  CONST  1: FILE_READ_BYTES
+  CONST  2: A
+  CODE:
+    0: load_var(0)  -- _EXTERN
+    1: push_const(1)  -- FILE_READ_BYTES
+    2: load_var(2)  -- A
+    3: make_list(1)
+    4: call(2)
+    5: ret
+CHUNK __FILE_WRITE_7 (A, B)
+  CONST  0: _EXTERN
+  CONST  1: FILE_WRITE
+  CONST  2: A
+  CONST  3: B
+  CODE:
+    0: load_var(0)  -- _EXTERN
+    1: push_const(1)  -- FILE_WRITE
+    2: load_var(2)  -- A
+    3: load_var(3)  -- B
+    4: make_list(2)
+    5: call(2)
+    6: ret
+CHUNK __FILE_WRITE_BYTES_8 (A, B)
+  CONST  0: _EXTERN
+  CONST  1: FILE_WRITE_BYTES
+  CONST  2: A
+  CONST  3: B
+  CODE:
+    0: load_var(0)  -- _EXTERN
+    1: push_const(1)  -- FILE_WRITE_BYTES
+    2: load_var(2)  -- A
+    3: load_var(3)  -- B
+    4: make_list(2)
+    5: call(2)
+    6: ret
+CHUNK __STDERR_6 (A)
+  CONST  0: _EXTERN
+  CONST  1: STDERR
+  CONST  2: A
+  CODE:
+    0: load_var(0)  -- _EXTERN
+    1: push_const(1)  -- STDERR
+    2: load_var(2)  -- A
+    3: make_list(1)
+    4: call(2)
+    5: ret
+CHUNK ___ENCODE_PROGRAM_9 (A)
+  CONST  0: _EXTERN
+  CONST  1: _ENCODE_PROGRAM
+  CONST  2: A
+  CODE:
+    0: load_var(0)  -- _EXTERN
+    1: push_const(1)  -- _ENCODE_PROGRAM
+    2: load_var(2)  -- A
+    3: make_list(1)
+    4: call(2)
+    5: ret

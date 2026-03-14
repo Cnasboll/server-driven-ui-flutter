@@ -1,0 +1,13 @@
+--- Console I/O and file system wrappers.
+--- Requires registerConsoleBindings() to be called on the runtime first.
+
+FILE_READ(a) := _EXTERN("FILE_READ", [a]);
+FILE_READ_BYTES(a) := _EXTERN("FILE_READ_BYTES", [a]);
+FILE_EXISTS(a) := _EXTERN("FILE_EXISTS", [a]);
+DIR_CREATE(a) := _EXTERN("DIR_CREATE", [a]);
+EXIT(a) := _EXTERN("EXIT", [a]);
+ENV(a) := _EXTERN("ENV", [a]);
+STDERR(a) := _EXTERN("STDERR", [a]);
+FILE_WRITE(a, b) := _EXTERN("FILE_WRITE", [a, b]);
+FILE_WRITE_BYTES(a, b) := _EXTERN("FILE_WRITE_BYTES", [a, b]);
+_ENCODE_PROGRAM(a) := _EXTERN("_ENCODE_PROGRAM", [a]);
