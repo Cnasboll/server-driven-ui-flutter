@@ -911,6 +911,10 @@ class Runtime {
     "LOG": (caller, a) => log(a),
     "LOWERCASE": (caller, a) => a.toString().toLowerCase(),
     "UPPERCASE": (caller, a) => a.toString().toUpperCase(),
+    "CHAR_CODE": (caller, a) {
+      final s = a as String;
+      return s.isEmpty ? 0 : s.codeUnitAt(0);
+    },
     "TRIM": (caller, a) => a?.toString().trim(),
     "INT": (caller, a) {
       if (a is int) {

@@ -1,207 +1,315 @@
 -- ============================================================
--- SHQL™ Lexer — tokenizes SHQL™ source into a list of token maps.
+-- SHQL™ Lexer — state-machine tokenizer.
+-- 1:1 translation of the Dart StateMachine (state_machine.dart).
+--
 -- Each token: {"t": type, "v": value, "l": line, "sc": start_col, "len": length}
 --
 -- Token types:
---   "INT"   integer literal (value is digit string)
---   "FLOAT" float literal
---   "STR"   string literal (value is the decoded string)
---   "ID"    identifier (uppercased)
+--   "INT"   integer literal       "FLOAT" float literal
+--   "STR"   string literal        "ID"    identifier (uppercased)
 --   keywords: "IF" "THEN" "ELSE" "WHILE" "DO" "REPEAT" "UNTIL"
 --             "FOR" "TO" "STEP" "BEGIN" "END" "BREAK" "CONTINUE"
---             "RETURN" "AND" "OR" "XOR" "NOT" "IN" "OBJECT"
+--             "RETURN" "AND" "OR" "XOR" "NOT" "IN" "OBJECT" "NULL"
 --   operators: ":=" "=>" "<=" ">=" "<>" "!~" "^"
 --              "+" "-" "*" "/" "%" "=" "<" ">" "~"
 --              "(" ")" "[" "]" "{" "}" "." "," ":" ";"
 --   "EOF"
 -- ============================================================
 
-_LX_KEYWORDS := [
-  'IF','THEN','ELSE','WHILE','DO','REPEAT','UNTIL',
-  'FOR','TO','STEP','BEGIN','END','BREAK','CONTINUE','RETURN',
-  'AND','OR','XOR','NOT','IN','OBJECT'
-];
+-- ---- Character classification table ----
+-- Maps single characters to class strings. Letters (except 'r') and digits
+-- are handled by CHAR_CODE range checks in _SM_CLASSIFY.
 
-_LX_IS_KW(s) := INDEX_OF(_LX_KEYWORDS, s) >= 0;
+_SM_CC := {
+  "(":  "lpar",   ")":  "rpar",
+  "[":  "lsq",    "]":  "rsq",
+  "{":  "lbr",    "}":  "rbr",
+  "_":  "us",
+  ",":  "comma",  ".":  "dot",
+  ":":  "colon",  ";":  "semi",
+  "^":  "pow",    "*":  "mul",
+  "/":  "div",    "%":  "mod",
+  "+":  "plus",   "-":  "minus",
+  "=":  "eq",     "!":  "bang",
+  "~":  "tilde",  "<":  "lt",     ">": "gt",
+  "\\": "bslash",
+  '"':  "dq",     "'":  "sq",
+  "r":  "r_ch"
+};
 
--- Swedish/alias keywords that map to canonical English token types.
-_LX_ALIAS_KEYS := ['OCH', 'ELLER', 'ANTINGEN_ELLER', 'INTE', 'FINNS_I'];
-_LX_ALIAS_VALS := ['AND', 'OR',  'XOR',              'NOT', 'IN'       ];
-_LX_ALIAS(word) := BEGIN
-  i := 0;
-  WHILE i < LENGTH(_LX_ALIAS_KEYS) DO BEGIN
-    IF _LX_ALIAS_KEYS[i] = word THEN RETURN _LX_ALIAS_VALS[i];
-    i := i + 1;
-  END;
+_SM_CLASSIFY(_sm_c) := BEGIN
+  _sm_cl := _SM_CC[_sm_c];
+  IF _sm_cl <> NULL THEN RETURN _sm_cl;
+  _sm_cd := CHAR_CODE(_sm_c);
+  IF _sm_cd >= 65 AND _sm_cd <= 90 THEN RETURN "letter";
+  IF _sm_cd >= 97 AND _sm_cd <= 122 THEN RETURN "letter";
+  IF _sm_cd >= 48 AND _sm_cd <= 57 THEN RETURN "digit";
+  IF _sm_cd = 32 OR _sm_cd = 9 THEN RETURN "ws";
+  IF _sm_cd = 10 OR _sm_cd = 13 THEN RETURN "nl";
   RETURN NULL;
 END;
 
-_LX_IS_DIGIT(c)  := c ~ r'[0-9]';
-_LX_IS_ALPHA(c)  := c ~ r'[a-zA-Z_]';
-_LX_IS_ALNUM(c)  := c ~ r'[a-zA-Z0-9_]';
-_LX_TOK(t, v, line, sc, len) := {"t": t, "v": v, "l": line, "sc": sc, "len": len};
-_LX_CH(src, i) := SUBSTRING(src, i, i+1);
-_LX_CH2(src, i) := IF i+1 < LENGTH(src) THEN SUBSTRING(src, i, i+2) ELSE SUBSTRING(src, i, i+1);
+-- ---- Main transition table ----
+-- Key = "STATE:CHARCLASS", value = next state.
+-- States: S=start, ID=identifier, NUM=number, FLT=float, NDOT=numberDot,
+--   DQS=doubleQuotedString, SQS=singleQuotedString, EDQS/ESQS=escape,
+--   DQRS/SQRS=rawStrings, COL=colon, BANG=exclamation, EQ=eq, LT=lt, GT=gt,
+--   MINUS=minus, CMT=comment, R=r-prefix
+-- Accept states prefixed with "a".
 
--- Scan a quoted string starting at i (i points to the opening quote).
--- Returns {"buf": decoded_string, "i": pos_after_closing_quote}.
-_LX_SCAN_STR(src, i, n, q) := BEGIN
-  buf := '';
-  i := i + 1;
-  WHILE i < n DO BEGIN
-    c := _LX_CH(src, i);
-    IF c = q THEN BEGIN i := i + 1; RETURN {"buf": buf, "i": i}; END;
-    IF c = '\\' THEN BEGIN
-      i := i + 1;
-      IF i < n THEN BEGIN
-        ec := _LX_CH(src, i);
-        IF ec = 'n' THEN buf := buf + '\n'
-        ELSE IF ec = 't' THEN buf := buf + '\t'
-        ELSE IF ec = 'r' THEN buf := buf + '\r'
-        ELSE buf := buf + ec;
-        i := i + 1;
+_SM_TRANS := {
+  -- From start
+  "S:r_ch":   "R",      "S:letter": "ID",    "S:us":    "ID",
+  "S:digit":  "NUM",    "S:dq":     "DQS",   "S:sq":    "SQS",
+  "S:colon":  "COL",    "S:semi":   "aSEMI",
+  "S:bang":   "BANG",   "S:eq":     "EQ",
+  "S:gt":     "GT",     "S:lt":     "LT",
+  "S:tilde":  "aMATCH",
+  "S:lpar":   "aLPAR",  "S:rpar":   "aRPAR",
+  "S:lsq":    "aLSQ",   "S:rsq":    "aRSQ",
+  "S:lbr":    "aLBR",   "S:rbr":    "aRBR",
+  "S:div":    "aDIV",   "S:mod":    "aMOD",
+  "S:pow":    "aPOW",   "S:mul":    "aMUL",
+  "S:plus":   "aPLUS",  "S:minus":  "MINUS",
+  "S:comma":  "aCOMMA", "S:dot":    "aDOT",
+  "S:ws":     "S",      "S:nl":     "S",
+
+  -- Identifier continues
+  "ID:r_ch":  "ID",     "ID:letter": "ID",
+  "ID:us":    "ID",     "ID:digit":  "ID",
+
+  -- R prefix: if followed by quote -> raw string; else identifier
+  "R:dq":     "DQRS",   "R:sq":     "SQRS",
+  "R:letter": "ID",     "R:us":     "ID",     "R:digit": "ID",
+  "R:r_ch":   "ID",
+
+  -- Numbers
+  "NUM:digit": "NUM",   "NUM:dot":  "NDOT",
+  "NDOT:digit": "FLT",
+  "FLT:digit":  "FLT",
+
+  -- Double-quoted string
+  "DQS:bslash": "EDQS", "DQS:dq": "aDQS",
+  -- Single-quoted string
+  "SQS:bslash": "ESQS", "SQS:sq": "aSQS",
+  -- Raw strings
+  "DQRS:dq": "aDQRS",
+  "SQRS:sq": "aSQRS",
+
+  -- Two-char operators
+  "COL:eq":    "aASSIGN",
+  "BANG:eq":   "aNEQ",    "BANG:tilde": "aNMATCH",
+  "EQ:gt":     "aLAMBDA",
+  "LT:eq":     "aLTEQ",   "LT:gt":     "aNEQ",
+  "GT:eq":     "aGTEQ",
+
+  -- Comment
+  "MINUS:minus": "CMT",   "CMT:nl": "S"
+};
+
+-- ---- Default transition table ----
+-- When no explicit transition exists, finalize current state.
+
+_SM_DEF := {
+  "R":    "aID",     "ID":   "aID",
+  "NUM":  "aNUM",    "FLT":  "aFLT",
+  "NDOT": "aNUM",
+  "COL":  "aCOLON",  "BANG": "aNOT",
+  "EQ":   "aEQ",     "GT":   "aGT",    "LT": "aLT",
+  "MINUS":"aMINUS",
+  -- Strings: stay in string (unknown chars are content)
+  "DQS":  "DQS",     "SQS":  "SQS",
+  "DQRS": "DQRS",    "SQRS": "SQRS",
+  -- Escape consumed -> back to string
+  "EDQS": "DQS",     "ESQS": "SQS",
+  -- Comment: stay
+  "CMT":  "CMT"
+};
+
+-- ---- Accept state -> token type ----
+
+_SM_ACCEPT := {
+  "aCOMMA": ",",      "aDOT":   ".",      "aCOLON": ":",
+  "aSEMI":  ";",      "aASSIGN":":=",     "aLAMBDA":"=>",
+  "aDIV":   "/",      "aMOD":   "%",      "aPOW":   "^",
+  "aEQ":    "=",      "aFLT":   "FLOAT",
+  "aMATCH": "~",      "aNMATCH":"!~",     "aNOT":   "NOT",
+  "aGT":    ">",      "aGTEQ":  ">=",
+  "aID":    "ID",
+  "aLSQ":   "[",      "aLPAR":  "(",      "aLBR":   "{",
+  "aLT":    "<",      "aLTEQ":  "<=",
+  "aMINUS": "-",      "aMUL":   "*",      "aNEQ":   "<>",
+  "aNUM":   "INT",
+  "aDQS":   "STR",    "aDQRS":  "RAW_STR",
+  "aSQS":   "STR",    "aSQRS":  "RAW_STR",
+  "aPLUS":  "+",
+  "aRSQ":   "]",      "aRPAR":  ")",      "aRBR":   "}"
+};
+
+-- ---- Keywords (including Swedish aliases) ----
+
+_SM_KW := {
+  "IF": "IF",           "THEN": "THEN",       "ELSE": "ELSE",
+  "WHILE": "WHILE",     "DO": "DO",           "REPEAT": "REPEAT",
+  "UNTIL": "UNTIL",     "FOR": "FOR",         "TO": "TO",
+  "STEP": "STEP",       "BEGIN": "BEGIN",      "END": "END",
+  "BREAK": "BREAK",     "CONTINUE":"CONTINUE", "RETURN": "RETURN",
+  "AND": "AND",         "OR": "OR",           "XOR": "XOR",
+  "NOT": "NOT",         "IN": "IN",           "OBJECT": "OBJECT",
+  -- Swedish aliases
+  "OCH": "AND",         "ELLER": "OR",
+  "ANTINGEN_ELLER":"XOR","INTE":"NOT",         "FINNS_I": "IN"
+};
+
+-- ---- String unescape ----
+
+_SM_UNESCAPE(_sm_s) := BEGIN
+  _sm_res := "";
+  _sm_j := 0;
+  _sm_m := LENGTH(_sm_s);
+  WHILE _sm_j < _sm_m DO BEGIN
+    _sm_ch := SUBSTRING(_sm_s, _sm_j, _sm_j + 1);
+    IF _sm_ch = "\\" THEN BEGIN
+      _sm_j2 := _sm_j + 1;
+      IF _sm_j2 < _sm_m THEN BEGIN
+        _sm_nc := SUBSTRING(_sm_s, _sm_j2, _sm_j2 + 1);
+        IF _sm_nc = "n" THEN _sm_res := _sm_res + "\n"
+        ELSE IF _sm_nc = "t" THEN _sm_res := _sm_res + "\t"
+        ELSE IF _sm_nc = "r" THEN _sm_res := _sm_res + "\r"
+        ELSE _sm_res := _sm_res + _sm_nc;
+        _sm_j := _sm_j + 2;
+      END ELSE BEGIN
+        _sm_res := _sm_res + _sm_ch;
+        _sm_j := _sm_j + 1;
       END;
     END ELSE BEGIN
-      buf := buf + c;
-      i := i + 1;
+      _sm_res := _sm_res + _sm_ch;
+      _sm_j := _sm_j + 1;
     END;
   END;
-  RETURN {"buf": buf, "i": i};
+  RETURN _sm_res;
 END;
 
-_LX_TOKENIZE(src) := BEGIN
-  tokens := [];
-  i := 0;
-  n := LENGTH(src);
-  line := 1;
-  col  := 1;
-  WHILE i < n DO BEGIN
-    c := _LX_CH(src, i);
+-- ---- Emit a token ----
 
-    -- Newline: advance line counter, reset column
-    IF c = '\n' THEN BEGIN line := line + 1; col := 1; i := i + 1; CONTINUE; END;
+_SM_EMIT(_sm_tt, _sm_buf, _sm_line, _sm_col) := BEGIN
+  _sm_len := LENGTH(_sm_buf);
+  IF _sm_tt = "ID" THEN BEGIN
+    _sm_word := UPPERCASE(_sm_buf);
+    _sm_kwv := _SM_KW[_sm_word];
+    IF _sm_kwv <> NULL THEN
+      RETURN {"t": _sm_kwv, "v": _sm_word, "l": _sm_line, "sc": _sm_col, "len": _sm_len};
+    RETURN {"t": "ID", "v": _sm_word, "l": _sm_line, "sc": _sm_col, "len": _sm_len};
+  END;
+  IF _sm_tt = "STR" THEN BEGIN
+    _sm_raw := SUBSTRING(_sm_buf, 1, _sm_len - 1);
+    _sm_val := _SM_UNESCAPE(_sm_raw);
+    RETURN {"t": "STR", "v": _sm_val, "l": _sm_line, "sc": _sm_col, "len": _sm_len};
+  END;
+  IF _sm_tt = "RAW_STR" THEN BEGIN
+    _sm_val := SUBSTRING(_sm_buf, 2, _sm_len - 1);
+    RETURN {"t": "STR", "v": _sm_val, "l": _sm_line, "sc": _sm_col, "len": _sm_len};
+  END;
+  IF _sm_tt = "NOT" THEN
+    RETURN {"t": "NOT", "v": "NOT", "l": _sm_line, "sc": _sm_col, "len": _sm_len};
+  RETURN {"t": _sm_tt, "v": _sm_buf, "l": _sm_line, "sc": _sm_col, "len": _sm_len};
+END;
 
-    -- Other whitespace
-    IF c = ' ' OR c = '\t' OR c = '\r' THEN BEGIN col := col + 1; i := i + 1; CONTINUE; END;
+-- ============================================================
+-- Main tokenizer — direct translation of StateMachine.accept()
+-- ============================================================
 
-    -- Line comment: --
-    -- Use BREAK instead of AND to avoid eager evaluation of _LX_CH past end-of-input
-    IF _LX_CH2(src, i) = '--' THEN BEGIN
-      WHILE i < n DO BEGIN
-        IF _LX_CH(src, i) = '\n' THEN BREAK;
-        col := col + 1; i := i + 1;
-      END;
-      CONTINUE;
-    END;
+_SM_TOKENIZE(_sm_src) := BEGIN
+  _sm_tokens := [];
+  _sm_n := LENGTH(_sm_src);
+  _sm_state := "S";
+  _sm_buf := "";
+  _sm_bl := 1;
+  _sm_bc := 1;
+  _sm_line := 1;
+  _sm_col := 1;
+  _sm_prev := 0;
+  _sm_i := 0;
 
-    -- Record position at the start of this token
-    tok_line := line;
-    tok_sc   := col;
-
-    -- Raw string: r'...' or r"..."
-    -- Peek at next char via a local variable to avoid eager AND over _LX_CH
-    next_ch := IF i+1 < n THEN _LX_CH(src, i+1) ELSE '';
-    IF c = 'r' AND (next_ch = "'" OR next_ch = '"') THEN BEGIN
-      q := next_ch;
-      start_i := i;
-      i := i + 2;
-      buf := '';
-      WHILE i < n DO BEGIN
-        IF _LX_CH(src, i) = q THEN BREAK;
-        buf := buf + _LX_CH(src, i);
-        i := i + 1;
-      END;
-      i := i + 1;
-      len := i - start_i;
-      col := col + len;
-      tokens := tokens + [_LX_TOK('STR', buf, tok_line, tok_sc, len)];
-      CONTINUE;
-    END;
-
-    -- String literals: '...' or "..."
-    IF c = "'" OR c = '"' THEN BEGIN
-      start_i := i;
-      r := _LX_SCAN_STR(src, i, n, c);
-      len := r['i'] - start_i;
-      i := r['i'];
-      col := col + len;
-      tokens := tokens + [_LX_TOK('STR', r['buf'], tok_line, tok_sc, len)];
-      CONTINUE;
-    END;
-
-    -- Numbers
-    -- Use BREAK loops so _LX_CH is never called beyond end-of-input
-    IF _LX_IS_DIGIT(c) THEN BEGIN
-      start := i;
-      i := i + 1;
-      WHILE i < n DO BEGIN
-        IF NOT _LX_IS_DIGIT(_LX_CH(src, i)) THEN BREAK;
-        i := i + 1;
-      END;
-      -- Use local vars for look-ahead to avoid eager AND evaluation
-      dot_ch   := IF i   < n THEN _LX_CH(src, i)   ELSE '';
-      after_ch := IF i+1 < n THEN _LX_CH(src, i+1) ELSE '';
-      IF dot_ch = '.' AND _LX_IS_DIGIT(after_ch) THEN BEGIN
-        i := i + 1;
-        WHILE i < n DO BEGIN
-          IF NOT _LX_IS_DIGIT(_LX_CH(src, i)) THEN BREAK;
-          i := i + 1;
+  WHILE _sm_i <= _sm_n DO BEGIN
+    -- End of stream
+    IF _sm_i = _sm_n THEN BEGIN
+      IF _sm_state <> "S" AND _sm_state <> "CMT" THEN BEGIN
+        _sm_ns := _SM_DEF[_sm_state];
+        IF _sm_ns <> NULL THEN BEGIN
+          _sm_state := _sm_ns;
+          _sm_at := _SM_ACCEPT[_sm_state];
+          IF _sm_at <> NULL THEN BEGIN
+            _sm_tokens := _sm_tokens + [_SM_EMIT(_sm_at, _sm_buf, _sm_bl, _sm_bc)];
+          END;
         END;
-        len := i - start;
-        col := col + len;
-        tokens := tokens + [_LX_TOK('FLOAT', SUBSTRING(src, start, i), tok_line, tok_sc, len)];
-      END ELSE BEGIN
-        len := i - start;
-        col := col + len;
-        tokens := tokens + [_LX_TOK('INT', SUBSTRING(src, start, i), tok_line, tok_sc, len)];
       END;
-      CONTINUE;
+      BREAK;
     END;
 
-    -- Identifiers and keywords (includes 'r' when not followed by a quote)
-    IF _LX_IS_ALPHA(c) THEN BEGIN
-      start := i;
-      i := i + 1;
-      WHILE i < n DO BEGIN
-        IF NOT _LX_IS_ALNUM(_LX_CH(src, i)) THEN BREAK;
-        i := i + 1;
+    _sm_c := SUBSTRING(_sm_src, _sm_i, _sm_i + 1);
+    _sm_cls := _SM_CLASSIFY(_sm_c);
+
+    -- Build transition key
+    _sm_key := _sm_state + ":" + _sm_cls;
+    _sm_next := _SM_TRANS[_sm_key];
+
+    IF _sm_next <> NULL THEN BEGIN
+      -- Explicit transition found
+      _sm_was := (_sm_state = "S" OR _sm_state = "CMT");
+      _sm_state := _sm_next;
+      IF _sm_state <> "S" AND _sm_state <> "CMT" THEN BEGIN
+        IF _sm_was THEN BEGIN
+          _sm_buf := "";
+          _sm_bl := _sm_line;
+          _sm_bc := _sm_col;
+        END;
+        _sm_buf := _sm_buf + _sm_c;
+        _sm_at := _SM_ACCEPT[_sm_state];
+        IF _sm_at <> NULL THEN BEGIN
+          _sm_tokens := _sm_tokens + [_SM_EMIT(_sm_at, _sm_buf, _sm_bl, _sm_bc)];
+          _sm_state := "S";
+        END;
       END;
-      word := UPPERCASE(SUBSTRING(src, start, i));
-      len := i - start;
-      col := col + len;
-      alias := _LX_ALIAS(word);
-      IF alias <> NULL THEN
-        tokens := tokens + [_LX_TOK(alias, word, tok_line, tok_sc, len)]
-      ELSE IF _LX_IS_KW(word) THEN
-        tokens := tokens + [_LX_TOK(word, word, tok_line, tok_sc, len)]
-      ELSE
-        tokens := tokens + [_LX_TOK('ID', word, tok_line, tok_sc, len)];
-      CONTINUE;
+    END ELSE BEGIN
+      -- No explicit transition — use default
+      _sm_ns := _SM_DEF[_sm_state];
+      IF _sm_ns <> NULL THEN BEGIN
+        _sm_state := _sm_ns;
+        _sm_at := _SM_ACCEPT[_sm_state];
+        IF _sm_at = NULL THEN BEGIN
+          -- Not an accept state, append char to buffer
+          _sm_buf := _sm_buf + _sm_c;
+        END ELSE BEGIN
+          -- Accept: emit token, re-process char (don't advance i)
+          -- Don't update position — it'll be tracked when the char is consumed
+          _sm_tokens := _sm_tokens + [_SM_EMIT(_sm_at, _sm_buf, _sm_bl, _sm_bc)];
+          _sm_state := "S";
+          CONTINUE;
+        END;
+      END;
     END;
 
-    -- Two-character operators
-    c2 := _LX_CH2(src, i);
-    IF c2 = ':=' THEN BEGIN tokens := tokens + [_LX_TOK(':=',':=', tok_line, tok_sc, 2)]; i:=i+2; col:=col+2; CONTINUE; END;
-    IF c2 = '=>' THEN BEGIN tokens := tokens + [_LX_TOK('=>','=>', tok_line, tok_sc, 2)]; i:=i+2; col:=col+2; CONTINUE; END;
-    IF c2 = '<=' THEN BEGIN tokens := tokens + [_LX_TOK('<=','<=', tok_line, tok_sc, 2)]; i:=i+2; col:=col+2; CONTINUE; END;
-    IF c2 = '>=' THEN BEGIN tokens := tokens + [_LX_TOK('>=','>=', tok_line, tok_sc, 2)]; i:=i+2; col:=col+2; CONTINUE; END;
-    IF c2 = '<>' THEN BEGIN tokens := tokens + [_LX_TOK('<>','<>', tok_line, tok_sc, 2)]; i:=i+2; col:=col+2; CONTINUE; END;
-    IF c2 = '!~' THEN BEGIN tokens := tokens + [_LX_TOK('!~','!~', tok_line, tok_sc, 2)]; i:=i+2; col:=col+2; CONTINUE; END;
-    IF c2 = '!=' THEN BEGIN tokens := tokens + [_LX_TOK('<>','<>', tok_line, tok_sc, 2)]; i:=i+2; col:=col+2; CONTINUE; END;
-    IF c2 = '**' THEN BEGIN tokens := tokens + [_LX_TOK('^', '^', tok_line, tok_sc, 2)];  i:=i+2; col:=col+2; CONTINUE; END;
-
-    -- '!' alone (not followed by = or ~) = NOT keyword
-    IF c = '!' THEN BEGIN tokens := tokens + [_LX_TOK('NOT','NOT', tok_line, tok_sc, 1)]; i:=i+1; col:=col+1; CONTINUE; END;
-
-    -- Single-character tokens
-    tokens := tokens + [_LX_TOK(c, c, tok_line, tok_sc, 1)];
-    col := col + 1;
-    i := i + 1;
+    -- Position tracking
+    _sm_cd := CHAR_CODE(_sm_c);
+    IF _sm_cd = 10 THEN BEGIN
+      IF _sm_prev <> 13 THEN _sm_line := _sm_line + 1;
+      _sm_col := 1;
+    END ELSE IF _sm_cd = 13 THEN BEGIN
+      _sm_line := _sm_line + 1;
+      _sm_col := 1;
+    END ELSE
+      _sm_col := _sm_col + 1;
+    _sm_prev := _sm_cd;
+    _sm_i := _sm_i + 1;
   END;
-  tokens := tokens + [_LX_TOK('EOF', '', line, col, 0)];
-  RETURN tokens;
+
+  _sm_tokens := _sm_tokens + [{"t": "EOF", "v": "", "l": _sm_line, "sc": _sm_col, "len": 0}];
+  RETURN _sm_tokens;
 END;
+
+-- ---- Public API ----
 
 lexer := OBJECT{
-  tokenize: (src) => _LX_TOKENIZE(src)
+  tokenize: (_sm_src) => _SM_TOKENIZE(_sm_src)
 };

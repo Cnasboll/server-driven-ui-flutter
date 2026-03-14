@@ -1,369 +1,1455 @@
 CHUNK main ()
-  CONST  0: IF
-  CONST  1: THEN
-  CONST  2: ELSE
-  CONST  3: WHILE
-  CONST  4: DO
-  CONST  5: REPEAT
-  CONST  6: UNTIL
-  CONST  7: FOR
-  CONST  8: TO
-  CONST  9: STEP
-  CONST  10: BEGIN
-  CONST  11: END
-  CONST  12: BREAK
-  CONST  13: CONTINUE
-  CONST  14: RETURN
-  CONST  15: AND
-  CONST  16: OR
-  CONST  17: XOR
-  CONST  18: NOT
-  CONST  19: IN
-  CONST  20: OBJECT
-  CONST  21: _LX_KEYWORDS
-  CONST  22: .___LX_IS_KW_0
-  CONST  23: _LX_IS_KW
-  CONST  24: OCH
-  CONST  25: ELLER
-  CONST  26: ANTINGEN_ELLER
-  CONST  27: INTE
-  CONST  28: FINNS_I
-  CONST  29: _LX_ALIAS_KEYS
-  CONST  30: _LX_ALIAS_VALS
-  CONST  31: .___LX_ALIAS_1
-  CONST  32: _LX_ALIAS
-  CONST  33: .___LX_IS_DIGIT_2
-  CONST  34: _LX_IS_DIGIT
-  CONST  35: .___LX_IS_ALPHA_3
-  CONST  36: _LX_IS_ALPHA
-  CONST  37: .___LX_IS_ALNUM_4
-  CONST  38: _LX_IS_ALNUM
-  CONST  39: .___LX_TOK_5
-  CONST  40: _LX_TOK
-  CONST  41: .___LX_CH_6
-  CONST  42: _LX_CH
-  CONST  43: .___LX_CH2_7
-  CONST  44: _LX_CH2
-  CONST  45: .___LX_SCAN_STR_8
-  CONST  46: _LX_SCAN_STR
-  CONST  47: .___LX_TOKENIZE_9
-  CONST  48: _LX_TOKENIZE
-  CONST  49: TOKENIZE
-  CONST  50: .__lambda_10
-  CONST  51: LEXER
+  CONST  0: (
+  CONST  1: lpar
+  CONST  2: )
+  CONST  3: rpar
+  CONST  4: [
+  CONST  5: lsq
+  CONST  6: ]
+  CONST  7: rsq
+  CONST  8: {
+  CONST  9: lbr
+  CONST  10: }
+  CONST  11: rbr
+  CONST  12: _
+  CONST  13: us
+  CONST  14: ,
+  CONST  15: comma
+  CONST  16: .
+  CONST  17: dot
+  CONST  18: :
+  CONST  19: colon
+  CONST  20: ;
+  CONST  21: semi
+  CONST  22: ^
+  CONST  23: pow
+  CONST  24: *
+  CONST  25: mul
+  CONST  26: /
+  CONST  27: div
+  CONST  28: %
+  CONST  29: mod
+  CONST  30: +
+  CONST  31: plus
+  CONST  32: -
+  CONST  33: minus
+  CONST  34: =
+  CONST  35: eq
+  CONST  36: !
+  CONST  37: bang
+  CONST  38: ~
+  CONST  39: tilde
+  CONST  40: <
+  CONST  41: lt
+  CONST  42: >
+  CONST  43: gt
+  CONST  44: \
+  CONST  45: bslash
+  CONST  46: "
+  CONST  47: dq
+  CONST  48: '
+  CONST  49: sq
+  CONST  50: r
+  CONST  51: r_ch
+  CONST  52: _SM_CC
+  CONST  53: .___SM_CLASSIFY_0
+  CONST  54: _SM_CLASSIFY
+  CONST  55: S:r_ch
+  CONST  56: R
+  CONST  57: S:letter
+  CONST  58: ID
+  CONST  59: S:us
+  CONST  60: S:digit
+  CONST  61: NUM
+  CONST  62: S:dq
+  CONST  63: DQS
+  CONST  64: S:sq
+  CONST  65: SQS
+  CONST  66: S:colon
+  CONST  67: COL
+  CONST  68: S:semi
+  CONST  69: aSEMI
+  CONST  70: S:bang
+  CONST  71: BANG
+  CONST  72: S:eq
+  CONST  73: EQ
+  CONST  74: S:gt
+  CONST  75: GT
+  CONST  76: S:lt
+  CONST  77: LT
+  CONST  78: S:tilde
+  CONST  79: aMATCH
+  CONST  80: S:lpar
+  CONST  81: aLPAR
+  CONST  82: S:rpar
+  CONST  83: aRPAR
+  CONST  84: S:lsq
+  CONST  85: aLSQ
+  CONST  86: S:rsq
+  CONST  87: aRSQ
+  CONST  88: S:lbr
+  CONST  89: aLBR
+  CONST  90: S:rbr
+  CONST  91: aRBR
+  CONST  92: S:div
+  CONST  93: aDIV
+  CONST  94: S:mod
+  CONST  95: aMOD
+  CONST  96: S:pow
+  CONST  97: aPOW
+  CONST  98: S:mul
+  CONST  99: aMUL
+  CONST  100: S:plus
+  CONST  101: aPLUS
+  CONST  102: S:minus
+  CONST  103: MINUS
+  CONST  104: S:comma
+  CONST  105: aCOMMA
+  CONST  106: S:dot
+  CONST  107: aDOT
+  CONST  108: S:ws
+  CONST  109: S
+  CONST  110: S:nl
+  CONST  111: ID:r_ch
+  CONST  112: ID:letter
+  CONST  113: ID:us
+  CONST  114: ID:digit
+  CONST  115: R:dq
+  CONST  116: DQRS
+  CONST  117: R:sq
+  CONST  118: SQRS
+  CONST  119: R:letter
+  CONST  120: R:us
+  CONST  121: R:digit
+  CONST  122: R:r_ch
+  CONST  123: NUM:digit
+  CONST  124: NUM:dot
+  CONST  125: NDOT
+  CONST  126: NDOT:digit
+  CONST  127: FLT
+  CONST  128: FLT:digit
+  CONST  129: DQS:bslash
+  CONST  130: EDQS
+  CONST  131: DQS:dq
+  CONST  132: aDQS
+  CONST  133: SQS:bslash
+  CONST  134: ESQS
+  CONST  135: SQS:sq
+  CONST  136: aSQS
+  CONST  137: DQRS:dq
+  CONST  138: aDQRS
+  CONST  139: SQRS:sq
+  CONST  140: aSQRS
+  CONST  141: COL:eq
+  CONST  142: aASSIGN
+  CONST  143: BANG:eq
+  CONST  144: aNEQ
+  CONST  145: BANG:tilde
+  CONST  146: aNMATCH
+  CONST  147: EQ:gt
+  CONST  148: aLAMBDA
+  CONST  149: LT:eq
+  CONST  150: aLTEQ
+  CONST  151: LT:gt
+  CONST  152: GT:eq
+  CONST  153: aGTEQ
+  CONST  154: MINUS:minus
+  CONST  155: CMT
+  CONST  156: CMT:nl
+  CONST  157: _SM_TRANS
+  CONST  158: aID
+  CONST  159: aNUM
+  CONST  160: aFLT
+  CONST  161: aCOLON
+  CONST  162: aNOT
+  CONST  163: aEQ
+  CONST  164: aGT
+  CONST  165: aLT
+  CONST  166: aMINUS
+  CONST  167: _SM_DEF
+  CONST  168: :=
+  CONST  169: =>
+  CONST  170: FLOAT
+  CONST  171: !~
+  CONST  172: NOT
+  CONST  173: >=
+  CONST  174: <=
+  CONST  175: <>
+  CONST  176: INT
+  CONST  177: STR
+  CONST  178: RAW_STR
+  CONST  179: _SM_ACCEPT
+  CONST  180: IF
+  CONST  181: THEN
+  CONST  182: ELSE
+  CONST  183: WHILE
+  CONST  184: DO
+  CONST  185: REPEAT
+  CONST  186: UNTIL
+  CONST  187: FOR
+  CONST  188: TO
+  CONST  189: STEP
+  CONST  190: BEGIN
+  CONST  191: END
+  CONST  192: BREAK
+  CONST  193: CONTINUE
+  CONST  194: RETURN
+  CONST  195: AND
+  CONST  196: OR
+  CONST  197: XOR
+  CONST  198: IN
+  CONST  199: OBJECT
+  CONST  200: OCH
+  CONST  201: ELLER
+  CONST  202: ANTINGEN_ELLER
+  CONST  203: INTE
+  CONST  204: FINNS_I
+  CONST  205: _SM_KW
+  CONST  206: .___SM_UNESCAPE_1
+  CONST  207: _SM_UNESCAPE
+  CONST  208: .___SM_EMIT_2
+  CONST  209: _SM_EMIT
+  CONST  210: .___SM_TOKENIZE_3
+  CONST  211: _SM_TOKENIZE
+  CONST  212: TOKENIZE
+  CONST  213: .__lambda_4
+  CONST  214: LEXER
   CODE:
-    0: push_const(0)  -- IF
-    1: push_const(1)  -- THEN
-    2: push_const(2)  -- ELSE
-    3: push_const(3)  -- WHILE
-    4: push_const(4)  -- DO
-    5: push_const(5)  -- REPEAT
-    6: push_const(6)  -- UNTIL
-    7: push_const(7)  -- FOR
-    8: push_const(8)  -- TO
-    9: push_const(9)  -- STEP
-    10: push_const(10)  -- BEGIN
-    11: push_const(11)  -- END
-    12: push_const(12)  -- BREAK
-    13: push_const(13)  -- CONTINUE
-    14: push_const(14)  -- RETURN
-    15: push_const(15)  -- AND
-    16: push_const(16)  -- OR
-    17: push_const(17)  -- XOR
-    18: push_const(18)  -- NOT
-    19: push_const(19)  -- IN
-    20: push_const(20)  -- OBJECT
-    21: make_list(21)
-    22: store_var(21)  -- _LX_KEYWORDS
-    23: load_var(21)  -- _LX_KEYWORDS
-    24: pop
-    25: make_closure(22)  -- .___LX_IS_KW_0
-    26: store_var(23)  -- _LX_IS_KW
-    27: load_var(23)  -- _LX_IS_KW
-    28: pop
-    29: push_const(24)  -- OCH
-    30: push_const(25)  -- ELLER
-    31: push_const(26)  -- ANTINGEN_ELLER
-    32: push_const(27)  -- INTE
-    33: push_const(28)  -- FINNS_I
-    34: make_list(5)
-    35: store_var(29)  -- _LX_ALIAS_KEYS
-    36: load_var(29)  -- _LX_ALIAS_KEYS
-    37: pop
-    38: push_const(15)  -- AND
-    39: push_const(16)  -- OR
-    40: push_const(17)  -- XOR
-    41: push_const(18)  -- NOT
-    42: push_const(19)  -- IN
-    43: make_list(5)
-    44: store_var(30)  -- _LX_ALIAS_VALS
-    45: load_var(30)  -- _LX_ALIAS_VALS
-    46: pop
-    47: make_closure(31)  -- .___LX_ALIAS_1
-    48: store_var(32)  -- _LX_ALIAS
-    49: load_var(32)  -- _LX_ALIAS
-    50: pop
-    51: make_closure(33)  -- .___LX_IS_DIGIT_2
-    52: store_var(34)  -- _LX_IS_DIGIT
-    53: load_var(34)  -- _LX_IS_DIGIT
-    54: pop
-    55: make_closure(35)  -- .___LX_IS_ALPHA_3
-    56: store_var(36)  -- _LX_IS_ALPHA
-    57: load_var(36)  -- _LX_IS_ALPHA
-    58: pop
-    59: make_closure(37)  -- .___LX_IS_ALNUM_4
-    60: store_var(38)  -- _LX_IS_ALNUM
-    61: load_var(38)  -- _LX_IS_ALNUM
-    62: pop
-    63: make_closure(39)  -- .___LX_TOK_5
-    64: store_var(40)  -- _LX_TOK
-    65: load_var(40)  -- _LX_TOK
-    66: pop
-    67: make_closure(41)  -- .___LX_CH_6
-    68: store_var(42)  -- _LX_CH
-    69: load_var(42)  -- _LX_CH
-    70: pop
-    71: make_closure(43)  -- .___LX_CH2_7
-    72: store_var(44)  -- _LX_CH2
-    73: load_var(44)  -- _LX_CH2
-    74: pop
-    75: make_closure(45)  -- .___LX_SCAN_STR_8
-    76: store_var(46)  -- _LX_SCAN_STR
-    77: load_var(46)  -- _LX_SCAN_STR
-    78: pop
-    79: make_closure(47)  -- .___LX_TOKENIZE_9
-    80: store_var(48)  -- _LX_TOKENIZE
-    81: load_var(48)  -- _LX_TOKENIZE
-    82: pop
-    83: push_scope
-    84: push_const(49)  -- TOKENIZE
-    85: make_closure(50)  -- .__lambda_10
-    86: make_object_here(1)
-    87: pop_scope
-    88: store_var(51)  -- LEXER
-    89: load_var(51)  -- LEXER
-    90: ret
-CHUNK ___LX_ALIAS_1 (WORD)
-  CONST  0: 0
-  CONST  1: I
-  CONST  2: null
-  CONST  3: LENGTH
-  CONST  4: _LX_ALIAS_KEYS
-  CONST  5: WORD
-  CONST  6: _LX_ALIAS_VALS
-  CONST  7: 1
+    0: push_const(0)  -- (
+    1: push_const(1)  -- lpar
+    2: push_const(2)  -- )
+    3: push_const(3)  -- rpar
+    4: push_const(4)  -- [
+    5: push_const(5)  -- lsq
+    6: push_const(6)  -- ]
+    7: push_const(7)  -- rsq
+    8: push_const(8)  -- {
+    9: push_const(9)  -- lbr
+    10: push_const(10)  -- }
+    11: push_const(11)  -- rbr
+    12: push_const(12)  -- _
+    13: push_const(13)  -- us
+    14: push_const(14)  -- ,
+    15: push_const(15)  -- comma
+    16: push_const(16)  -- .
+    17: push_const(17)  -- dot
+    18: push_const(18)  -- :
+    19: push_const(19)  -- colon
+    20: push_const(20)  -- ;
+    21: push_const(21)  -- semi
+    22: push_const(22)  -- ^
+    23: push_const(23)  -- pow
+    24: push_const(24)  -- *
+    25: push_const(25)  -- mul
+    26: push_const(26)  -- /
+    27: push_const(27)  -- div
+    28: push_const(28)  -- %
+    29: push_const(29)  -- mod
+    30: push_const(30)  -- +
+    31: push_const(31)  -- plus
+    32: push_const(32)  -- -
+    33: push_const(33)  -- minus
+    34: push_const(34)  -- =
+    35: push_const(35)  -- eq
+    36: push_const(36)  -- !
+    37: push_const(37)  -- bang
+    38: push_const(38)  -- ~
+    39: push_const(39)  -- tilde
+    40: push_const(40)  -- <
+    41: push_const(41)  -- lt
+    42: push_const(42)  -- >
+    43: push_const(43)  -- gt
+    44: push_const(44)  -- \
+    45: push_const(45)  -- bslash
+    46: push_const(46)  -- "
+    47: push_const(47)  -- dq
+    48: push_const(48)  -- '
+    49: push_const(49)  -- sq
+    50: push_const(50)  -- r
+    51: push_const(51)  -- r_ch
+    52: make_map(26)
+    53: store_var(52)  -- _SM_CC
+    54: load_var(52)  -- _SM_CC
+    55: pop
+    56: make_closure(53)  -- .___SM_CLASSIFY_0
+    57: store_var(54)  -- _SM_CLASSIFY
+    58: load_var(54)  -- _SM_CLASSIFY
+    59: pop
+    60: push_const(55)  -- S:r_ch
+    61: push_const(56)  -- R
+    62: push_const(57)  -- S:letter
+    63: push_const(58)  -- ID
+    64: push_const(59)  -- S:us
+    65: push_const(58)  -- ID
+    66: push_const(60)  -- S:digit
+    67: push_const(61)  -- NUM
+    68: push_const(62)  -- S:dq
+    69: push_const(63)  -- DQS
+    70: push_const(64)  -- S:sq
+    71: push_const(65)  -- SQS
+    72: push_const(66)  -- S:colon
+    73: push_const(67)  -- COL
+    74: push_const(68)  -- S:semi
+    75: push_const(69)  -- aSEMI
+    76: push_const(70)  -- S:bang
+    77: push_const(71)  -- BANG
+    78: push_const(72)  -- S:eq
+    79: push_const(73)  -- EQ
+    80: push_const(74)  -- S:gt
+    81: push_const(75)  -- GT
+    82: push_const(76)  -- S:lt
+    83: push_const(77)  -- LT
+    84: push_const(78)  -- S:tilde
+    85: push_const(79)  -- aMATCH
+    86: push_const(80)  -- S:lpar
+    87: push_const(81)  -- aLPAR
+    88: push_const(82)  -- S:rpar
+    89: push_const(83)  -- aRPAR
+    90: push_const(84)  -- S:lsq
+    91: push_const(85)  -- aLSQ
+    92: push_const(86)  -- S:rsq
+    93: push_const(87)  -- aRSQ
+    94: push_const(88)  -- S:lbr
+    95: push_const(89)  -- aLBR
+    96: push_const(90)  -- S:rbr
+    97: push_const(91)  -- aRBR
+    98: push_const(92)  -- S:div
+    99: push_const(93)  -- aDIV
+    100: push_const(94)  -- S:mod
+    101: push_const(95)  -- aMOD
+    102: push_const(96)  -- S:pow
+    103: push_const(97)  -- aPOW
+    104: push_const(98)  -- S:mul
+    105: push_const(99)  -- aMUL
+    106: push_const(100)  -- S:plus
+    107: push_const(101)  -- aPLUS
+    108: push_const(102)  -- S:minus
+    109: push_const(103)  -- MINUS
+    110: push_const(104)  -- S:comma
+    111: push_const(105)  -- aCOMMA
+    112: push_const(106)  -- S:dot
+    113: push_const(107)  -- aDOT
+    114: push_const(108)  -- S:ws
+    115: push_const(109)  -- S
+    116: push_const(110)  -- S:nl
+    117: push_const(109)  -- S
+    118: push_const(111)  -- ID:r_ch
+    119: push_const(58)  -- ID
+    120: push_const(112)  -- ID:letter
+    121: push_const(58)  -- ID
+    122: push_const(113)  -- ID:us
+    123: push_const(58)  -- ID
+    124: push_const(114)  -- ID:digit
+    125: push_const(58)  -- ID
+    126: push_const(115)  -- R:dq
+    127: push_const(116)  -- DQRS
+    128: push_const(117)  -- R:sq
+    129: push_const(118)  -- SQRS
+    130: push_const(119)  -- R:letter
+    131: push_const(58)  -- ID
+    132: push_const(120)  -- R:us
+    133: push_const(58)  -- ID
+    134: push_const(121)  -- R:digit
+    135: push_const(58)  -- ID
+    136: push_const(122)  -- R:r_ch
+    137: push_const(58)  -- ID
+    138: push_const(123)  -- NUM:digit
+    139: push_const(61)  -- NUM
+    140: push_const(124)  -- NUM:dot
+    141: push_const(125)  -- NDOT
+    142: push_const(126)  -- NDOT:digit
+    143: push_const(127)  -- FLT
+    144: push_const(128)  -- FLT:digit
+    145: push_const(127)  -- FLT
+    146: push_const(129)  -- DQS:bslash
+    147: push_const(130)  -- EDQS
+    148: push_const(131)  -- DQS:dq
+    149: push_const(132)  -- aDQS
+    150: push_const(133)  -- SQS:bslash
+    151: push_const(134)  -- ESQS
+    152: push_const(135)  -- SQS:sq
+    153: push_const(136)  -- aSQS
+    154: push_const(137)  -- DQRS:dq
+    155: push_const(138)  -- aDQRS
+    156: push_const(139)  -- SQRS:sq
+    157: push_const(140)  -- aSQRS
+    158: push_const(141)  -- COL:eq
+    159: push_const(142)  -- aASSIGN
+    160: push_const(143)  -- BANG:eq
+    161: push_const(144)  -- aNEQ
+    162: push_const(145)  -- BANG:tilde
+    163: push_const(146)  -- aNMATCH
+    164: push_const(147)  -- EQ:gt
+    165: push_const(148)  -- aLAMBDA
+    166: push_const(149)  -- LT:eq
+    167: push_const(150)  -- aLTEQ
+    168: push_const(151)  -- LT:gt
+    169: push_const(144)  -- aNEQ
+    170: push_const(152)  -- GT:eq
+    171: push_const(153)  -- aGTEQ
+    172: push_const(154)  -- MINUS:minus
+    173: push_const(155)  -- CMT
+    174: push_const(156)  -- CMT:nl
+    175: push_const(109)  -- S
+    176: make_map(58)
+    177: store_var(157)  -- _SM_TRANS
+    178: load_var(157)  -- _SM_TRANS
+    179: pop
+    180: push_const(56)  -- R
+    181: push_const(158)  -- aID
+    182: push_const(58)  -- ID
+    183: push_const(158)  -- aID
+    184: push_const(61)  -- NUM
+    185: push_const(159)  -- aNUM
+    186: push_const(127)  -- FLT
+    187: push_const(160)  -- aFLT
+    188: push_const(125)  -- NDOT
+    189: push_const(159)  -- aNUM
+    190: push_const(67)  -- COL
+    191: push_const(161)  -- aCOLON
+    192: push_const(71)  -- BANG
+    193: push_const(162)  -- aNOT
+    194: push_const(73)  -- EQ
+    195: push_const(163)  -- aEQ
+    196: push_const(75)  -- GT
+    197: push_const(164)  -- aGT
+    198: push_const(77)  -- LT
+    199: push_const(165)  -- aLT
+    200: push_const(103)  -- MINUS
+    201: push_const(166)  -- aMINUS
+    202: push_const(63)  -- DQS
+    203: push_const(63)  -- DQS
+    204: push_const(65)  -- SQS
+    205: push_const(65)  -- SQS
+    206: push_const(116)  -- DQRS
+    207: push_const(116)  -- DQRS
+    208: push_const(118)  -- SQRS
+    209: push_const(118)  -- SQRS
+    210: push_const(130)  -- EDQS
+    211: push_const(63)  -- DQS
+    212: push_const(134)  -- ESQS
+    213: push_const(65)  -- SQS
+    214: push_const(155)  -- CMT
+    215: push_const(155)  -- CMT
+    216: make_map(18)
+    217: store_var(167)  -- _SM_DEF
+    218: load_var(167)  -- _SM_DEF
+    219: pop
+    220: push_const(105)  -- aCOMMA
+    221: push_const(14)  -- ,
+    222: push_const(107)  -- aDOT
+    223: push_const(16)  -- .
+    224: push_const(161)  -- aCOLON
+    225: push_const(18)  -- :
+    226: push_const(69)  -- aSEMI
+    227: push_const(20)  -- ;
+    228: push_const(142)  -- aASSIGN
+    229: push_const(168)  -- :=
+    230: push_const(148)  -- aLAMBDA
+    231: push_const(169)  -- =>
+    232: push_const(93)  -- aDIV
+    233: push_const(26)  -- /
+    234: push_const(95)  -- aMOD
+    235: push_const(28)  -- %
+    236: push_const(97)  -- aPOW
+    237: push_const(22)  -- ^
+    238: push_const(163)  -- aEQ
+    239: push_const(34)  -- =
+    240: push_const(160)  -- aFLT
+    241: push_const(170)  -- FLOAT
+    242: push_const(79)  -- aMATCH
+    243: push_const(38)  -- ~
+    244: push_const(146)  -- aNMATCH
+    245: push_const(171)  -- !~
+    246: push_const(162)  -- aNOT
+    247: push_const(172)  -- NOT
+    248: push_const(164)  -- aGT
+    249: push_const(42)  -- >
+    250: push_const(153)  -- aGTEQ
+    251: push_const(173)  -- >=
+    252: push_const(158)  -- aID
+    253: push_const(58)  -- ID
+    254: push_const(85)  -- aLSQ
+    255: push_const(4)  -- [
+    256: push_const(81)  -- aLPAR
+    257: push_const(0)  -- (
+    258: push_const(89)  -- aLBR
+    259: push_const(8)  -- {
+    260: push_const(165)  -- aLT
+    261: push_const(40)  -- <
+    262: push_const(150)  -- aLTEQ
+    263: push_const(174)  -- <=
+    264: push_const(166)  -- aMINUS
+    265: push_const(32)  -- -
+    266: push_const(99)  -- aMUL
+    267: push_const(24)  -- *
+    268: push_const(144)  -- aNEQ
+    269: push_const(175)  -- <>
+    270: push_const(159)  -- aNUM
+    271: push_const(176)  -- INT
+    272: push_const(132)  -- aDQS
+    273: push_const(177)  -- STR
+    274: push_const(138)  -- aDQRS
+    275: push_const(178)  -- RAW_STR
+    276: push_const(136)  -- aSQS
+    277: push_const(177)  -- STR
+    278: push_const(140)  -- aSQRS
+    279: push_const(178)  -- RAW_STR
+    280: push_const(101)  -- aPLUS
+    281: push_const(30)  -- +
+    282: push_const(87)  -- aRSQ
+    283: push_const(6)  -- ]
+    284: push_const(83)  -- aRPAR
+    285: push_const(2)  -- )
+    286: push_const(91)  -- aRBR
+    287: push_const(10)  -- }
+    288: make_map(34)
+    289: store_var(179)  -- _SM_ACCEPT
+    290: load_var(179)  -- _SM_ACCEPT
+    291: pop
+    292: push_const(180)  -- IF
+    293: push_const(180)  -- IF
+    294: push_const(181)  -- THEN
+    295: push_const(181)  -- THEN
+    296: push_const(182)  -- ELSE
+    297: push_const(182)  -- ELSE
+    298: push_const(183)  -- WHILE
+    299: push_const(183)  -- WHILE
+    300: push_const(184)  -- DO
+    301: push_const(184)  -- DO
+    302: push_const(185)  -- REPEAT
+    303: push_const(185)  -- REPEAT
+    304: push_const(186)  -- UNTIL
+    305: push_const(186)  -- UNTIL
+    306: push_const(187)  -- FOR
+    307: push_const(187)  -- FOR
+    308: push_const(188)  -- TO
+    309: push_const(188)  -- TO
+    310: push_const(189)  -- STEP
+    311: push_const(189)  -- STEP
+    312: push_const(190)  -- BEGIN
+    313: push_const(190)  -- BEGIN
+    314: push_const(191)  -- END
+    315: push_const(191)  -- END
+    316: push_const(192)  -- BREAK
+    317: push_const(192)  -- BREAK
+    318: push_const(193)  -- CONTINUE
+    319: push_const(193)  -- CONTINUE
+    320: push_const(194)  -- RETURN
+    321: push_const(194)  -- RETURN
+    322: push_const(195)  -- AND
+    323: push_const(195)  -- AND
+    324: push_const(196)  -- OR
+    325: push_const(196)  -- OR
+    326: push_const(197)  -- XOR
+    327: push_const(197)  -- XOR
+    328: push_const(172)  -- NOT
+    329: push_const(172)  -- NOT
+    330: push_const(198)  -- IN
+    331: push_const(198)  -- IN
+    332: push_const(199)  -- OBJECT
+    333: push_const(199)  -- OBJECT
+    334: push_const(200)  -- OCH
+    335: push_const(195)  -- AND
+    336: push_const(201)  -- ELLER
+    337: push_const(196)  -- OR
+    338: push_const(202)  -- ANTINGEN_ELLER
+    339: push_const(197)  -- XOR
+    340: push_const(203)  -- INTE
+    341: push_const(172)  -- NOT
+    342: push_const(204)  -- FINNS_I
+    343: push_const(198)  -- IN
+    344: make_map(26)
+    345: store_var(205)  -- _SM_KW
+    346: load_var(205)  -- _SM_KW
+    347: pop
+    348: make_closure(206)  -- .___SM_UNESCAPE_1
+    349: store_var(207)  -- _SM_UNESCAPE
+    350: load_var(207)  -- _SM_UNESCAPE
+    351: pop
+    352: make_closure(208)  -- .___SM_EMIT_2
+    353: store_var(209)  -- _SM_EMIT
+    354: load_var(209)  -- _SM_EMIT
+    355: pop
+    356: make_closure(210)  -- .___SM_TOKENIZE_3
+    357: store_var(211)  -- _SM_TOKENIZE
+    358: load_var(211)  -- _SM_TOKENIZE
+    359: pop
+    360: push_scope
+    361: push_const(212)  -- TOKENIZE
+    362: make_closure(213)  -- .__lambda_4
+    363: make_object_here(1)
+    364: pop_scope
+    365: store_var(214)  -- LEXER
+    366: load_var(214)  -- LEXER
+    367: ret
+CHUNK ___SM_CLASSIFY_0 (_SM_C)
+  CONST  0: _SM_CC
+  CONST  1: _SM_C
+  CONST  2: _SM_CL
+  CONST  3: null
+  CONST  4: CHAR_CODE
+  CONST  5: _SM_CD
+  CONST  6: 65
+  CONST  7: 90
+  CONST  8: letter
+  CONST  9: 97
+  CONST  10: 122
+  CONST  11: 48
+  CONST  12: 57
+  CONST  13: digit
+  CONST  14: 32
+  CONST  15: 9
+  CONST  16: ws
+  CONST  17: 10
+  CONST  18: 13
+  CONST  19: nl
   CODE:
     0: push_scope
-    1: push_const(0)  -- 0
-    2: store_var(1)  -- I
-    3: load_var(1)  -- I
-    4: pop
-    5: push_const(2)  -- null
-    6: store_reg(0)
-    7: load_var(1)  -- I
-    8: jump_null(16)
-    9: load_var(3)  -- LENGTH
-    10: load_var(4)  -- _LX_ALIAS_KEYS
-    11: call(1)
-    12: jump_null(15)
-    13: cmp_lt
-    14: jump(18)
-    15: pop
-    16: pop
-    17: push_const(2)  -- null
-    18: jump_false(47)
-    19: push_scope
-    20: load_var(4)  -- _LX_ALIAS_KEYS
-    21: load_var(1)  -- I
-    22: get_index
-    23: load_var(5)  -- WORD
-    24: cmp_eq
-    25: jump_false(31)
-    26: load_var(6)  -- _LX_ALIAS_VALS
-    27: load_var(1)  -- I
-    28: get_index
-    29: ret
-    30: jump(32)
-    31: push_const(2)  -- null
-    32: pop
-    33: load_var(1)  -- I
-    34: jump_null(40)
-    35: push_const(7)  -- 1
-    36: jump_null(39)
-    37: add
-    38: jump(42)
-    39: pop
-    40: pop
-    41: push_const(2)  -- null
-    42: store_var(1)  -- I
-    43: load_var(1)  -- I
-    44: pop_scope
-    45: store_reg(0)
-    46: jump(7)
-    47: load_reg(0)
-    48: pop
-    49: push_const(2)  -- null
-    50: ret
-    51: pop_scope
-    52: ret
-CHUNK ___LX_CH2_7 (SRC, I)
-  CONST  0: I
-  CONST  1: 1
-  CONST  2: null
-  CONST  3: LENGTH
-  CONST  4: SRC
-  CONST  5: SUBSTRING
-  CONST  6: 2
-  CODE:
-    0: load_var(0)  -- I
-    1: jump_null(7)
-    2: push_const(1)  -- 1
-    3: jump_null(6)
-    4: add
-    5: jump(9)
+    1: load_var(0)  -- _SM_CC
+    2: load_var(1)  -- _SM_C
+    3: get_index
+    4: store_var(2)  -- _SM_CL
+    5: load_var(2)  -- _SM_CL
     6: pop
-    7: pop
-    8: push_const(2)  -- null
-    9: jump_null(17)
-    10: load_var(3)  -- LENGTH
-    11: load_var(4)  -- SRC
-    12: call(1)
-    13: jump_null(16)
-    14: cmp_lt
-    15: jump(19)
-    16: pop
-    17: pop
-    18: push_const(2)  -- null
-    19: jump_false(34)
-    20: load_var(5)  -- SUBSTRING
-    21: load_var(4)  -- SRC
-    22: load_var(0)  -- I
-    23: load_var(0)  -- I
-    24: jump_null(30)
-    25: push_const(6)  -- 2
-    26: jump_null(29)
-    27: add
-    28: jump(32)
-    29: pop
-    30: pop
-    31: push_const(2)  -- null
-    32: call(3)
-    33: jump(47)
-    34: load_var(5)  -- SUBSTRING
-    35: load_var(4)  -- SRC
-    36: load_var(0)  -- I
-    37: load_var(0)  -- I
-    38: jump_null(44)
-    39: push_const(1)  -- 1
-    40: jump_null(43)
-    41: add
-    42: jump(46)
-    43: pop
-    44: pop
-    45: push_const(2)  -- null
-    46: call(3)
-    47: ret
-CHUNK ___LX_CH_6 (SRC, I)
-  CONST  0: SUBSTRING
-  CONST  1: SRC
-  CONST  2: I
-  CONST  3: 1
-  CONST  4: null
-  CODE:
-    0: load_var(0)  -- SUBSTRING
-    1: load_var(1)  -- SRC
-    2: load_var(2)  -- I
-    3: load_var(2)  -- I
-    4: jump_null(10)
-    5: push_const(3)  -- 1
-    6: jump_null(9)
-    7: add
-    8: jump(12)
-    9: pop
-    10: pop
-    11: push_const(4)  -- null
-    12: call(3)
-    13: ret
-CHUNK ___LX_IS_ALNUM_4 (C)
-  CONST  0: C
-  CONST  1: [a-zA-Z0-9_]
-  CONST  2: null
-  CODE:
-    0: load_var(0)  -- C
-    1: jump_null(7)
-    2: push_const(1)  -- [a-zA-Z0-9_]
-    3: jump_null(6)
-    4: op_match
-    5: jump(9)
-    6: pop
-    7: pop
-    8: push_const(2)  -- null
-    9: ret
-CHUNK ___LX_IS_ALPHA_3 (C)
-  CONST  0: C
-  CONST  1: [a-zA-Z_]
-  CONST  2: null
-  CODE:
-    0: load_var(0)  -- C
-    1: jump_null(7)
-    2: push_const(1)  -- [a-zA-Z_]
-    3: jump_null(6)
-    4: op_match
-    5: jump(9)
-    6: pop
-    7: pop
-    8: push_const(2)  -- null
-    9: ret
-CHUNK ___LX_IS_DIGIT_2 (C)
-  CONST  0: C
-  CONST  1: [0-9]
-  CONST  2: null
-  CODE:
-    0: load_var(0)  -- C
-    1: jump_null(7)
-    2: push_const(1)  -- [0-9]
-    3: jump_null(6)
-    4: op_match
-    5: jump(9)
-    6: pop
-    7: pop
-    8: push_const(2)  -- null
-    9: ret
-CHUNK ___LX_IS_KW_0 (S)
-  CONST  0: INDEX_OF
-  CONST  1: _LX_KEYWORDS
-  CONST  2: S
-  CONST  3: 0
-  CONST  4: null
-  CODE:
-    0: load_var(0)  -- INDEX_OF
-    1: load_var(1)  -- _LX_KEYWORDS
-    2: load_var(2)  -- S
-    3: call(2)
-    4: jump_null(10)
-    5: push_const(3)  -- 0
-    6: jump_null(9)
-    7: cmp_gte
-    8: jump(12)
-    9: pop
-    10: pop
-    11: push_const(4)  -- null
+    7: load_var(2)  -- _SM_CL
+    8: push_const(3)  -- null
+    9: cmp_neq
+    10: jump_false(14)
+    11: load_var(2)  -- _SM_CL
     12: ret
-CHUNK ___LX_SCAN_STR_8 (SRC, I, N, Q)
+    13: jump(15)
+    14: push_const(3)  -- null
+    15: pop
+    16: load_var(4)  -- CHAR_CODE
+    17: load_var(1)  -- _SM_C
+    18: call(1)
+    19: store_var(5)  -- _SM_CD
+    20: load_var(5)  -- _SM_CD
+    21: pop
+    22: load_var(5)  -- _SM_CD
+    23: jump_null(29)
+    24: push_const(6)  -- 65
+    25: jump_null(28)
+    26: cmp_gte
+    27: jump(31)
+    28: pop
+    29: pop
+    30: push_const(3)  -- null
+    31: load_var(5)  -- _SM_CD
+    32: jump_null(38)
+    33: push_const(7)  -- 90
+    34: jump_null(37)
+    35: cmp_lte
+    36: jump(40)
+    37: pop
+    38: pop
+    39: push_const(3)  -- null
+    40: log_and
+    41: jump_false(45)
+    42: push_const(8)  -- letter
+    43: ret
+    44: jump(46)
+    45: push_const(3)  -- null
+    46: pop
+    47: load_var(5)  -- _SM_CD
+    48: jump_null(54)
+    49: push_const(9)  -- 97
+    50: jump_null(53)
+    51: cmp_gte
+    52: jump(56)
+    53: pop
+    54: pop
+    55: push_const(3)  -- null
+    56: load_var(5)  -- _SM_CD
+    57: jump_null(63)
+    58: push_const(10)  -- 122
+    59: jump_null(62)
+    60: cmp_lte
+    61: jump(65)
+    62: pop
+    63: pop
+    64: push_const(3)  -- null
+    65: log_and
+    66: jump_false(70)
+    67: push_const(8)  -- letter
+    68: ret
+    69: jump(71)
+    70: push_const(3)  -- null
+    71: pop
+    72: load_var(5)  -- _SM_CD
+    73: jump_null(79)
+    74: push_const(11)  -- 48
+    75: jump_null(78)
+    76: cmp_gte
+    77: jump(81)
+    78: pop
+    79: pop
+    80: push_const(3)  -- null
+    81: load_var(5)  -- _SM_CD
+    82: jump_null(88)
+    83: push_const(12)  -- 57
+    84: jump_null(87)
+    85: cmp_lte
+    86: jump(90)
+    87: pop
+    88: pop
+    89: push_const(3)  -- null
+    90: log_and
+    91: jump_false(95)
+    92: push_const(13)  -- digit
+    93: ret
+    94: jump(96)
+    95: push_const(3)  -- null
+    96: pop
+    97: load_var(5)  -- _SM_CD
+    98: push_const(14)  -- 32
+    99: cmp_eq
+    100: load_var(5)  -- _SM_CD
+    101: push_const(15)  -- 9
+    102: cmp_eq
+    103: log_or
+    104: jump_false(108)
+    105: push_const(16)  -- ws
+    106: ret
+    107: jump(109)
+    108: push_const(3)  -- null
+    109: pop
+    110: load_var(5)  -- _SM_CD
+    111: push_const(17)  -- 10
+    112: cmp_eq
+    113: load_var(5)  -- _SM_CD
+    114: push_const(18)  -- 13
+    115: cmp_eq
+    116: log_or
+    117: jump_false(121)
+    118: push_const(19)  -- nl
+    119: ret
+    120: jump(122)
+    121: push_const(3)  -- null
+    122: pop
+    123: push_const(3)  -- null
+    124: ret
+    125: pop_scope
+    126: ret
+CHUNK ___SM_EMIT_2 (_SM_TT, _SM_BUF, _SM_LINE, _SM_COL)
+  CONST  0: LENGTH
+  CONST  1: _SM_BUF
+  CONST  2: _SM_LEN
+  CONST  3: _SM_TT
+  CONST  4: ID
+  CONST  5: UPPERCASE
+  CONST  6: _SM_WORD
+  CONST  7: _SM_KW
+  CONST  8: _SM_KWV
+  CONST  9: null
+  CONST  10: t
+  CONST  11: v
+  CONST  12: l
+  CONST  13: _SM_LINE
+  CONST  14: sc
+  CONST  15: _SM_COL
+  CONST  16: len
+  CONST  17: STR
+  CONST  18: SUBSTRING
+  CONST  19: 1
+  CONST  20: _SM_RAW
+  CONST  21: _SM_UNESCAPE
+  CONST  22: _SM_VAL
+  CONST  23: RAW_STR
+  CONST  24: 2
+  CONST  25: NOT
+  CODE:
+    0: push_scope
+    1: load_var(0)  -- LENGTH
+    2: load_var(1)  -- _SM_BUF
+    3: call(1)
+    4: store_var(2)  -- _SM_LEN
+    5: load_var(2)  -- _SM_LEN
+    6: pop
+    7: load_var(3)  -- _SM_TT
+    8: push_const(4)  -- ID
+    9: cmp_eq
+    10: jump_false(57)
+    11: push_scope
+    12: load_var(5)  -- UPPERCASE
+    13: load_var(1)  -- _SM_BUF
+    14: call(1)
+    15: store_var(6)  -- _SM_WORD
+    16: load_var(6)  -- _SM_WORD
+    17: pop
+    18: load_var(7)  -- _SM_KW
+    19: load_var(6)  -- _SM_WORD
+    20: get_index
+    21: store_var(8)  -- _SM_KWV
+    22: load_var(8)  -- _SM_KWV
+    23: pop
+    24: load_var(8)  -- _SM_KWV
+    25: push_const(9)  -- null
+    26: cmp_neq
+    27: jump_false(41)
+    28: push_const(10)  -- t
+    29: load_var(8)  -- _SM_KWV
+    30: push_const(11)  -- v
+    31: load_var(6)  -- _SM_WORD
+    32: push_const(12)  -- l
+    33: load_var(13)  -- _SM_LINE
+    34: push_const(14)  -- sc
+    35: load_var(15)  -- _SM_COL
+    36: push_const(16)  -- len
+    37: load_var(2)  -- _SM_LEN
+    38: make_map(5)
+    39: ret
+    40: jump(42)
+    41: push_const(9)  -- null
+    42: pop
+    43: push_const(10)  -- t
+    44: push_const(4)  -- ID
+    45: push_const(11)  -- v
+    46: load_var(6)  -- _SM_WORD
+    47: push_const(12)  -- l
+    48: load_var(13)  -- _SM_LINE
+    49: push_const(14)  -- sc
+    50: load_var(15)  -- _SM_COL
+    51: push_const(16)  -- len
+    52: load_var(2)  -- _SM_LEN
+    53: make_map(5)
+    54: ret
+    55: pop_scope
+    56: jump(58)
+    57: push_const(9)  -- null
+    58: pop
+    59: load_var(3)  -- _SM_TT
+    60: push_const(17)  -- STR
+    61: cmp_eq
+    62: jump_false(100)
+    63: push_scope
+    64: load_var(18)  -- SUBSTRING
+    65: load_var(1)  -- _SM_BUF
+    66: push_const(19)  -- 1
+    67: load_var(2)  -- _SM_LEN
+    68: jump_null(74)
+    69: push_const(19)  -- 1
+    70: jump_null(73)
+    71: sub
+    72: jump(76)
+    73: pop
+    74: pop
+    75: push_const(9)  -- null
+    76: call(3)
+    77: store_var(20)  -- _SM_RAW
+    78: load_var(20)  -- _SM_RAW
+    79: pop
+    80: load_var(21)  -- _SM_UNESCAPE
+    81: load_var(20)  -- _SM_RAW
+    82: call(1)
+    83: store_var(22)  -- _SM_VAL
+    84: load_var(22)  -- _SM_VAL
+    85: pop
+    86: push_const(10)  -- t
+    87: push_const(17)  -- STR
+    88: push_const(11)  -- v
+    89: load_var(22)  -- _SM_VAL
+    90: push_const(12)  -- l
+    91: load_var(13)  -- _SM_LINE
+    92: push_const(14)  -- sc
+    93: load_var(15)  -- _SM_COL
+    94: push_const(16)  -- len
+    95: load_var(2)  -- _SM_LEN
+    96: make_map(5)
+    97: ret
+    98: pop_scope
+    99: jump(101)
+    100: push_const(9)  -- null
+    101: pop
+    102: load_var(3)  -- _SM_TT
+    103: push_const(23)  -- RAW_STR
+    104: cmp_eq
+    105: jump_false(137)
+    106: push_scope
+    107: load_var(18)  -- SUBSTRING
+    108: load_var(1)  -- _SM_BUF
+    109: push_const(24)  -- 2
+    110: load_var(2)  -- _SM_LEN
+    111: jump_null(117)
+    112: push_const(19)  -- 1
+    113: jump_null(116)
+    114: sub
+    115: jump(119)
+    116: pop
+    117: pop
+    118: push_const(9)  -- null
+    119: call(3)
+    120: store_var(22)  -- _SM_VAL
+    121: load_var(22)  -- _SM_VAL
+    122: pop
+    123: push_const(10)  -- t
+    124: push_const(17)  -- STR
+    125: push_const(11)  -- v
+    126: load_var(22)  -- _SM_VAL
+    127: push_const(12)  -- l
+    128: load_var(13)  -- _SM_LINE
+    129: push_const(14)  -- sc
+    130: load_var(15)  -- _SM_COL
+    131: push_const(16)  -- len
+    132: load_var(2)  -- _SM_LEN
+    133: make_map(5)
+    134: ret
+    135: pop_scope
+    136: jump(138)
+    137: push_const(9)  -- null
+    138: pop
+    139: load_var(3)  -- _SM_TT
+    140: push_const(25)  -- NOT
+    141: cmp_eq
+    142: jump_false(156)
+    143: push_const(10)  -- t
+    144: push_const(25)  -- NOT
+    145: push_const(11)  -- v
+    146: push_const(25)  -- NOT
+    147: push_const(12)  -- l
+    148: load_var(13)  -- _SM_LINE
+    149: push_const(14)  -- sc
+    150: load_var(15)  -- _SM_COL
+    151: push_const(16)  -- len
+    152: load_var(2)  -- _SM_LEN
+    153: make_map(5)
+    154: ret
+    155: jump(157)
+    156: push_const(9)  -- null
+    157: pop
+    158: push_const(10)  -- t
+    159: load_var(3)  -- _SM_TT
+    160: push_const(11)  -- v
+    161: load_var(1)  -- _SM_BUF
+    162: push_const(12)  -- l
+    163: load_var(13)  -- _SM_LINE
+    164: push_const(14)  -- sc
+    165: load_var(15)  -- _SM_COL
+    166: push_const(16)  -- len
+    167: load_var(2)  -- _SM_LEN
+    168: make_map(5)
+    169: ret
+    170: pop_scope
+    171: ret
+CHUNK ___SM_TOKENIZE_3 (_SM_SRC)
+  CONST  0: _SM_TOKENS
+  CONST  1: LENGTH
+  CONST  2: _SM_SRC
+  CONST  3: _SM_N
+  CONST  4: S
+  CONST  5: _SM_STATE
+  CONST  6: 
+  CONST  7: _SM_BUF
+  CONST  8: 1
+  CONST  9: _SM_BL
+  CONST  10: _SM_BC
+  CONST  11: _SM_LINE
+  CONST  12: _SM_COL
+  CONST  13: 0
+  CONST  14: _SM_PREV
+  CONST  15: _SM_I
+  CONST  16: null
+  CONST  17: CMT
+  CONST  18: _SM_DEF
+  CONST  19: _SM_NS
+  CONST  20: _SM_ACCEPT
+  CONST  21: _SM_AT
+  CONST  22: _SM_EMIT
+  CONST  23: SUBSTRING
+  CONST  24: _SM_C
+  CONST  25: _SM_CLASSIFY
+  CONST  26: _SM_CLS
+  CONST  27: :
+  CONST  28: _SM_KEY
+  CONST  29: _SM_TRANS
+  CONST  30: _SM_NEXT
+  CONST  31: _SM_WAS
+  CONST  32: CHAR_CODE
+  CONST  33: _SM_CD
+  CONST  34: 10
+  CONST  35: 13
+  CONST  36: t
+  CONST  37: EOF
+  CONST  38: v
+  CONST  39: l
+  CONST  40: sc
+  CONST  41: len
+  CODE:
+    0: push_scope
+    1: make_list(0)
+    2: store_var(0)  -- _SM_TOKENS
+    3: load_var(0)  -- _SM_TOKENS
+    4: pop
+    5: load_var(1)  -- LENGTH
+    6: load_var(2)  -- _SM_SRC
+    7: call(1)
+    8: store_var(3)  -- _SM_N
+    9: load_var(3)  -- _SM_N
+    10: pop
+    11: push_const(4)  -- S
+    12: store_var(5)  -- _SM_STATE
+    13: load_var(5)  -- _SM_STATE
+    14: pop
+    15: push_const(6)  -- 
+    16: store_var(7)  -- _SM_BUF
+    17: load_var(7)  -- _SM_BUF
+    18: pop
+    19: push_const(8)  -- 1
+    20: store_var(9)  -- _SM_BL
+    21: load_var(9)  -- _SM_BL
+    22: pop
+    23: push_const(8)  -- 1
+    24: store_var(10)  -- _SM_BC
+    25: load_var(10)  -- _SM_BC
+    26: pop
+    27: push_const(8)  -- 1
+    28: store_var(11)  -- _SM_LINE
+    29: load_var(11)  -- _SM_LINE
+    30: pop
+    31: push_const(8)  -- 1
+    32: store_var(12)  -- _SM_COL
+    33: load_var(12)  -- _SM_COL
+    34: pop
+    35: push_const(13)  -- 0
+    36: store_var(14)  -- _SM_PREV
+    37: load_var(14)  -- _SM_PREV
+    38: pop
+    39: push_const(13)  -- 0
+    40: store_var(15)  -- _SM_I
+    41: load_var(15)  -- _SM_I
+    42: pop
+    43: push_const(16)  -- null
+    44: store_reg(0)
+    45: load_var(15)  -- _SM_I
+    46: jump_null(52)
+    47: load_var(3)  -- _SM_N
+    48: jump_null(51)
+    49: cmp_lte
+    50: jump(54)
+    51: pop
+    52: pop
+    53: push_const(16)  -- null
+    54: jump_false(430)
+    55: push_scope
+    56: load_var(15)  -- _SM_I
+    57: load_var(3)  -- _SM_N
+    58: cmp_eq
+    59: jump_false(126)
+    60: push_scope
+    61: load_var(5)  -- _SM_STATE
+    62: push_const(4)  -- S
+    63: cmp_neq
+    64: load_var(5)  -- _SM_STATE
+    65: push_const(17)  -- CMT
+    66: cmp_neq
+    67: log_and
+    68: jump_false(121)
+    69: push_scope
+    70: load_var(18)  -- _SM_DEF
+    71: load_var(5)  -- _SM_STATE
+    72: get_index
+    73: store_var(19)  -- _SM_NS
+    74: load_var(19)  -- _SM_NS
+    75: pop
+    76: load_var(19)  -- _SM_NS
+    77: push_const(16)  -- null
+    78: cmp_neq
+    79: jump_false(118)
+    80: push_scope
+    81: load_var(19)  -- _SM_NS
+    82: store_var(5)  -- _SM_STATE
+    83: load_var(5)  -- _SM_STATE
+    84: pop
+    85: load_var(20)  -- _SM_ACCEPT
+    86: load_var(5)  -- _SM_STATE
+    87: get_index
+    88: store_var(21)  -- _SM_AT
+    89: load_var(21)  -- _SM_AT
+    90: pop
+    91: load_var(21)  -- _SM_AT
+    92: push_const(16)  -- null
+    93: cmp_neq
+    94: jump_false(115)
+    95: push_scope
+    96: load_var(0)  -- _SM_TOKENS
+    97: jump_null(109)
+    98: load_var(22)  -- _SM_EMIT
+    99: load_var(21)  -- _SM_AT
+    100: load_var(7)  -- _SM_BUF
+    101: load_var(9)  -- _SM_BL
+    102: load_var(10)  -- _SM_BC
+    103: call(4)
+    104: make_list(1)
+    105: jump_null(108)
+    106: add
+    107: jump(111)
+    108: pop
+    109: pop
+    110: push_const(16)  -- null
+    111: store_var(0)  -- _SM_TOKENS
+    112: load_var(0)  -- _SM_TOKENS
+    113: pop_scope
+    114: jump(116)
+    115: push_const(16)  -- null
+    116: pop_scope
+    117: jump(119)
+    118: push_const(16)  -- null
+    119: pop_scope
+    120: jump(122)
+    121: push_const(16)  -- null
+    122: pop
+    123: jump(430)
+    124: pop_scope
+    125: jump(127)
+    126: push_const(16)  -- null
+    127: pop
+    128: load_var(23)  -- SUBSTRING
+    129: load_var(2)  -- _SM_SRC
+    130: load_var(15)  -- _SM_I
+    131: load_var(15)  -- _SM_I
+    132: jump_null(138)
+    133: push_const(8)  -- 1
+    134: jump_null(137)
+    135: add
+    136: jump(140)
+    137: pop
+    138: pop
+    139: push_const(16)  -- null
+    140: call(3)
+    141: store_var(24)  -- _SM_C
+    142: load_var(24)  -- _SM_C
+    143: pop
+    144: load_var(25)  -- _SM_CLASSIFY
+    145: load_var(24)  -- _SM_C
+    146: call(1)
+    147: store_var(26)  -- _SM_CLS
+    148: load_var(26)  -- _SM_CLS
+    149: pop
+    150: load_var(5)  -- _SM_STATE
+    151: jump_null(157)
+    152: push_const(27)  -- :
+    153: jump_null(156)
+    154: add
+    155: jump(159)
+    156: pop
+    157: pop
+    158: push_const(16)  -- null
+    159: jump_null(165)
+    160: load_var(26)  -- _SM_CLS
+    161: jump_null(164)
+    162: add
+    163: jump(167)
+    164: pop
+    165: pop
+    166: push_const(16)  -- null
+    167: store_var(28)  -- _SM_KEY
+    168: load_var(28)  -- _SM_KEY
+    169: pop
+    170: load_var(29)  -- _SM_TRANS
+    171: load_var(28)  -- _SM_KEY
+    172: get_index
+    173: store_var(30)  -- _SM_NEXT
+    174: load_var(30)  -- _SM_NEXT
+    175: pop
+    176: load_var(30)  -- _SM_NEXT
+    177: push_const(16)  -- null
+    178: cmp_neq
+    179: jump_false(274)
+    180: push_scope
+    181: load_var(5)  -- _SM_STATE
+    182: push_const(4)  -- S
+    183: cmp_eq
+    184: load_var(5)  -- _SM_STATE
+    185: push_const(17)  -- CMT
+    186: cmp_eq
+    187: log_or
+    188: store_var(31)  -- _SM_WAS
+    189: load_var(31)  -- _SM_WAS
+    190: pop
+    191: load_var(30)  -- _SM_NEXT
+    192: store_var(5)  -- _SM_STATE
+    193: load_var(5)  -- _SM_STATE
+    194: pop
+    195: load_var(5)  -- _SM_STATE
+    196: push_const(4)  -- S
+    197: cmp_neq
+    198: load_var(5)  -- _SM_STATE
+    199: push_const(17)  -- CMT
+    200: cmp_neq
+    201: log_and
+    202: jump_false(271)
+    203: push_scope
+    204: load_var(31)  -- _SM_WAS
+    205: jump_false(220)
+    206: push_scope
+    207: push_const(6)  -- 
+    208: store_var(7)  -- _SM_BUF
+    209: load_var(7)  -- _SM_BUF
+    210: pop
+    211: load_var(11)  -- _SM_LINE
+    212: store_var(9)  -- _SM_BL
+    213: load_var(9)  -- _SM_BL
+    214: pop
+    215: load_var(12)  -- _SM_COL
+    216: store_var(10)  -- _SM_BC
+    217: load_var(10)  -- _SM_BC
+    218: pop_scope
+    219: jump(221)
+    220: push_const(16)  -- null
+    221: pop
+    222: load_var(7)  -- _SM_BUF
+    223: jump_null(229)
+    224: load_var(24)  -- _SM_C
+    225: jump_null(228)
+    226: add
+    227: jump(231)
+    228: pop
+    229: pop
+    230: push_const(16)  -- null
+    231: store_var(7)  -- _SM_BUF
+    232: load_var(7)  -- _SM_BUF
+    233: pop
+    234: load_var(20)  -- _SM_ACCEPT
+    235: load_var(5)  -- _SM_STATE
+    236: get_index
+    237: store_var(21)  -- _SM_AT
+    238: load_var(21)  -- _SM_AT
+    239: pop
+    240: load_var(21)  -- _SM_AT
+    241: push_const(16)  -- null
+    242: cmp_neq
+    243: jump_false(268)
+    244: push_scope
+    245: load_var(0)  -- _SM_TOKENS
+    246: jump_null(258)
+    247: load_var(22)  -- _SM_EMIT
+    248: load_var(21)  -- _SM_AT
+    249: load_var(7)  -- _SM_BUF
+    250: load_var(9)  -- _SM_BL
+    251: load_var(10)  -- _SM_BC
+    252: call(4)
+    253: make_list(1)
+    254: jump_null(257)
+    255: add
+    256: jump(260)
+    257: pop
+    258: pop
+    259: push_const(16)  -- null
+    260: store_var(0)  -- _SM_TOKENS
+    261: load_var(0)  -- _SM_TOKENS
+    262: pop
+    263: push_const(4)  -- S
+    264: store_var(5)  -- _SM_STATE
+    265: load_var(5)  -- _SM_STATE
+    266: pop_scope
+    267: jump(269)
+    268: push_const(16)  -- null
+    269: pop_scope
+    270: jump(272)
+    271: push_const(16)  -- null
+    272: pop_scope
+    273: jump(343)
+    274: push_scope
+    275: load_var(18)  -- _SM_DEF
+    276: load_var(5)  -- _SM_STATE
+    277: get_index
+    278: store_var(19)  -- _SM_NS
+    279: load_var(19)  -- _SM_NS
+    280: pop
+    281: load_var(19)  -- _SM_NS
+    282: push_const(16)  -- null
+    283: cmp_neq
+    284: jump_false(341)
+    285: push_scope
+    286: load_var(19)  -- _SM_NS
+    287: store_var(5)  -- _SM_STATE
+    288: load_var(5)  -- _SM_STATE
+    289: pop
+    290: load_var(20)  -- _SM_ACCEPT
+    291: load_var(5)  -- _SM_STATE
+    292: get_index
+    293: store_var(21)  -- _SM_AT
+    294: load_var(21)  -- _SM_AT
+    295: pop
+    296: load_var(21)  -- _SM_AT
+    297: push_const(16)  -- null
+    298: cmp_eq
+    299: jump_false(314)
+    300: push_scope
+    301: load_var(7)  -- _SM_BUF
+    302: jump_null(308)
+    303: load_var(24)  -- _SM_C
+    304: jump_null(307)
+    305: add
+    306: jump(310)
+    307: pop
+    308: pop
+    309: push_const(16)  -- null
+    310: store_var(7)  -- _SM_BUF
+    311: load_var(7)  -- _SM_BUF
+    312: pop_scope
+    313: jump(339)
+    314: push_scope
+    315: load_var(0)  -- _SM_TOKENS
+    316: jump_null(328)
+    317: load_var(22)  -- _SM_EMIT
+    318: load_var(21)  -- _SM_AT
+    319: load_var(7)  -- _SM_BUF
+    320: load_var(9)  -- _SM_BL
+    321: load_var(10)  -- _SM_BC
+    322: call(4)
+    323: make_list(1)
+    324: jump_null(327)
+    325: add
+    326: jump(330)
+    327: pop
+    328: pop
+    329: push_const(16)  -- null
+    330: store_var(0)  -- _SM_TOKENS
+    331: load_var(0)  -- _SM_TOKENS
+    332: pop
+    333: push_const(4)  -- S
+    334: store_var(5)  -- _SM_STATE
+    335: load_var(5)  -- _SM_STATE
+    336: pop
+    337: jump(45)
+    338: pop_scope
+    339: pop_scope
+    340: jump(342)
+    341: push_const(16)  -- null
+    342: pop_scope
+    343: pop
+    344: load_var(32)  -- CHAR_CODE
+    345: load_var(24)  -- _SM_C
+    346: call(1)
+    347: store_var(33)  -- _SM_CD
+    348: load_var(33)  -- _SM_CD
+    349: pop
+    350: load_var(33)  -- _SM_CD
+    351: push_const(34)  -- 10
+    352: cmp_eq
+    353: jump_false(378)
+    354: push_scope
+    355: load_var(14)  -- _SM_PREV
+    356: push_const(35)  -- 13
+    357: cmp_neq
+    358: jump_false(371)
+    359: load_var(11)  -- _SM_LINE
+    360: jump_null(366)
+    361: push_const(8)  -- 1
+    362: jump_null(365)
+    363: add
+    364: jump(368)
+    365: pop
+    366: pop
+    367: push_const(16)  -- null
+    368: store_var(11)  -- _SM_LINE
+    369: load_var(11)  -- _SM_LINE
+    370: jump(372)
+    371: push_const(16)  -- null
+    372: pop
+    373: push_const(8)  -- 1
+    374: store_var(12)  -- _SM_COL
+    375: load_var(12)  -- _SM_COL
+    376: pop_scope
+    377: jump(411)
+    378: load_var(33)  -- _SM_CD
+    379: push_const(35)  -- 13
+    380: cmp_eq
+    381: jump_false(400)
+    382: push_scope
+    383: load_var(11)  -- _SM_LINE
+    384: jump_null(390)
+    385: push_const(8)  -- 1
+    386: jump_null(389)
+    387: add
+    388: jump(392)
+    389: pop
+    390: pop
+    391: push_const(16)  -- null
+    392: store_var(11)  -- _SM_LINE
+    393: load_var(11)  -- _SM_LINE
+    394: pop
+    395: push_const(8)  -- 1
+    396: store_var(12)  -- _SM_COL
+    397: load_var(12)  -- _SM_COL
+    398: pop_scope
+    399: jump(411)
+    400: load_var(12)  -- _SM_COL
+    401: jump_null(407)
+    402: push_const(8)  -- 1
+    403: jump_null(406)
+    404: add
+    405: jump(409)
+    406: pop
+    407: pop
+    408: push_const(16)  -- null
+    409: store_var(12)  -- _SM_COL
+    410: load_var(12)  -- _SM_COL
+    411: pop
+    412: load_var(33)  -- _SM_CD
+    413: store_var(14)  -- _SM_PREV
+    414: load_var(14)  -- _SM_PREV
+    415: pop
+    416: load_var(15)  -- _SM_I
+    417: jump_null(423)
+    418: push_const(8)  -- 1
+    419: jump_null(422)
+    420: add
+    421: jump(425)
+    422: pop
+    423: pop
+    424: push_const(16)  -- null
+    425: store_var(15)  -- _SM_I
+    426: load_var(15)  -- _SM_I
+    427: pop_scope
+    428: store_reg(0)
+    429: jump(45)
+    430: load_reg(0)
+    431: pop
+    432: load_var(0)  -- _SM_TOKENS
+    433: jump_null(450)
+    434: push_const(36)  -- t
+    435: push_const(37)  -- EOF
+    436: push_const(38)  -- v
+    437: push_const(6)  -- 
+    438: push_const(39)  -- l
+    439: load_var(11)  -- _SM_LINE
+    440: push_const(40)  -- sc
+    441: load_var(12)  -- _SM_COL
+    442: push_const(41)  -- len
+    443: push_const(13)  -- 0
+    444: make_map(5)
+    445: make_list(1)
+    446: jump_null(449)
+    447: add
+    448: jump(452)
+    449: pop
+    450: pop
+    451: push_const(16)  -- null
+    452: store_var(0)  -- _SM_TOKENS
+    453: load_var(0)  -- _SM_TOKENS
+    454: pop
+    455: load_var(0)  -- _SM_TOKENS
+    456: ret
+    457: pop_scope
+    458: ret
+CHUNK ___SM_UNESCAPE_1 (_SM_S)
   CONST  0: 
-  CONST  1: BUF
-  CONST  2: I
-  CONST  3: 1
-  CONST  4: null
-  CONST  5: N
-  CONST  6: _LX_CH
-  CONST  7: SRC
-  CONST  8: C
-  CONST  9: Q
-  CONST  10: buf
-  CONST  11: i
-  CONST  12: \
-  CONST  13: EC
+  CONST  1: _SM_RES
+  CONST  2: 0
+  CONST  3: _SM_J
+  CONST  4: LENGTH
+  CONST  5: _SM_S
+  CONST  6: _SM_M
+  CONST  7: null
+  CONST  8: SUBSTRING
+  CONST  9: 1
+  CONST  10: _SM_CH
+  CONST  11: \
+  CONST  12: _SM_J2
+  CONST  13: _SM_NC
   CONST  14: n
   CONST  15: 
 
@@ -371,1792 +1457,236 @@ CHUNK ___LX_SCAN_STR_8 (SRC, I, N, Q)
   CONST  17: 	
   CONST  18: r
   CONST  19: 
+  CONST  20: 2
   CODE:
     0: push_scope
     1: push_const(0)  -- 
-    2: store_var(1)  -- BUF
-    3: load_var(1)  -- BUF
+    2: store_var(1)  -- _SM_RES
+    3: load_var(1)  -- _SM_RES
     4: pop
-    5: load_var(2)  -- I
-    6: jump_null(12)
-    7: push_const(3)  -- 1
-    8: jump_null(11)
-    9: add
-    10: jump(14)
-    11: pop
-    12: pop
-    13: push_const(4)  -- null
-    14: store_var(2)  -- I
-    15: load_var(2)  -- I
-    16: pop
-    17: push_const(4)  -- null
-    18: store_reg(0)
-    19: load_var(2)  -- I
-    20: jump_null(26)
-    21: load_var(5)  -- N
-    22: jump_null(25)
-    23: cmp_lt
-    24: jump(28)
-    25: pop
-    26: pop
-    27: push_const(4)  -- null
-    28: jump_false(203)
-    29: push_scope
-    30: load_var(6)  -- _LX_CH
-    31: load_var(7)  -- SRC
-    32: load_var(2)  -- I
-    33: call(2)
-    34: store_var(8)  -- C
-    35: load_var(8)  -- C
-    36: pop
-    37: load_var(8)  -- C
-    38: load_var(9)  -- Q
-    39: cmp_eq
-    40: jump_false(62)
-    41: push_scope
-    42: load_var(2)  -- I
-    43: jump_null(49)
-    44: push_const(3)  -- 1
-    45: jump_null(48)
-    46: add
-    47: jump(51)
-    48: pop
-    49: pop
-    50: push_const(4)  -- null
-    51: store_var(2)  -- I
-    52: load_var(2)  -- I
-    53: pop
-    54: push_const(10)  -- buf
-    55: load_var(1)  -- BUF
-    56: push_const(11)  -- i
-    57: load_var(2)  -- I
-    58: make_map(2)
-    59: ret
-    60: pop_scope
-    61: jump(63)
-    62: push_const(4)  -- null
-    63: pop
-    64: load_var(8)  -- C
-    65: push_const(12)  -- \
-    66: cmp_eq
-    67: jump_false(175)
-    68: push_scope
-    69: load_var(2)  -- I
-    70: jump_null(76)
-    71: push_const(3)  -- 1
-    72: jump_null(75)
-    73: add
-    74: jump(78)
-    75: pop
-    76: pop
-    77: push_const(4)  -- null
-    78: store_var(2)  -- I
-    79: load_var(2)  -- I
-    80: pop
-    81: load_var(2)  -- I
-    82: jump_null(88)
-    83: load_var(5)  -- N
-    84: jump_null(87)
-    85: cmp_lt
-    86: jump(90)
-    87: pop
-    88: pop
-    89: push_const(4)  -- null
-    90: jump_false(172)
-    91: push_scope
-    92: load_var(6)  -- _LX_CH
-    93: load_var(7)  -- SRC
-    94: load_var(2)  -- I
-    95: call(2)
-    96: store_var(13)  -- EC
-    97: load_var(13)  -- EC
-    98: pop
-    99: load_var(13)  -- EC
-    100: push_const(14)  -- n
-    101: cmp_eq
-    102: jump_false(115)
-    103: load_var(1)  -- BUF
-    104: jump_null(110)
-    105: push_const(15)  -- 
-
-    106: jump_null(109)
-    107: add
-    108: jump(112)
-    109: pop
-    110: pop
-    111: push_const(4)  -- null
-    112: store_var(1)  -- BUF
-    113: load_var(1)  -- BUF
-    114: jump(158)
-    115: load_var(13)  -- EC
-    116: push_const(16)  -- t
-    117: cmp_eq
-    118: jump_false(131)
-    119: load_var(1)  -- BUF
-    120: jump_null(126)
-    121: push_const(17)  -- 	
-    122: jump_null(125)
-    123: add
-    124: jump(128)
-    125: pop
-    126: pop
-    127: push_const(4)  -- null
-    128: store_var(1)  -- BUF
-    129: load_var(1)  -- BUF
-    130: jump(158)
-    131: load_var(13)  -- EC
-    132: push_const(18)  -- r
-    133: cmp_eq
-    134: jump_false(147)
-    135: load_var(1)  -- BUF
-    136: jump_null(142)
-    137: push_const(19)  -- 
-    138: jump_null(141)
-    139: add
-    140: jump(144)
-    141: pop
-    142: pop
-    143: push_const(4)  -- null
-    144: store_var(1)  -- BUF
-    145: load_var(1)  -- BUF
-    146: jump(158)
-    147: load_var(1)  -- BUF
-    148: jump_null(154)
-    149: load_var(13)  -- EC
-    150: jump_null(153)
-    151: add
-    152: jump(156)
-    153: pop
-    154: pop
-    155: push_const(4)  -- null
-    156: store_var(1)  -- BUF
-    157: load_var(1)  -- BUF
-    158: pop
-    159: load_var(2)  -- I
-    160: jump_null(166)
-    161: push_const(3)  -- 1
-    162: jump_null(165)
-    163: add
-    164: jump(168)
-    165: pop
-    166: pop
-    167: push_const(4)  -- null
-    168: store_var(2)  -- I
-    169: load_var(2)  -- I
-    170: pop_scope
-    171: jump(173)
-    172: push_const(4)  -- null
-    173: pop_scope
-    174: jump(200)
-    175: push_scope
-    176: load_var(1)  -- BUF
-    177: jump_null(183)
-    178: load_var(8)  -- C
-    179: jump_null(182)
-    180: add
-    181: jump(185)
-    182: pop
-    183: pop
-    184: push_const(4)  -- null
-    185: store_var(1)  -- BUF
-    186: load_var(1)  -- BUF
-    187: pop
-    188: load_var(2)  -- I
-    189: jump_null(195)
-    190: push_const(3)  -- 1
-    191: jump_null(194)
-    192: add
-    193: jump(197)
-    194: pop
-    195: pop
-    196: push_const(4)  -- null
-    197: store_var(2)  -- I
-    198: load_var(2)  -- I
-    199: pop_scope
-    200: pop_scope
-    201: store_reg(0)
-    202: jump(19)
-    203: load_reg(0)
-    204: pop
-    205: push_const(10)  -- buf
-    206: load_var(1)  -- BUF
-    207: push_const(11)  -- i
-    208: load_var(2)  -- I
-    209: make_map(2)
-    210: ret
-    211: pop_scope
-    212: ret
-CHUNK ___LX_TOKENIZE_9 (SRC)
-  CONST  0: TOKENS
-  CONST  1: 0
-  CONST  2: I
-  CONST  3: LENGTH
-  CONST  4: SRC
-  CONST  5: N
-  CONST  6: 1
-  CONST  7: LINE
-  CONST  8: COL
-  CONST  9: null
-  CONST  10: _LX_CH
-  CONST  11: C
-  CONST  12: 
-
-  CONST  13:  
-  CONST  14: 	
-  CONST  15: 
-  CONST  16: _LX_CH2
-  CONST  17: --
-  CONST  18: TOK_LINE
-  CONST  19: TOK_SC
-  CONST  20: 
-  CONST  21: NEXT_CH
-  CONST  22: r
-  CONST  23: '
-  CONST  24: "
-  CONST  25: Q
-  CONST  26: START_I
-  CONST  27: 2
-  CONST  28: BUF
-  CONST  29: LEN
-  CONST  30: _LX_TOK
-  CONST  31: STR
-  CONST  32: _LX_SCAN_STR
-  CONST  33: R
-  CONST  34: i
-  CONST  35: buf
-  CONST  36: _LX_IS_DIGIT
-  CONST  37: START
-  CONST  38: DOT_CH
-  CONST  39: AFTER_CH
-  CONST  40: .
-  CONST  41: FLOAT
-  CONST  42: SUBSTRING
-  CONST  43: INT
-  CONST  44: _LX_IS_ALPHA
-  CONST  45: _LX_IS_ALNUM
-  CONST  46: UPPERCASE
-  CONST  47: WORD
-  CONST  48: _LX_ALIAS
-  CONST  49: ALIAS
-  CONST  50: _LX_IS_KW
-  CONST  51: ID
-  CONST  52: C2
-  CONST  53: :=
-  CONST  54: =>
-  CONST  55: <=
-  CONST  56: >=
-  CONST  57: <>
-  CONST  58: !~
-  CONST  59: !=
-  CONST  60: **
-  CONST  61: ^
-  CONST  62: !
-  CONST  63: NOT
-  CONST  64: EOF
-  CODE:
-    0: push_scope
-    1: make_list(0)
-    2: store_var(0)  -- TOKENS
-    3: load_var(0)  -- TOKENS
-    4: pop
-    5: push_const(1)  -- 0
-    6: store_var(2)  -- I
-    7: load_var(2)  -- I
+    5: push_const(2)  -- 0
+    6: store_var(3)  -- _SM_J
+    7: load_var(3)  -- _SM_J
     8: pop
-    9: load_var(3)  -- LENGTH
-    10: load_var(4)  -- SRC
+    9: load_var(4)  -- LENGTH
+    10: load_var(5)  -- _SM_S
     11: call(1)
-    12: store_var(5)  -- N
-    13: load_var(5)  -- N
+    12: store_var(6)  -- _SM_M
+    13: load_var(6)  -- _SM_M
     14: pop
-    15: push_const(6)  -- 1
-    16: store_var(7)  -- LINE
-    17: load_var(7)  -- LINE
-    18: pop
-    19: push_const(6)  -- 1
-    20: store_var(8)  -- COL
-    21: load_var(8)  -- COL
-    22: pop
-    23: push_const(9)  -- null
-    24: store_reg(0)
-    25: load_var(2)  -- I
-    26: jump_null(32)
-    27: load_var(5)  -- N
-    28: jump_null(31)
-    29: cmp_lt
-    30: jump(34)
-    31: pop
-    32: pop
-    33: push_const(9)  -- null
-    34: jump_false(1447)
-    35: push_scope
-    36: load_var(10)  -- _LX_CH
-    37: load_var(4)  -- SRC
-    38: load_var(2)  -- I
-    39: call(2)
-    40: store_var(11)  -- C
-    41: load_var(11)  -- C
-    42: pop
-    43: load_var(11)  -- C
-    44: push_const(12)  -- 
-
-    45: cmp_eq
-    46: jump_false(79)
-    47: push_scope
-    48: load_var(7)  -- LINE
-    49: jump_null(55)
-    50: push_const(6)  -- 1
-    51: jump_null(54)
-    52: add
-    53: jump(57)
-    54: pop
+    15: push_const(7)  -- null
+    16: store_reg(0)
+    17: load_var(3)  -- _SM_J
+    18: jump_null(24)
+    19: load_var(6)  -- _SM_M
+    20: jump_null(23)
+    21: cmp_lt
+    22: jump(26)
+    23: pop
+    24: pop
+    25: push_const(7)  -- null
+    26: jump_false(216)
+    27: push_scope
+    28: load_var(8)  -- SUBSTRING
+    29: load_var(5)  -- _SM_S
+    30: load_var(3)  -- _SM_J
+    31: load_var(3)  -- _SM_J
+    32: jump_null(38)
+    33: push_const(9)  -- 1
+    34: jump_null(37)
+    35: add
+    36: jump(40)
+    37: pop
+    38: pop
+    39: push_const(7)  -- null
+    40: call(3)
+    41: store_var(10)  -- _SM_CH
+    42: load_var(10)  -- _SM_CH
+    43: pop
+    44: load_var(10)  -- _SM_CH
+    45: push_const(11)  -- \
+    46: cmp_eq
+    47: jump_false(188)
+    48: push_scope
+    49: load_var(3)  -- _SM_J
+    50: jump_null(56)
+    51: push_const(9)  -- 1
+    52: jump_null(55)
+    53: add
+    54: jump(58)
     55: pop
-    56: push_const(9)  -- null
-    57: store_var(7)  -- LINE
-    58: load_var(7)  -- LINE
-    59: pop
-    60: push_const(6)  -- 1
-    61: store_var(8)  -- COL
-    62: load_var(8)  -- COL
-    63: pop
-    64: load_var(2)  -- I
-    65: jump_null(71)
-    66: push_const(6)  -- 1
-    67: jump_null(70)
-    68: add
-    69: jump(73)
-    70: pop
-    71: pop
-    72: push_const(9)  -- null
-    73: store_var(2)  -- I
-    74: load_var(2)  -- I
-    75: pop
-    76: jump(25)
-    77: pop_scope
-    78: jump(80)
-    79: push_const(9)  -- null
-    80: pop
-    81: load_var(11)  -- C
-    82: push_const(13)  --  
-    83: cmp_eq
-    84: load_var(11)  -- C
-    85: push_const(14)  -- 	
-    86: cmp_eq
-    87: log_or
-    88: load_var(11)  -- C
-    89: push_const(15)  -- 
+    56: pop
+    57: push_const(7)  -- null
+    58: store_var(12)  -- _SM_J2
+    59: load_var(12)  -- _SM_J2
+    60: pop
+    61: load_var(12)  -- _SM_J2
+    62: jump_null(68)
+    63: load_var(6)  -- _SM_M
+    64: jump_null(67)
+    65: cmp_lt
+    66: jump(70)
+    67: pop
+    68: pop
+    69: push_const(7)  -- null
+    70: jump_false(161)
+    71: push_scope
+    72: load_var(8)  -- SUBSTRING
+    73: load_var(5)  -- _SM_S
+    74: load_var(12)  -- _SM_J2
+    75: load_var(12)  -- _SM_J2
+    76: jump_null(82)
+    77: push_const(9)  -- 1
+    78: jump_null(81)
+    79: add
+    80: jump(84)
+    81: pop
+    82: pop
+    83: push_const(7)  -- null
+    84: call(3)
+    85: store_var(13)  -- _SM_NC
+    86: load_var(13)  -- _SM_NC
+    87: pop
+    88: load_var(13)  -- _SM_NC
+    89: push_const(14)  -- n
     90: cmp_eq
-    91: log_or
-    92: jump_false(121)
-    93: push_scope
-    94: load_var(8)  -- COL
-    95: jump_null(101)
-    96: push_const(6)  -- 1
-    97: jump_null(100)
-    98: add
-    99: jump(103)
-    100: pop
-    101: pop
-    102: push_const(9)  -- null
-    103: store_var(8)  -- COL
-    104: load_var(8)  -- COL
-    105: pop
-    106: load_var(2)  -- I
-    107: jump_null(113)
-    108: push_const(6)  -- 1
-    109: jump_null(112)
-    110: add
-    111: jump(115)
-    112: pop
-    113: pop
-    114: push_const(9)  -- null
-    115: store_var(2)  -- I
-    116: load_var(2)  -- I
-    117: pop
-    118: jump(25)
-    119: pop_scope
-    120: jump(122)
-    121: push_const(9)  -- null
-    122: pop
-    123: load_var(16)  -- _LX_CH2
-    124: load_var(4)  -- SRC
-    125: load_var(2)  -- I
-    126: call(2)
-    127: push_const(17)  -- --
-    128: cmp_eq
-    129: jump_false(186)
-    130: push_scope
-    131: push_const(9)  -- null
-    132: store_reg(1)
-    133: load_var(2)  -- I
-    134: jump_null(140)
-    135: load_var(5)  -- N
-    136: jump_null(139)
-    137: cmp_lt
-    138: jump(142)
-    139: pop
-    140: pop
-    141: push_const(9)  -- null
-    142: jump_false(181)
-    143: push_scope
-    144: load_var(10)  -- _LX_CH
-    145: load_var(4)  -- SRC
-    146: load_var(2)  -- I
-    147: call(2)
-    148: push_const(12)  -- 
+    91: jump_false(104)
+    92: load_var(1)  -- _SM_RES
+    93: jump_null(99)
+    94: push_const(15)  -- 
 
-    149: cmp_eq
-    150: jump_false(153)
-    151: jump(181)
-    152: jump(154)
-    153: push_const(9)  -- null
+    95: jump_null(98)
+    96: add
+    97: jump(101)
+    98: pop
+    99: pop
+    100: push_const(7)  -- null
+    101: store_var(1)  -- _SM_RES
+    102: load_var(1)  -- _SM_RES
+    103: jump(147)
+    104: load_var(13)  -- _SM_NC
+    105: push_const(16)  -- t
+    106: cmp_eq
+    107: jump_false(120)
+    108: load_var(1)  -- _SM_RES
+    109: jump_null(115)
+    110: push_const(17)  -- 	
+    111: jump_null(114)
+    112: add
+    113: jump(117)
+    114: pop
+    115: pop
+    116: push_const(7)  -- null
+    117: store_var(1)  -- _SM_RES
+    118: load_var(1)  -- _SM_RES
+    119: jump(147)
+    120: load_var(13)  -- _SM_NC
+    121: push_const(18)  -- r
+    122: cmp_eq
+    123: jump_false(136)
+    124: load_var(1)  -- _SM_RES
+    125: jump_null(131)
+    126: push_const(19)  -- 
+    127: jump_null(130)
+    128: add
+    129: jump(133)
+    130: pop
+    131: pop
+    132: push_const(7)  -- null
+    133: store_var(1)  -- _SM_RES
+    134: load_var(1)  -- _SM_RES
+    135: jump(147)
+    136: load_var(1)  -- _SM_RES
+    137: jump_null(143)
+    138: load_var(13)  -- _SM_NC
+    139: jump_null(142)
+    140: add
+    141: jump(145)
+    142: pop
+    143: pop
+    144: push_const(7)  -- null
+    145: store_var(1)  -- _SM_RES
+    146: load_var(1)  -- _SM_RES
+    147: pop
+    148: load_var(3)  -- _SM_J
+    149: jump_null(155)
+    150: push_const(20)  -- 2
+    151: jump_null(154)
+    152: add
+    153: jump(157)
     154: pop
-    155: load_var(8)  -- COL
-    156: jump_null(162)
-    157: push_const(6)  -- 1
-    158: jump_null(161)
-    159: add
-    160: jump(164)
-    161: pop
-    162: pop
-    163: push_const(9)  -- null
-    164: store_var(8)  -- COL
-    165: load_var(8)  -- COL
-    166: pop
-    167: load_var(2)  -- I
-    168: jump_null(174)
-    169: push_const(6)  -- 1
-    170: jump_null(173)
-    171: add
-    172: jump(176)
+    155: pop
+    156: push_const(7)  -- null
+    157: store_var(3)  -- _SM_J
+    158: load_var(3)  -- _SM_J
+    159: pop_scope
+    160: jump(186)
+    161: push_scope
+    162: load_var(1)  -- _SM_RES
+    163: jump_null(169)
+    164: load_var(10)  -- _SM_CH
+    165: jump_null(168)
+    166: add
+    167: jump(171)
+    168: pop
+    169: pop
+    170: push_const(7)  -- null
+    171: store_var(1)  -- _SM_RES
+    172: load_var(1)  -- _SM_RES
     173: pop
-    174: pop
-    175: push_const(9)  -- null
-    176: store_var(2)  -- I
-    177: load_var(2)  -- I
-    178: pop_scope
-    179: store_reg(1)
-    180: jump(133)
-    181: load_reg(1)
-    182: pop
-    183: jump(25)
-    184: pop_scope
-    185: jump(187)
-    186: push_const(9)  -- null
-    187: pop
-    188: load_var(7)  -- LINE
-    189: store_var(18)  -- TOK_LINE
-    190: load_var(18)  -- TOK_LINE
-    191: pop
-    192: load_var(8)  -- COL
-    193: store_var(19)  -- TOK_SC
-    194: load_var(19)  -- TOK_SC
+    174: load_var(3)  -- _SM_J
+    175: jump_null(181)
+    176: push_const(9)  -- 1
+    177: jump_null(180)
+    178: add
+    179: jump(183)
+    180: pop
+    181: pop
+    182: push_const(7)  -- null
+    183: store_var(3)  -- _SM_J
+    184: load_var(3)  -- _SM_J
+    185: pop_scope
+    186: pop_scope
+    187: jump(213)
+    188: push_scope
+    189: load_var(1)  -- _SM_RES
+    190: jump_null(196)
+    191: load_var(10)  -- _SM_CH
+    192: jump_null(195)
+    193: add
+    194: jump(198)
     195: pop
-    196: load_var(2)  -- I
-    197: jump_null(203)
-    198: push_const(6)  -- 1
-    199: jump_null(202)
-    200: add
-    201: jump(205)
-    202: pop
-    203: pop
-    204: push_const(9)  -- null
-    205: jump_null(211)
-    206: load_var(5)  -- N
-    207: jump_null(210)
-    208: cmp_lt
-    209: jump(213)
-    210: pop
-    211: pop
-    212: push_const(9)  -- null
-    213: jump_false(227)
-    214: load_var(10)  -- _LX_CH
-    215: load_var(4)  -- SRC
-    216: load_var(2)  -- I
-    217: jump_null(223)
-    218: push_const(6)  -- 1
-    219: jump_null(222)
-    220: add
-    221: jump(225)
-    222: pop
-    223: pop
-    224: push_const(9)  -- null
-    225: call(2)
-    226: jump(228)
-    227: push_const(20)  -- 
-    228: store_var(21)  -- NEXT_CH
-    229: load_var(21)  -- NEXT_CH
-    230: pop
-    231: load_var(11)  -- C
-    232: push_const(22)  -- r
-    233: cmp_eq
-    234: load_var(21)  -- NEXT_CH
-    235: push_const(23)  -- '
-    236: cmp_eq
-    237: load_var(21)  -- NEXT_CH
-    238: push_const(24)  -- "
-    239: cmp_eq
-    240: log_or
-    241: log_and
-    242: jump_false(381)
-    243: push_scope
-    244: load_var(21)  -- NEXT_CH
-    245: store_var(25)  -- Q
-    246: load_var(25)  -- Q
-    247: pop
-    248: load_var(2)  -- I
-    249: store_var(26)  -- START_I
-    250: load_var(26)  -- START_I
-    251: pop
-    252: load_var(2)  -- I
-    253: jump_null(259)
-    254: push_const(27)  -- 2
-    255: jump_null(258)
-    256: add
-    257: jump(261)
-    258: pop
-    259: pop
-    260: push_const(9)  -- null
-    261: store_var(2)  -- I
-    262: load_var(2)  -- I
-    263: pop
-    264: push_const(20)  -- 
-    265: store_var(28)  -- BUF
-    266: load_var(28)  -- BUF
-    267: pop
-    268: push_const(9)  -- null
-    269: store_reg(2)
-    270: load_var(2)  -- I
-    271: jump_null(277)
-    272: load_var(5)  -- N
-    273: jump_null(276)
-    274: cmp_lt
-    275: jump(279)
-    276: pop
-    277: pop
-    278: push_const(9)  -- null
-    279: jump_false(321)
-    280: push_scope
-    281: load_var(10)  -- _LX_CH
-    282: load_var(4)  -- SRC
-    283: load_var(2)  -- I
-    284: call(2)
-    285: load_var(25)  -- Q
-    286: cmp_eq
-    287: jump_false(290)
-    288: jump(321)
-    289: jump(291)
-    290: push_const(9)  -- null
-    291: pop
-    292: load_var(28)  -- BUF
-    293: jump_null(302)
-    294: load_var(10)  -- _LX_CH
-    295: load_var(4)  -- SRC
-    296: load_var(2)  -- I
-    297: call(2)
-    298: jump_null(301)
-    299: add
-    300: jump(304)
-    301: pop
-    302: pop
-    303: push_const(9)  -- null
-    304: store_var(28)  -- BUF
-    305: load_var(28)  -- BUF
-    306: pop
-    307: load_var(2)  -- I
-    308: jump_null(314)
-    309: push_const(6)  -- 1
-    310: jump_null(313)
-    311: add
-    312: jump(316)
-    313: pop
-    314: pop
-    315: push_const(9)  -- null
-    316: store_var(2)  -- I
-    317: load_var(2)  -- I
-    318: pop_scope
-    319: store_reg(2)
-    320: jump(270)
-    321: load_reg(2)
-    322: pop
-    323: load_var(2)  -- I
-    324: jump_null(330)
-    325: push_const(6)  -- 1
-    326: jump_null(329)
-    327: add
-    328: jump(332)
-    329: pop
-    330: pop
-    331: push_const(9)  -- null
-    332: store_var(2)  -- I
-    333: load_var(2)  -- I
-    334: pop
-    335: load_var(2)  -- I
-    336: jump_null(342)
-    337: load_var(26)  -- START_I
-    338: jump_null(341)
-    339: sub
-    340: jump(344)
-    341: pop
-    342: pop
-    343: push_const(9)  -- null
-    344: store_var(29)  -- LEN
-    345: load_var(29)  -- LEN
-    346: pop
-    347: load_var(8)  -- COL
-    348: jump_null(354)
-    349: load_var(29)  -- LEN
-    350: jump_null(353)
-    351: add
-    352: jump(356)
-    353: pop
-    354: pop
-    355: push_const(9)  -- null
-    356: store_var(8)  -- COL
-    357: load_var(8)  -- COL
-    358: pop
-    359: load_var(0)  -- TOKENS
-    360: jump_null(373)
-    361: load_var(30)  -- _LX_TOK
-    362: push_const(31)  -- STR
-    363: load_var(28)  -- BUF
-    364: load_var(18)  -- TOK_LINE
-    365: load_var(19)  -- TOK_SC
-    366: load_var(29)  -- LEN
-    367: call(5)
-    368: make_list(1)
-    369: jump_null(372)
-    370: add
-    371: jump(375)
-    372: pop
-    373: pop
-    374: push_const(9)  -- null
-    375: store_var(0)  -- TOKENS
-    376: load_var(0)  -- TOKENS
-    377: pop
-    378: jump(25)
-    379: pop_scope
-    380: jump(382)
-    381: push_const(9)  -- null
-    382: pop
-    383: load_var(11)  -- C
-    384: push_const(23)  -- '
-    385: cmp_eq
-    386: load_var(11)  -- C
-    387: push_const(24)  -- "
-    388: cmp_eq
-    389: log_or
-    390: jump_false(461)
-    391: push_scope
-    392: load_var(2)  -- I
-    393: store_var(26)  -- START_I
-    394: load_var(26)  -- START_I
-    395: pop
-    396: load_var(32)  -- _LX_SCAN_STR
-    397: load_var(4)  -- SRC
-    398: load_var(2)  -- I
-    399: load_var(5)  -- N
-    400: load_var(11)  -- C
-    401: call(4)
-    402: store_var(33)  -- R
-    403: load_var(33)  -- R
-    404: pop
-    405: load_var(33)  -- R
-    406: push_const(34)  -- i
-    407: get_index
-    408: jump_null(414)
-    409: load_var(26)  -- START_I
-    410: jump_null(413)
-    411: sub
-    412: jump(416)
-    413: pop
-    414: pop
-    415: push_const(9)  -- null
-    416: store_var(29)  -- LEN
-    417: load_var(29)  -- LEN
-    418: pop
-    419: load_var(33)  -- R
-    420: push_const(34)  -- i
-    421: get_index
-    422: store_var(2)  -- I
-    423: load_var(2)  -- I
-    424: pop
-    425: load_var(8)  -- COL
-    426: jump_null(432)
-    427: load_var(29)  -- LEN
-    428: jump_null(431)
-    429: add
-    430: jump(434)
-    431: pop
-    432: pop
-    433: push_const(9)  -- null
-    434: store_var(8)  -- COL
-    435: load_var(8)  -- COL
-    436: pop
-    437: load_var(0)  -- TOKENS
-    438: jump_null(453)
-    439: load_var(30)  -- _LX_TOK
-    440: push_const(31)  -- STR
-    441: load_var(33)  -- R
-    442: push_const(35)  -- buf
-    443: get_index
-    444: load_var(18)  -- TOK_LINE
-    445: load_var(19)  -- TOK_SC
-    446: load_var(29)  -- LEN
-    447: call(5)
-    448: make_list(1)
-    449: jump_null(452)
-    450: add
-    451: jump(455)
-    452: pop
-    453: pop
-    454: push_const(9)  -- null
-    455: store_var(0)  -- TOKENS
-    456: load_var(0)  -- TOKENS
-    457: pop
-    458: jump(25)
-    459: pop_scope
-    460: jump(462)
-    461: push_const(9)  -- null
-    462: pop
-    463: load_var(36)  -- _LX_IS_DIGIT
-    464: load_var(11)  -- C
-    465: call(1)
-    466: jump_false(743)
-    467: push_scope
-    468: load_var(2)  -- I
-    469: store_var(37)  -- START
-    470: load_var(37)  -- START
-    471: pop
-    472: load_var(2)  -- I
-    473: jump_null(479)
-    474: push_const(6)  -- 1
-    475: jump_null(478)
-    476: add
-    477: jump(481)
-    478: pop
-    479: pop
-    480: push_const(9)  -- null
-    481: store_var(2)  -- I
-    482: load_var(2)  -- I
-    483: pop
-    484: push_const(9)  -- null
-    485: store_reg(3)
-    486: load_var(2)  -- I
-    487: jump_null(493)
-    488: load_var(5)  -- N
-    489: jump_null(492)
-    490: cmp_lt
-    491: jump(495)
-    492: pop
-    493: pop
-    494: push_const(9)  -- null
-    495: jump_false(524)
-    496: push_scope
-    497: load_var(36)  -- _LX_IS_DIGIT
-    498: load_var(10)  -- _LX_CH
-    499: load_var(4)  -- SRC
-    500: load_var(2)  -- I
-    501: call(2)
-    502: call(1)
-    503: jump_null(505)
-    504: log_not
-    505: jump_false(508)
-    506: jump(524)
-    507: jump(509)
-    508: push_const(9)  -- null
-    509: pop
-    510: load_var(2)  -- I
-    511: jump_null(517)
-    512: push_const(6)  -- 1
-    513: jump_null(516)
-    514: add
-    515: jump(519)
-    516: pop
-    517: pop
-    518: push_const(9)  -- null
-    519: store_var(2)  -- I
-    520: load_var(2)  -- I
-    521: pop_scope
-    522: store_reg(3)
-    523: jump(486)
-    524: load_reg(3)
-    525: pop
-    526: load_var(2)  -- I
-    527: jump_null(533)
-    528: load_var(5)  -- N
-    529: jump_null(532)
-    530: cmp_lt
-    531: jump(535)
-    532: pop
-    533: pop
-    534: push_const(9)  -- null
-    535: jump_false(541)
-    536: load_var(10)  -- _LX_CH
-    537: load_var(4)  -- SRC
-    538: load_var(2)  -- I
-    539: call(2)
-    540: jump(542)
-    541: push_const(20)  -- 
-    542: store_var(38)  -- DOT_CH
-    543: load_var(38)  -- DOT_CH
-    544: pop
-    545: load_var(2)  -- I
-    546: jump_null(552)
-    547: push_const(6)  -- 1
-    548: jump_null(551)
-    549: add
-    550: jump(554)
-    551: pop
-    552: pop
-    553: push_const(9)  -- null
-    554: jump_null(560)
-    555: load_var(5)  -- N
-    556: jump_null(559)
-    557: cmp_lt
-    558: jump(562)
-    559: pop
-    560: pop
-    561: push_const(9)  -- null
-    562: jump_false(576)
-    563: load_var(10)  -- _LX_CH
-    564: load_var(4)  -- SRC
-    565: load_var(2)  -- I
-    566: jump_null(572)
-    567: push_const(6)  -- 1
-    568: jump_null(571)
-    569: add
-    570: jump(574)
-    571: pop
-    572: pop
-    573: push_const(9)  -- null
-    574: call(2)
-    575: jump(577)
-    576: push_const(20)  -- 
-    577: store_var(39)  -- AFTER_CH
-    578: load_var(39)  -- AFTER_CH
-    579: pop
-    580: load_var(38)  -- DOT_CH
-    581: push_const(40)  -- .
-    582: cmp_eq
-    583: load_var(36)  -- _LX_IS_DIGIT
-    584: load_var(39)  -- AFTER_CH
-    585: call(1)
-    586: log_and
-    587: jump_false(691)
-    588: push_scope
-    589: load_var(2)  -- I
-    590: jump_null(596)
-    591: push_const(6)  -- 1
-    592: jump_null(595)
-    593: add
-    594: jump(598)
-    595: pop
-    596: pop
-    597: push_const(9)  -- null
-    598: store_var(2)  -- I
-    599: load_var(2)  -- I
-    600: pop
-    601: push_const(9)  -- null
-    602: store_reg(4)
-    603: load_var(2)  -- I
-    604: jump_null(610)
-    605: load_var(5)  -- N
-    606: jump_null(609)
-    607: cmp_lt
-    608: jump(612)
-    609: pop
-    610: pop
-    611: push_const(9)  -- null
-    612: jump_false(641)
-    613: push_scope
-    614: load_var(36)  -- _LX_IS_DIGIT
-    615: load_var(10)  -- _LX_CH
-    616: load_var(4)  -- SRC
-    617: load_var(2)  -- I
-    618: call(2)
-    619: call(1)
-    620: jump_null(622)
-    621: log_not
-    622: jump_false(625)
-    623: jump(641)
-    624: jump(626)
-    625: push_const(9)  -- null
-    626: pop
-    627: load_var(2)  -- I
-    628: jump_null(634)
-    629: push_const(6)  -- 1
-    630: jump_null(633)
-    631: add
-    632: jump(636)
-    633: pop
-    634: pop
-    635: push_const(9)  -- null
-    636: store_var(2)  -- I
-    637: load_var(2)  -- I
-    638: pop_scope
-    639: store_reg(4)
-    640: jump(603)
-    641: load_reg(4)
-    642: pop
-    643: load_var(2)  -- I
-    644: jump_null(650)
-    645: load_var(37)  -- START
-    646: jump_null(649)
-    647: sub
-    648: jump(652)
-    649: pop
-    650: pop
-    651: push_const(9)  -- null
-    652: store_var(29)  -- LEN
-    653: load_var(29)  -- LEN
-    654: pop
-    655: load_var(8)  -- COL
-    656: jump_null(662)
-    657: load_var(29)  -- LEN
-    658: jump_null(661)
-    659: add
-    660: jump(664)
-    661: pop
-    662: pop
-    663: push_const(9)  -- null
-    664: store_var(8)  -- COL
-    665: load_var(8)  -- COL
-    666: pop
-    667: load_var(0)  -- TOKENS
-    668: jump_null(685)
-    669: load_var(30)  -- _LX_TOK
-    670: push_const(41)  -- FLOAT
-    671: load_var(42)  -- SUBSTRING
-    672: load_var(4)  -- SRC
-    673: load_var(37)  -- START
-    674: load_var(2)  -- I
-    675: call(3)
-    676: load_var(18)  -- TOK_LINE
-    677: load_var(19)  -- TOK_SC
-    678: load_var(29)  -- LEN
-    679: call(5)
-    680: make_list(1)
-    681: jump_null(684)
-    682: add
-    683: jump(687)
-    684: pop
-    685: pop
-    686: push_const(9)  -- null
-    687: store_var(0)  -- TOKENS
-    688: load_var(0)  -- TOKENS
-    689: pop_scope
-    690: jump(739)
-    691: push_scope
-    692: load_var(2)  -- I
-    693: jump_null(699)
-    694: load_var(37)  -- START
-    695: jump_null(698)
-    696: sub
-    697: jump(701)
-    698: pop
-    699: pop
-    700: push_const(9)  -- null
-    701: store_var(29)  -- LEN
-    702: load_var(29)  -- LEN
-    703: pop
-    704: load_var(8)  -- COL
-    705: jump_null(711)
-    706: load_var(29)  -- LEN
-    707: jump_null(710)
-    708: add
-    709: jump(713)
-    710: pop
-    711: pop
-    712: push_const(9)  -- null
-    713: store_var(8)  -- COL
-    714: load_var(8)  -- COL
-    715: pop
-    716: load_var(0)  -- TOKENS
-    717: jump_null(734)
-    718: load_var(30)  -- _LX_TOK
-    719: push_const(43)  -- INT
-    720: load_var(42)  -- SUBSTRING
-    721: load_var(4)  -- SRC
-    722: load_var(37)  -- START
-    723: load_var(2)  -- I
-    724: call(3)
-    725: load_var(18)  -- TOK_LINE
-    726: load_var(19)  -- TOK_SC
-    727: load_var(29)  -- LEN
-    728: call(5)
-    729: make_list(1)
-    730: jump_null(733)
-    731: add
-    732: jump(736)
-    733: pop
-    734: pop
-    735: push_const(9)  -- null
-    736: store_var(0)  -- TOKENS
-    737: load_var(0)  -- TOKENS
-    738: pop_scope
-    739: pop
-    740: jump(25)
-    741: pop_scope
-    742: jump(744)
-    743: push_const(9)  -- null
-    744: pop
-    745: load_var(44)  -- _LX_IS_ALPHA
-    746: load_var(11)  -- C
-    747: call(1)
-    748: jump_false(916)
-    749: push_scope
-    750: load_var(2)  -- I
-    751: store_var(37)  -- START
-    752: load_var(37)  -- START
-    753: pop
-    754: load_var(2)  -- I
-    755: jump_null(761)
-    756: push_const(6)  -- 1
-    757: jump_null(760)
-    758: add
-    759: jump(763)
-    760: pop
-    761: pop
-    762: push_const(9)  -- null
-    763: store_var(2)  -- I
-    764: load_var(2)  -- I
-    765: pop
-    766: push_const(9)  -- null
-    767: store_reg(5)
-    768: load_var(2)  -- I
-    769: jump_null(775)
-    770: load_var(5)  -- N
-    771: jump_null(774)
-    772: cmp_lt
-    773: jump(777)
-    774: pop
-    775: pop
-    776: push_const(9)  -- null
-    777: jump_false(806)
-    778: push_scope
-    779: load_var(45)  -- _LX_IS_ALNUM
-    780: load_var(10)  -- _LX_CH
-    781: load_var(4)  -- SRC
-    782: load_var(2)  -- I
-    783: call(2)
-    784: call(1)
-    785: jump_null(787)
-    786: log_not
-    787: jump_false(790)
-    788: jump(806)
-    789: jump(791)
-    790: push_const(9)  -- null
-    791: pop
-    792: load_var(2)  -- I
-    793: jump_null(799)
-    794: push_const(6)  -- 1
-    795: jump_null(798)
-    796: add
-    797: jump(801)
-    798: pop
-    799: pop
-    800: push_const(9)  -- null
-    801: store_var(2)  -- I
-    802: load_var(2)  -- I
-    803: pop_scope
-    804: store_reg(5)
-    805: jump(768)
-    806: load_reg(5)
-    807: pop
-    808: load_var(46)  -- UPPERCASE
-    809: load_var(42)  -- SUBSTRING
-    810: load_var(4)  -- SRC
-    811: load_var(37)  -- START
-    812: load_var(2)  -- I
-    813: call(3)
-    814: call(1)
-    815: store_var(47)  -- WORD
-    816: load_var(47)  -- WORD
-    817: pop
-    818: load_var(2)  -- I
-    819: jump_null(825)
-    820: load_var(37)  -- START
-    821: jump_null(824)
-    822: sub
-    823: jump(827)
-    824: pop
-    825: pop
-    826: push_const(9)  -- null
-    827: store_var(29)  -- LEN
-    828: load_var(29)  -- LEN
-    829: pop
-    830: load_var(8)  -- COL
-    831: jump_null(837)
-    832: load_var(29)  -- LEN
-    833: jump_null(836)
-    834: add
-    835: jump(839)
-    836: pop
-    837: pop
-    838: push_const(9)  -- null
-    839: store_var(8)  -- COL
-    840: load_var(8)  -- COL
-    841: pop
-    842: load_var(48)  -- _LX_ALIAS
-    843: load_var(47)  -- WORD
-    844: call(1)
-    845: store_var(49)  -- ALIAS
-    846: load_var(49)  -- ALIAS
-    847: pop
-    848: load_var(49)  -- ALIAS
-    849: push_const(9)  -- null
-    850: cmp_neq
-    851: jump_false(871)
-    852: load_var(0)  -- TOKENS
-    853: jump_null(866)
-    854: load_var(30)  -- _LX_TOK
-    855: load_var(49)  -- ALIAS
-    856: load_var(47)  -- WORD
-    857: load_var(18)  -- TOK_LINE
-    858: load_var(19)  -- TOK_SC
-    859: load_var(29)  -- LEN
-    860: call(5)
-    861: make_list(1)
-    862: jump_null(865)
-    863: add
-    864: jump(868)
-    865: pop
-    866: pop
-    867: push_const(9)  -- null
-    868: store_var(0)  -- TOKENS
-    869: load_var(0)  -- TOKENS
-    870: jump(912)
-    871: load_var(50)  -- _LX_IS_KW
-    872: load_var(47)  -- WORD
-    873: call(1)
-    874: jump_false(894)
-    875: load_var(0)  -- TOKENS
-    876: jump_null(889)
-    877: load_var(30)  -- _LX_TOK
-    878: load_var(47)  -- WORD
-    879: load_var(47)  -- WORD
-    880: load_var(18)  -- TOK_LINE
-    881: load_var(19)  -- TOK_SC
-    882: load_var(29)  -- LEN
-    883: call(5)
-    884: make_list(1)
-    885: jump_null(888)
-    886: add
-    887: jump(891)
-    888: pop
-    889: pop
-    890: push_const(9)  -- null
-    891: store_var(0)  -- TOKENS
-    892: load_var(0)  -- TOKENS
-    893: jump(912)
-    894: load_var(0)  -- TOKENS
-    895: jump_null(908)
-    896: load_var(30)  -- _LX_TOK
-    897: push_const(51)  -- ID
-    898: load_var(47)  -- WORD
-    899: load_var(18)  -- TOK_LINE
-    900: load_var(19)  -- TOK_SC
-    901: load_var(29)  -- LEN
-    902: call(5)
-    903: make_list(1)
-    904: jump_null(907)
-    905: add
-    906: jump(910)
-    907: pop
-    908: pop
-    909: push_const(9)  -- null
-    910: store_var(0)  -- TOKENS
-    911: load_var(0)  -- TOKENS
-    912: pop
-    913: jump(25)
-    914: pop_scope
-    915: jump(917)
-    916: push_const(9)  -- null
-    917: pop
-    918: load_var(16)  -- _LX_CH2
-    919: load_var(4)  -- SRC
-    920: load_var(2)  -- I
-    921: call(2)
-    922: store_var(52)  -- C2
-    923: load_var(52)  -- C2
-    924: pop
-    925: load_var(52)  -- C2
-    926: push_const(53)  -- :=
-    927: cmp_eq
-    928: jump_false(976)
-    929: push_scope
-    930: load_var(0)  -- TOKENS
-    931: jump_null(944)
-    932: load_var(30)  -- _LX_TOK
-    933: push_const(53)  -- :=
-    934: push_const(53)  -- :=
-    935: load_var(18)  -- TOK_LINE
-    936: load_var(19)  -- TOK_SC
-    937: push_const(27)  -- 2
-    938: call(5)
-    939: make_list(1)
-    940: jump_null(943)
-    941: add
-    942: jump(946)
-    943: pop
-    944: pop
-    945: push_const(9)  -- null
-    946: store_var(0)  -- TOKENS
-    947: load_var(0)  -- TOKENS
-    948: pop
-    949: load_var(2)  -- I
-    950: jump_null(956)
-    951: push_const(27)  -- 2
-    952: jump_null(955)
-    953: add
-    954: jump(958)
-    955: pop
-    956: pop
-    957: push_const(9)  -- null
-    958: store_var(2)  -- I
-    959: load_var(2)  -- I
-    960: pop
-    961: load_var(8)  -- COL
-    962: jump_null(968)
-    963: push_const(27)  -- 2
-    964: jump_null(967)
-    965: add
-    966: jump(970)
-    967: pop
-    968: pop
-    969: push_const(9)  -- null
-    970: store_var(8)  -- COL
-    971: load_var(8)  -- COL
-    972: pop
-    973: jump(25)
-    974: pop_scope
-    975: jump(977)
-    976: push_const(9)  -- null
-    977: pop
-    978: load_var(52)  -- C2
-    979: push_const(54)  -- =>
-    980: cmp_eq
-    981: jump_false(1029)
-    982: push_scope
-    983: load_var(0)  -- TOKENS
-    984: jump_null(997)
-    985: load_var(30)  -- _LX_TOK
-    986: push_const(54)  -- =>
-    987: push_const(54)  -- =>
-    988: load_var(18)  -- TOK_LINE
-    989: load_var(19)  -- TOK_SC
-    990: push_const(27)  -- 2
-    991: call(5)
-    992: make_list(1)
-    993: jump_null(996)
-    994: add
-    995: jump(999)
-    996: pop
-    997: pop
-    998: push_const(9)  -- null
-    999: store_var(0)  -- TOKENS
-    1000: load_var(0)  -- TOKENS
-    1001: pop
-    1002: load_var(2)  -- I
-    1003: jump_null(1009)
-    1004: push_const(27)  -- 2
-    1005: jump_null(1008)
-    1006: add
-    1007: jump(1011)
-    1008: pop
-    1009: pop
-    1010: push_const(9)  -- null
-    1011: store_var(2)  -- I
-    1012: load_var(2)  -- I
-    1013: pop
-    1014: load_var(8)  -- COL
-    1015: jump_null(1021)
-    1016: push_const(27)  -- 2
-    1017: jump_null(1020)
-    1018: add
-    1019: jump(1023)
-    1020: pop
-    1021: pop
-    1022: push_const(9)  -- null
-    1023: store_var(8)  -- COL
-    1024: load_var(8)  -- COL
-    1025: pop
-    1026: jump(25)
-    1027: pop_scope
-    1028: jump(1030)
-    1029: push_const(9)  -- null
-    1030: pop
-    1031: load_var(52)  -- C2
-    1032: push_const(55)  -- <=
-    1033: cmp_eq
-    1034: jump_false(1082)
-    1035: push_scope
-    1036: load_var(0)  -- TOKENS
-    1037: jump_null(1050)
-    1038: load_var(30)  -- _LX_TOK
-    1039: push_const(55)  -- <=
-    1040: push_const(55)  -- <=
-    1041: load_var(18)  -- TOK_LINE
-    1042: load_var(19)  -- TOK_SC
-    1043: push_const(27)  -- 2
-    1044: call(5)
-    1045: make_list(1)
-    1046: jump_null(1049)
-    1047: add
-    1048: jump(1052)
-    1049: pop
-    1050: pop
-    1051: push_const(9)  -- null
-    1052: store_var(0)  -- TOKENS
-    1053: load_var(0)  -- TOKENS
-    1054: pop
-    1055: load_var(2)  -- I
-    1056: jump_null(1062)
-    1057: push_const(27)  -- 2
-    1058: jump_null(1061)
-    1059: add
-    1060: jump(1064)
-    1061: pop
-    1062: pop
-    1063: push_const(9)  -- null
-    1064: store_var(2)  -- I
-    1065: load_var(2)  -- I
-    1066: pop
-    1067: load_var(8)  -- COL
-    1068: jump_null(1074)
-    1069: push_const(27)  -- 2
-    1070: jump_null(1073)
-    1071: add
-    1072: jump(1076)
-    1073: pop
-    1074: pop
-    1075: push_const(9)  -- null
-    1076: store_var(8)  -- COL
-    1077: load_var(8)  -- COL
-    1078: pop
-    1079: jump(25)
-    1080: pop_scope
-    1081: jump(1083)
-    1082: push_const(9)  -- null
-    1083: pop
-    1084: load_var(52)  -- C2
-    1085: push_const(56)  -- >=
-    1086: cmp_eq
-    1087: jump_false(1135)
-    1088: push_scope
-    1089: load_var(0)  -- TOKENS
-    1090: jump_null(1103)
-    1091: load_var(30)  -- _LX_TOK
-    1092: push_const(56)  -- >=
-    1093: push_const(56)  -- >=
-    1094: load_var(18)  -- TOK_LINE
-    1095: load_var(19)  -- TOK_SC
-    1096: push_const(27)  -- 2
-    1097: call(5)
-    1098: make_list(1)
-    1099: jump_null(1102)
-    1100: add
-    1101: jump(1105)
-    1102: pop
-    1103: pop
-    1104: push_const(9)  -- null
-    1105: store_var(0)  -- TOKENS
-    1106: load_var(0)  -- TOKENS
-    1107: pop
-    1108: load_var(2)  -- I
-    1109: jump_null(1115)
-    1110: push_const(27)  -- 2
-    1111: jump_null(1114)
-    1112: add
-    1113: jump(1117)
-    1114: pop
-    1115: pop
-    1116: push_const(9)  -- null
-    1117: store_var(2)  -- I
-    1118: load_var(2)  -- I
-    1119: pop
-    1120: load_var(8)  -- COL
-    1121: jump_null(1127)
-    1122: push_const(27)  -- 2
-    1123: jump_null(1126)
-    1124: add
-    1125: jump(1129)
-    1126: pop
-    1127: pop
-    1128: push_const(9)  -- null
-    1129: store_var(8)  -- COL
-    1130: load_var(8)  -- COL
-    1131: pop
-    1132: jump(25)
-    1133: pop_scope
-    1134: jump(1136)
-    1135: push_const(9)  -- null
-    1136: pop
-    1137: load_var(52)  -- C2
-    1138: push_const(57)  -- <>
-    1139: cmp_eq
-    1140: jump_false(1188)
-    1141: push_scope
-    1142: load_var(0)  -- TOKENS
-    1143: jump_null(1156)
-    1144: load_var(30)  -- _LX_TOK
-    1145: push_const(57)  -- <>
-    1146: push_const(57)  -- <>
-    1147: load_var(18)  -- TOK_LINE
-    1148: load_var(19)  -- TOK_SC
-    1149: push_const(27)  -- 2
-    1150: call(5)
-    1151: make_list(1)
-    1152: jump_null(1155)
-    1153: add
-    1154: jump(1158)
-    1155: pop
-    1156: pop
-    1157: push_const(9)  -- null
-    1158: store_var(0)  -- TOKENS
-    1159: load_var(0)  -- TOKENS
-    1160: pop
-    1161: load_var(2)  -- I
-    1162: jump_null(1168)
-    1163: push_const(27)  -- 2
-    1164: jump_null(1167)
-    1165: add
-    1166: jump(1170)
-    1167: pop
-    1168: pop
-    1169: push_const(9)  -- null
-    1170: store_var(2)  -- I
-    1171: load_var(2)  -- I
-    1172: pop
-    1173: load_var(8)  -- COL
-    1174: jump_null(1180)
-    1175: push_const(27)  -- 2
-    1176: jump_null(1179)
-    1177: add
-    1178: jump(1182)
-    1179: pop
-    1180: pop
-    1181: push_const(9)  -- null
-    1182: store_var(8)  -- COL
-    1183: load_var(8)  -- COL
-    1184: pop
-    1185: jump(25)
-    1186: pop_scope
-    1187: jump(1189)
-    1188: push_const(9)  -- null
-    1189: pop
-    1190: load_var(52)  -- C2
-    1191: push_const(58)  -- !~
-    1192: cmp_eq
-    1193: jump_false(1241)
-    1194: push_scope
-    1195: load_var(0)  -- TOKENS
-    1196: jump_null(1209)
-    1197: load_var(30)  -- _LX_TOK
-    1198: push_const(58)  -- !~
-    1199: push_const(58)  -- !~
-    1200: load_var(18)  -- TOK_LINE
-    1201: load_var(19)  -- TOK_SC
-    1202: push_const(27)  -- 2
-    1203: call(5)
-    1204: make_list(1)
-    1205: jump_null(1208)
-    1206: add
-    1207: jump(1211)
-    1208: pop
-    1209: pop
-    1210: push_const(9)  -- null
-    1211: store_var(0)  -- TOKENS
-    1212: load_var(0)  -- TOKENS
-    1213: pop
-    1214: load_var(2)  -- I
-    1215: jump_null(1221)
-    1216: push_const(27)  -- 2
-    1217: jump_null(1220)
-    1218: add
-    1219: jump(1223)
-    1220: pop
-    1221: pop
-    1222: push_const(9)  -- null
-    1223: store_var(2)  -- I
-    1224: load_var(2)  -- I
-    1225: pop
-    1226: load_var(8)  -- COL
-    1227: jump_null(1233)
-    1228: push_const(27)  -- 2
-    1229: jump_null(1232)
-    1230: add
-    1231: jump(1235)
-    1232: pop
-    1233: pop
-    1234: push_const(9)  -- null
-    1235: store_var(8)  -- COL
-    1236: load_var(8)  -- COL
-    1237: pop
-    1238: jump(25)
-    1239: pop_scope
-    1240: jump(1242)
-    1241: push_const(9)  -- null
-    1242: pop
-    1243: load_var(52)  -- C2
-    1244: push_const(59)  -- !=
-    1245: cmp_eq
-    1246: jump_false(1294)
-    1247: push_scope
-    1248: load_var(0)  -- TOKENS
-    1249: jump_null(1262)
-    1250: load_var(30)  -- _LX_TOK
-    1251: push_const(57)  -- <>
-    1252: push_const(57)  -- <>
-    1253: load_var(18)  -- TOK_LINE
-    1254: load_var(19)  -- TOK_SC
-    1255: push_const(27)  -- 2
-    1256: call(5)
-    1257: make_list(1)
-    1258: jump_null(1261)
-    1259: add
-    1260: jump(1264)
-    1261: pop
-    1262: pop
-    1263: push_const(9)  -- null
-    1264: store_var(0)  -- TOKENS
-    1265: load_var(0)  -- TOKENS
-    1266: pop
-    1267: load_var(2)  -- I
-    1268: jump_null(1274)
-    1269: push_const(27)  -- 2
-    1270: jump_null(1273)
-    1271: add
-    1272: jump(1276)
-    1273: pop
-    1274: pop
-    1275: push_const(9)  -- null
-    1276: store_var(2)  -- I
-    1277: load_var(2)  -- I
-    1278: pop
-    1279: load_var(8)  -- COL
-    1280: jump_null(1286)
-    1281: push_const(27)  -- 2
-    1282: jump_null(1285)
-    1283: add
-    1284: jump(1288)
-    1285: pop
-    1286: pop
-    1287: push_const(9)  -- null
-    1288: store_var(8)  -- COL
-    1289: load_var(8)  -- COL
-    1290: pop
-    1291: jump(25)
-    1292: pop_scope
-    1293: jump(1295)
-    1294: push_const(9)  -- null
-    1295: pop
-    1296: load_var(52)  -- C2
-    1297: push_const(60)  -- **
-    1298: cmp_eq
-    1299: jump_false(1347)
-    1300: push_scope
-    1301: load_var(0)  -- TOKENS
-    1302: jump_null(1315)
-    1303: load_var(30)  -- _LX_TOK
-    1304: push_const(61)  -- ^
-    1305: push_const(61)  -- ^
-    1306: load_var(18)  -- TOK_LINE
-    1307: load_var(19)  -- TOK_SC
-    1308: push_const(27)  -- 2
-    1309: call(5)
-    1310: make_list(1)
-    1311: jump_null(1314)
-    1312: add
-    1313: jump(1317)
-    1314: pop
-    1315: pop
-    1316: push_const(9)  -- null
-    1317: store_var(0)  -- TOKENS
-    1318: load_var(0)  -- TOKENS
-    1319: pop
-    1320: load_var(2)  -- I
-    1321: jump_null(1327)
-    1322: push_const(27)  -- 2
-    1323: jump_null(1326)
-    1324: add
-    1325: jump(1329)
-    1326: pop
-    1327: pop
-    1328: push_const(9)  -- null
-    1329: store_var(2)  -- I
-    1330: load_var(2)  -- I
-    1331: pop
-    1332: load_var(8)  -- COL
-    1333: jump_null(1339)
-    1334: push_const(27)  -- 2
-    1335: jump_null(1338)
-    1336: add
-    1337: jump(1341)
-    1338: pop
-    1339: pop
-    1340: push_const(9)  -- null
-    1341: store_var(8)  -- COL
-    1342: load_var(8)  -- COL
-    1343: pop
-    1344: jump(25)
-    1345: pop_scope
-    1346: jump(1348)
-    1347: push_const(9)  -- null
-    1348: pop
-    1349: load_var(11)  -- C
-    1350: push_const(62)  -- !
-    1351: cmp_eq
-    1352: jump_false(1400)
-    1353: push_scope
-    1354: load_var(0)  -- TOKENS
-    1355: jump_null(1368)
-    1356: load_var(30)  -- _LX_TOK
-    1357: push_const(63)  -- NOT
-    1358: push_const(63)  -- NOT
-    1359: load_var(18)  -- TOK_LINE
-    1360: load_var(19)  -- TOK_SC
-    1361: push_const(6)  -- 1
-    1362: call(5)
-    1363: make_list(1)
-    1364: jump_null(1367)
-    1365: add
-    1366: jump(1370)
-    1367: pop
-    1368: pop
-    1369: push_const(9)  -- null
-    1370: store_var(0)  -- TOKENS
-    1371: load_var(0)  -- TOKENS
-    1372: pop
-    1373: load_var(2)  -- I
-    1374: jump_null(1380)
-    1375: push_const(6)  -- 1
-    1376: jump_null(1379)
-    1377: add
-    1378: jump(1382)
-    1379: pop
-    1380: pop
-    1381: push_const(9)  -- null
-    1382: store_var(2)  -- I
-    1383: load_var(2)  -- I
-    1384: pop
-    1385: load_var(8)  -- COL
-    1386: jump_null(1392)
-    1387: push_const(6)  -- 1
-    1388: jump_null(1391)
-    1389: add
-    1390: jump(1394)
-    1391: pop
-    1392: pop
-    1393: push_const(9)  -- null
-    1394: store_var(8)  -- COL
-    1395: load_var(8)  -- COL
-    1396: pop
-    1397: jump(25)
-    1398: pop_scope
-    1399: jump(1401)
-    1400: push_const(9)  -- null
-    1401: pop
-    1402: load_var(0)  -- TOKENS
-    1403: jump_null(1416)
-    1404: load_var(30)  -- _LX_TOK
-    1405: load_var(11)  -- C
-    1406: load_var(11)  -- C
-    1407: load_var(18)  -- TOK_LINE
-    1408: load_var(19)  -- TOK_SC
-    1409: push_const(6)  -- 1
-    1410: call(5)
-    1411: make_list(1)
-    1412: jump_null(1415)
-    1413: add
-    1414: jump(1418)
-    1415: pop
-    1416: pop
-    1417: push_const(9)  -- null
-    1418: store_var(0)  -- TOKENS
-    1419: load_var(0)  -- TOKENS
-    1420: pop
-    1421: load_var(8)  -- COL
-    1422: jump_null(1428)
-    1423: push_const(6)  -- 1
-    1424: jump_null(1427)
-    1425: add
-    1426: jump(1430)
-    1427: pop
-    1428: pop
-    1429: push_const(9)  -- null
-    1430: store_var(8)  -- COL
-    1431: load_var(8)  -- COL
-    1432: pop
-    1433: load_var(2)  -- I
-    1434: jump_null(1440)
-    1435: push_const(6)  -- 1
-    1436: jump_null(1439)
-    1437: add
-    1438: jump(1442)
-    1439: pop
-    1440: pop
-    1441: push_const(9)  -- null
-    1442: store_var(2)  -- I
-    1443: load_var(2)  -- I
-    1444: pop_scope
-    1445: store_reg(0)
-    1446: jump(25)
-    1447: load_reg(0)
-    1448: pop
-    1449: load_var(0)  -- TOKENS
-    1450: jump_null(1463)
-    1451: load_var(30)  -- _LX_TOK
-    1452: push_const(64)  -- EOF
-    1453: push_const(20)  -- 
-    1454: load_var(7)  -- LINE
-    1455: load_var(8)  -- COL
-    1456: push_const(1)  -- 0
-    1457: call(5)
-    1458: make_list(1)
-    1459: jump_null(1462)
-    1460: add
-    1461: jump(1465)
-    1462: pop
-    1463: pop
-    1464: push_const(9)  -- null
-    1465: store_var(0)  -- TOKENS
-    1466: load_var(0)  -- TOKENS
-    1467: pop
-    1468: load_var(0)  -- TOKENS
-    1469: ret
-    1470: pop_scope
-    1471: ret
-CHUNK ___LX_TOK_5 (T, V, LINE, SC, LEN)
-  CONST  0: t
-  CONST  1: T
-  CONST  2: v
-  CONST  3: V
-  CONST  4: l
-  CONST  5: LINE
-  CONST  6: sc
-  CONST  7: SC
-  CONST  8: len
-  CONST  9: LEN
+    196: pop
+    197: push_const(7)  -- null
+    198: store_var(1)  -- _SM_RES
+    199: load_var(1)  -- _SM_RES
+    200: pop
+    201: load_var(3)  -- _SM_J
+    202: jump_null(208)
+    203: push_const(9)  -- 1
+    204: jump_null(207)
+    205: add
+    206: jump(210)
+    207: pop
+    208: pop
+    209: push_const(7)  -- null
+    210: store_var(3)  -- _SM_J
+    211: load_var(3)  -- _SM_J
+    212: pop_scope
+    213: pop_scope
+    214: store_reg(0)
+    215: jump(17)
+    216: load_reg(0)
+    217: pop
+    218: load_var(1)  -- _SM_RES
+    219: ret
+    220: pop_scope
+    221: ret
+CHUNK __lambda_4 (_SM_SRC)
+  CONST  0: _SM_TOKENIZE
+  CONST  1: _SM_SRC
   CODE:
-    0: push_const(0)  -- t
-    1: load_var(1)  -- T
-    2: push_const(2)  -- v
-    3: load_var(3)  -- V
-    4: push_const(4)  -- l
-    5: load_var(5)  -- LINE
-    6: push_const(6)  -- sc
-    7: load_var(7)  -- SC
-    8: push_const(8)  -- len
-    9: load_var(9)  -- LEN
-    10: make_map(5)
-    11: ret
-CHUNK __lambda_10 (SRC)
-  CONST  0: _LX_TOKENIZE
-  CONST  1: SRC
-  CODE:
-    0: load_var(0)  -- _LX_TOKENIZE
-    1: load_var(1)  -- SRC
+    0: load_var(0)  -- _SM_TOKENIZE
+    1: load_var(1)  -- _SM_SRC
     2: call(1)
     3: ret
