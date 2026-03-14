@@ -104,7 +104,7 @@ Press enter to continue (or q to quit):
     42: push_const(16)  -- null
     43: store_reg(0)
     44: push_const(17)  -- true
-    45: jump_false(283)
+    45: jump_false(282)
     46: push_scope
     47: load_var(18)  -- PROMPT
     48: push_const(19)  -- Please select a function:
@@ -174,7 +174,7 @@ Press enter to continue (or q to quit):
     104: push_const(28)  -- Q
     105: cmp_eq
     106: jump_false(109)
-    107: jump(283)
+    107: jump(282)
     108: jump(110)
     109: push_const(16)  -- null
     110: pop
@@ -257,7 +257,7 @@ Press enter to continue (or q to quit):
     186: push_const(28)  -- Q
     187: cmp_eq
     188: jump_false(191)
-    189: jump(283)
+    189: jump(282)
     190: jump(192)
     191: push_const(16)  -- null
     192: pop
@@ -280,7 +280,7 @@ Press enter to continue (or q to quit):
     208: push_const(28)  -- Q
     209: cmp_eq
     210: jump_false(213)
-    211: jump(283)
+    211: jump(282)
     212: jump(214)
     213: push_const(16)  -- null
     214: pop
@@ -298,63 +298,62 @@ Press enter to continue (or q to quit):
     226: load_var(43)  -- RESULT
     227: pop
     228: load_var(44)  -- STRING
-    229: load_var(43)  -- RESULT
-    230: load_var(31)  -- INDEX
-    231: jump_null(237)
-    232: push_const(36)  -- 4
-    233: jump_null(236)
-    234: cmp_gte
-    235: jump(239)
+    229: load_var(31)  -- INDEX
+    230: jump_null(236)
+    231: push_const(36)  -- 4
+    232: jump_null(235)
+    233: cmp_gte
+    234: jump(238)
+    235: pop
     236: pop
-    237: pop
-    238: push_const(16)  -- null
-    239: jump_false(244)
-    240: load_var(29)  -- INT
-    241: load_var(43)  -- RESULT
-    242: call(1)
-    243: jump(245)
-    244: load_var(43)  -- RESULT
-    245: call(2)
-    246: store_var(45)  -- FORMATTED_RESULT
-    247: load_var(45)  -- FORMATTED_RESULT
-    248: pop
-    249: load_var(18)  -- PROMPT
-    250: push_const(46)  -- The result is: 
-    251: jump_null(257)
-    252: load_var(45)  -- FORMATTED_RESULT
-    253: jump_null(256)
-    254: add
-    255: jump(259)
+    237: push_const(16)  -- null
+    238: jump_false(243)
+    239: load_var(29)  -- INT
+    240: load_var(43)  -- RESULT
+    241: call(1)
+    242: jump(244)
+    243: load_var(43)  -- RESULT
+    244: call(1)
+    245: store_var(45)  -- FORMATTED_RESULT
+    246: load_var(45)  -- FORMATTED_RESULT
+    247: pop
+    248: load_var(18)  -- PROMPT
+    249: push_const(46)  -- The result is: 
+    250: jump_null(256)
+    251: load_var(45)  -- FORMATTED_RESULT
+    252: jump_null(255)
+    253: add
+    254: jump(258)
+    255: pop
     256: pop
-    257: pop
-    258: push_const(16)  -- null
-    259: jump_null(265)
-    260: push_const(47)  -- 
+    257: push_const(16)  -- null
+    258: jump_null(264)
+    259: push_const(47)  -- 
 Press enter to continue (or q to quit):
-    261: jump_null(264)
-    262: add
-    263: jump(267)
+    260: jump_null(263)
+    261: add
+    262: jump(266)
+    263: pop
     264: pop
-    265: pop
-    266: push_const(16)  -- null
-    267: call(1)
-    268: store_var(26)  -- INPUT
-    269: load_var(26)  -- INPUT
-    270: pop
-    271: load_var(27)  -- UPPERCASE
-    272: load_var(26)  -- INPUT
-    273: call(1)
-    274: push_const(28)  -- Q
-    275: cmp_eq
-    276: jump_false(279)
-    277: jump(283)
-    278: jump(280)
-    279: push_const(16)  -- null
-    280: pop_scope
-    281: store_reg(0)
-    282: jump(44)
-    283: load_reg(0)
-    284: ret
+    265: push_const(16)  -- null
+    266: call(1)
+    267: store_var(26)  -- INPUT
+    268: load_var(26)  -- INPUT
+    269: pop
+    270: load_var(27)  -- UPPERCASE
+    271: load_var(26)  -- INPUT
+    272: call(1)
+    273: push_const(28)  -- Q
+    274: cmp_eq
+    275: jump_false(278)
+    276: jump(282)
+    277: jump(279)
+    278: push_const(16)  -- null
+    279: pop_scope
+    280: store_reg(0)
+    281: jump(44)
+    282: load_reg(0)
+    283: ret
 CHUNK __ADD_0 (A, B)
   CONST  0: A
   CONST  1: B

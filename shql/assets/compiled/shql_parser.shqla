@@ -2691,7 +2691,7 @@ CHUNK ___PR_POSTFIX_22 (TOKENS, POS)
   CONST  14: 
   CONST  15: NEXT_TT
   CONST  16: (
-  CONST  17: ARGS
+  CONST  17: _PF_ARGS
   CONST  18: _PR_IS
   CONST  19: )
   CONST  20: EOF
@@ -2809,8 +2809,8 @@ CHUNK ___PR_POSTFIX_22 (TOKENS, POS)
     90: load_var(2)  -- POS
     91: pop
     92: make_list(0)
-    93: store_var(17)  -- ARGS
-    94: load_var(17)  -- ARGS
+    93: store_var(17)  -- _PF_ARGS
+    94: load_var(17)  -- _PF_ARGS
     95: pop
     96: push_const(9)  -- null
     97: store_reg(1)
@@ -2838,7 +2838,7 @@ CHUNK ___PR_POSTFIX_22 (TOKENS, POS)
     119: store_var(22)  -- RA
     120: load_var(22)  -- RA
     121: pop
-    122: load_var(17)  -- ARGS
+    122: load_var(17)  -- _PF_ARGS
     123: jump_null(132)
     124: load_var(22)  -- RA
     125: push_const(4)  -- node
@@ -2850,8 +2850,8 @@ CHUNK ___PR_POSTFIX_22 (TOKENS, POS)
     131: pop
     132: pop
     133: push_const(9)  -- null
-    134: store_var(17)  -- ARGS
-    135: load_var(17)  -- ARGS
+    134: store_var(17)  -- _PF_ARGS
+    135: load_var(17)  -- _PF_ARGS
     136: pop
     137: load_var(22)  -- RA
     138: push_const(6)  -- pos
@@ -2909,7 +2909,7 @@ CHUNK ___PR_POSTFIX_22 (TOKENS, POS)
     190: load_var(5)  -- NODE
     191: make_list(1)
     192: jump_null(198)
-    193: load_var(17)  -- ARGS
+    193: load_var(17)  -- _PF_ARGS
     194: jump_null(197)
     195: add
     196: jump(200)

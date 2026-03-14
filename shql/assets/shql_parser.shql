@@ -288,15 +288,15 @@ _PR_POSTFIX(tokens, pos) := BEGIN
     IF tt = '(' THEN BEGIN
       -- function call: f(a, b, ...)
       pos := pos + 1;
-      args := [];
+      _pf_args := [];
       WHILE NOT _PR_IS(tokens, pos, ')') AND NOT _PR_IS(tokens, pos, 'EOF') DO BEGIN
         ra := _PR_ASSIGN(tokens, pos);
-        args := args + [ra['node']];
+        _pf_args := _pf_args + [ra['node']];
         pos := ra['pos'];
         IF _PR_IS(tokens, pos, ',') THEN pos := pos + 1;
       END;
       IF _PR_IS(tokens, pos, ')') THEN pos := pos + 1;
-      node := {"sym": "call", "children": [node] + args, "val": NULL};
+      node := {"sym": "call", "children": [node] + _pf_args, "val": NULL};
     END ELSE IF tt = '[' THEN BEGIN
       -- index: a[i]
       pos := pos + 1;

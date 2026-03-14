@@ -5947,4 +5947,95 @@ codec.decode(program)
     });
 
   });
+
+  // ---------------------------------------------------------------------------
+  // Bytecode VM — function parameter scoping
+  // ---------------------------------------------------------------------------
+  // Regression: _makeFrame used Scope.setVariable() which walks up the parent
+  // chain.  If the caller already had a variable with the same name as a
+  // function parameter, the function call would overwrite the caller's
+  // variable instead of creating a local binding.
+  // ---------------------------------------------------------------------------
+  group('bytecode VM — function parameter scoping', () {
+    late ConstantsSet cs;
+    late Runtime rt;
+
+    Future<dynamic> run(String src) {
+      final tree = Parser.parse(src, cs, sourceCode: src);
+      final prog = BytecodeCompiler.compile(tree, cs);
+      return BytecodeInterpreter(prog, rt).executeScoped('main');
+    }
+
+    setUp(() async {
+      cs = Runtime.prepareConstantsSet();
+      rt = Runtime.prepareRuntime(cs);
+      // Load stdlib as bytecode (INT, DOUBLE, etc.)
+      final stdlib = File('assets/stdlib.shql').readAsStringSync();
+      await run(stdlib);
+    });
+
+    test('function param does not overwrite caller variable of same name',
+        () async {
+      // f(a) uses param 'a'; caller also has a variable 'a'.
+      // After calling f, the caller's 'a' must be unchanged.
+      final result = await run('''
+        f(a) := a * 10;
+        a := 5;
+        b := f(99);
+        [a, b]
+      ''');
+      expect(result, [5, 990]);
+    });
+
+    test('nested calls with same param names preserve outer variables',
+        () async {
+      final result = await run('''
+        double_it(x) := x * 2;
+        add_one(x) := x + 1;
+        x := 100;
+        r1 := double_it(7);
+        r2 := add_one(3);
+        [x, r1, r2]
+      ''');
+      expect(result, [100, 14, 4]);
+    });
+
+    test('converter pattern: IF THEN INT ELSE DOUBLE with shared param name',
+        () async {
+      // This is the exact calculator.shql pattern that was broken.
+      // INT(a) and DOUBLE(a) both have param 'a'.
+      // Calling converter("3") must not overwrite the caller's 'a'.
+      final result = await run('''
+        converter := INT;
+        a := converter("25");
+        b := converter("3");
+        [a, b]
+      ''');
+      expect(result, [25, 3]);
+    });
+
+    test('calculator LCM path end-to-end', () async {
+      final result = await run('''
+        gcd(a, b) := IF b = 0 THEN a ELSE gcd(b, a % b);
+        lcm(a, b) := (a * b) / gcd(a, b);
+        index := 5;
+        converter := IF index >= 4 THEN INT ELSE DOUBLE;
+        a := converter("25");
+        b := converter("3");
+        result := lcm(a, b);
+        STRING(IF index >= 4 THEN INT(result) ELSE result)
+      ''');
+      expect(result, '75');
+    });
+
+    test('recursive function does not leak params to caller', () async {
+      final result = await run('''
+        fact(n) := IF n <= 1 THEN 1 ELSE n * fact(n - 1);
+        n := 42;
+        r := fact(5);
+        [n, r]
+      ''');
+      expect(result, [42, 120]);
+    });
+  });
 }

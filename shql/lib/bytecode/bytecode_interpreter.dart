@@ -385,7 +385,7 @@ class BytecodeInterpreter {
     final scope = Scope(Object(), parent: parentScope);
     for (var i = 0; i < chunk.params.length && i < args.length; i++) {
       final id = runtime.identifiers.include(chunk.params[i].toUpperCase());
-      scope.setVariable(id, args[i]);
+      scope.members.setVariable(id, args[i]);
     }
     return BytecodeFrame(chunk: chunk, pc: 0, stack: [], scope: scope);
   }
