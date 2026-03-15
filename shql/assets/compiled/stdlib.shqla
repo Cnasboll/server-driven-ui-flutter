@@ -1017,77 +1017,92 @@ CHUNK __SLICE_32 (LIST, START_IDX, END_IDX)
     38: store_var(9)  -- ACTUAL_END
     39: load_var(9)  -- ACTUAL_END
     40: pop
-    41: load_var(4)  -- START_IDX
-    42: store_var(10)  -- I
-    43: load_var(10)  -- I
-    44: pop
-    45: load_var(10)  -- I
-    46: store_reg(0)
-    47: push_const(11)  -- false
-    48: store_reg(1)
-    49: load_var(0)  -- RESULT
-    50: jump_null(59)
-    51: load_var(2)  -- LIST
-    52: load_var(10)  -- I
-    53: get_index
-    54: make_list(1)
-    55: jump_null(58)
-    56: add
-    57: jump(61)
-    58: pop
+    41: load_var(9)  -- ACTUAL_END
+    42: jump_null(48)
+    43: load_var(4)  -- START_IDX
+    44: jump_null(47)
+    45: cmp_lt
+    46: jump(50)
+    47: pop
+    48: pop
+    49: push_const(5)  -- null
+    50: jump_false(54)
+    51: load_var(0)  -- RESULT
+    52: ret
+    53: jump(55)
+    54: push_const(5)  -- null
+    55: pop
+    56: load_var(4)  -- START_IDX
+    57: store_var(10)  -- I
+    58: load_var(10)  -- I
     59: pop
-    60: push_const(5)  -- null
-    61: store_var(0)  -- RESULT
-    62: load_var(0)  -- RESULT
-    63: pop
-    64: load_reg(1)
-    65: jump_true(106)
-    66: load_var(9)  -- ACTUAL_END
-    67: store_reg(2)
-    68: load_reg(2)
-    69: load_reg(0)
-    70: cmp_gte
-    71: store_reg(3)
-    72: load_reg(3)
-    73: jump_false(76)
-    74: push_const(8)  -- 1
-    75: jump(77)
-    76: push_const(12)  -- -1
-    77: store_reg(4)
-    78: load_var(10)  -- I
-    79: load_reg(4)
-    80: add
-    81: store_reg(5)
-    82: load_reg(3)
-    83: load_reg(5)
-    84: load_reg(2)
-    85: cmp_gt
-    86: log_and
+    60: load_var(10)  -- I
+    61: store_reg(0)
+    62: push_const(11)  -- false
+    63: store_reg(1)
+    64: load_var(0)  -- RESULT
+    65: jump_null(74)
+    66: load_var(2)  -- LIST
+    67: load_var(10)  -- I
+    68: get_index
+    69: make_list(1)
+    70: jump_null(73)
+    71: add
+    72: jump(76)
+    73: pop
+    74: pop
+    75: push_const(5)  -- null
+    76: store_var(0)  -- RESULT
+    77: load_var(0)  -- RESULT
+    78: pop
+    79: load_reg(1)
+    80: jump_true(121)
+    81: load_var(9)  -- ACTUAL_END
+    82: store_reg(2)
+    83: load_reg(2)
+    84: load_reg(0)
+    85: cmp_gte
+    86: store_reg(3)
     87: load_reg(3)
-    88: log_not
-    89: load_reg(5)
-    90: load_reg(2)
-    91: cmp_lt
-    92: log_and
-    93: log_or
-    94: store_reg(6)
-    95: load_reg(6)
-    96: load_reg(5)
-    97: load_reg(2)
-    98: cmp_eq
-    99: log_or
-    100: store_reg(1)
-    101: load_reg(6)
-    102: jump_true(106)
-    103: load_reg(5)
-    104: store_var(10)  -- I
-    105: jump(49)
-    106: push_const(5)  -- null
-    107: pop
-    108: load_var(0)  -- RESULT
-    109: ret
-    110: pop_scope
-    111: ret
+    88: jump_false(91)
+    89: push_const(8)  -- 1
+    90: jump(92)
+    91: push_const(12)  -- -1
+    92: store_reg(4)
+    93: load_var(10)  -- I
+    94: load_reg(4)
+    95: add
+    96: store_reg(5)
+    97: load_reg(3)
+    98: load_reg(5)
+    99: load_reg(2)
+    100: cmp_gt
+    101: log_and
+    102: load_reg(3)
+    103: log_not
+    104: load_reg(5)
+    105: load_reg(2)
+    106: cmp_lt
+    107: log_and
+    108: log_or
+    109: store_reg(6)
+    110: load_reg(6)
+    111: load_reg(5)
+    112: load_reg(2)
+    113: cmp_eq
+    114: log_or
+    115: store_reg(1)
+    116: load_reg(6)
+    117: jump_true(121)
+    118: load_reg(5)
+    119: store_var(10)  -- I
+    120: jump(64)
+    121: push_const(5)  -- null
+    122: pop
+    123: load_var(0)  -- RESULT
+    124: ret
+    125: pop_scope
+    126: ret
 CHUNK __SQRT_8 (A)
   CONST  0: _EXTERN
   CONST  1: SQRT

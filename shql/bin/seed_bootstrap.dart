@@ -1,5 +1,5 @@
 /// One-time seed: produces initial .shqlbc files using the Dart compiler.
-/// After seeding, use shql_bootstrap which is pure SHQL.
+/// After seeding, use shql_bootstrap which is pure SHQL™.
 import 'dart:io';
 import 'package:shql/bytecode/bytecode_codec.dart';
 import 'package:shql/bytecode/bytecode_compiler.dart';

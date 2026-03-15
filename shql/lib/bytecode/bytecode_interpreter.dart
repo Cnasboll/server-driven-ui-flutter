@@ -160,7 +160,7 @@ class BytecodeInterpreter {
         }
       }
       if (target.error != null) throw target.error!;
-      return null; // SHQL JOIN does not surface the thread's return value
+      return null; // SHQL™ JOIN does not surface the thread's return value
     });
   }
 
@@ -587,7 +587,7 @@ class BytecodeInterpreter {
           }
           stack.add(result);
         } else if (callable is num && argCount == 1 && callArgs[0] is num) {
-          // Implicit multiplication — the core SHQL calculator feature.
+          // Implicit multiplication — the core SHQL™ calculator feature.
           // `42(2)` means `42 * 2`, matching CallExecutionNode's runtime fallback.
           stack.add(callable * (callArgs[0] as num));
         } else {
@@ -623,7 +623,7 @@ class BytecodeInterpreter {
           }
         } else {
           throw BytecodeRuntimeError(
-            'get_member: expected SHQL Object, got $obj',
+            'get_member: expected SHQL™ Object, got $obj',
           );
         }
 
@@ -636,7 +636,7 @@ class BytecodeInterpreter {
           stack.add(value);
         } else {
           throw BytecodeRuntimeError(
-            'set_member: expected SHQL Object, got $obj',
+            'set_member: expected SHQL™ Object, got $obj',
           );
         }
 

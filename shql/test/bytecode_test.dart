@@ -10,7 +10,7 @@ import 'package:shql/tokenizer/token.dart';
 import 'package:test/test.dart';
 
 void main() {
-  // A shared Runtime — same as what the existing SHQL engine uses.
+  // A shared Runtime — same as what the existing SHQL™ engine uses.
   late Runtime rt;
   setUp(() => rt = Runtime.prepareRuntime());
 
@@ -298,10 +298,10 @@ void main() {
   });
 
   // -------------------------------------------------------------------------
-  // Variables — stored in SHQL Scope
+  // Variables — stored in SHQL™ Scope
   // -------------------------------------------------------------------------
-  group('BytecodeInterpreter — variables (SHQL Scope)', () {
-    test('store and load via SHQL scope', () async {
+  group('BytecodeInterpreter — variables (SHQL™ Scope)', () {
+    test('store and load via SHQL™ scope', () async {
       expect(await run('''
 .chunk main:
   .constants:
@@ -569,7 +569,7 @@ void main() {
   group('BytecodeInterpreter — scope', () {
     test('push_scope / pop_scope: inner assignment updates outer binding', () async {
       // x is defined in outer scope; push_scope + store_var walks up and
-      // updates the outer binding (same as SHQL setVariable semantics).
+      // updates the outer binding (same as SHQL™ setVariable semantics).
       expect(await run('''
 .chunk main:
   .constants:
@@ -733,10 +733,10 @@ void main() {
   });
 
   // -------------------------------------------------------------------------
-  // SHQL Objects
+  // SHQL™ Objects
   // -------------------------------------------------------------------------
-  group('BytecodeInterpreter — SHQL Objects', () {
-    test('make_object produces a SHQL Object', () async {
+  group('BytecodeInterpreter — SHQL™ Objects', () {
+    test('make_object produces a SHQL™ Object', () async {
       final result = await run('''
 .chunk main:
   .constants:
@@ -755,7 +755,7 @@ void main() {
       expect(raw is Variable ? raw.value : raw, 'Alice');
     });
 
-    test('get_member reads a SHQL Object field', () async {
+    test('get_member reads a SHQL™ Object field', () async {
       expect(await run('''
 .chunk main:
   .constants:
@@ -771,7 +771,7 @@ void main() {
 '''), 42);
     });
 
-    test('set_member mutates a SHQL Object field', () async {
+    test('set_member mutates a SHQL™ Object field', () async {
       expect(await run('''
 .chunk main:
   .constants:
@@ -800,7 +800,7 @@ void main() {
   // First-class functions via if-expression
   // -------------------------------------------------------------------------
 
-  // SHQL source:
+  // SHQL™ source:
   //   f1(x) := POW(x, 2);
   //   f2(x) := x * 2;
   //   choice := INTEGER(READLINE);
@@ -1022,7 +1022,7 @@ void main() {
   }
 
   group('Codec — round-trips', () {
-    // SHQL: RESULT := 42
+    // SHQL™: RESULT := 42
     roundTrip('minimal: push constant and return', '''
 .chunk main:
   .constants:
@@ -1032,7 +1032,7 @@ void main() {
     ret
 ''');
 
-    // SHQL: RESULT := (2 + 3) * 4
+    // SHQL™: RESULT := (2 + 3) * 4
     roundTrip('arithmetic with multiple constants', '''
 .chunk main:
   .constants:
@@ -1048,7 +1048,7 @@ void main() {
     ret
 ''');
 
-    // SHQL: negative constant and float
+    // SHQL™: negative constant and float
     roundTrip('negative integer and float constant', '''
 .chunk main:
   .constants:
@@ -1061,8 +1061,8 @@ void main() {
     ret
 ''');
 
-    // SHQL: string constant and make_object / get_member
-    roundTrip('string constants and SHQL Object', '''
+    // SHQL™: string constant and make_object / get_member
+    roundTrip('string constants and SHQL™ Object', '''
 .chunk main:
   .constants:
     0: "name"
@@ -1076,7 +1076,7 @@ void main() {
     ret
 ''');
 
-    // SHQL: IF condition THEN ... ELSE ... (forward jumps)
+    // SHQL™: IF condition THEN ... ELSE ... (forward jumps)
     roundTrip('conditional with forward jumps', '''
 .chunk main:
   .constants:
@@ -1092,10 +1092,10 @@ void main() {
     ret
 ''');
 
-    // SHQL: f1(x) := POW(x, 2)  /  f2(x) := x * 2  / first-class function
+    // SHQL™: f1(x) := POW(x, 2)  /  f2(x) := x * 2  / first-class function
     roundTrip('first-class functions via if-expression', firstClassSrc);
 
-    // SHQL: GCD recursive
+    // SHQL™: GCD recursive
     roundTrip('recursive GCD chunks', '''
 .chunk main:
   .constants:

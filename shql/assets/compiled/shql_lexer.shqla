@@ -960,10 +960,10 @@ CHUNK ___SM_TOKENIZE_3 (_SM_SRC)
   CONST  24: _SM_C
   CONST  25: _SM_CLASSIFY
   CONST  26: _SM_CLS
-  CONST  27: :
-  CONST  28: _SM_KEY
-  CONST  29: _SM_TRANS
-  CONST  30: _SM_NEXT
+  CONST  27: _SM_NEXT
+  CONST  28: :
+  CONST  29: _SM_KEY
+  CONST  30: _SM_TRANS
   CONST  31: _SM_WAS
   CONST  32: CHAR_CODE
   CONST  33: _SM_CD
@@ -1030,7 +1030,7 @@ CHUNK ___SM_TOKENIZE_3 (_SM_SRC)
     51: pop
     52: pop
     53: push_const(16)  -- null
-    54: jump_false(430)
+    54: jump_false(442)
     55: push_scope
     56: load_var(15)  -- _SM_I
     57: load_var(3)  -- _SM_N
@@ -1099,7 +1099,7 @@ CHUNK ___SM_TOKENIZE_3 (_SM_SRC)
     120: jump(122)
     121: push_const(16)  -- null
     122: pop
-    123: jump(430)
+    123: jump(442)
     124: pop_scope
     125: jump(127)
     126: push_const(16)  -- null
@@ -1126,315 +1126,327 @@ CHUNK ___SM_TOKENIZE_3 (_SM_SRC)
     147: store_var(26)  -- _SM_CLS
     148: load_var(26)  -- _SM_CLS
     149: pop
-    150: load_var(5)  -- _SM_STATE
-    151: jump_null(157)
-    152: push_const(27)  -- :
-    153: jump_null(156)
-    154: add
-    155: jump(159)
-    156: pop
-    157: pop
-    158: push_const(16)  -- null
-    159: jump_null(165)
-    160: load_var(26)  -- _SM_CLS
-    161: jump_null(164)
-    162: add
-    163: jump(167)
-    164: pop
+    150: push_const(16)  -- null
+    151: store_var(27)  -- _SM_NEXT
+    152: load_var(27)  -- _SM_NEXT
+    153: pop
+    154: load_var(26)  -- _SM_CLS
+    155: push_const(16)  -- null
+    156: cmp_neq
+    157: jump_false(186)
+    158: push_scope
+    159: load_var(5)  -- _SM_STATE
+    160: jump_null(166)
+    161: push_const(28)  -- :
+    162: jump_null(165)
+    163: add
+    164: jump(168)
     165: pop
-    166: push_const(16)  -- null
-    167: store_var(28)  -- _SM_KEY
-    168: load_var(28)  -- _SM_KEY
-    169: pop
-    170: load_var(29)  -- _SM_TRANS
-    171: load_var(28)  -- _SM_KEY
-    172: get_index
-    173: store_var(30)  -- _SM_NEXT
-    174: load_var(30)  -- _SM_NEXT
-    175: pop
-    176: load_var(30)  -- _SM_NEXT
-    177: push_const(16)  -- null
-    178: cmp_neq
-    179: jump_false(274)
-    180: push_scope
-    181: load_var(5)  -- _SM_STATE
-    182: push_const(4)  -- S
-    183: cmp_eq
-    184: load_var(5)  -- _SM_STATE
-    185: push_const(17)  -- CMT
-    186: cmp_eq
-    187: log_or
-    188: store_var(31)  -- _SM_WAS
-    189: load_var(31)  -- _SM_WAS
-    190: pop
-    191: load_var(30)  -- _SM_NEXT
-    192: store_var(5)  -- _SM_STATE
+    166: pop
+    167: push_const(16)  -- null
+    168: jump_null(174)
+    169: load_var(26)  -- _SM_CLS
+    170: jump_null(173)
+    171: add
+    172: jump(176)
+    173: pop
+    174: pop
+    175: push_const(16)  -- null
+    176: store_var(29)  -- _SM_KEY
+    177: load_var(29)  -- _SM_KEY
+    178: pop
+    179: load_var(30)  -- _SM_TRANS
+    180: load_var(29)  -- _SM_KEY
+    181: get_index
+    182: store_var(27)  -- _SM_NEXT
+    183: load_var(27)  -- _SM_NEXT
+    184: pop_scope
+    185: jump(187)
+    186: push_const(16)  -- null
+    187: pop
+    188: load_var(27)  -- _SM_NEXT
+    189: push_const(16)  -- null
+    190: cmp_neq
+    191: jump_false(286)
+    192: push_scope
     193: load_var(5)  -- _SM_STATE
-    194: pop
-    195: load_var(5)  -- _SM_STATE
-    196: push_const(4)  -- S
-    197: cmp_neq
-    198: load_var(5)  -- _SM_STATE
-    199: push_const(17)  -- CMT
-    200: cmp_neq
-    201: log_and
-    202: jump_false(271)
-    203: push_scope
-    204: load_var(31)  -- _SM_WAS
-    205: jump_false(220)
-    206: push_scope
-    207: push_const(6)  -- 
-    208: store_var(7)  -- _SM_BUF
-    209: load_var(7)  -- _SM_BUF
-    210: pop
-    211: load_var(11)  -- _SM_LINE
-    212: store_var(9)  -- _SM_BL
-    213: load_var(9)  -- _SM_BL
-    214: pop
-    215: load_var(12)  -- _SM_COL
-    216: store_var(10)  -- _SM_BC
-    217: load_var(10)  -- _SM_BC
-    218: pop_scope
-    219: jump(221)
-    220: push_const(16)  -- null
-    221: pop
-    222: load_var(7)  -- _SM_BUF
-    223: jump_null(229)
-    224: load_var(24)  -- _SM_C
-    225: jump_null(228)
-    226: add
-    227: jump(231)
-    228: pop
-    229: pop
-    230: push_const(16)  -- null
-    231: store_var(7)  -- _SM_BUF
-    232: load_var(7)  -- _SM_BUF
+    194: push_const(4)  -- S
+    195: cmp_eq
+    196: load_var(5)  -- _SM_STATE
+    197: push_const(17)  -- CMT
+    198: cmp_eq
+    199: log_or
+    200: store_var(31)  -- _SM_WAS
+    201: load_var(31)  -- _SM_WAS
+    202: pop
+    203: load_var(27)  -- _SM_NEXT
+    204: store_var(5)  -- _SM_STATE
+    205: load_var(5)  -- _SM_STATE
+    206: pop
+    207: load_var(5)  -- _SM_STATE
+    208: push_const(4)  -- S
+    209: cmp_neq
+    210: load_var(5)  -- _SM_STATE
+    211: push_const(17)  -- CMT
+    212: cmp_neq
+    213: log_and
+    214: jump_false(283)
+    215: push_scope
+    216: load_var(31)  -- _SM_WAS
+    217: jump_false(232)
+    218: push_scope
+    219: push_const(6)  -- 
+    220: store_var(7)  -- _SM_BUF
+    221: load_var(7)  -- _SM_BUF
+    222: pop
+    223: load_var(11)  -- _SM_LINE
+    224: store_var(9)  -- _SM_BL
+    225: load_var(9)  -- _SM_BL
+    226: pop
+    227: load_var(12)  -- _SM_COL
+    228: store_var(10)  -- _SM_BC
+    229: load_var(10)  -- _SM_BC
+    230: pop_scope
+    231: jump(233)
+    232: push_const(16)  -- null
     233: pop
-    234: load_var(20)  -- _SM_ACCEPT
-    235: load_var(5)  -- _SM_STATE
-    236: get_index
-    237: store_var(21)  -- _SM_AT
-    238: load_var(21)  -- _SM_AT
-    239: pop
-    240: load_var(21)  -- _SM_AT
-    241: push_const(16)  -- null
-    242: cmp_neq
-    243: jump_false(268)
-    244: push_scope
-    245: load_var(0)  -- _SM_TOKENS
-    246: jump_null(258)
-    247: load_var(22)  -- _SM_EMIT
-    248: load_var(21)  -- _SM_AT
-    249: load_var(7)  -- _SM_BUF
-    250: load_var(9)  -- _SM_BL
-    251: load_var(10)  -- _SM_BC
-    252: call(4)
-    253: make_list(1)
-    254: jump_null(257)
-    255: add
-    256: jump(260)
-    257: pop
-    258: pop
-    259: push_const(16)  -- null
-    260: store_var(0)  -- _SM_TOKENS
-    261: load_var(0)  -- _SM_TOKENS
-    262: pop
-    263: push_const(4)  -- S
-    264: store_var(5)  -- _SM_STATE
-    265: load_var(5)  -- _SM_STATE
-    266: pop_scope
-    267: jump(269)
-    268: push_const(16)  -- null
-    269: pop_scope
-    270: jump(272)
+    234: load_var(7)  -- _SM_BUF
+    235: jump_null(241)
+    236: load_var(24)  -- _SM_C
+    237: jump_null(240)
+    238: add
+    239: jump(243)
+    240: pop
+    241: pop
+    242: push_const(16)  -- null
+    243: store_var(7)  -- _SM_BUF
+    244: load_var(7)  -- _SM_BUF
+    245: pop
+    246: load_var(20)  -- _SM_ACCEPT
+    247: load_var(5)  -- _SM_STATE
+    248: get_index
+    249: store_var(21)  -- _SM_AT
+    250: load_var(21)  -- _SM_AT
+    251: pop
+    252: load_var(21)  -- _SM_AT
+    253: push_const(16)  -- null
+    254: cmp_neq
+    255: jump_false(280)
+    256: push_scope
+    257: load_var(0)  -- _SM_TOKENS
+    258: jump_null(270)
+    259: load_var(22)  -- _SM_EMIT
+    260: load_var(21)  -- _SM_AT
+    261: load_var(7)  -- _SM_BUF
+    262: load_var(9)  -- _SM_BL
+    263: load_var(10)  -- _SM_BC
+    264: call(4)
+    265: make_list(1)
+    266: jump_null(269)
+    267: add
+    268: jump(272)
+    269: pop
+    270: pop
     271: push_const(16)  -- null
-    272: pop_scope
-    273: jump(343)
-    274: push_scope
-    275: load_var(18)  -- _SM_DEF
-    276: load_var(5)  -- _SM_STATE
-    277: get_index
-    278: store_var(19)  -- _SM_NS
-    279: load_var(19)  -- _SM_NS
-    280: pop
-    281: load_var(19)  -- _SM_NS
-    282: push_const(16)  -- null
-    283: cmp_neq
-    284: jump_false(341)
-    285: push_scope
-    286: load_var(19)  -- _SM_NS
-    287: store_var(5)  -- _SM_STATE
+    272: store_var(0)  -- _SM_TOKENS
+    273: load_var(0)  -- _SM_TOKENS
+    274: pop
+    275: push_const(4)  -- S
+    276: store_var(5)  -- _SM_STATE
+    277: load_var(5)  -- _SM_STATE
+    278: pop_scope
+    279: jump(281)
+    280: push_const(16)  -- null
+    281: pop_scope
+    282: jump(284)
+    283: push_const(16)  -- null
+    284: pop_scope
+    285: jump(355)
+    286: push_scope
+    287: load_var(18)  -- _SM_DEF
     288: load_var(5)  -- _SM_STATE
-    289: pop
-    290: load_var(20)  -- _SM_ACCEPT
-    291: load_var(5)  -- _SM_STATE
-    292: get_index
-    293: store_var(21)  -- _SM_AT
-    294: load_var(21)  -- _SM_AT
-    295: pop
-    296: load_var(21)  -- _SM_AT
-    297: push_const(16)  -- null
-    298: cmp_eq
-    299: jump_false(314)
-    300: push_scope
-    301: load_var(7)  -- _SM_BUF
-    302: jump_null(308)
-    303: load_var(24)  -- _SM_C
-    304: jump_null(307)
-    305: add
-    306: jump(310)
+    289: get_index
+    290: store_var(19)  -- _SM_NS
+    291: load_var(19)  -- _SM_NS
+    292: pop
+    293: load_var(19)  -- _SM_NS
+    294: push_const(16)  -- null
+    295: cmp_neq
+    296: jump_false(353)
+    297: push_scope
+    298: load_var(19)  -- _SM_NS
+    299: store_var(5)  -- _SM_STATE
+    300: load_var(5)  -- _SM_STATE
+    301: pop
+    302: load_var(20)  -- _SM_ACCEPT
+    303: load_var(5)  -- _SM_STATE
+    304: get_index
+    305: store_var(21)  -- _SM_AT
+    306: load_var(21)  -- _SM_AT
     307: pop
-    308: pop
+    308: load_var(21)  -- _SM_AT
     309: push_const(16)  -- null
-    310: store_var(7)  -- _SM_BUF
-    311: load_var(7)  -- _SM_BUF
-    312: pop_scope
-    313: jump(339)
-    314: push_scope
-    315: load_var(0)  -- _SM_TOKENS
-    316: jump_null(328)
-    317: load_var(22)  -- _SM_EMIT
-    318: load_var(21)  -- _SM_AT
-    319: load_var(7)  -- _SM_BUF
-    320: load_var(9)  -- _SM_BL
-    321: load_var(10)  -- _SM_BC
-    322: call(4)
-    323: make_list(1)
-    324: jump_null(327)
-    325: add
-    326: jump(330)
-    327: pop
-    328: pop
-    329: push_const(16)  -- null
-    330: store_var(0)  -- _SM_TOKENS
-    331: load_var(0)  -- _SM_TOKENS
-    332: pop
-    333: push_const(4)  -- S
-    334: store_var(5)  -- _SM_STATE
-    335: load_var(5)  -- _SM_STATE
-    336: pop
-    337: jump(45)
-    338: pop_scope
-    339: pop_scope
-    340: jump(342)
+    310: cmp_eq
+    311: jump_false(326)
+    312: push_scope
+    313: load_var(7)  -- _SM_BUF
+    314: jump_null(320)
+    315: load_var(24)  -- _SM_C
+    316: jump_null(319)
+    317: add
+    318: jump(322)
+    319: pop
+    320: pop
+    321: push_const(16)  -- null
+    322: store_var(7)  -- _SM_BUF
+    323: load_var(7)  -- _SM_BUF
+    324: pop_scope
+    325: jump(351)
+    326: push_scope
+    327: load_var(0)  -- _SM_TOKENS
+    328: jump_null(340)
+    329: load_var(22)  -- _SM_EMIT
+    330: load_var(21)  -- _SM_AT
+    331: load_var(7)  -- _SM_BUF
+    332: load_var(9)  -- _SM_BL
+    333: load_var(10)  -- _SM_BC
+    334: call(4)
+    335: make_list(1)
+    336: jump_null(339)
+    337: add
+    338: jump(342)
+    339: pop
+    340: pop
     341: push_const(16)  -- null
-    342: pop_scope
-    343: pop
-    344: load_var(32)  -- CHAR_CODE
-    345: load_var(24)  -- _SM_C
-    346: call(1)
-    347: store_var(33)  -- _SM_CD
-    348: load_var(33)  -- _SM_CD
-    349: pop
-    350: load_var(33)  -- _SM_CD
-    351: push_const(34)  -- 10
-    352: cmp_eq
-    353: jump_false(378)
-    354: push_scope
-    355: load_var(14)  -- _SM_PREV
-    356: push_const(35)  -- 13
-    357: cmp_neq
-    358: jump_false(371)
-    359: load_var(11)  -- _SM_LINE
-    360: jump_null(366)
-    361: push_const(8)  -- 1
-    362: jump_null(365)
-    363: add
-    364: jump(368)
-    365: pop
-    366: pop
-    367: push_const(16)  -- null
-    368: store_var(11)  -- _SM_LINE
-    369: load_var(11)  -- _SM_LINE
-    370: jump(372)
-    371: push_const(16)  -- null
-    372: pop
+    342: store_var(0)  -- _SM_TOKENS
+    343: load_var(0)  -- _SM_TOKENS
+    344: pop
+    345: push_const(4)  -- S
+    346: store_var(5)  -- _SM_STATE
+    347: load_var(5)  -- _SM_STATE
+    348: pop
+    349: jump(45)
+    350: pop_scope
+    351: pop_scope
+    352: jump(354)
+    353: push_const(16)  -- null
+    354: pop_scope
+    355: pop
+    356: load_var(32)  -- CHAR_CODE
+    357: load_var(24)  -- _SM_C
+    358: call(1)
+    359: store_var(33)  -- _SM_CD
+    360: load_var(33)  -- _SM_CD
+    361: pop
+    362: load_var(33)  -- _SM_CD
+    363: push_const(34)  -- 10
+    364: cmp_eq
+    365: jump_false(390)
+    366: push_scope
+    367: load_var(14)  -- _SM_PREV
+    368: push_const(35)  -- 13
+    369: cmp_neq
+    370: jump_false(383)
+    371: load_var(11)  -- _SM_LINE
+    372: jump_null(378)
     373: push_const(8)  -- 1
-    374: store_var(12)  -- _SM_COL
-    375: load_var(12)  -- _SM_COL
-    376: pop_scope
-    377: jump(411)
-    378: load_var(33)  -- _SM_CD
-    379: push_const(35)  -- 13
-    380: cmp_eq
-    381: jump_false(400)
-    382: push_scope
-    383: load_var(11)  -- _SM_LINE
-    384: jump_null(390)
+    374: jump_null(377)
+    375: add
+    376: jump(380)
+    377: pop
+    378: pop
+    379: push_const(16)  -- null
+    380: store_var(11)  -- _SM_LINE
+    381: load_var(11)  -- _SM_LINE
+    382: jump(384)
+    383: push_const(16)  -- null
+    384: pop
     385: push_const(8)  -- 1
-    386: jump_null(389)
-    387: add
-    388: jump(392)
-    389: pop
-    390: pop
-    391: push_const(16)  -- null
-    392: store_var(11)  -- _SM_LINE
-    393: load_var(11)  -- _SM_LINE
-    394: pop
-    395: push_const(8)  -- 1
-    396: store_var(12)  -- _SM_COL
-    397: load_var(12)  -- _SM_COL
-    398: pop_scope
-    399: jump(411)
-    400: load_var(12)  -- _SM_COL
-    401: jump_null(407)
-    402: push_const(8)  -- 1
-    403: jump_null(406)
-    404: add
-    405: jump(409)
+    386: store_var(12)  -- _SM_COL
+    387: load_var(12)  -- _SM_COL
+    388: pop_scope
+    389: jump(423)
+    390: load_var(33)  -- _SM_CD
+    391: push_const(35)  -- 13
+    392: cmp_eq
+    393: jump_false(412)
+    394: push_scope
+    395: load_var(11)  -- _SM_LINE
+    396: jump_null(402)
+    397: push_const(8)  -- 1
+    398: jump_null(401)
+    399: add
+    400: jump(404)
+    401: pop
+    402: pop
+    403: push_const(16)  -- null
+    404: store_var(11)  -- _SM_LINE
+    405: load_var(11)  -- _SM_LINE
     406: pop
-    407: pop
-    408: push_const(16)  -- null
-    409: store_var(12)  -- _SM_COL
-    410: load_var(12)  -- _SM_COL
-    411: pop
-    412: load_var(33)  -- _SM_CD
-    413: store_var(14)  -- _SM_PREV
-    414: load_var(14)  -- _SM_PREV
-    415: pop
-    416: load_var(15)  -- _SM_I
-    417: jump_null(423)
-    418: push_const(8)  -- 1
-    419: jump_null(422)
-    420: add
-    421: jump(425)
-    422: pop
+    407: push_const(8)  -- 1
+    408: store_var(12)  -- _SM_COL
+    409: load_var(12)  -- _SM_COL
+    410: pop_scope
+    411: jump(423)
+    412: load_var(12)  -- _SM_COL
+    413: jump_null(419)
+    414: push_const(8)  -- 1
+    415: jump_null(418)
+    416: add
+    417: jump(421)
+    418: pop
+    419: pop
+    420: push_const(16)  -- null
+    421: store_var(12)  -- _SM_COL
+    422: load_var(12)  -- _SM_COL
     423: pop
-    424: push_const(16)  -- null
-    425: store_var(15)  -- _SM_I
-    426: load_var(15)  -- _SM_I
-    427: pop_scope
-    428: store_reg(0)
-    429: jump(45)
-    430: load_reg(0)
-    431: pop
-    432: load_var(0)  -- _SM_TOKENS
-    433: jump_null(450)
-    434: push_const(36)  -- t
-    435: push_const(37)  -- EOF
-    436: push_const(38)  -- v
-    437: push_const(6)  -- 
-    438: push_const(39)  -- l
-    439: load_var(11)  -- _SM_LINE
-    440: push_const(40)  -- sc
-    441: load_var(12)  -- _SM_COL
-    442: push_const(41)  -- len
-    443: push_const(13)  -- 0
-    444: make_map(5)
-    445: make_list(1)
-    446: jump_null(449)
-    447: add
-    448: jump(452)
-    449: pop
-    450: pop
-    451: push_const(16)  -- null
-    452: store_var(0)  -- _SM_TOKENS
-    453: load_var(0)  -- _SM_TOKENS
-    454: pop
-    455: load_var(0)  -- _SM_TOKENS
-    456: ret
-    457: pop_scope
-    458: ret
+    424: load_var(33)  -- _SM_CD
+    425: store_var(14)  -- _SM_PREV
+    426: load_var(14)  -- _SM_PREV
+    427: pop
+    428: load_var(15)  -- _SM_I
+    429: jump_null(435)
+    430: push_const(8)  -- 1
+    431: jump_null(434)
+    432: add
+    433: jump(437)
+    434: pop
+    435: pop
+    436: push_const(16)  -- null
+    437: store_var(15)  -- _SM_I
+    438: load_var(15)  -- _SM_I
+    439: pop_scope
+    440: store_reg(0)
+    441: jump(45)
+    442: load_reg(0)
+    443: pop
+    444: load_var(0)  -- _SM_TOKENS
+    445: jump_null(462)
+    446: push_const(36)  -- t
+    447: push_const(37)  -- EOF
+    448: push_const(38)  -- v
+    449: push_const(6)  -- 
+    450: push_const(39)  -- l
+    451: load_var(11)  -- _SM_LINE
+    452: push_const(40)  -- sc
+    453: load_var(12)  -- _SM_COL
+    454: push_const(41)  -- len
+    455: push_const(13)  -- 0
+    456: make_map(5)
+    457: make_list(1)
+    458: jump_null(461)
+    459: add
+    460: jump(464)
+    461: pop
+    462: pop
+    463: push_const(16)  -- null
+    464: store_var(0)  -- _SM_TOKENS
+    465: load_var(0)  -- _SM_TOKENS
+    466: pop
+    467: load_var(0)  -- _SM_TOKENS
+    468: ret
+    469: pop_scope
+    470: ret
 CHUNK ___SM_UNESCAPE_1 (_SM_S)
   CONST  0: 
   CONST  1: _SM_RES

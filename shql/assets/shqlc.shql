@@ -1,10 +1,10 @@
 --- SHQLC — the SHQL™ compiler program.
---- Compiles SHQL source files to binary bytecode (.shqlbc) and
+--- Compiles SHQL™ source files to binary bytecode (.shqlbc) and
 --- canonical disassembly (.shqla).
 ---
 --- Expects:
 ---   ARGS       - list of command-line arguments
----   __CONSTS   - runtime constants map for the SHQL compiler
+---   __CONSTS   - runtime constants map for the SHQL™ compiler
 ---
 --- The pipeline (lexer, parser, compiler, codec) must be loaded
 --- into the runtime before this program runs.

@@ -437,7 +437,7 @@ END;
 
 -- ---- FOR ----
 -- Body-first expansion with 7 registers — mirrors Dart compiler _compileFor.
--- SHQL parser children: [start_expr, end_expr, body, ?step_expr], val=var_name
+-- SHQL™ parser children: [start_expr, end_expr, body, ?step_expr], val=var_name
 -- Dart parser children: [init_assign, body, limit, ?step]  ← different order!
 --
 --   i     := ch[0]              (start)
@@ -488,7 +488,7 @@ _CMP_FOR(node, chunk, state) := BEGIN
   loop_top   := LENGTH(chunk['code']);
   body_start := loop_top;
 
-  -- Body (ch[2] in SHQL = ch[1] in Dart)
+  -- Body (ch[2] in SHQL™ = ch[1] in Dart)
   _CMP_NODE(ch[2], chunk, state);
   _CMP_EMIT(chunk, 'pop');
 
@@ -499,7 +499,7 @@ _CMP_FOR(node, chunk, state) := BEGIN
   _CMP_EMIT1(chunk, 'load_reg', rFin);
   fin_break := _CMP_JUMP(chunk, 'jump_true');
 
-  -- r_tgt = re-evaluate limit (ch[1] in SHQL = ch[2] in Dart)
+  -- r_tgt = re-evaluate limit (ch[1] in SHQL™ = ch[2] in Dart)
   _CMP_NODE(ch[1], chunk, state);
   _CMP_EMIT1(chunk, 'store_reg', rTgt);
 

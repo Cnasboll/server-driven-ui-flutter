@@ -787,7 +787,7 @@ class BytecodeCompiler {
 
   void _compileMap(ParseTree node, ChunkBuilder b) {
     // Each child is a colon node: [key, value].
-    // Produces a Dart Map (not a SHQL Object).
+    // Produces a Dart Map (not an SHQL™ Object).
     // Keys use _compile (not _compileMapKey) so identifier keys are loaded as
     // variable values — matching Engine behaviour where {k: v} evaluates k.
     for (final pair in node.children) {

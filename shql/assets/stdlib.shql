@@ -49,6 +49,7 @@ SLICE(list, start_idx, end_idx) := BEGIN
     len := LENGTH(list);
     IF start_idx >= len THEN RETURN result;
     actual_end := MIN(end_idx, len - 1);
+    IF actual_end < start_idx THEN RETURN result;
     FOR i := start_idx TO actual_end DO
         result := result + [list[i]];
     RETURN result;
@@ -130,7 +131,7 @@ END;
 -- Returns OBJECT{avg, stdev, min, max, count, sum}.
 -- Usage: STATS(heroes, h => HEIGHT_M(h, null))
 -- NOTE: name STATS must not be imported at the same time as a global variable named Stats
--- (SHQL identifiers are case-insensitive: STATS == Stats would cause a collision).
+-- (SHQL™ identifiers are case-insensitive: STATS == Stats would cause a collision).
 -- Callers inside files that define a Stats global must capture this function first:
 --   _STATS_FN := STATS;   <-- before Stats := OBJECT{...}
 STATS(list, accessor) := BEGIN

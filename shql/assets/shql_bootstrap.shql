@@ -2,7 +2,7 @@
 --- compiler itself.
 ---
 --- Expects:
----   __CONSTS      - runtime constants map for the SHQL compiler
+---   __CONSTS      - runtime constants map for the SHQL™ compiler
 ---   __ASSETS_DIR  - path to assets directory (with .shql sources)
 ---   __OUTPUT_DIR  - path to output directory (for .shqlbc and .shqla)
 ---

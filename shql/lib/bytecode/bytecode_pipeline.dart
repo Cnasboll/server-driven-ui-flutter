@@ -1,16 +1,16 @@
 /// Utilities for working with the SHQL™ self-hosting compiler pipeline.
 ///
-/// [shqlMapToProgram] converts the Map output of the SHQL compiler into a
+/// [shqlMapToProgram] converts the Map output of the SHQL™ compiler into a
 /// typed [BytecodeProgram].  [canonicalCodec] produces the same human-readable
 /// listing format as `shql_codec.shql`'s `codec.decode()`.
 library;
 
 import 'package:shql/bytecode/bytecode.dart';
 
-/// Convert the Map produced by the SHQL self-hosting compiler to a typed
+/// Convert the Map produced by the SHQL™ self-hosting compiler to a typed
 /// [BytecodeProgram] that [BytecodeInterpreter] can execute.
 ///
-/// The SHQL compiler outputs `{ "chunks": { name: chunk, ... } }` where each
+/// The SHQL™ compiler outputs `{ "chunks": { name: chunk, ... } }` where each
 /// chunk has `name`, `params`, `constants`, and `code` (list of instruction
 /// maps with `op` and optional `operand`).  ChunkRefs are stored as strings
 /// of the form `'@chunkName'` (length > 1).
@@ -44,7 +44,7 @@ BytecodeProgram shqlMapToProgram(Map program) {
 }
 
 /// Produces the same human-readable listing format as `shql_codec.shql`'s
-/// `codec.decode()`, so Dart and SHQL codec outputs can be compared directly.
+/// `codec.decode()`, so Dart and SHQL™ codec outputs can be compared directly.
 ///
 /// Chunks are emitted in canonical order: `main` first, then all other chunks
 /// sorted alphabetically by name — matching [BytecodeEncoder]'s canonical

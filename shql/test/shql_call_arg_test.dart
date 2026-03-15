@@ -68,7 +68,7 @@ void main() {
     return BytecodeInterpreter(program, testRt).executeScoped('main');
   }
 
-  test('STRING(IF TRUE THEN INT(x) ELSE x) — SHQL compiler', () async {
+  test('STRING(IF TRUE THEN INT(x) ELSE x) — SHQL™ compiler', () async {
     final result = await compileWithShqlAndRun('''
       x := 75.0;
       STRING(IF TRUE THEN INT(x) ELSE x)
@@ -76,7 +76,7 @@ void main() {
     expect(result, '75');
   });
 
-  test('Exact calculator formatted_result pattern — SHQL compiler', () async {
+  test('Exact calculator formatted_result pattern — SHQL™ compiler', () async {
     final result = await compileWithShqlAndRun('''
       result := 75.0;
       index := 5;
@@ -91,7 +91,7 @@ void main() {
     expect(result, '75');
   });
 
-  test('Full calculator.shql — SHQL pipeline call(1) for STRING', () async {
+  test('Full calculator.shql — SHQL™ pipeline call(1) for STRING', () async {
     final src = File('../awesome_calculator/assets/shql/calculator.shql').readAsStringSync();
     final consts = {
       for (final e in Runtime.allConstants.entries)
@@ -108,7 +108,7 @@ void main() {
         reason: 'STRING should be called with 1 argument');
   });
 
-  test('SHQL pipeline with ARGS global does not corrupt parser', () async {
+  test('SHQL™ pipeline with ARGS global does not corrupt parser', () async {
     // Regression test: when ARGS is set on globalScope (like shqlc does),
     // the parser's internal "args" variable used to overwrite the global ARGS
     // instead of creating a local, causing wrong call arg counts.
@@ -120,7 +120,7 @@ void main() {
 
     final shqlCs = Runtime.prepareConstantsSet();
     final shqlRt = Runtime.prepareRuntime(shqlCs);
-    // Set ARGS on globalScope — this used to corrupt the SHQL parser
+    // Set ARGS on globalScope — this used to corrupt the SHQL™ parser
     shqlRt.globalScope.setVariable(
       shqlRt.identifiers.include('ARGS'),
       ['some_file.shql'],
@@ -152,7 +152,7 @@ void main() {
         reason: 'STRING should be call(1) even with ARGS in global scope');
   });
 
-  test('Full calculator.shql — Dart vs SHQL pipeline output matches', () async {
+  test('Full calculator.shql — Dart vs SHQL™ pipeline output matches', () async {
     final src = File('../awesome_calculator/assets/shql/calculator.shql').readAsStringSync();
     final consts = {
       for (final e in Runtime.allConstants.entries)
@@ -166,7 +166,7 @@ void main() {
     ) as List;
     final dartDisasm = (dartOutput[1] as List).cast<String>();
 
-    // SHQL-compiled pipeline (from .shqlbc)
+    // SHQL™-compiled pipeline (from .shqlbc)
     final shqlCs = Runtime.prepareConstantsSet();
     final shqlRt = Runtime.prepareRuntime(shqlCs);
     for (final name in ['stdlib', 'shql_lexer', 'shql_parser', 'shql_compiler', 'shql_codec']) {
@@ -191,6 +191,6 @@ void main() {
     final shqlDisasm = (shqlOutput[1] as List).cast<String>();
 
     expect(shqlDisasm, dartDisasm,
-        reason: 'SHQL-compiled pipeline must match Dart-compiled pipeline');
+        reason: 'SHQL™-compiled pipeline must match Dart-compiled pipeline');
   });
 }

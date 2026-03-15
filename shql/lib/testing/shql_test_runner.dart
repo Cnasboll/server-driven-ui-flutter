@@ -52,7 +52,7 @@ typedef ShqlExecutorFn = Future<dynamic> Function(
 class ShqlTestRunner {
   /// Called for every assertion.
   /// [actual] is the evaluated value, [expected] is the target,
-  /// [expr] is the SHQL expression text (for error messages).
+  /// [expr] is the SHQL™ expression text (for error messages).
   final void Function(dynamic actual, dynamic expected, String expr) onExpect;
 
   /// Custom execution strategy. When null the default [Engine.execute] is used.
@@ -205,7 +205,7 @@ class ShqlTestRunner {
 
   // ─── Object helpers ────────────────────────────────────────────────
 
-  /// Create a SHQL [Object] from a Dart map.
+  /// Create an SHQL™ [Object] from a Dart map.
   Object makeObject(Map<String, dynamic> map) {
     final obj = Object();
     for (final entry in map.entries) {
@@ -215,7 +215,7 @@ class ShqlTestRunner {
     return obj;
   }
 
-  /// Read a named field from a SHQL [Object].
+  /// Read a named field from an SHQL™ [Object].
   dynamic readField(dynamic obj, String field) {
     if (obj is! Object) return null;
     final id = constantsSet.identifiers.include(field.toUpperCase());

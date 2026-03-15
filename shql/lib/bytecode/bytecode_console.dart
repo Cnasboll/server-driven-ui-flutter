@@ -1,4 +1,4 @@
-/// Console I/O and file system bindings for SHQL programs.
+/// Console I/O and file system bindings for SHQL™ programs.
 ///
 /// Registers native functions for file I/O, command-line arguments, and
 /// environment variables into the static [Runtime] function maps so they
@@ -13,7 +13,7 @@ import 'package:shql/execution/runtime/runtime.dart';
 /// Register all console/file-system native functions.
 ///
 /// Functions are added to the static [Runtime.unaryFunctions] /
-/// [Runtime.binaryFunctions] maps so they work via `_EXTERN` from SHQL.
+/// [Runtime.binaryFunctions] maps so they work via `_EXTERN` from SHQL™.
 /// Console I/O callbacks and ARGS are set on the [rt] instance.
 ///
 /// Available after this call (via stdlib _EXTERN wrappers):

@@ -50,7 +50,7 @@ class BytecodeEncoder {
     _u16(buf, program.chunks.length);
     // Canonical order: 'main' first, remaining chunks sorted alphabetically.
     // This makes the binary output deterministic regardless of insertion order,
-    // so Dart-compiled and SHQL-compiled programs produce identical bytes.
+    // so Dart-compiled and SHQL™-compiled programs produce identical bytes.
     final sorted = [...program.chunks.values]
       ..sort((a, b) => a.name == 'main'
           ? -1
@@ -207,7 +207,7 @@ class BytecodeDecoder {
     final magic = [_byte(), _byte(), _byte(), _byte()];
     if (magic[0] != 0x53 || magic[1] != 0x48 ||
         magic[2] != 0x51 || magic[3] != 0x4C) {
-      throw FormatException('Invalid SHQL bytecode magic bytes');
+      throw FormatException('Invalid SHQL™ bytecode magic bytes');
     }
   }
 

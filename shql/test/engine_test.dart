@@ -83,13 +83,13 @@ Future<dynamic> evalBytecode(
     startingScope: startingScope,
   );
 
-  // SHQL self-hosting pipeline: compile + decode via the SHQL compiler and
+  // SHQL™ self-hosting pipeline: compile + decode via the SHQL™ compiler and
   // codec, then assert both the bytecode disassembly and the execution result
   // match the Dart reference. Skipped when startingScope is provided (the
   // scope chain can't be replicated on the pipeline runtime).
   if (startingScope == null) {
     await _ensurePipeline();
-    // Pass runtime constants (ANSWER, PI, …) so the SHQL compiler can inline
+    // Pass runtime constants (ANSWER, PI, …) so the SHQL™ compiler can inline
     // them as push_const instead of load_var — matching the Dart compiler.
     final consts = {
       for (final e in Runtime.allConstants.entries)
@@ -103,8 +103,8 @@ Future<dynamic> evalBytecode(
     final shqlProgMap    = shqlOutput[0] as Map;
     final shqlLines      = (shqlOutput[1] as List).cast<String>();
     expect(shqlLines, canonicalCodec(roundTripped),
-        reason: 'SHQL compiler + codec must produce identical output to Dart compiler + codec');
-    // Execute the SHQL-compiled program on the same per-test runtime used by
+        reason: 'SHQL™ compiler + codec must produce identical output to Dart compiler + codec');
+    // Execute the SHQL™-compiled program on the same per-test runtime used by
     // the Dart path — keeping _pipelineRt dedicated to compilation only.
     final shqlResult = await BytecodeInterpreter(
       shqlMapToProgram(shqlProgMap),
@@ -115,10 +115,10 @@ Future<dynamic> evalBytecode(
     if (dartResult == null || dartResult is bool || dartResult is num ||
         dartResult is String || dartResult is List || dartResult is Map) {
       expect(shqlResult, dartResult,
-          reason: 'SHQL self-hosting pipeline must produce the same result as the Dart compiler');
+          reason: 'SHQL™ self-hosting pipeline must produce the same result as the Dart compiler');
     } else if (dartResult != null) {
       expect(shqlResult, isNotNull,
-          reason: 'SHQL self-hosting pipeline must produce a non-null result');
+          reason: 'SHQL™ self-hosting pipeline must produce a non-null result');
     }
   }
 
@@ -143,7 +143,7 @@ Future<dynamic> _runOnVm(
 late String _stdlibSrc;
 late String _lexerSrc, _parserSrc, _compilerSrc, _codecSrc;
 
-/// Dedicated runtime for the SHQL self-hosting pipeline (lexer / parser /
+/// Dedicated runtime for the SHQL™ self-hosting pipeline (lexer / parser /
 /// compiler / codec).  Loaded once; never used to execute compiled test
 /// programs so its state stays pristine across the entire test run.
 Runtime? _pipelineRt;
@@ -203,7 +203,7 @@ void shqlBoth(String name, String src, dynamic expected, List<String> expectedBy
 
 /// Tests [src] against both the engine and bytecode VM, with stdlib pre-loaded
 /// as a separate program (not concatenated) — mirroring how herodex_3000 loads
-/// stdlib.shql once, then evaluates individual SHQL programs against that runtime.
+/// stdlib.shql once, then evaluates individual SHQL™ programs against that runtime.
 void shqlBothStdlib(String name, String src, dynamic expected, List<String> expectedBytecode) {
   test('$name [engine]', () async {
     final cs = Runtime.prepareConstantsSet();
@@ -2873,7 +2873,7 @@ POP_ROUTE()
         expect(e.toString(), contains('undefinedFunction'));
       }
 
-      // Bytecode must also throw on the same SHQL.
+      // Bytecode must also throw on the same SHQL™.
       try {
         await evalBytecode(src, ['make_closure(.__TEST_0)', 'store_var(TEST)', 'load_var(TEST)', 'pop', 'load_var(TEST)', 'call(0)', 'ret']);
         fail('Expected bytecode to throw');
@@ -5839,11 +5839,11 @@ f()
       'ret',
     ]);
 
-  // ---- SHQL self-hosting compiler smoke tests ----
+  // ---- SHQL™ self-hosting compiler smoke tests ----
   // Everything in this group goes through _runOnVm (Dart BytecodeCompiler +
   // BytecodeInterpreter). No evalEngine calls.
-  group('SHQL self-hosting compiler', () {
-    /// Run the SHQL self-hosting pipeline on [shqlSrc], returning the program Map.
+  group('SHQL™ self-hosting compiler', () {
+    /// Run the SHQL™ self-hosting pipeline on [shqlSrc], returning the program Map.
     Future<Map> compile(String shqlSrc) async {
       await _ensurePipeline();
       return await _runOnVm('''
@@ -5853,7 +5853,7 @@ compiler.compile(tree)
 ''', _pipelineRt!, _pipelineCs!, boundValues: {'src': shqlSrc}) as Map;
     }
 
-    /// Execute a SHQL-compiled program Map on a fresh bytecode VM.
+    /// Execute a SHQL™-compiled program Map on a fresh bytecode VM.
     Future<dynamic> run(Map program) {
       final rt = Runtime.prepareRuntime(Runtime.prepareConstantsSet());
       return BytecodeInterpreter(shqlMapToProgram(program), rt).executeScoped('main');
@@ -5907,17 +5907,17 @@ codec.decode(program)
 
     // The ultimate self-hosting test: Stage 2 bootstrap.
     //
-    // Stage 1: SHQL pipeline (Dart-compiled) compiles all four pipeline files
+    // Stage 1: SHQL™ pipeline (Dart-compiled) compiles all four pipeline files
     //          — lexer, parser, compiler, codec — through itself.
     // Stage 2: the four compiled programs are executed into a fresh runtime
-    //          (only stdlib is Dart-compiled; everything else is SHQL-compiled).
+    //          (only stdlib is Dart-compiled; everything else is SHQL™-compiled).
     //          That Stage-2 pipeline then compiles a test expression.
     // Assertion: Stage-2 bytecode output is identical to Stage-1 output.
     //
-    // If this passes, the SHQL compiler can compile the entire pipeline
+    // If this passes, the SHQL™ compiler can compile the entire pipeline
     // (including itself) and the result is a fully functional, self-reproducing
     // toolchain — the classical definition of a self-hosting compiler.
-    test('Stage 2 bootstrap — full pipeline compiled by SHQL, not Dart', () async {
+    test('Stage 2 bootstrap — full pipeline compiled by SHQL™, not Dart', () async {
       await _ensurePipeline();
 
       // Pipeline files are compiled with empty consts (avoid e→E inlining, etc.).
@@ -5926,10 +5926,10 @@ codec.decode(program)
       final pipelineNames = ['lexer', 'parser', 'compiler', 'codec'];
       final pipelineSrcs  = [_lexerSrc, _parserSrc, _compilerSrc, _codecSrc];
 
-      // For each pipeline source file: ask the SHQL pipeline (_pipelineVm) to
+      // For each pipeline source file: ask the SHQL™ pipeline (_pipelineVm) to
       // compile it, then compare the resulting bytecode against the Dart
       // compiler's golden output saved in _pipelineBytecodes during setup.
-      // This is the bootstrap equivalence check: the SHQL compiler compiling
+      // This is the bootstrap equivalence check: the SHQL™ compiler compiling
       // itself must reproduce exactly what the Dart compiler produced.
       for (var i = 0; i < pipelineSrcs.length; i++) {
         final out = await _pipelineVm!.executeScoped(
@@ -5940,9 +5940,9 @@ codec.decode(program)
         final shqlLines   = (out[1] as List).cast<String>();
         final (dartEncoded, dartLines) = _pipelineBytecodes[i];
         expect(shqlLines, dartLines,
-            reason: 'SHQL codec disassembly must match Dart for ${pipelineNames[i]}.shql');
+            reason: 'SHQL™ codec disassembly must match Dart for ${pipelineNames[i]}.shql');
         expect(shqlEncoded, dartEncoded,
-            reason: 'SHQL binary encoding must match Dart for ${pipelineNames[i]}.shql');
+            reason: 'SHQL™ binary encoding must match Dart for ${pipelineNames[i]}.shql');
       }
     });
 

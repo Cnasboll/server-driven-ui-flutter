@@ -49,7 +49,7 @@ Future<void> main(List<String> args) async {
     await BytecodeInterpreter(prog, rt).executeScoped('main');
   }
 
-  // ---- Set runtime constants for the SHQL compiler ----
+  // ---- Set runtime constants for the SHQL™ compiler ----
   rt.globalScope.setVariable(
     rt.identifiers.include('__CONSTS'),
     {

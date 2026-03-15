@@ -114,7 +114,7 @@ enum Opcode {
   /// Pop `operand` items (last-pushed = last element) and push a [List].
   makeList,
 
-  /// Pop `operand * 2` items (key, value pairs) and push an SHQL [Object].
+  /// Pop `operand * 2` items (key, value pairs) and push an SHQL™ [Object].
   makeObject,
 
   /// Like [makeObject] but uses the current frame scope's backing [Object]

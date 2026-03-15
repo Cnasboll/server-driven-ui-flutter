@@ -25,7 +25,7 @@ Future<void> main(List<String> args) async {
       exit(1);
     } else if (programPath == null) {
       programPath = args[i];
-      // Everything after the program path is passed to the SHQL program
+      // Everything after the program path is passed to the SHQL™ program
       programArgs.addAll(args.sublist(i + 1));
       break;
     }

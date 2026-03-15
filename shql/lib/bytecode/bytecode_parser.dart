@@ -244,7 +244,7 @@ class BytecodeParser {
         );
       }
 
-      // Must be an opcode (identifier token, which includes SHQL keywords)
+      // Must be an opcode (identifier token, which includes SHQL™ keywords)
       if (tok.type != TokenTypes.identifier) {
         throw BytecodeParseError(
           'Expected opcode, got "${tok.lexeme}" (${tok.type})',

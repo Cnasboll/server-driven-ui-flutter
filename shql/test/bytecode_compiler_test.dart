@@ -1,6 +1,6 @@
 /// Compiler bytecode snapshot tests.
 ///
-/// Every test compiles a SHQL expression and compares the exact disassembled
+/// Every test compiles a SHQL™ expression and compares the exact disassembled
 /// instruction sequence against a golden list.  Unintentional drift in compiler
 /// output is caught automatically; intentional changes require updating the
 /// golden lists here.

@@ -250,9 +250,12 @@ _SM_TOKENIZE(_sm_src) := BEGIN
     _sm_c := SUBSTRING(_sm_src, _sm_i, _sm_i + 1);
     _sm_cls := _SM_CLASSIFY(_sm_c);
 
-    -- Build transition key
-    _sm_key := _sm_state + ":" + _sm_cls;
-    _sm_next := _SM_TRANS[_sm_key];
+    -- Look up transition (NULL cls → no transition)
+    _sm_next := NULL;
+    IF _sm_cls <> NULL THEN BEGIN
+      _sm_key := _sm_state + ":" + _sm_cls;
+      _sm_next := _SM_TRANS[_sm_key];
+    END;
 
     IF _sm_next <> NULL THEN BEGIN
       -- Explicit transition found
