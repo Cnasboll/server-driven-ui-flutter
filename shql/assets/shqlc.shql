@@ -83,7 +83,7 @@ FOR _fi := 0 TO LENGTH(_source_files) - 1 DO BEGIN
     _dec := codec.decode(_prog);
 
     -- Encode to binary
-    _encoded := _ENCODE_PROGRAM(_prog);
+    _encoded := codec.encode(_prog);
 
     -- Write binary bytecode
     _bc_path := _out_dir + "/" + _base_name + ".shqlbc";

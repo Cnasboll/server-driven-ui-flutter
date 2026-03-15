@@ -787,17 +787,13 @@ CHUNK __PLOT_40 (F, X1, X2)
   CONST  4: X1
   CONST  5: null
   CONST  6: RANGE
-  CONST  7: MAX
-  CONST  8: 0.1
-  CONST  9: 100.0
-  CONST  10: STEP
-  CONST  11: START
-  CONST  12: X
-  CONST  13: false
-  CONST  14: F
-  CONST  15: _DISPLAY_GRAPH
-  CONST  16: PRINT
-  CONST  17: Type HIDE_GRAPH to hide graph again
+  CONST  7: START
+  CONST  8: X
+  CONST  9: false
+  CONST  10: F
+  CONST  11: _DISPLAY_GRAPH
+  CONST  12: PRINT
+  CONST  13: Type HIDE_GRAPH to hide graph again
   CODE:
     0: push_scope
     1: make_list(0)
@@ -824,127 +820,112 @@ CHUNK __PLOT_40 (F, X1, X2)
     22: store_var(6)  -- RANGE
     23: load_var(6)  -- RANGE
     24: pop
-    25: load_var(7)  -- MAX
-    26: push_const(8)  -- 0.1
-    27: load_var(6)  -- RANGE
-    28: jump_null(34)
-    29: push_const(9)  -- 100.0
-    30: jump_null(33)
-    31: div
-    32: jump(36)
-    33: pop
-    34: pop
-    35: push_const(5)  -- null
-    36: call(2)
-    37: store_var(10)  -- STEP
-    38: load_var(10)  -- STEP
-    39: pop
-    40: load_var(2)  -- DOUBLE
-    41: load_var(4)  -- X1
-    42: call(1)
-    43: store_var(11)  -- START
-    44: load_var(11)  -- START
-    45: pop
-    46: load_var(11)  -- START
-    47: store_var(12)  -- X
-    48: load_var(12)  -- X
+    25: pop
+    26: load_var(2)  -- DOUBLE
+    27: load_var(4)  -- X1
+    28: call(1)
+    29: store_var(7)  -- START
+    30: load_var(7)  -- START
+    31: pop
+    32: load_var(7)  -- START
+    33: store_var(8)  -- X
+    34: load_var(8)  -- X
+    35: pop
+    36: load_var(8)  -- X
+    37: store_reg(0)
+    38: push_const(9)  -- false
+    39: store_reg(1)
+    40: push_scope
+    41: load_var(0)  -- X_VECTOR
+    42: jump_null(49)
+    43: load_var(8)  -- X
+    44: make_list(1)
+    45: jump_null(48)
+    46: add
+    47: jump(51)
+    48: pop
     49: pop
-    50: load_var(12)  -- X
-    51: store_reg(0)
-    52: push_const(13)  -- false
-    53: store_reg(1)
-    54: push_scope
-    55: load_var(0)  -- X_VECTOR
-    56: jump_null(63)
-    57: load_var(12)  -- X
-    58: make_list(1)
-    59: jump_null(62)
-    60: add
-    61: jump(65)
-    62: pop
+    50: push_const(5)  -- null
+    51: store_var(0)  -- X_VECTOR
+    52: load_var(0)  -- X_VECTOR
+    53: pop
+    54: load_var(1)  -- Y_VECTOR
+    55: jump_null(64)
+    56: load_var(10)  -- F
+    57: load_var(8)  -- X
+    58: call(1)
+    59: make_list(1)
+    60: jump_null(63)
+    61: add
+    62: jump(66)
     63: pop
-    64: push_const(5)  -- null
-    65: store_var(0)  -- X_VECTOR
-    66: load_var(0)  -- X_VECTOR
-    67: pop
-    68: load_var(1)  -- Y_VECTOR
-    69: jump_null(78)
-    70: load_var(14)  -- F
-    71: load_var(12)  -- X
-    72: call(1)
-    73: make_list(1)
-    74: jump_null(77)
-    75: add
-    76: jump(80)
-    77: pop
-    78: pop
-    79: push_const(5)  -- null
-    80: store_var(1)  -- Y_VECTOR
+    64: pop
+    65: push_const(5)  -- null
+    66: store_var(1)  -- Y_VECTOR
+    67: load_var(1)  -- Y_VECTOR
+    68: pop
+    69: load_var(8)  -- X
+    70: jump_null(76)
+    71: load_var(7)  -- START
+    72: jump_null(75)
+    73: cmp_gt
+    74: jump(78)
+    75: pop
+    76: pop
+    77: push_const(5)  -- null
+    78: jump_false(84)
+    79: load_var(11)  -- _DISPLAY_GRAPH
+    80: load_var(0)  -- X_VECTOR
     81: load_var(1)  -- Y_VECTOR
-    82: pop
-    83: load_var(12)  -- X
-    84: jump_null(90)
-    85: load_var(11)  -- START
-    86: jump_null(89)
-    87: cmp_gt
-    88: jump(92)
-    89: pop
-    90: pop
-    91: push_const(5)  -- null
-    92: jump_false(98)
-    93: load_var(15)  -- _DISPLAY_GRAPH
-    94: load_var(0)  -- X_VECTOR
-    95: load_var(1)  -- Y_VECTOR
-    96: call(2)
-    97: jump(99)
-    98: push_const(5)  -- null
-    99: pop_scope
-    100: pop
-    101: load_reg(1)
-    102: jump_true(139)
-    103: load_var(3)  -- X2
-    104: store_reg(2)
-    105: load_reg(2)
-    106: load_reg(0)
-    107: cmp_gte
-    108: store_reg(3)
-    109: load_var(10)  -- STEP
-    110: store_reg(4)
-    111: load_var(12)  -- X
-    112: load_reg(4)
-    113: add
-    114: store_reg(5)
-    115: load_reg(3)
-    116: load_reg(5)
-    117: load_reg(2)
-    118: cmp_gt
-    119: log_and
-    120: load_reg(3)
-    121: log_not
-    122: load_reg(5)
-    123: load_reg(2)
-    124: cmp_lt
-    125: log_and
-    126: log_or
-    127: store_reg(6)
-    128: load_reg(6)
-    129: load_reg(5)
-    130: load_reg(2)
-    131: cmp_eq
-    132: log_or
-    133: store_reg(1)
-    134: load_reg(6)
-    135: jump_true(139)
-    136: load_reg(5)
-    137: store_var(12)  -- X
-    138: jump(54)
-    139: push_const(5)  -- null
-    140: pop
-    141: load_var(16)  -- PRINT
-    142: push_const(17)  -- Type HIDE_GRAPH to hide graph again
-    143: call(1)
-    144: pop_scope
-    145: ret
+    82: call(2)
+    83: jump(85)
+    84: push_const(5)  -- null
+    85: pop_scope
+    86: pop
+    87: load_reg(1)
+    88: jump_true(124)
+    89: load_var(3)  -- X2
+    90: store_reg(2)
+    91: load_reg(2)
+    92: load_reg(0)
+    93: cmp_gte
+    94: store_reg(3)
+    95: store_reg(4)
+    96: load_var(8)  -- X
+    97: load_reg(4)
+    98: add
+    99: store_reg(5)
+    100: load_reg(3)
+    101: load_reg(5)
+    102: load_reg(2)
+    103: cmp_gt
+    104: log_and
+    105: load_reg(3)
+    106: log_not
+    107: load_reg(5)
+    108: load_reg(2)
+    109: cmp_lt
+    110: log_and
+    111: log_or
+    112: store_reg(6)
+    113: load_reg(6)
+    114: load_reg(5)
+    115: load_reg(2)
+    116: cmp_eq
+    117: log_or
+    118: store_reg(1)
+    119: load_reg(6)
+    120: jump_true(124)
+    121: load_reg(5)
+    122: store_var(8)  -- X
+    123: jump(40)
+    124: push_const(5)  -- null
+    125: pop
+    126: load_var(12)  -- PRINT
+    127: push_const(13)  -- Type HIDE_GRAPH to hide graph again
+    128: call(1)
+    129: pop_scope
+    130: ret
 CHUNK __POW_27 (A, B)
   CONST  0: _EXTERN
   CONST  1: POW

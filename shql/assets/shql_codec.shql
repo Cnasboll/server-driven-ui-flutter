@@ -80,6 +80,164 @@ _CDC_DECODE(program) := BEGIN
   RETURN out;
 END;
 
+-- ============================================================
+-- Binary encoder — converts a program map to a list of bytes.
+--
+-- Requires: UTF8_ENCODE, DOUBLE_TO_BYTES (native)
+-- ============================================================
+
+-- Opcode mnemonic → byte index
+_ENC_OPCODES := {
+  "push_const": 0, "load_var": 1, "store_var": 2, "pop": 3, "dup": 4,
+  "load_reg": 5, "store_reg": 6,
+  "add": 7, "sub": 8, "mul": 9, "div": 10, "mod": 11, "pow": 12, "neg": 13,
+  "cmp_eq": 14, "cmp_neq": 15, "cmp_lt": 16, "cmp_lte": 17, "cmp_gt": 18, "cmp_gte": 19,
+  "log_and": 20, "log_or": 21, "log_not": 22,
+  "jump": 23, "jump_false": 24, "jump_true": 25, "jump_null": 26,
+  "push_scope": 27, "pop_scope": 28,
+  "call": 29, "make_closure": 30, "ret": 31,
+  "get_member": 32, "set_member": 33, "get_index": 34, "set_index": 35,
+  "make_list": 36, "make_object": 37, "make_object_here": 38, "make_map": 39,
+  "op_in": 40, "op_match": 41, "op_not_match": 42
+};
+
+_ENC_HAS_OPERAND := {
+  "push_const": TRUE, "load_var": TRUE, "store_var": TRUE,
+  "load_reg": TRUE, "store_reg": TRUE,
+  "jump": TRUE, "jump_false": TRUE, "jump_true": TRUE, "jump_null": TRUE,
+  "call": TRUE, "make_closure": TRUE,
+  "get_member": TRUE, "set_member": TRUE,
+  "make_list": TRUE, "make_object": TRUE, "make_object_here": TRUE, "make_map": TRUE
+};
+
+_ENC_U16(buf, val) := BEGIN
+  _enc_b0 := val % 256;
+  _enc_b1 := INT(val / 256) % 256;
+  RETURN buf + [_enc_b0, _enc_b1];
+END;
+
+_ENC_I32(buf, val) := BEGIN
+  _enc_v := IF val < 0 THEN val + 4294967296 ELSE val;
+  _enc_b0 := _enc_v % 256; _enc_v := INT(_enc_v / 256);
+  _enc_b1 := _enc_v % 256; _enc_v := INT(_enc_v / 256);
+  _enc_b2 := _enc_v % 256; _enc_v := INT(_enc_v / 256);
+  _enc_b3 := _enc_v % 256;
+  RETURN buf + [_enc_b0, _enc_b1, _enc_b2, _enc_b3];
+END;
+
+_ENC_I64(buf, val) := BEGIN
+  -- For negative values: encode the magnitude then flip all bytes (two's complement).
+  -- val = -1 → magnitude = 1, bytes [1,0,0,0,0,0,0,0], flipped = [254,255,...], +1 = [255,255,...]
+  IF val < 0 THEN BEGIN
+    _enc_mag := 0 - val;
+    _enc_bytes := [];
+    FOR _enc_bi := 0 TO 7 DO BEGIN
+      _enc_bytes := _enc_bytes + [_enc_mag % 256];
+      _enc_mag := INT(_enc_mag / 256);
+    END;
+    -- Negate via two's complement: invert then add 1
+    _enc_carry := 1;
+    FOR _enc_bi := 0 TO 7 DO BEGIN
+      _enc_inv := 255 - _enc_bytes[_enc_bi] + _enc_carry;
+      _enc_bytes[_enc_bi] := _enc_inv % 256;
+      _enc_carry := INT(_enc_inv / 256);
+    END;
+    RETURN buf + _enc_bytes;
+  END;
+  _enc_v := val;
+  _enc_bytes := [];
+  FOR _enc_bi := 0 TO 7 DO BEGIN
+    _enc_bytes := _enc_bytes + [_enc_v % 256];
+    _enc_v := INT(_enc_v / 256);
+  END;
+  RETURN buf + _enc_bytes;
+END;
+
+_ENC_STR8(buf, str) := BEGIN
+  _enc_bytes := UTF8_ENCODE(str);
+  buf := buf + [LENGTH(_enc_bytes)];
+  buf := buf + _enc_bytes;
+  RETURN buf;
+END;
+
+_ENC_STR16(buf, str) := BEGIN
+  _enc_bytes := UTF8_ENCODE(str);
+  buf := _ENC_U16(buf, LENGTH(_enc_bytes));
+  buf := buf + _enc_bytes;
+  RETURN buf;
+END;
+
+_ENC_CONSTANT(buf, cv) := BEGIN
+  IF cv = NULL THEN
+    RETURN buf + [0];
+  IF cv = TRUE THEN
+    RETURN buf + [5];
+  IF cv = FALSE THEN
+    RETURN buf + [6];
+  IF STRING(cv) = cv THEN BEGIN
+    IF LENGTH(cv) > 1 THEN BEGIN
+      IF SUBSTRING(cv, 0, 1) = "@" THEN BEGIN
+        buf := buf + [4];
+        RETURN _ENC_STR8(buf, SUBSTRING(cv, 1, LENGTH(cv)));
+      END;
+    END;
+    buf := buf + [3];
+    RETURN _ENC_STR16(buf, cv);
+  END;
+  IF DOUBLE(cv) <> INT(cv) OR STRING(cv) ~ r'\.' THEN BEGIN
+    buf := buf + [2];
+    buf := buf + DOUBLE_TO_BYTES(cv);
+    RETURN buf;
+  END;
+  buf := buf + [1];
+  RETURN _ENC_I64(buf, cv);
+END;
+
+_ENC_SORT_NAMES(names) := BEGIN
+  _enc_rest := [];
+  FOR _enc_si := 0 TO LENGTH(names) - 1 DO
+    IF names[_enc_si] <> "main" THEN
+      _enc_rest := _enc_rest + [names[_enc_si]];
+  _enc_rest := LIST_SORT(_enc_rest);
+  RETURN ["main"] + _enc_rest;
+END;
+
+_ENC_CHUNK(buf, chunk) := BEGIN
+  buf := _ENC_STR8(buf, chunk['name']);
+  _enc_params := IF chunk['params'] = NULL THEN [] ELSE chunk['params'];
+  buf := buf + [LENGTH(_enc_params)];
+  IF LENGTH(_enc_params) > 0 THEN
+    FOR _enc_pi := 0 TO LENGTH(_enc_params) - 1 DO
+      buf := _ENC_STR8(buf, _enc_params[_enc_pi]);
+  _enc_consts := chunk['constants'];
+  buf := _ENC_U16(buf, LENGTH(_enc_consts));
+  IF LENGTH(_enc_consts) > 0 THEN
+    FOR _enc_ci := 0 TO LENGTH(_enc_consts) - 1 DO
+      buf := _ENC_CONSTANT(buf, _enc_consts[_enc_ci]);
+  _enc_code := chunk['code'];
+  buf := _ENC_U16(buf, LENGTH(_enc_code));
+  IF LENGTH(_enc_code) > 0 THEN
+    FOR _enc_ii := 0 TO LENGTH(_enc_code) - 1 DO BEGIN
+      _enc_instr := _enc_code[_enc_ii];
+      _enc_op := _enc_instr['op'];
+      buf := buf + [_ENC_OPCODES[_enc_op]];
+      IF _ENC_HAS_OPERAND[_enc_op] = TRUE THEN
+        buf := _ENC_I32(buf, IF _enc_instr['operand'] = NULL THEN 0 ELSE _enc_instr['operand']);
+    END;
+  RETURN buf;
+END;
+
+_ENC_ENCODE(prog) := BEGIN
+  _enc_chunks := prog['chunks'];
+  _enc_names := _ENC_SORT_NAMES(MAP_KEYS(_enc_chunks));
+  _enc_buf := [83, 72, 81, 76, 1];
+  _enc_buf := _ENC_U16(_enc_buf, LENGTH(_enc_names));
+  FOR _enc_ni := 0 TO LENGTH(_enc_names) - 1 DO
+    _enc_buf := _ENC_CHUNK(_enc_buf, _enc_chunks[_enc_names[_enc_ni]]);
+  RETURN _enc_buf;
+END;
+
 codec := OBJECT{
-  decode: (program) => _CDC_DECODE(program)
+  decode: (program) => _CDC_DECODE(program),
+  encode: (prog) => _ENC_ENCODE(prog)
 };

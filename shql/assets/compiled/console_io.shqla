@@ -17,8 +17,10 @@ CHUNK main ()
   CONST  15: FILE_WRITE
   CONST  16: .__FILE_WRITE_BYTES_8
   CONST  17: FILE_WRITE_BYTES
-  CONST  18: .___ENCODE_PROGRAM_9
-  CONST  19: _ENCODE_PROGRAM
+  CONST  18: .__UTF8_ENCODE_9
+  CONST  19: UTF8_ENCODE
+  CONST  20: .__DOUBLE_TO_BYTES_10
+  CONST  21: DOUBLE_TO_BYTES
   CODE:
     0: make_closure(0)  -- .__FILE_READ_0
     1: store_var(1)  -- FILE_READ
@@ -56,10 +58,14 @@ CHUNK main ()
     33: store_var(17)  -- FILE_WRITE_BYTES
     34: load_var(17)  -- FILE_WRITE_BYTES
     35: pop
-    36: make_closure(18)  -- .___ENCODE_PROGRAM_9
-    37: store_var(19)  -- _ENCODE_PROGRAM
-    38: load_var(19)  -- _ENCODE_PROGRAM
-    39: ret
+    36: make_closure(18)  -- .__UTF8_ENCODE_9
+    37: store_var(19)  -- UTF8_ENCODE
+    38: load_var(19)  -- UTF8_ENCODE
+    39: pop
+    40: make_closure(20)  -- .__DOUBLE_TO_BYTES_10
+    41: store_var(21)  -- DOUBLE_TO_BYTES
+    42: load_var(21)  -- DOUBLE_TO_BYTES
+    43: ret
 CHUNK __DIR_CREATE_3 (A)
   CONST  0: _EXTERN
   CONST  1: DIR_CREATE
@@ -67,6 +73,17 @@ CHUNK __DIR_CREATE_3 (A)
   CODE:
     0: load_var(0)  -- _EXTERN
     1: push_const(1)  -- DIR_CREATE
+    2: load_var(2)  -- A
+    3: make_list(1)
+    4: call(2)
+    5: ret
+CHUNK __DOUBLE_TO_BYTES_10 (A)
+  CONST  0: _EXTERN
+  CONST  1: DOUBLE_TO_BYTES
+  CONST  2: A
+  CODE:
+    0: load_var(0)  -- _EXTERN
+    1: push_const(1)  -- DOUBLE_TO_BYTES
     2: load_var(2)  -- A
     3: make_list(1)
     4: call(2)
@@ -163,13 +180,13 @@ CHUNK __STDERR_6 (A)
     3: make_list(1)
     4: call(2)
     5: ret
-CHUNK ___ENCODE_PROGRAM_9 (A)
+CHUNK __UTF8_ENCODE_9 (A)
   CONST  0: _EXTERN
-  CONST  1: _ENCODE_PROGRAM
+  CONST  1: UTF8_ENCODE
   CONST  2: A
   CODE:
     0: load_var(0)  -- _EXTERN
-    1: push_const(1)  -- _ENCODE_PROGRAM
+    1: push_const(1)  -- UTF8_ENCODE
     2: load_var(2)  -- A
     3: make_list(1)
     4: call(2)

@@ -3,11 +3,10 @@
 /// Registers native functions for file I/O, command-line arguments, and
 /// environment variables into the static [Runtime] function maps so they
 /// are accessible via `_EXTERN` wrappers in stdlib.shql.
+import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 
-import 'package:shql/bytecode/bytecode_codec.dart';
-import 'package:shql/bytecode/bytecode_pipeline.dart';
 import 'package:shql/execution/runtime/runtime.dart';
 
 /// Register all console/file-system native functions.
@@ -26,7 +25,8 @@ import 'package:shql/execution/runtime/runtime.dart';
 ///   EXIT(code)                → never returns
 ///   ENV(name)                 → String? environment variable value
 ///   STDERR(value)             → null (writes to stderr)
-///   _ENCODE_PROGRAM(progMap)  → List<int> binary bytecode
+///   UTF8_ENCODE(string)       → List<int> UTF-8 bytes
+///   DOUBLE_TO_BYTES(double)   → List<int> 8 bytes IEEE 754 LE
 void registerConsoleBindings(Runtime rt, List<String> args) {
   // Console I/O callbacks
   rt.printFunction = (value) => stdout.writeln(value);
@@ -68,9 +68,13 @@ void registerConsoleBindings(Runtime rt, List<String> args) {
     stderr.writeln(value);
     return null;
   };
-  Runtime.unaryFunctions['_ENCODE_PROGRAM'] = (caller, progMap) {
-    final program = shqlMapToProgram(progMap as Map);
-    return BytecodeEncoder.encode(program).toList();
+  Runtime.unaryFunctions['UTF8_ENCODE'] = (caller, s) {
+    if (s == null) throw ArgumentError('UTF8_ENCODE: argument is null');
+    return utf8.encode(s as String);
+  };
+  Runtime.unaryFunctions['DOUBLE_TO_BYTES'] = (caller, d) {
+    final bd = ByteData(8)..setFloat64(0, (d as num).toDouble(), Endian.little);
+    return bd.buffer.asUint8List().toList();
   };
 
   // Binary

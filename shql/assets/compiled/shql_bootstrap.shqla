@@ -33,7 +33,7 @@ CHUNK main ()
   CONST  31: CODEC
   CONST  32: DECODE
   CONST  33: _DEC
-  CONST  34: _ENCODE_PROGRAM
+  CONST  34: ENCODE
   CONST  35: _ENCODED
   CONST  36: FILE_WRITE_BYTES
   CONST  37: .shqlbc
@@ -143,219 +143,220 @@ CHUNK main ()
     87: store_var(33)  -- _DEC
     88: load_var(33)  -- _DEC
     89: pop
-    90: load_var(34)  -- _ENCODE_PROGRAM
-    91: load_var(30)  -- _PROG
-    92: call(1)
-    93: store_var(35)  -- _ENCODED
-    94: load_var(35)  -- _ENCODED
-    95: pop
-    96: load_var(36)  -- FILE_WRITE_BYTES
-    97: load_var(10)  -- __OUTPUT_DIR
-    98: jump_null(104)
-    99: push_const(17)  -- /
-    100: jump_null(103)
-    101: add
-    102: jump(106)
-    103: pop
+    90: load_var(31)  -- CODEC
+    91: get_member(34)  -- ENCODE
+    92: load_var(30)  -- _PROG
+    93: call(1)
+    94: store_var(35)  -- _ENCODED
+    95: load_var(35)  -- _ENCODED
+    96: pop
+    97: load_var(36)  -- FILE_WRITE_BYTES
+    98: load_var(10)  -- __OUTPUT_DIR
+    99: jump_null(105)
+    100: push_const(17)  -- /
+    101: jump_null(104)
+    102: add
+    103: jump(107)
     104: pop
-    105: push_const(18)  -- null
-    106: jump_null(112)
-    107: load_var(14)  -- _NAME
-    108: jump_null(111)
-    109: add
-    110: jump(114)
-    111: pop
+    105: pop
+    106: push_const(18)  -- null
+    107: jump_null(113)
+    108: load_var(14)  -- _NAME
+    109: jump_null(112)
+    110: add
+    111: jump(115)
     112: pop
-    113: push_const(18)  -- null
-    114: jump_null(120)
-    115: push_const(37)  -- .shqlbc
-    116: jump_null(119)
-    117: add
-    118: jump(122)
-    119: pop
+    113: pop
+    114: push_const(18)  -- null
+    115: jump_null(121)
+    116: push_const(37)  -- .shqlbc
+    117: jump_null(120)
+    118: add
+    119: jump(123)
     120: pop
-    121: push_const(18)  -- null
-    122: load_var(35)  -- _ENCODED
-    123: call(2)
-    124: pop
-    125: load_var(38)  -- FILE_WRITE
-    126: load_var(10)  -- __OUTPUT_DIR
-    127: jump_null(133)
-    128: push_const(17)  -- /
-    129: jump_null(132)
-    130: add
-    131: jump(135)
-    132: pop
+    121: pop
+    122: push_const(18)  -- null
+    123: load_var(35)  -- _ENCODED
+    124: call(2)
+    125: pop
+    126: load_var(38)  -- FILE_WRITE
+    127: load_var(10)  -- __OUTPUT_DIR
+    128: jump_null(134)
+    129: push_const(17)  -- /
+    130: jump_null(133)
+    131: add
+    132: jump(136)
     133: pop
-    134: push_const(18)  -- null
-    135: jump_null(141)
-    136: load_var(14)  -- _NAME
-    137: jump_null(140)
-    138: add
-    139: jump(143)
-    140: pop
+    134: pop
+    135: push_const(18)  -- null
+    136: jump_null(142)
+    137: load_var(14)  -- _NAME
+    138: jump_null(141)
+    139: add
+    140: jump(144)
     141: pop
-    142: push_const(18)  -- null
-    143: jump_null(149)
-    144: push_const(39)  -- .shqla
-    145: jump_null(148)
-    146: add
-    147: jump(151)
-    148: pop
+    142: pop
+    143: push_const(18)  -- null
+    144: jump_null(150)
+    145: push_const(39)  -- .shqla
+    146: jump_null(149)
+    147: add
+    148: jump(152)
     149: pop
-    150: push_const(18)  -- null
-    151: load_var(40)  -- STRING_JOIN
-    152: load_var(33)  -- _DEC
-    153: push_const(41)  -- 
+    150: pop
+    151: push_const(18)  -- null
+    152: load_var(40)  -- STRING_JOIN
+    153: load_var(33)  -- _DEC
+    154: push_const(41)  -- 
 
-    154: call(2)
-    155: jump_null(161)
-    156: push_const(41)  -- 
+    155: call(2)
+    156: jump_null(162)
+    157: push_const(41)  -- 
 
-    157: jump_null(160)
-    158: add
-    159: jump(163)
-    160: pop
+    158: jump_null(161)
+    159: add
+    160: jump(164)
     161: pop
-    162: push_const(18)  -- null
-    163: call(2)
-    164: pop
-    165: load_var(42)  -- PRINT
-    166: push_const(43)  --   
-    167: jump_null(173)
-    168: load_var(14)  -- _NAME
-    169: jump_null(172)
-    170: add
-    171: jump(175)
-    172: pop
+    162: pop
+    163: push_const(18)  -- null
+    164: call(2)
+    165: pop
+    166: load_var(42)  -- PRINT
+    167: push_const(43)  --   
+    168: jump_null(174)
+    169: load_var(14)  -- _NAME
+    170: jump_null(173)
+    171: add
+    172: jump(176)
     173: pop
-    174: push_const(18)  -- null
-    175: jump_null(181)
-    176: push_const(44)  -- .shql -> 
-    177: jump_null(180)
-    178: add
-    179: jump(183)
-    180: pop
+    174: pop
+    175: push_const(18)  -- null
+    176: jump_null(182)
+    177: push_const(44)  -- .shql -> 
+    178: jump_null(181)
+    179: add
+    180: jump(184)
     181: pop
-    182: push_const(18)  -- null
-    183: jump_null(189)
-    184: load_var(14)  -- _NAME
-    185: jump_null(188)
-    186: add
-    187: jump(191)
-    188: pop
+    182: pop
+    183: push_const(18)  -- null
+    184: jump_null(190)
+    185: load_var(14)  -- _NAME
+    186: jump_null(189)
+    187: add
+    188: jump(192)
     189: pop
-    190: push_const(18)  -- null
-    191: jump_null(197)
-    192: push_const(45)  -- .shqlbc (
-    193: jump_null(196)
-    194: add
-    195: jump(199)
-    196: pop
+    190: pop
+    191: push_const(18)  -- null
+    192: jump_null(198)
+    193: push_const(45)  -- .shqlbc (
+    194: jump_null(197)
+    195: add
+    196: jump(200)
     197: pop
-    198: push_const(18)  -- null
-    199: jump_null(209)
-    200: load_var(46)  -- STRING
-    201: load_var(47)  -- LENGTH
-    202: load_var(35)  -- _ENCODED
-    203: call(1)
+    198: pop
+    199: push_const(18)  -- null
+    200: jump_null(210)
+    201: load_var(46)  -- STRING
+    202: load_var(47)  -- LENGTH
+    203: load_var(35)  -- _ENCODED
     204: call(1)
-    205: jump_null(208)
-    206: add
-    207: jump(211)
-    208: pop
+    205: call(1)
+    206: jump_null(209)
+    207: add
+    208: jump(212)
     209: pop
-    210: push_const(18)  -- null
-    211: jump_null(217)
-    212: push_const(48)  --  bytes) + 
-    213: jump_null(216)
-    214: add
-    215: jump(219)
-    216: pop
+    210: pop
+    211: push_const(18)  -- null
+    212: jump_null(218)
+    213: push_const(48)  --  bytes) + 
+    214: jump_null(217)
+    215: add
+    216: jump(220)
     217: pop
-    218: push_const(18)  -- null
-    219: jump_null(225)
-    220: load_var(14)  -- _NAME
-    221: jump_null(224)
-    222: add
-    223: jump(227)
-    224: pop
+    218: pop
+    219: push_const(18)  -- null
+    220: jump_null(226)
+    221: load_var(14)  -- _NAME
+    222: jump_null(225)
+    223: add
+    224: jump(228)
     225: pop
-    226: push_const(18)  -- null
-    227: jump_null(233)
-    228: push_const(39)  -- .shqla
-    229: jump_null(232)
-    230: add
-    231: jump(235)
-    232: pop
+    226: pop
+    227: push_const(18)  -- null
+    228: jump_null(234)
+    229: push_const(39)  -- .shqla
+    230: jump_null(233)
+    231: add
+    232: jump(236)
     233: pop
-    234: push_const(18)  -- null
-    235: call(1)
-    236: pop_scope
-    237: pop
-    238: load_reg(1)
-    239: jump_true(290)
-    240: load_var(47)  -- LENGTH
-    241: load_var(8)  -- _ALL_FILES
-    242: call(1)
-    243: jump_null(249)
-    244: push_const(49)  -- 1
-    245: jump_null(248)
-    246: sub
-    247: jump(251)
-    248: pop
+    234: pop
+    235: push_const(18)  -- null
+    236: call(1)
+    237: pop_scope
+    238: pop
+    239: load_reg(1)
+    240: jump_true(291)
+    241: load_var(47)  -- LENGTH
+    242: load_var(8)  -- _ALL_FILES
+    243: call(1)
+    244: jump_null(250)
+    245: push_const(49)  -- 1
+    246: jump_null(249)
+    247: sub
+    248: jump(252)
     249: pop
-    250: push_const(18)  -- null
-    251: store_reg(2)
-    252: load_reg(2)
-    253: load_reg(0)
-    254: cmp_gte
-    255: store_reg(3)
-    256: load_reg(3)
-    257: jump_false(260)
-    258: push_const(49)  -- 1
-    259: jump(261)
-    260: push_const(50)  -- -1
-    261: store_reg(4)
-    262: load_var(12)  -- _FI
-    263: load_reg(4)
-    264: add
-    265: store_reg(5)
-    266: load_reg(3)
-    267: load_reg(5)
-    268: load_reg(2)
-    269: cmp_gt
-    270: log_and
-    271: load_reg(3)
-    272: log_not
-    273: load_reg(5)
-    274: load_reg(2)
-    275: cmp_lt
-    276: log_and
-    277: log_or
-    278: store_reg(6)
-    279: load_reg(6)
-    280: load_reg(5)
-    281: load_reg(2)
-    282: cmp_eq
-    283: log_or
-    284: store_reg(1)
-    285: load_reg(6)
-    286: jump_true(290)
-    287: load_reg(5)
-    288: store_var(12)  -- _FI
-    289: jump(24)
-    290: push_const(18)  -- null
-    291: pop
-    292: load_var(42)  -- PRINT
-    293: push_const(51)  -- Bootstrap complete: 
-    294: jump_null(300)
-    295: load_var(10)  -- __OUTPUT_DIR
-    296: jump_null(299)
-    297: add
-    298: jump(302)
-    299: pop
+    250: pop
+    251: push_const(18)  -- null
+    252: store_reg(2)
+    253: load_reg(2)
+    254: load_reg(0)
+    255: cmp_gte
+    256: store_reg(3)
+    257: load_reg(3)
+    258: jump_false(261)
+    259: push_const(49)  -- 1
+    260: jump(262)
+    261: push_const(50)  -- -1
+    262: store_reg(4)
+    263: load_var(12)  -- _FI
+    264: load_reg(4)
+    265: add
+    266: store_reg(5)
+    267: load_reg(3)
+    268: load_reg(5)
+    269: load_reg(2)
+    270: cmp_gt
+    271: log_and
+    272: load_reg(3)
+    273: log_not
+    274: load_reg(5)
+    275: load_reg(2)
+    276: cmp_lt
+    277: log_and
+    278: log_or
+    279: store_reg(6)
+    280: load_reg(6)
+    281: load_reg(5)
+    282: load_reg(2)
+    283: cmp_eq
+    284: log_or
+    285: store_reg(1)
+    286: load_reg(6)
+    287: jump_true(291)
+    288: load_reg(5)
+    289: store_var(12)  -- _FI
+    290: jump(24)
+    291: push_const(18)  -- null
+    292: pop
+    293: load_var(42)  -- PRINT
+    294: push_const(51)  -- Bootstrap complete: 
+    295: jump_null(301)
+    296: load_var(10)  -- __OUTPUT_DIR
+    297: jump_null(300)
+    298: add
+    299: jump(303)
     300: pop
-    301: push_const(18)  -- null
-    302: call(1)
-    303: ret
+    301: pop
+    302: push_const(18)  -- null
+    303: call(1)
+    304: ret

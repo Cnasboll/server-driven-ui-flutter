@@ -1468,7 +1468,7 @@ CHUNK ___SM_UNESCAPE_1 (_SM_S)
   CONST  16: t
   CONST  17: 	
   CONST  18: r
-  CONST  19: 
+  CONST  19: 
   CONST  20: 2
   CODE:
     0: push_scope
@@ -1598,7 +1598,7 @@ CHUNK ___SM_UNESCAPE_1 (_SM_S)
     123: jump_false(136)
     124: load_var(1)  -- _SM_RES
     125: jump_null(131)
-    126: push_const(19)  -- 
+    126: push_const(19)  -- 
     127: jump_null(130)
     128: add
     129: jump(133)

@@ -24,7 +24,7 @@ FOR _fi := 0 TO LENGTH(_all_files) - 1 DO BEGIN
     _dec := codec.decode(_prog);
 
     -- Encode to binary
-    _encoded := _ENCODE_PROGRAM(_prog);
+    _encoded := codec.encode(_prog);
 
     -- Write binary bytecode
     FILE_WRITE_BYTES(__OUTPUT_DIR + "/" + _name + ".shqlbc", _encoded);
