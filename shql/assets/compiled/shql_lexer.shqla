@@ -188,32 +188,31 @@ CHUNK main ()
   CONST  186: UNTIL
   CONST  187: FOR
   CONST  188: TO
-  CONST  189: STEP
-  CONST  190: BEGIN
-  CONST  191: END
-  CONST  192: BREAK
-  CONST  193: CONTINUE
-  CONST  194: RETURN
-  CONST  195: AND
-  CONST  196: OR
-  CONST  197: XOR
-  CONST  198: IN
-  CONST  199: OBJECT
-  CONST  200: OCH
-  CONST  201: ELLER
-  CONST  202: ANTINGEN_ELLER
-  CONST  203: INTE
-  CONST  204: FINNS_I
-  CONST  205: _SM_KW
-  CONST  206: .___SM_UNESCAPE_1
-  CONST  207: _SM_UNESCAPE
-  CONST  208: .___SM_EMIT_2
-  CONST  209: _SM_EMIT
-  CONST  210: .___SM_TOKENIZE_3
-  CONST  211: _SM_TOKENIZE
-  CONST  212: TOKENIZE
-  CONST  213: .__lambda_4
-  CONST  214: LEXER
+  CONST  189: BEGIN
+  CONST  190: END
+  CONST  191: BREAK
+  CONST  192: CONTINUE
+  CONST  193: RETURN
+  CONST  194: AND
+  CONST  195: OR
+  CONST  196: XOR
+  CONST  197: IN
+  CONST  198: OBJECT
+  CONST  199: OCH
+  CONST  200: ELLER
+  CONST  201: ANTINGEN_ELLER
+  CONST  202: INTE
+  CONST  203: FINNS_I
+  CONST  204: _SM_KW
+  CONST  205: .___SM_UNESCAPE_1
+  CONST  206: _SM_UNESCAPE
+  CONST  207: .___SM_EMIT_2
+  CONST  208: _SM_EMIT
+  CONST  209: .___SM_TOKENIZE_3
+  CONST  210: _SM_TOKENIZE
+  CONST  211: TOKENIZE
+  CONST  212: .__lambda_4
+  CONST  213: LEXER
   CODE:
     0: push_const(0)  -- (
     1: push_const(1)  -- lpar
@@ -525,64 +524,62 @@ CHUNK main ()
     307: push_const(187)  -- FOR
     308: push_const(188)  -- TO
     309: push_const(188)  -- TO
-    310: push_const(189)  -- STEP
-    311: push_const(189)  -- STEP
-    312: push_const(190)  -- BEGIN
-    313: push_const(190)  -- BEGIN
-    314: push_const(191)  -- END
-    315: push_const(191)  -- END
-    316: push_const(192)  -- BREAK
-    317: push_const(192)  -- BREAK
-    318: push_const(193)  -- CONTINUE
-    319: push_const(193)  -- CONTINUE
-    320: push_const(194)  -- RETURN
-    321: push_const(194)  -- RETURN
-    322: push_const(195)  -- AND
-    323: push_const(195)  -- AND
-    324: push_const(196)  -- OR
-    325: push_const(196)  -- OR
-    326: push_const(197)  -- XOR
-    327: push_const(197)  -- XOR
-    328: push_const(172)  -- NOT
-    329: push_const(172)  -- NOT
-    330: push_const(198)  -- IN
-    331: push_const(198)  -- IN
-    332: push_const(199)  -- OBJECT
-    333: push_const(199)  -- OBJECT
-    334: push_const(200)  -- OCH
-    335: push_const(195)  -- AND
-    336: push_const(201)  -- ELLER
-    337: push_const(196)  -- OR
-    338: push_const(202)  -- ANTINGEN_ELLER
-    339: push_const(197)  -- XOR
-    340: push_const(203)  -- INTE
-    341: push_const(172)  -- NOT
-    342: push_const(204)  -- FINNS_I
-    343: push_const(198)  -- IN
-    344: make_map(26)
-    345: store_var(205)  -- _SM_KW
-    346: load_var(205)  -- _SM_KW
-    347: pop
-    348: make_closure(206)  -- .___SM_UNESCAPE_1
-    349: store_var(207)  -- _SM_UNESCAPE
-    350: load_var(207)  -- _SM_UNESCAPE
-    351: pop
-    352: make_closure(208)  -- .___SM_EMIT_2
-    353: store_var(209)  -- _SM_EMIT
-    354: load_var(209)  -- _SM_EMIT
-    355: pop
-    356: make_closure(210)  -- .___SM_TOKENIZE_3
-    357: store_var(211)  -- _SM_TOKENIZE
-    358: load_var(211)  -- _SM_TOKENIZE
-    359: pop
-    360: push_scope
-    361: push_const(212)  -- TOKENIZE
-    362: make_closure(213)  -- .__lambda_4
-    363: make_object_here(1)
-    364: pop_scope
-    365: store_var(214)  -- LEXER
-    366: load_var(214)  -- LEXER
-    367: ret
+    310: push_const(189)  -- BEGIN
+    311: push_const(189)  -- BEGIN
+    312: push_const(190)  -- END
+    313: push_const(190)  -- END
+    314: push_const(191)  -- BREAK
+    315: push_const(191)  -- BREAK
+    316: push_const(192)  -- CONTINUE
+    317: push_const(192)  -- CONTINUE
+    318: push_const(193)  -- RETURN
+    319: push_const(193)  -- RETURN
+    320: push_const(194)  -- AND
+    321: push_const(194)  -- AND
+    322: push_const(195)  -- OR
+    323: push_const(195)  -- OR
+    324: push_const(196)  -- XOR
+    325: push_const(196)  -- XOR
+    326: push_const(172)  -- NOT
+    327: push_const(172)  -- NOT
+    328: push_const(197)  -- IN
+    329: push_const(197)  -- IN
+    330: push_const(198)  -- OBJECT
+    331: push_const(198)  -- OBJECT
+    332: push_const(199)  -- OCH
+    333: push_const(194)  -- AND
+    334: push_const(200)  -- ELLER
+    335: push_const(195)  -- OR
+    336: push_const(201)  -- ANTINGEN_ELLER
+    337: push_const(196)  -- XOR
+    338: push_const(202)  -- INTE
+    339: push_const(172)  -- NOT
+    340: push_const(203)  -- FINNS_I
+    341: push_const(197)  -- IN
+    342: make_map(25)
+    343: store_var(204)  -- _SM_KW
+    344: load_var(204)  -- _SM_KW
+    345: pop
+    346: make_closure(205)  -- .___SM_UNESCAPE_1
+    347: store_var(206)  -- _SM_UNESCAPE
+    348: load_var(206)  -- _SM_UNESCAPE
+    349: pop
+    350: make_closure(207)  -- .___SM_EMIT_2
+    351: store_var(208)  -- _SM_EMIT
+    352: load_var(208)  -- _SM_EMIT
+    353: pop
+    354: make_closure(209)  -- .___SM_TOKENIZE_3
+    355: store_var(210)  -- _SM_TOKENIZE
+    356: load_var(210)  -- _SM_TOKENIZE
+    357: pop
+    358: push_scope
+    359: push_const(211)  -- TOKENIZE
+    360: make_closure(212)  -- .__lambda_4
+    361: make_object_here(1)
+    362: pop_scope
+    363: store_var(213)  -- LEXER
+    364: load_var(213)  -- LEXER
+    365: ret
 CHUNK ___SM_CLASSIFY_0 (_SM_C)
   CONST  0: _SM_CC
   CONST  1: _SM_C

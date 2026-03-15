@@ -490,7 +490,7 @@ _PR_FOR(_pv_toks, _pv_pos) := BEGIN
   _pv_end := _pv_re["node"];
   _pv_pos := _pv_re["pos"];
   _pv_step := NULL;
-  IF _PR_TT(_pv_toks, _pv_pos) = "STEP" THEN BEGIN
+  IF _PR_TT(_pv_toks, _pv_pos) = "ID" AND _PR_TV(_pv_toks, _pv_pos) = "STEP" THEN BEGIN
     _pv_pos := _pv_pos + 1;
     _pv_rst := _PR_EXPR(_pv_toks, _pv_pos);
     _pv_step := _pv_rst["node"];
