@@ -79,7 +79,7 @@ FOR _fi := 0 TO LENGTH(_source_files) - 1 DO BEGIN
     -- Run the pipeline
     _tokens := lexer.tokenize(_src);
     _tree := parser.parse(_tokens);
-    _prog := compiler.compile_with_consts(_tree, __CONSTS);
+    _prog := compiler.compile(_tree, __CONSTS);
     _dec := codec.decode(_prog);
 
     -- Encode to binary

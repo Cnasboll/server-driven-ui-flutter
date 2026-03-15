@@ -37,7 +37,7 @@ CHUNK main ()
   CONST  35: PARSE
   CONST  36: _TREE
   CONST  37: COMPILER
-  CONST  38: COMPILE_WITH_CONSTS
+  CONST  38: COMPILE
   CONST  39: __CONSTS
   CONST  40: _PROG
   CONST  41: CODEC
@@ -353,7 +353,7 @@ CHUNK main ()
     287: load_var(36)  -- _TREE
     288: pop
     289: load_var(37)  -- COMPILER
-    290: get_member(38)  -- COMPILE_WITH_CONSTS
+    290: get_member(38)  -- COMPILE
     291: load_var(36)  -- _TREE
     292: load_var(39)  -- __CONSTS
     293: call(2)

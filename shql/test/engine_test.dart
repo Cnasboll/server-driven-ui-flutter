@@ -168,7 +168,7 @@ final List<(Uint8List, List<String>)> _pipelineBytecodes = [];
 const _pipelineInvocSrc = '''
 tokens  := lexer.tokenize(src);
 tree    := parser.parse(tokens);
-prog    := compiler.compile_with_consts(tree, consts);
+prog    := compiler.compile(tree, consts);
 dec     := codec.decode(prog);
 [prog, dec]
 ''';

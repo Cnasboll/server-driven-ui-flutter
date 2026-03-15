@@ -39,22 +39,6 @@ Future<void> main(List<String> args) async {
   swLoad.stop();
   stderr.writeln('Pipeline loaded in ${swLoad.elapsedMilliseconds}ms\n');
 
-  rt.globalScope.setVariable(
-    rt.identifiers.include('__CONSTS'),
-    {
-      for (final e in Runtime.allConstants.entries)
-        if (e.value is! bool) e.key: e.value,
-    },
-  );
-  rt.globalScope.setVariable(
-    rt.identifiers.include('__ASSETS_DIR'),
-    assetsDir,
-  );
-  rt.globalScope.setVariable(
-    rt.identifiers.include('__OUTPUT_DIR'),
-    outputDir,
-  );
-
   final bootstrapFile = File('$assetsDir/shql_bootstrap.shql');
   if (!bootstrapFile.existsSync()) {
     stderr.writeln('Missing: ${bootstrapFile.path}');
@@ -66,6 +50,14 @@ Future<void> main(List<String> args) async {
     bootstrapFile.readAsStringSync(),
     runtime: rt,
     constantsSet: cs,
+    boundValues: {
+      '__CONSTS': {
+        for (final e in Runtime.allConstants.entries)
+          if (e.value is! bool) e.key: e.value,
+      },
+      '__ASSETS_DIR': assetsDir,
+      '__OUTPUT_DIR': outputDir,
+    },
   );
   swBoot.stop();
   stderr.writeln('\nBootstrap completed in ${swBoot.elapsedMilliseconds}ms');

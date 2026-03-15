@@ -597,8 +597,7 @@ _CMP_CALL(node, chunk, state) := BEGIN
 END;
 
 -- ---- Top-level compile entry ----
--- consts: optional map of identifier → constant value for inlining (e.g. ANSWER→42, PI→3.14…)
-_CMP_COMPILE_EX(tree, consts) := BEGIN
+_CMP_COMPILE(tree, consts) := BEGIN
   state := {"chunks": {}, "counter": 0, "consts": IF consts = NULL THEN {} ELSE consts};
   main_chunk := _CMP_NEW_CHUNK('main', []);
   state['chunks']['main'] := main_chunk;
@@ -607,9 +606,6 @@ _CMP_COMPILE_EX(tree, consts) := BEGIN
   RETURN {"chunks": state['chunks']};
 END;
 
-_CMP_COMPILE(tree) := _CMP_COMPILE_EX(tree, NULL);
-
 compiler := OBJECT{
-  compile:             (tree)         => _CMP_COMPILE(tree),
-  compile_with_consts: (tree, consts) => _CMP_COMPILE_EX(tree, consts)
+  compile: (tree, consts) => _CMP_COMPILE(tree, consts)
 };

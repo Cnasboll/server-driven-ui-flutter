@@ -57,15 +57,11 @@ CHUNK main ()
   CONST  55: _CMP_PATCH_LOOP
   CONST  56: .___CMP_CALL_28
   CONST  57: _CMP_CALL
-  CONST  58: .___CMP_COMPILE_EX_29
-  CONST  59: _CMP_COMPILE_EX
-  CONST  60: .___CMP_COMPILE_30
-  CONST  61: _CMP_COMPILE
-  CONST  62: COMPILE
-  CONST  63: .__lambda_31
-  CONST  64: COMPILE_WITH_CONSTS
-  CONST  65: .__lambda_32
-  CONST  66: COMPILER
+  CONST  58: .___CMP_COMPILE_29
+  CONST  59: _CMP_COMPILE
+  CONST  60: COMPILE
+  CONST  61: .__lambda_30
+  CONST  62: COMPILER
   CODE:
     0: make_closure(0)  -- .___CMP_NEW_CHUNK_0
     1: store_var(1)  -- _CMP_NEW_CHUNK
@@ -183,24 +179,18 @@ CHUNK main ()
     113: store_var(57)  -- _CMP_CALL
     114: load_var(57)  -- _CMP_CALL
     115: pop
-    116: make_closure(58)  -- .___CMP_COMPILE_EX_29
-    117: store_var(59)  -- _CMP_COMPILE_EX
-    118: load_var(59)  -- _CMP_COMPILE_EX
+    116: make_closure(58)  -- .___CMP_COMPILE_29
+    117: store_var(59)  -- _CMP_COMPILE
+    118: load_var(59)  -- _CMP_COMPILE
     119: pop
-    120: make_closure(60)  -- .___CMP_COMPILE_30
-    121: store_var(61)  -- _CMP_COMPILE
-    122: load_var(61)  -- _CMP_COMPILE
-    123: pop
-    124: push_scope
-    125: push_const(62)  -- COMPILE
-    126: make_closure(63)  -- .__lambda_31
-    127: push_const(64)  -- COMPILE_WITH_CONSTS
-    128: make_closure(65)  -- .__lambda_32
-    129: make_object_here(2)
-    130: pop_scope
-    131: store_var(66)  -- COMPILER
-    132: load_var(66)  -- COMPILER
-    133: ret
+    120: push_scope
+    121: push_const(60)  -- COMPILE
+    122: make_closure(61)  -- .__lambda_30
+    123: make_object_here(1)
+    124: pop_scope
+    125: store_var(62)  -- COMPILER
+    126: load_var(62)  -- COMPILER
+    127: ret
 CHUNK ___CMP_ALLOC_REG_1 (CHUNK)
   CONST  0: CHUNK
   CONST  1: regctr
@@ -647,17 +637,7 @@ CHUNK ___CMP_CALL_28 (NODE, CHUNK, STATE)
     74: call(3)
     75: pop_scope
     76: ret
-CHUNK ___CMP_COMPILE_30 (TREE)
-  CONST  0: _CMP_COMPILE_EX
-  CONST  1: TREE
-  CONST  2: null
-  CODE:
-    0: load_var(0)  -- _CMP_COMPILE_EX
-    1: load_var(1)  -- TREE
-    2: push_const(2)  -- null
-    3: call(2)
-    4: ret
-CHUNK ___CMP_COMPILE_EX_29 (TREE, CONSTS)
+CHUNK ___CMP_COMPILE_29 (TREE, CONSTS)
   CONST  0: chunks
   CONST  1: counter
   CONST  2: 0
@@ -3869,20 +3849,12 @@ CHUNK ___CMP_WHILE_24 (NODE, CHUNK, STATE)
     102: call(3)
     103: pop_scope
     104: ret
-CHUNK __lambda_31 (TREE)
+CHUNK __lambda_30 (TREE, CONSTS)
   CONST  0: _CMP_COMPILE
-  CONST  1: TREE
-  CODE:
-    0: load_var(0)  -- _CMP_COMPILE
-    1: load_var(1)  -- TREE
-    2: call(1)
-    3: ret
-CHUNK __lambda_32 (TREE, CONSTS)
-  CONST  0: _CMP_COMPILE_EX
   CONST  1: TREE
   CONST  2: CONSTS
   CODE:
-    0: load_var(0)  -- _CMP_COMPILE_EX
+    0: load_var(0)  -- _CMP_COMPILE
     1: load_var(1)  -- TREE
     2: load_var(2)  -- CONSTS
     3: call(2)
