@@ -895,7 +895,7 @@ class BytecodeCompiler {
       final name = _cs.identifiers.getByIndex(right.qualifier!)!;
       b.emit1(Opcode.getMember, b.addName(name));
     } else if (right.symbol == Symbols.call) {
-      // Method call: obj.method(args)
+      // Method call OR index access on a member: obj.method(args) / obj.field[i].
       final methodId = right.children[0];
       if (methodId.symbol != Symbols.identifier) {
         throw BytecodeCompileError(
@@ -904,11 +904,18 @@ class BytecodeCompiler {
       }
       final name = _cs.identifiers.getByIndex(methodId.qualifier!)!;
       b.emit1(Opcode.getMember, b.addName(name));
-      int argCount = 0;
-      if (right.children.length > 1) {
-        argCount = _compileArgs(right.children[1], b);
+      if (right.children.length > 1 &&
+          right.children[1].symbol == Symbols.list) {
+        // Index access: obj.field[i] — square-bracket postfix on member.
+        _compile(right.children[1].children[0], b);
+        b.emit(Opcode.getIndex);
+      } else {
+        int argCount = 0;
+        if (right.children.length > 1) {
+          argCount = _compileArgs(right.children[1], b);
+        }
+        b.emit1(Opcode.call, argCount);
       }
-      b.emit1(Opcode.call, argCount);
     } else {
       throw BytecodeCompileError(
         'Member access: unexpected RHS ${right.symbol}',

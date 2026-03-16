@@ -1,197 +1,203 @@
 CHUNK main ()
-  CONST  0: .___CMP_NEW_CHUNK_0
-  CONST  1: _CMP_NEW_CHUNK
-  CONST  2: .___CMP_ALLOC_REG_1
-  CONST  3: _CMP_ALLOC_REG
-  CONST  4: .___CMP_CONST_2
-  CONST  5: _CMP_CONST
-  CONST  6: .___CMP_CONST_NULL_3
-  CONST  7: _CMP_CONST_NULL
-  CONST  8: .___CMP_CONST_BOOL_4
-  CONST  9: _CMP_CONST_BOOL
-  CONST  10: .___CMP_CONST_INT_5
-  CONST  11: _CMP_CONST_INT
-  CONST  12: .___CMP_CONST_FLT_6
-  CONST  13: _CMP_CONST_FLT
-  CONST  14: .___CMP_CONST_STR_7
-  CONST  15: _CMP_CONST_STR
-  CONST  16: .___CMP_CONST_REF_8
-  CONST  17: _CMP_CONST_REF
-  CONST  18: .___CMP_CONST_NAME_9
-  CONST  19: _CMP_CONST_NAME
-  CONST  20: .___CMP_CONST_CV_10
-  CONST  21: _CMP_CONST_CV
-  CONST  22: .___CMP_EMIT_11
-  CONST  23: _CMP_EMIT
-  CONST  24: .___CMP_EMIT1_12
-  CONST  25: _CMP_EMIT1
-  CONST  26: .___CMP_JUMP_13
-  CONST  27: _CMP_JUMP
-  CONST  28: .___CMP_PATCH_14
-  CONST  29: _CMP_PATCH
-  CONST  30: .___CMP_NULL_BINOP_15
-  CONST  31: _CMP_NULL_BINOP
-  CONST  32: .___CMP_PLAIN_BINOP_16
-  CONST  33: _CMP_PLAIN_BINOP
-  CONST  34: .___CMP_NULL_UNOP_17
-  CONST  35: _CMP_NULL_UNOP
-  CONST  36: .___CMP_FRESH_18
-  CONST  37: _CMP_FRESH
-  CONST  38: .___CMP_NODE_19
-  CONST  39: _CMP_NODE
-  CONST  40: .___CMP_SEQUENCE_20
-  CONST  41: _CMP_SEQUENCE
-  CONST  42: .___CMP_ASSIGN_21
-  CONST  43: _CMP_ASSIGN
-  CONST  44: .___CMP_LAMBDA_22
-  CONST  45: _CMP_LAMBDA
-  CONST  46: .___CMP_IF_23
-  CONST  47: _CMP_IF
-  CONST  48: .___CMP_WHILE_24
-  CONST  49: _CMP_WHILE
-  CONST  50: .___CMP_REPEAT_25
-  CONST  51: _CMP_REPEAT
-  CONST  52: .___CMP_FOR_26
-  CONST  53: _CMP_FOR
-  CONST  54: .___CMP_PATCH_LOOP_27
-  CONST  55: _CMP_PATCH_LOOP
-  CONST  56: .___CMP_CALL_28
-  CONST  57: _CMP_CALL
-  CONST  58: .___CMP_COMPILE_29
-  CONST  59: _CMP_COMPILE
-  CONST  60: COMPILE
-  CONST  61: .__lambda_30
-  CONST  62: COMPILER
+  CONST  0: .___CMP_INSTR_0
+  CONST  1: _CMP_INSTR
+  CONST  2: .___CMP_NEW_CHUNK_1
+  CONST  3: _CMP_NEW_CHUNK
+  CONST  4: .___CMP_ALLOC_REG_2
+  CONST  5: _CMP_ALLOC_REG
+  CONST  6: .___CMP_CONST_3
+  CONST  7: _CMP_CONST
+  CONST  8: .___CMP_CONST_NULL_4
+  CONST  9: _CMP_CONST_NULL
+  CONST  10: .___CMP_CONST_BOOL_5
+  CONST  11: _CMP_CONST_BOOL
+  CONST  12: .___CMP_CONST_INT_6
+  CONST  13: _CMP_CONST_INT
+  CONST  14: .___CMP_CONST_FLT_7
+  CONST  15: _CMP_CONST_FLT
+  CONST  16: .___CMP_CONST_STR_8
+  CONST  17: _CMP_CONST_STR
+  CONST  18: .___CMP_CONST_REF_9
+  CONST  19: _CMP_CONST_REF
+  CONST  20: .___CMP_CONST_NAME_10
+  CONST  21: _CMP_CONST_NAME
+  CONST  22: .___CMP_CONST_CV_11
+  CONST  23: _CMP_CONST_CV
+  CONST  24: .___CMP_EMIT_12
+  CONST  25: _CMP_EMIT
+  CONST  26: .___CMP_EMIT1_13
+  CONST  27: _CMP_EMIT1
+  CONST  28: .___CMP_JUMP_14
+  CONST  29: _CMP_JUMP
+  CONST  30: .___CMP_PATCH_15
+  CONST  31: _CMP_PATCH
+  CONST  32: .___CMP_NULL_BINOP_16
+  CONST  33: _CMP_NULL_BINOP
+  CONST  34: .___CMP_PLAIN_BINOP_17
+  CONST  35: _CMP_PLAIN_BINOP
+  CONST  36: .___CMP_NULL_UNOP_18
+  CONST  37: _CMP_NULL_UNOP
+  CONST  38: .___CMP_FRESH_19
+  CONST  39: _CMP_FRESH
+  CONST  40: .___CMP_NODE_20
+  CONST  41: _CMP_NODE
+  CONST  42: .___CMP_SEQUENCE_21
+  CONST  43: _CMP_SEQUENCE
+  CONST  44: .___CMP_ASSIGN_22
+  CONST  45: _CMP_ASSIGN
+  CONST  46: .___CMP_LAMBDA_23
+  CONST  47: _CMP_LAMBDA
+  CONST  48: .___CMP_IF_24
+  CONST  49: _CMP_IF
+  CONST  50: .___CMP_WHILE_25
+  CONST  51: _CMP_WHILE
+  CONST  52: .___CMP_REPEAT_26
+  CONST  53: _CMP_REPEAT
+  CONST  54: .___CMP_FOR_27
+  CONST  55: _CMP_FOR
+  CONST  56: .___CMP_PATCH_LOOP_28
+  CONST  57: _CMP_PATCH_LOOP
+  CONST  58: .___CMP_CALL_29
+  CONST  59: _CMP_CALL
+  CONST  60: .___CMP_COMPILE_30
+  CONST  61: _CMP_COMPILE
+  CONST  62: COMPILE
+  CONST  63: .__lambda_31
+  CONST  64: COMPILER
   CODE:
-    0: make_closure(0)  -- .___CMP_NEW_CHUNK_0
-    1: store_var(1)  -- _CMP_NEW_CHUNK
-    2: load_var(1)  -- _CMP_NEW_CHUNK
+    0: make_closure(0)  -- .___CMP_INSTR_0
+    1: store_var(1)  -- _CMP_INSTR
+    2: load_var(1)  -- _CMP_INSTR
     3: pop
-    4: make_closure(2)  -- .___CMP_ALLOC_REG_1
-    5: store_var(3)  -- _CMP_ALLOC_REG
-    6: load_var(3)  -- _CMP_ALLOC_REG
+    4: make_closure(2)  -- .___CMP_NEW_CHUNK_1
+    5: store_var(3)  -- _CMP_NEW_CHUNK
+    6: load_var(3)  -- _CMP_NEW_CHUNK
     7: pop
-    8: make_closure(4)  -- .___CMP_CONST_2
-    9: store_var(5)  -- _CMP_CONST
-    10: load_var(5)  -- _CMP_CONST
+    8: make_closure(4)  -- .___CMP_ALLOC_REG_2
+    9: store_var(5)  -- _CMP_ALLOC_REG
+    10: load_var(5)  -- _CMP_ALLOC_REG
     11: pop
-    12: make_closure(6)  -- .___CMP_CONST_NULL_3
-    13: store_var(7)  -- _CMP_CONST_NULL
-    14: load_var(7)  -- _CMP_CONST_NULL
+    12: make_closure(6)  -- .___CMP_CONST_3
+    13: store_var(7)  -- _CMP_CONST
+    14: load_var(7)  -- _CMP_CONST
     15: pop
-    16: make_closure(8)  -- .___CMP_CONST_BOOL_4
-    17: store_var(9)  -- _CMP_CONST_BOOL
-    18: load_var(9)  -- _CMP_CONST_BOOL
+    16: make_closure(8)  -- .___CMP_CONST_NULL_4
+    17: store_var(9)  -- _CMP_CONST_NULL
+    18: load_var(9)  -- _CMP_CONST_NULL
     19: pop
-    20: make_closure(10)  -- .___CMP_CONST_INT_5
-    21: store_var(11)  -- _CMP_CONST_INT
-    22: load_var(11)  -- _CMP_CONST_INT
+    20: make_closure(10)  -- .___CMP_CONST_BOOL_5
+    21: store_var(11)  -- _CMP_CONST_BOOL
+    22: load_var(11)  -- _CMP_CONST_BOOL
     23: pop
-    24: make_closure(12)  -- .___CMP_CONST_FLT_6
-    25: store_var(13)  -- _CMP_CONST_FLT
-    26: load_var(13)  -- _CMP_CONST_FLT
+    24: make_closure(12)  -- .___CMP_CONST_INT_6
+    25: store_var(13)  -- _CMP_CONST_INT
+    26: load_var(13)  -- _CMP_CONST_INT
     27: pop
-    28: make_closure(14)  -- .___CMP_CONST_STR_7
-    29: store_var(15)  -- _CMP_CONST_STR
-    30: load_var(15)  -- _CMP_CONST_STR
+    28: make_closure(14)  -- .___CMP_CONST_FLT_7
+    29: store_var(15)  -- _CMP_CONST_FLT
+    30: load_var(15)  -- _CMP_CONST_FLT
     31: pop
-    32: make_closure(16)  -- .___CMP_CONST_REF_8
-    33: store_var(17)  -- _CMP_CONST_REF
-    34: load_var(17)  -- _CMP_CONST_REF
+    32: make_closure(16)  -- .___CMP_CONST_STR_8
+    33: store_var(17)  -- _CMP_CONST_STR
+    34: load_var(17)  -- _CMP_CONST_STR
     35: pop
-    36: make_closure(18)  -- .___CMP_CONST_NAME_9
-    37: store_var(19)  -- _CMP_CONST_NAME
-    38: load_var(19)  -- _CMP_CONST_NAME
+    36: make_closure(18)  -- .___CMP_CONST_REF_9
+    37: store_var(19)  -- _CMP_CONST_REF
+    38: load_var(19)  -- _CMP_CONST_REF
     39: pop
-    40: make_closure(20)  -- .___CMP_CONST_CV_10
-    41: store_var(21)  -- _CMP_CONST_CV
-    42: load_var(21)  -- _CMP_CONST_CV
+    40: make_closure(20)  -- .___CMP_CONST_NAME_10
+    41: store_var(21)  -- _CMP_CONST_NAME
+    42: load_var(21)  -- _CMP_CONST_NAME
     43: pop
-    44: make_closure(22)  -- .___CMP_EMIT_11
-    45: store_var(23)  -- _CMP_EMIT
-    46: load_var(23)  -- _CMP_EMIT
+    44: make_closure(22)  -- .___CMP_CONST_CV_11
+    45: store_var(23)  -- _CMP_CONST_CV
+    46: load_var(23)  -- _CMP_CONST_CV
     47: pop
-    48: make_closure(24)  -- .___CMP_EMIT1_12
-    49: store_var(25)  -- _CMP_EMIT1
-    50: load_var(25)  -- _CMP_EMIT1
+    48: make_closure(24)  -- .___CMP_EMIT_12
+    49: store_var(25)  -- _CMP_EMIT
+    50: load_var(25)  -- _CMP_EMIT
     51: pop
-    52: make_closure(26)  -- .___CMP_JUMP_13
-    53: store_var(27)  -- _CMP_JUMP
-    54: load_var(27)  -- _CMP_JUMP
+    52: make_closure(26)  -- .___CMP_EMIT1_13
+    53: store_var(27)  -- _CMP_EMIT1
+    54: load_var(27)  -- _CMP_EMIT1
     55: pop
-    56: make_closure(28)  -- .___CMP_PATCH_14
-    57: store_var(29)  -- _CMP_PATCH
-    58: load_var(29)  -- _CMP_PATCH
+    56: make_closure(28)  -- .___CMP_JUMP_14
+    57: store_var(29)  -- _CMP_JUMP
+    58: load_var(29)  -- _CMP_JUMP
     59: pop
-    60: make_closure(30)  -- .___CMP_NULL_BINOP_15
-    61: store_var(31)  -- _CMP_NULL_BINOP
-    62: load_var(31)  -- _CMP_NULL_BINOP
+    60: make_closure(30)  -- .___CMP_PATCH_15
+    61: store_var(31)  -- _CMP_PATCH
+    62: load_var(31)  -- _CMP_PATCH
     63: pop
-    64: make_closure(32)  -- .___CMP_PLAIN_BINOP_16
-    65: store_var(33)  -- _CMP_PLAIN_BINOP
-    66: load_var(33)  -- _CMP_PLAIN_BINOP
+    64: make_closure(32)  -- .___CMP_NULL_BINOP_16
+    65: store_var(33)  -- _CMP_NULL_BINOP
+    66: load_var(33)  -- _CMP_NULL_BINOP
     67: pop
-    68: make_closure(34)  -- .___CMP_NULL_UNOP_17
-    69: store_var(35)  -- _CMP_NULL_UNOP
-    70: load_var(35)  -- _CMP_NULL_UNOP
+    68: make_closure(34)  -- .___CMP_PLAIN_BINOP_17
+    69: store_var(35)  -- _CMP_PLAIN_BINOP
+    70: load_var(35)  -- _CMP_PLAIN_BINOP
     71: pop
-    72: make_closure(36)  -- .___CMP_FRESH_18
-    73: store_var(37)  -- _CMP_FRESH
-    74: load_var(37)  -- _CMP_FRESH
+    72: make_closure(36)  -- .___CMP_NULL_UNOP_18
+    73: store_var(37)  -- _CMP_NULL_UNOP
+    74: load_var(37)  -- _CMP_NULL_UNOP
     75: pop
-    76: make_closure(38)  -- .___CMP_NODE_19
-    77: store_var(39)  -- _CMP_NODE
-    78: load_var(39)  -- _CMP_NODE
+    76: make_closure(38)  -- .___CMP_FRESH_19
+    77: store_var(39)  -- _CMP_FRESH
+    78: load_var(39)  -- _CMP_FRESH
     79: pop
-    80: make_closure(40)  -- .___CMP_SEQUENCE_20
-    81: store_var(41)  -- _CMP_SEQUENCE
-    82: load_var(41)  -- _CMP_SEQUENCE
+    80: make_closure(40)  -- .___CMP_NODE_20
+    81: store_var(41)  -- _CMP_NODE
+    82: load_var(41)  -- _CMP_NODE
     83: pop
-    84: make_closure(42)  -- .___CMP_ASSIGN_21
-    85: store_var(43)  -- _CMP_ASSIGN
-    86: load_var(43)  -- _CMP_ASSIGN
+    84: make_closure(42)  -- .___CMP_SEQUENCE_21
+    85: store_var(43)  -- _CMP_SEQUENCE
+    86: load_var(43)  -- _CMP_SEQUENCE
     87: pop
-    88: make_closure(44)  -- .___CMP_LAMBDA_22
-    89: store_var(45)  -- _CMP_LAMBDA
-    90: load_var(45)  -- _CMP_LAMBDA
+    88: make_closure(44)  -- .___CMP_ASSIGN_22
+    89: store_var(45)  -- _CMP_ASSIGN
+    90: load_var(45)  -- _CMP_ASSIGN
     91: pop
-    92: make_closure(46)  -- .___CMP_IF_23
-    93: store_var(47)  -- _CMP_IF
-    94: load_var(47)  -- _CMP_IF
+    92: make_closure(46)  -- .___CMP_LAMBDA_23
+    93: store_var(47)  -- _CMP_LAMBDA
+    94: load_var(47)  -- _CMP_LAMBDA
     95: pop
-    96: make_closure(48)  -- .___CMP_WHILE_24
-    97: store_var(49)  -- _CMP_WHILE
-    98: load_var(49)  -- _CMP_WHILE
+    96: make_closure(48)  -- .___CMP_IF_24
+    97: store_var(49)  -- _CMP_IF
+    98: load_var(49)  -- _CMP_IF
     99: pop
-    100: make_closure(50)  -- .___CMP_REPEAT_25
-    101: store_var(51)  -- _CMP_REPEAT
-    102: load_var(51)  -- _CMP_REPEAT
+    100: make_closure(50)  -- .___CMP_WHILE_25
+    101: store_var(51)  -- _CMP_WHILE
+    102: load_var(51)  -- _CMP_WHILE
     103: pop
-    104: make_closure(52)  -- .___CMP_FOR_26
-    105: store_var(53)  -- _CMP_FOR
-    106: load_var(53)  -- _CMP_FOR
+    104: make_closure(52)  -- .___CMP_REPEAT_26
+    105: store_var(53)  -- _CMP_REPEAT
+    106: load_var(53)  -- _CMP_REPEAT
     107: pop
-    108: make_closure(54)  -- .___CMP_PATCH_LOOP_27
-    109: store_var(55)  -- _CMP_PATCH_LOOP
-    110: load_var(55)  -- _CMP_PATCH_LOOP
+    108: make_closure(54)  -- .___CMP_FOR_27
+    109: store_var(55)  -- _CMP_FOR
+    110: load_var(55)  -- _CMP_FOR
     111: pop
-    112: make_closure(56)  -- .___CMP_CALL_28
-    113: store_var(57)  -- _CMP_CALL
-    114: load_var(57)  -- _CMP_CALL
+    112: make_closure(56)  -- .___CMP_PATCH_LOOP_28
+    113: store_var(57)  -- _CMP_PATCH_LOOP
+    114: load_var(57)  -- _CMP_PATCH_LOOP
     115: pop
-    116: make_closure(58)  -- .___CMP_COMPILE_29
-    117: store_var(59)  -- _CMP_COMPILE
-    118: load_var(59)  -- _CMP_COMPILE
+    116: make_closure(58)  -- .___CMP_CALL_29
+    117: store_var(59)  -- _CMP_CALL
+    118: load_var(59)  -- _CMP_CALL
     119: pop
-    120: push_scope
-    121: push_const(60)  -- COMPILE
-    122: make_closure(61)  -- .__lambda_30
-    123: make_object_here(1)
-    124: pop_scope
-    125: store_var(62)  -- COMPILER
-    126: load_var(62)  -- COMPILER
-    127: ret
-CHUNK ___CMP_ALLOC_REG_1 (CHUNK)
+    120: make_closure(60)  -- .___CMP_COMPILE_30
+    121: store_var(61)  -- _CMP_COMPILE
+    122: load_var(61)  -- _CMP_COMPILE
+    123: pop
+    124: push_scope
+    125: push_const(62)  -- COMPILE
+    126: make_closure(63)  -- .__lambda_31
+    127: make_object_here(1)
+    128: pop_scope
+    129: store_var(64)  -- COMPILER
+    130: load_var(64)  -- COMPILER
+    131: ret
+CHUNK ___CMP_ALLOC_REG_2 (CHUNK)
   CONST  0: CHUNK
   CONST  1: regctr
   CONST  2: R
@@ -222,331 +228,333 @@ CHUNK ___CMP_ALLOC_REG_1 (CHUNK)
     21: ret
     22: pop_scope
     23: ret
-CHUNK ___CMP_ASSIGN_21 (NODE, CHUNK, STATE)
+CHUNK ___CMP_ASSIGN_22 (NODE, CHUNK, STATE)
   CONST  0: NODE
-  CONST  1: children
-  CONST  2: 0
-  CONST  3: LHS
-  CONST  4: 1
-  CONST  5: RHS
-  CONST  6: sym
-  CONST  7: ident
-  CONST  8: _CMP_NODE
-  CONST  9: CHUNK
-  CONST  10: STATE
-  CONST  11: _CMP_EMIT1
-  CONST  12: store_var
-  CONST  13: _CMP_CONST_NAME
-  CONST  14: val
-  CONST  15: load_var
-  CONST  16: null
-  CONST  17: call
-  CONST  18: FUNC_NAME
-  CONST  19: PARAMS
-  CONST  20: I
-  CONST  21: LENGTH
-  CONST  22: _CMP_FRESH
-  CONST  23: CNAME
-  CONST  24: _CMP_NEW_CHUNK
-  CONST  25: FN_CHUNK
-  CONST  26: chunks
-  CONST  27: _CMP_EMIT
-  CONST  28: ret
-  CONST  29: make_closure
-  CONST  30: _CMP_CONST_REF
-  CONST  31: index
-  CONST  32: set_index
-  CONST  33: member
-  CONST  34: set_member
+  CONST  1: CHILDREN
+  CONST  2: _NC
+  CONST  3: 0
+  CONST  4: LHS
+  CONST  5: 1
+  CONST  6: RHS
+  CONST  7: SYM
+  CONST  8: ident
+  CONST  9: _CMP_NODE
+  CONST  10: CHUNK
+  CONST  11: STATE
+  CONST  12: _CMP_EMIT1
+  CONST  13: store_var
+  CONST  14: _CMP_CONST_NAME
+  CONST  15: VAL
+  CONST  16: load_var
+  CONST  17: null
+  CONST  18: call
+  CONST  19: _LHS_CH
+  CONST  20: FUNC_NAME
+  CONST  21: PARAMS
+  CONST  22: I
+  CONST  23: LENGTH
+  CONST  24: _CMP_FRESH
+  CONST  25: CNAME
+  CONST  26: _CMP_NEW_CHUNK
+  CONST  27: FN_CHUNK
+  CONST  28: CHUNKS
+  CONST  29: _AS_CHUNKS
+  CONST  30: _CMP_EMIT
+  CONST  31: ret
+  CONST  32: make_closure
+  CONST  33: _CMP_CONST_REF
+  CONST  34: index
+  CONST  35: set_index
+  CONST  36: member
+  CONST  37: set_member
   CODE:
     0: push_scope
     1: load_var(0)  -- NODE
-    2: push_const(1)  -- children
-    3: get_index
-    4: push_const(2)  -- 0
-    5: get_index
-    6: store_var(3)  -- LHS
-    7: load_var(3)  -- LHS
-    8: pop
-    9: load_var(0)  -- NODE
-    10: push_const(1)  -- children
-    11: get_index
-    12: push_const(4)  -- 1
-    13: get_index
-    14: store_var(5)  -- RHS
-    15: load_var(5)  -- RHS
-    16: pop
-    17: load_var(3)  -- LHS
-    18: push_const(6)  -- sym
-    19: get_index
-    20: push_const(7)  -- ident
+    2: get_member(1)  -- CHILDREN
+    3: store_var(2)  -- _NC
+    4: load_var(2)  -- _NC
+    5: pop
+    6: load_var(2)  -- _NC
+    7: push_const(3)  -- 0
+    8: get_index
+    9: store_var(4)  -- LHS
+    10: load_var(4)  -- LHS
+    11: pop
+    12: load_var(2)  -- _NC
+    13: push_const(5)  -- 1
+    14: get_index
+    15: store_var(6)  -- RHS
+    16: load_var(6)  -- RHS
+    17: pop
+    18: load_var(4)  -- LHS
+    19: get_member(7)  -- SYM
+    20: push_const(8)  -- ident
     21: cmp_eq
-    22: jump_false(56)
+    22: jump_false(54)
     23: push_scope
-    24: load_var(8)  -- _CMP_NODE
-    25: load_var(5)  -- RHS
-    26: load_var(9)  -- CHUNK
-    27: load_var(10)  -- STATE
+    24: load_var(9)  -- _CMP_NODE
+    25: load_var(6)  -- RHS
+    26: load_var(10)  -- CHUNK
+    27: load_var(11)  -- STATE
     28: call(3)
     29: pop
-    30: load_var(11)  -- _CMP_EMIT1
-    31: load_var(9)  -- CHUNK
-    32: push_const(12)  -- store_var
-    33: load_var(13)  -- _CMP_CONST_NAME
-    34: load_var(9)  -- CHUNK
-    35: load_var(3)  -- LHS
-    36: push_const(14)  -- val
-    37: get_index
-    38: call(2)
-    39: call(3)
-    40: pop
-    41: load_var(11)  -- _CMP_EMIT1
-    42: load_var(9)  -- CHUNK
-    43: push_const(15)  -- load_var
-    44: load_var(13)  -- _CMP_CONST_NAME
-    45: load_var(9)  -- CHUNK
-    46: load_var(3)  -- LHS
-    47: push_const(14)  -- val
-    48: get_index
-    49: call(2)
-    50: call(3)
-    51: pop
-    52: push_const(16)  -- null
-    53: ret
-    54: pop_scope
-    55: jump(57)
-    56: push_const(16)  -- null
-    57: pop
-    58: load_var(3)  -- LHS
-    59: push_const(6)  -- sym
-    60: get_index
-    61: push_const(17)  -- call
-    62: cmp_eq
-    63: jump_false(198)
-    64: push_scope
-    65: load_var(3)  -- LHS
-    66: push_const(1)  -- children
-    67: get_index
-    68: push_const(2)  -- 0
+    30: load_var(12)  -- _CMP_EMIT1
+    31: load_var(10)  -- CHUNK
+    32: push_const(13)  -- store_var
+    33: load_var(14)  -- _CMP_CONST_NAME
+    34: load_var(10)  -- CHUNK
+    35: load_var(4)  -- LHS
+    36: get_member(15)  -- VAL
+    37: call(2)
+    38: call(3)
+    39: pop
+    40: load_var(12)  -- _CMP_EMIT1
+    41: load_var(10)  -- CHUNK
+    42: push_const(16)  -- load_var
+    43: load_var(14)  -- _CMP_CONST_NAME
+    44: load_var(10)  -- CHUNK
+    45: load_var(4)  -- LHS
+    46: get_member(15)  -- VAL
+    47: call(2)
+    48: call(3)
+    49: pop
+    50: push_const(17)  -- null
+    51: ret
+    52: pop_scope
+    53: jump(55)
+    54: push_const(17)  -- null
+    55: pop
+    56: load_var(4)  -- LHS
+    57: get_member(7)  -- SYM
+    58: push_const(18)  -- call
+    59: cmp_eq
+    60: jump_false(196)
+    61: push_scope
+    62: load_var(4)  -- LHS
+    63: get_member(1)  -- CHILDREN
+    64: store_var(19)  -- _LHS_CH
+    65: load_var(19)  -- _LHS_CH
+    66: pop
+    67: load_var(19)  -- _LHS_CH
+    68: push_const(3)  -- 0
     69: get_index
-    70: push_const(14)  -- val
-    71: get_index
-    72: store_var(18)  -- FUNC_NAME
-    73: load_var(18)  -- FUNC_NAME
-    74: pop
-    75: make_list(0)
-    76: store_var(19)  -- PARAMS
-    77: load_var(19)  -- PARAMS
-    78: pop
-    79: push_const(4)  -- 1
-    80: store_var(20)  -- I
-    81: load_var(20)  -- I
-    82: pop
-    83: push_const(16)  -- null
-    84: store_reg(0)
-    85: load_var(20)  -- I
-    86: jump_null(96)
-    87: load_var(21)  -- LENGTH
-    88: load_var(3)  -- LHS
-    89: push_const(1)  -- children
-    90: get_index
-    91: call(1)
-    92: jump_null(95)
-    93: cmp_lt
-    94: jump(98)
-    95: pop
-    96: pop
-    97: push_const(16)  -- null
-    98: jump_false(133)
-    99: push_scope
-    100: load_var(19)  -- PARAMS
-    101: jump_null(114)
-    102: load_var(3)  -- LHS
-    103: push_const(1)  -- children
-    104: get_index
-    105: load_var(20)  -- I
-    106: get_index
-    107: push_const(14)  -- val
-    108: get_index
-    109: make_list(1)
-    110: jump_null(113)
-    111: add
-    112: jump(116)
+    70: get_member(15)  -- VAL
+    71: store_var(20)  -- FUNC_NAME
+    72: load_var(20)  -- FUNC_NAME
+    73: pop
+    74: make_list(0)
+    75: store_var(21)  -- PARAMS
+    76: load_var(21)  -- PARAMS
+    77: pop
+    78: push_const(5)  -- 1
+    79: store_var(22)  -- I
+    80: load_var(22)  -- I
+    81: pop
+    82: push_const(17)  -- null
+    83: store_reg(0)
+    84: load_var(22)  -- I
+    85: jump_null(94)
+    86: load_var(23)  -- LENGTH
+    87: load_var(4)  -- LHS
+    88: get_member(1)  -- CHILDREN
+    89: call(1)
+    90: jump_null(93)
+    91: cmp_lt
+    92: jump(96)
+    93: pop
+    94: pop
+    95: push_const(17)  -- null
+    96: jump_false(128)
+    97: push_scope
+    98: load_var(21)  -- PARAMS
+    99: jump_null(109)
+    100: load_var(19)  -- _LHS_CH
+    101: load_var(22)  -- I
+    102: get_index
+    103: get_member(15)  -- VAL
+    104: make_list(1)
+    105: jump_null(108)
+    106: add
+    107: jump(111)
+    108: pop
+    109: pop
+    110: push_const(17)  -- null
+    111: store_var(21)  -- PARAMS
+    112: load_var(21)  -- PARAMS
     113: pop
-    114: pop
-    115: push_const(16)  -- null
-    116: store_var(19)  -- PARAMS
-    117: load_var(19)  -- PARAMS
-    118: pop
-    119: load_var(20)  -- I
-    120: jump_null(126)
-    121: push_const(4)  -- 1
-    122: jump_null(125)
-    123: add
-    124: jump(128)
-    125: pop
-    126: pop
-    127: push_const(16)  -- null
-    128: store_var(20)  -- I
-    129: load_var(20)  -- I
-    130: pop_scope
-    131: store_reg(0)
-    132: jump(85)
-    133: load_reg(0)
-    134: pop
-    135: load_var(22)  -- _CMP_FRESH
-    136: load_var(10)  -- STATE
-    137: load_var(18)  -- FUNC_NAME
-    138: call(2)
-    139: store_var(23)  -- CNAME
-    140: load_var(23)  -- CNAME
-    141: pop
-    142: load_var(24)  -- _CMP_NEW_CHUNK
-    143: load_var(23)  -- CNAME
-    144: load_var(19)  -- PARAMS
-    145: call(2)
-    146: store_var(25)  -- FN_CHUNK
-    147: load_var(25)  -- FN_CHUNK
+    114: load_var(22)  -- I
+    115: jump_null(121)
+    116: push_const(5)  -- 1
+    117: jump_null(120)
+    118: add
+    119: jump(123)
+    120: pop
+    121: pop
+    122: push_const(17)  -- null
+    123: store_var(22)  -- I
+    124: load_var(22)  -- I
+    125: pop_scope
+    126: store_reg(0)
+    127: jump(84)
+    128: load_reg(0)
+    129: pop
+    130: load_var(24)  -- _CMP_FRESH
+    131: load_var(11)  -- STATE
+    132: load_var(20)  -- FUNC_NAME
+    133: call(2)
+    134: store_var(25)  -- CNAME
+    135: load_var(25)  -- CNAME
+    136: pop
+    137: load_var(26)  -- _CMP_NEW_CHUNK
+    138: load_var(25)  -- CNAME
+    139: load_var(21)  -- PARAMS
+    140: call(2)
+    141: store_var(27)  -- FN_CHUNK
+    142: load_var(27)  -- FN_CHUNK
+    143: pop
+    144: load_var(11)  -- STATE
+    145: get_member(28)  -- CHUNKS
+    146: store_var(29)  -- _AS_CHUNKS
+    147: load_var(29)  -- _AS_CHUNKS
     148: pop
-    149: load_var(10)  -- STATE
-    150: push_const(26)  -- chunks
-    151: get_index
-    152: load_var(23)  -- CNAME
-    153: load_var(25)  -- FN_CHUNK
-    154: set_index
-    155: pop
-    156: load_var(8)  -- _CMP_NODE
-    157: load_var(5)  -- RHS
-    158: load_var(25)  -- FN_CHUNK
-    159: load_var(10)  -- STATE
-    160: call(3)
-    161: pop
-    162: load_var(27)  -- _CMP_EMIT
-    163: load_var(25)  -- FN_CHUNK
-    164: push_const(28)  -- ret
-    165: call(2)
-    166: pop
-    167: load_var(11)  -- _CMP_EMIT1
-    168: load_var(9)  -- CHUNK
-    169: push_const(29)  -- make_closure
-    170: load_var(30)  -- _CMP_CONST_REF
-    171: load_var(9)  -- CHUNK
-    172: load_var(23)  -- CNAME
-    173: call(2)
-    174: call(3)
-    175: pop
-    176: load_var(11)  -- _CMP_EMIT1
-    177: load_var(9)  -- CHUNK
-    178: push_const(12)  -- store_var
-    179: load_var(13)  -- _CMP_CONST_NAME
-    180: load_var(9)  -- CHUNK
-    181: load_var(18)  -- FUNC_NAME
-    182: call(2)
-    183: call(3)
-    184: pop
-    185: load_var(11)  -- _CMP_EMIT1
-    186: load_var(9)  -- CHUNK
-    187: push_const(15)  -- load_var
-    188: load_var(13)  -- _CMP_CONST_NAME
-    189: load_var(9)  -- CHUNK
-    190: load_var(18)  -- FUNC_NAME
-    191: call(2)
-    192: call(3)
-    193: pop
-    194: push_const(16)  -- null
-    195: ret
-    196: pop_scope
-    197: jump(199)
-    198: push_const(16)  -- null
-    199: pop
-    200: load_var(3)  -- LHS
-    201: push_const(6)  -- sym
-    202: get_index
-    203: push_const(31)  -- index
-    204: cmp_eq
-    205: jump_false(242)
-    206: push_scope
-    207: load_var(8)  -- _CMP_NODE
-    208: load_var(3)  -- LHS
-    209: push_const(1)  -- children
-    210: get_index
-    211: push_const(2)  -- 0
+    149: load_var(29)  -- _AS_CHUNKS
+    150: load_var(25)  -- CNAME
+    151: load_var(27)  -- FN_CHUNK
+    152: set_index
+    153: pop
+    154: load_var(9)  -- _CMP_NODE
+    155: load_var(6)  -- RHS
+    156: load_var(27)  -- FN_CHUNK
+    157: load_var(11)  -- STATE
+    158: call(3)
+    159: pop
+    160: load_var(30)  -- _CMP_EMIT
+    161: load_var(27)  -- FN_CHUNK
+    162: push_const(31)  -- ret
+    163: call(2)
+    164: pop
+    165: load_var(12)  -- _CMP_EMIT1
+    166: load_var(10)  -- CHUNK
+    167: push_const(32)  -- make_closure
+    168: load_var(33)  -- _CMP_CONST_REF
+    169: load_var(10)  -- CHUNK
+    170: load_var(25)  -- CNAME
+    171: call(2)
+    172: call(3)
+    173: pop
+    174: load_var(12)  -- _CMP_EMIT1
+    175: load_var(10)  -- CHUNK
+    176: push_const(13)  -- store_var
+    177: load_var(14)  -- _CMP_CONST_NAME
+    178: load_var(10)  -- CHUNK
+    179: load_var(20)  -- FUNC_NAME
+    180: call(2)
+    181: call(3)
+    182: pop
+    183: load_var(12)  -- _CMP_EMIT1
+    184: load_var(10)  -- CHUNK
+    185: push_const(16)  -- load_var
+    186: load_var(14)  -- _CMP_CONST_NAME
+    187: load_var(10)  -- CHUNK
+    188: load_var(20)  -- FUNC_NAME
+    189: call(2)
+    190: call(3)
+    191: pop
+    192: push_const(17)  -- null
+    193: ret
+    194: pop_scope
+    195: jump(197)
+    196: push_const(17)  -- null
+    197: pop
+    198: load_var(4)  -- LHS
+    199: get_member(7)  -- SYM
+    200: push_const(34)  -- index
+    201: cmp_eq
+    202: jump_false(240)
+    203: push_scope
+    204: load_var(4)  -- LHS
+    205: get_member(1)  -- CHILDREN
+    206: store_var(19)  -- _LHS_CH
+    207: load_var(19)  -- _LHS_CH
+    208: pop
+    209: load_var(9)  -- _CMP_NODE
+    210: load_var(19)  -- _LHS_CH
+    211: push_const(3)  -- 0
     212: get_index
-    213: load_var(9)  -- CHUNK
-    214: load_var(10)  -- STATE
+    213: load_var(10)  -- CHUNK
+    214: load_var(11)  -- STATE
     215: call(3)
     216: pop
-    217: load_var(8)  -- _CMP_NODE
-    218: load_var(3)  -- LHS
-    219: push_const(1)  -- children
+    217: load_var(9)  -- _CMP_NODE
+    218: load_var(19)  -- _LHS_CH
+    219: push_const(5)  -- 1
     220: get_index
-    221: push_const(4)  -- 1
-    222: get_index
-    223: load_var(9)  -- CHUNK
-    224: load_var(10)  -- STATE
-    225: call(3)
-    226: pop
-    227: load_var(8)  -- _CMP_NODE
-    228: load_var(5)  -- RHS
-    229: load_var(9)  -- CHUNK
-    230: load_var(10)  -- STATE
-    231: call(3)
-    232: pop
-    233: load_var(27)  -- _CMP_EMIT
-    234: load_var(9)  -- CHUNK
-    235: push_const(32)  -- set_index
-    236: call(2)
-    237: pop
-    238: push_const(16)  -- null
-    239: ret
-    240: pop_scope
-    241: jump(243)
-    242: push_const(16)  -- null
-    243: pop
-    244: load_var(3)  -- LHS
-    245: push_const(6)  -- sym
-    246: get_index
-    247: push_const(33)  -- member
-    248: cmp_eq
-    249: jump_false(282)
-    250: push_scope
-    251: load_var(8)  -- _CMP_NODE
-    252: load_var(3)  -- LHS
-    253: push_const(1)  -- children
-    254: get_index
-    255: push_const(2)  -- 0
+    221: load_var(10)  -- CHUNK
+    222: load_var(11)  -- STATE
+    223: call(3)
+    224: pop
+    225: load_var(9)  -- _CMP_NODE
+    226: load_var(6)  -- RHS
+    227: load_var(10)  -- CHUNK
+    228: load_var(11)  -- STATE
+    229: call(3)
+    230: pop
+    231: load_var(30)  -- _CMP_EMIT
+    232: load_var(10)  -- CHUNK
+    233: push_const(35)  -- set_index
+    234: call(2)
+    235: pop
+    236: push_const(17)  -- null
+    237: ret
+    238: pop_scope
+    239: jump(241)
+    240: push_const(17)  -- null
+    241: pop
+    242: load_var(4)  -- LHS
+    243: get_member(7)  -- SYM
+    244: push_const(36)  -- member
+    245: cmp_eq
+    246: jump_false(281)
+    247: push_scope
+    248: load_var(4)  -- LHS
+    249: get_member(1)  -- CHILDREN
+    250: store_var(19)  -- _LHS_CH
+    251: load_var(19)  -- _LHS_CH
+    252: pop
+    253: load_var(9)  -- _CMP_NODE
+    254: load_var(19)  -- _LHS_CH
+    255: push_const(3)  -- 0
     256: get_index
-    257: load_var(9)  -- CHUNK
-    258: load_var(10)  -- STATE
+    257: load_var(10)  -- CHUNK
+    258: load_var(11)  -- STATE
     259: call(3)
     260: pop
-    261: load_var(8)  -- _CMP_NODE
-    262: load_var(5)  -- RHS
-    263: load_var(9)  -- CHUNK
-    264: load_var(10)  -- STATE
+    261: load_var(9)  -- _CMP_NODE
+    262: load_var(6)  -- RHS
+    263: load_var(10)  -- CHUNK
+    264: load_var(11)  -- STATE
     265: call(3)
     266: pop
-    267: load_var(11)  -- _CMP_EMIT1
-    268: load_var(9)  -- CHUNK
-    269: push_const(34)  -- set_member
-    270: load_var(13)  -- _CMP_CONST_NAME
-    271: load_var(9)  -- CHUNK
-    272: load_var(3)  -- LHS
-    273: push_const(14)  -- val
-    274: get_index
-    275: call(2)
-    276: call(3)
-    277: pop
-    278: push_const(16)  -- null
-    279: ret
-    280: pop_scope
-    281: jump(283)
-    282: push_const(16)  -- null
-    283: pop_scope
-    284: ret
-CHUNK ___CMP_CALL_28 (NODE, CHUNK, STATE)
+    267: load_var(12)  -- _CMP_EMIT1
+    268: load_var(10)  -- CHUNK
+    269: push_const(37)  -- set_member
+    270: load_var(14)  -- _CMP_CONST_NAME
+    271: load_var(10)  -- CHUNK
+    272: load_var(4)  -- LHS
+    273: get_member(15)  -- VAL
+    274: call(2)
+    275: call(3)
+    276: pop
+    277: push_const(17)  -- null
+    278: ret
+    279: pop_scope
+    280: jump(282)
+    281: push_const(17)  -- null
+    282: pop_scope
+    283: ret
+CHUNK ___CMP_CALL_29 (NODE, CHUNK, STATE)
   CONST  0: NODE
-  CONST  1: children
+  CONST  1: CHILDREN
   CONST  2: CH
   CONST  3: _CMP_NODE
   CONST  4: 0
@@ -562,211 +570,216 @@ CHUNK ___CMP_CALL_28 (NODE, CHUNK, STATE)
   CODE:
     0: push_scope
     1: load_var(0)  -- NODE
-    2: push_const(1)  -- children
-    3: get_index
-    4: store_var(2)  -- CH
-    5: load_var(2)  -- CH
-    6: pop
-    7: load_var(3)  -- _CMP_NODE
-    8: load_var(2)  -- CH
-    9: push_const(4)  -- 0
-    10: get_index
-    11: load_var(5)  -- CHUNK
-    12: load_var(6)  -- STATE
-    13: call(3)
-    14: pop
-    15: load_var(7)  -- LENGTH
-    16: load_var(2)  -- CH
-    17: call(1)
-    18: jump_null(24)
-    19: push_const(8)  -- 1
-    20: jump_null(23)
-    21: sub
-    22: jump(26)
+    2: get_member(1)  -- CHILDREN
+    3: store_var(2)  -- CH
+    4: load_var(2)  -- CH
+    5: pop
+    6: load_var(3)  -- _CMP_NODE
+    7: load_var(2)  -- CH
+    8: push_const(4)  -- 0
+    9: get_index
+    10: load_var(5)  -- CHUNK
+    11: load_var(6)  -- STATE
+    12: call(3)
+    13: pop
+    14: load_var(7)  -- LENGTH
+    15: load_var(2)  -- CH
+    16: call(1)
+    17: jump_null(23)
+    18: push_const(8)  -- 1
+    19: jump_null(22)
+    20: sub
+    21: jump(25)
+    22: pop
     23: pop
-    24: pop
-    25: push_const(9)  -- null
-    26: store_var(10)  -- ARGC
-    27: load_var(10)  -- ARGC
-    28: pop
-    29: push_const(8)  -- 1
-    30: store_var(11)  -- I
-    31: load_var(11)  -- I
-    32: pop
-    33: push_const(9)  -- null
-    34: store_reg(0)
-    35: load_var(11)  -- I
-    36: jump_null(42)
-    37: load_var(10)  -- ARGC
-    38: jump_null(41)
-    39: cmp_lte
-    40: jump(44)
+    24: push_const(9)  -- null
+    25: store_var(10)  -- ARGC
+    26: load_var(10)  -- ARGC
+    27: pop
+    28: push_const(8)  -- 1
+    29: store_var(11)  -- I
+    30: load_var(11)  -- I
+    31: pop
+    32: push_const(9)  -- null
+    33: store_reg(0)
+    34: load_var(11)  -- I
+    35: jump_null(41)
+    36: load_var(10)  -- ARGC
+    37: jump_null(40)
+    38: cmp_lte
+    39: jump(43)
+    40: pop
     41: pop
-    42: pop
-    43: push_const(9)  -- null
-    44: jump_false(68)
-    45: push_scope
-    46: load_var(3)  -- _CMP_NODE
-    47: load_var(2)  -- CH
-    48: load_var(11)  -- I
-    49: get_index
-    50: load_var(5)  -- CHUNK
-    51: load_var(6)  -- STATE
-    52: call(3)
-    53: pop
-    54: load_var(11)  -- I
-    55: jump_null(61)
-    56: push_const(8)  -- 1
-    57: jump_null(60)
-    58: add
-    59: jump(63)
+    42: push_const(9)  -- null
+    43: jump_false(67)
+    44: push_scope
+    45: load_var(3)  -- _CMP_NODE
+    46: load_var(2)  -- CH
+    47: load_var(11)  -- I
+    48: get_index
+    49: load_var(5)  -- CHUNK
+    50: load_var(6)  -- STATE
+    51: call(3)
+    52: pop
+    53: load_var(11)  -- I
+    54: jump_null(60)
+    55: push_const(8)  -- 1
+    56: jump_null(59)
+    57: add
+    58: jump(62)
+    59: pop
     60: pop
-    61: pop
-    62: push_const(9)  -- null
-    63: store_var(11)  -- I
-    64: load_var(11)  -- I
-    65: pop_scope
-    66: store_reg(0)
-    67: jump(35)
-    68: load_reg(0)
-    69: pop
-    70: load_var(12)  -- _CMP_EMIT1
-    71: load_var(5)  -- CHUNK
-    72: push_const(13)  -- call
-    73: load_var(10)  -- ARGC
-    74: call(3)
-    75: pop_scope
-    76: ret
-CHUNK ___CMP_COMPILE_29 (TREE, CONSTS)
-  CONST  0: chunks
-  CONST  1: counter
+    61: push_const(9)  -- null
+    62: store_var(11)  -- I
+    63: load_var(11)  -- I
+    64: pop_scope
+    65: store_reg(0)
+    66: jump(34)
+    67: load_reg(0)
+    68: pop
+    69: load_var(12)  -- _CMP_EMIT1
+    70: load_var(5)  -- CHUNK
+    71: push_const(13)  -- call
+    72: load_var(10)  -- ARGC
+    73: call(3)
+    74: pop_scope
+    75: ret
+CHUNK ___CMP_COMPILE_30 (TREE, CONSTS)
+  CONST  0: CHUNKS
+  CONST  1: COUNTER
   CONST  2: 0
-  CONST  3: consts
-  CONST  4: CONSTS
-  CONST  5: null
-  CONST  6: STATE
-  CONST  7: _CMP_NEW_CHUNK
-  CONST  8: main
-  CONST  9: MAIN_CHUNK
+  CONST  3: CONSTS
+  CONST  4: null
+  CONST  5: STATE
+  CONST  6: _CMP_NEW_CHUNK
+  CONST  7: main
+  CONST  8: MAIN_CHUNK
+  CONST  9: _CC_CHUNKS
   CONST  10: _CMP_NODE
   CONST  11: TREE
   CONST  12: _CMP_EMIT
   CONST  13: ret
+  CONST  14: chunks
   CODE:
     0: push_scope
-    1: push_const(0)  -- chunks
-    2: make_map(0)
-    3: push_const(1)  -- counter
-    4: push_const(2)  -- 0
-    5: push_const(3)  -- consts
-    6: load_var(4)  -- CONSTS
-    7: push_const(5)  -- null
-    8: cmp_eq
-    9: jump_false(12)
-    10: make_map(0)
-    11: jump(13)
-    12: load_var(4)  -- CONSTS
-    13: make_map(3)
-    14: store_var(6)  -- STATE
-    15: load_var(6)  -- STATE
-    16: pop
-    17: load_var(7)  -- _CMP_NEW_CHUNK
-    18: push_const(8)  -- main
-    19: make_list(0)
-    20: call(2)
-    21: store_var(9)  -- MAIN_CHUNK
-    22: load_var(9)  -- MAIN_CHUNK
-    23: pop
-    24: load_var(6)  -- STATE
-    25: push_const(0)  -- chunks
-    26: get_index
-    27: push_const(8)  -- main
-    28: load_var(9)  -- MAIN_CHUNK
-    29: set_index
+    1: push_scope
+    2: push_const(0)  -- CHUNKS
+    3: make_map(0)
+    4: push_const(1)  -- COUNTER
+    5: push_const(2)  -- 0
+    6: push_const(3)  -- CONSTS
+    7: load_var(3)  -- CONSTS
+    8: push_const(4)  -- null
+    9: cmp_eq
+    10: jump_false(13)
+    11: make_map(0)
+    12: jump(14)
+    13: load_var(3)  -- CONSTS
+    14: make_object_here(3)
+    15: pop_scope
+    16: store_var(5)  -- STATE
+    17: load_var(5)  -- STATE
+    18: pop
+    19: load_var(6)  -- _CMP_NEW_CHUNK
+    20: push_const(7)  -- main
+    21: make_list(0)
+    22: call(2)
+    23: store_var(8)  -- MAIN_CHUNK
+    24: load_var(8)  -- MAIN_CHUNK
+    25: pop
+    26: load_var(5)  -- STATE
+    27: get_member(0)  -- CHUNKS
+    28: store_var(9)  -- _CC_CHUNKS
+    29: load_var(9)  -- _CC_CHUNKS
     30: pop
-    31: load_var(10)  -- _CMP_NODE
-    32: load_var(11)  -- TREE
-    33: load_var(9)  -- MAIN_CHUNK
-    34: load_var(6)  -- STATE
-    35: call(3)
-    36: pop
-    37: load_var(12)  -- _CMP_EMIT
-    38: load_var(9)  -- MAIN_CHUNK
-    39: push_const(13)  -- ret
-    40: call(2)
+    31: load_var(9)  -- _CC_CHUNKS
+    32: push_const(7)  -- main
+    33: load_var(8)  -- MAIN_CHUNK
+    34: set_index
+    35: pop
+    36: load_var(10)  -- _CMP_NODE
+    37: load_var(11)  -- TREE
+    38: load_var(8)  -- MAIN_CHUNK
+    39: load_var(5)  -- STATE
+    40: call(3)
     41: pop
-    42: push_const(0)  -- chunks
-    43: load_var(6)  -- STATE
-    44: push_const(0)  -- chunks
-    45: get_index
-    46: make_map(1)
-    47: ret
-    48: pop_scope
-    49: ret
-CHUNK ___CMP_CONST_2 (CHUNK, KEY, VAL)
+    42: load_var(12)  -- _CMP_EMIT
+    43: load_var(8)  -- MAIN_CHUNK
+    44: push_const(13)  -- ret
+    45: call(2)
+    46: pop
+    47: push_const(14)  -- chunks
+    48: load_var(5)  -- STATE
+    49: get_member(0)  -- CHUNKS
+    50: make_map(1)
+    51: ret
+    52: pop_scope
+    53: ret
+CHUNK ___CMP_CONST_3 (CHUNK, KEY, VAL)
   CONST  0: CHUNK
   CONST  1: cmap
-  CONST  2: KEY
-  CONST  3: null
-  CONST  4: LENGTH
-  CONST  5: constants
-  CONST  6: IDX
-  CONST  7: VAL
+  CONST  2: _CMP_CM
+  CONST  3: KEY
+  CONST  4: null
+  CONST  5: LENGTH
+  CONST  6: constants
+  CONST  7: IDX
+  CONST  8: VAL
   CODE:
     0: push_scope
     1: load_var(0)  -- CHUNK
     2: push_const(1)  -- cmap
     3: get_index
-    4: load_var(2)  -- KEY
-    5: get_index
-    6: push_const(3)  -- null
-    7: cmp_neq
-    8: jump_false(16)
-    9: load_var(0)  -- CHUNK
-    10: push_const(1)  -- cmap
-    11: get_index
-    12: load_var(2)  -- KEY
-    13: get_index
-    14: ret
-    15: jump(17)
-    16: push_const(3)  -- null
-    17: pop
-    18: load_var(4)  -- LENGTH
-    19: load_var(0)  -- CHUNK
-    20: push_const(5)  -- constants
-    21: get_index
-    22: call(1)
-    23: store_var(6)  -- IDX
-    24: load_var(6)  -- IDX
-    25: pop
-    26: load_var(0)  -- CHUNK
-    27: push_const(5)  -- constants
+    4: store_var(2)  -- _CMP_CM
+    5: load_var(2)  -- _CMP_CM
+    6: pop
+    7: load_var(2)  -- _CMP_CM
+    8: load_var(3)  -- KEY
+    9: get_index
+    10: push_const(4)  -- null
+    11: cmp_neq
+    12: jump_false(18)
+    13: load_var(2)  -- _CMP_CM
+    14: load_var(3)  -- KEY
+    15: get_index
+    16: ret
+    17: jump(19)
+    18: push_const(4)  -- null
+    19: pop
+    20: load_var(5)  -- LENGTH
+    21: load_var(0)  -- CHUNK
+    22: push_const(6)  -- constants
+    23: get_index
+    24: call(1)
+    25: store_var(7)  -- IDX
+    26: load_var(7)  -- IDX
+    27: pop
     28: load_var(0)  -- CHUNK
-    29: push_const(5)  -- constants
-    30: get_index
-    31: jump_null(38)
-    32: load_var(7)  -- VAL
-    33: make_list(1)
-    34: jump_null(37)
-    35: add
-    36: jump(40)
-    37: pop
-    38: pop
-    39: push_const(3)  -- null
-    40: set_index
-    41: pop
-    42: load_var(0)  -- CHUNK
-    43: push_const(1)  -- cmap
-    44: get_index
-    45: load_var(2)  -- KEY
-    46: load_var(6)  -- IDX
+    29: push_const(6)  -- constants
+    30: load_var(0)  -- CHUNK
+    31: push_const(6)  -- constants
+    32: get_index
+    33: jump_null(40)
+    34: load_var(8)  -- VAL
+    35: make_list(1)
+    36: jump_null(39)
+    37: add
+    38: jump(42)
+    39: pop
+    40: pop
+    41: push_const(4)  -- null
+    42: set_index
+    43: pop
+    44: load_var(2)  -- _CMP_CM
+    45: load_var(3)  -- KEY
+    46: load_var(7)  -- IDX
     47: set_index
     48: pop
-    49: load_var(6)  -- IDX
+    49: load_var(7)  -- IDX
     50: ret
     51: pop_scope
     52: ret
-CHUNK ___CMP_CONST_BOOL_4 (CHUNK, B)
+CHUNK ___CMP_CONST_BOOL_5 (CHUNK, B)
   CONST  0: _CMP_CONST
   CONST  1: CHUNK
   CONST  2: b:
@@ -790,7 +803,7 @@ CHUNK ___CMP_CONST_BOOL_4 (CHUNK, B)
     13: load_var(4)  -- B
     14: call(3)
     15: ret
-CHUNK ___CMP_CONST_CV_10 (CHUNK, VAL)
+CHUNK ___CMP_CONST_CV_11 (CHUNK, VAL)
   CONST  0: STRING
   CONST  1: VAL
   CONST  2: INT
@@ -827,7 +840,7 @@ CHUNK ___CMP_CONST_CV_10 (CHUNK, VAL)
     25: ret
     26: pop_scope
     27: ret
-CHUNK ___CMP_CONST_FLT_6 (CHUNK, F)
+CHUNK ___CMP_CONST_FLT_7 (CHUNK, F)
   CONST  0: _CMP_CONST
   CONST  1: CHUNK
   CONST  2: f:
@@ -851,7 +864,7 @@ CHUNK ___CMP_CONST_FLT_6 (CHUNK, F)
     13: load_var(4)  -- F
     14: call(3)
     15: ret
-CHUNK ___CMP_CONST_INT_5 (CHUNK, N)
+CHUNK ___CMP_CONST_INT_6 (CHUNK, N)
   CONST  0: _CMP_CONST
   CONST  1: CHUNK
   CONST  2: i:
@@ -875,7 +888,7 @@ CHUNK ___CMP_CONST_INT_5 (CHUNK, N)
     13: load_var(4)  -- N
     14: call(3)
     15: ret
-CHUNK ___CMP_CONST_NAME_9 (CHUNK, N)
+CHUNK ___CMP_CONST_NAME_10 (CHUNK, N)
   CONST  0: _CMP_CONST
   CONST  1: CHUNK
   CONST  2: n:
@@ -896,7 +909,7 @@ CHUNK ___CMP_CONST_NAME_9 (CHUNK, N)
     11: load_var(3)  -- N
     12: call(3)
     13: ret
-CHUNK ___CMP_CONST_NULL_3 (CHUNK)
+CHUNK ___CMP_CONST_NULL_4 (CHUNK)
   CONST  0: _CMP_CONST
   CONST  1: CHUNK
   CONST  2: null
@@ -908,7 +921,7 @@ CHUNK ___CMP_CONST_NULL_3 (CHUNK)
     3: push_const(3)  -- null
     4: call(3)
     5: ret
-CHUNK ___CMP_CONST_REF_8 (CHUNK, N)
+CHUNK ___CMP_CONST_REF_9 (CHUNK, N)
   CONST  0: _CMP_CONST
   CONST  1: CHUNK
   CONST  2: &
@@ -938,7 +951,7 @@ CHUNK ___CMP_CONST_REF_8 (CHUNK, N)
     19: push_const(4)  -- null
     20: call(3)
     21: ret
-CHUNK ___CMP_CONST_STR_7 (CHUNK, S)
+CHUNK ___CMP_CONST_STR_8 (CHUNK, S)
   CONST  0: _CMP_CONST
   CONST  1: CHUNK
   CONST  2: n:
@@ -959,43 +972,12 @@ CHUNK ___CMP_CONST_STR_7 (CHUNK, S)
     11: load_var(3)  -- S
     12: call(3)
     13: ret
-CHUNK ___CMP_EMIT1_12 (CHUNK, OP, OPERAND)
+CHUNK ___CMP_EMIT1_13 (CHUNK, OP, OPERAND)
   CONST  0: CHUNK
   CONST  1: code
-  CONST  2: op
+  CONST  2: _CMP_INSTR
   CONST  3: OP
-  CONST  4: operand
-  CONST  5: OPERAND
-  CONST  6: null
-  CODE:
-    0: push_scope
-    1: load_var(0)  -- CHUNK
-    2: push_const(1)  -- code
-    3: load_var(0)  -- CHUNK
-    4: push_const(1)  -- code
-    5: get_index
-    6: jump_null(17)
-    7: push_const(2)  -- op
-    8: load_var(3)  -- OP
-    9: push_const(4)  -- operand
-    10: load_var(5)  -- OPERAND
-    11: make_map(2)
-    12: make_list(1)
-    13: jump_null(16)
-    14: add
-    15: jump(19)
-    16: pop
-    17: pop
-    18: push_const(6)  -- null
-    19: set_index
-    20: pop_scope
-    21: ret
-CHUNK ___CMP_EMIT_11 (CHUNK, OP)
-  CONST  0: CHUNK
-  CONST  1: code
-  CONST  2: op
-  CONST  3: OP
-  CONST  4: operand
+  CONST  4: OPERAND
   CONST  5: null
   CODE:
     0: push_scope
@@ -1004,27 +986,54 @@ CHUNK ___CMP_EMIT_11 (CHUNK, OP)
     3: load_var(0)  -- CHUNK
     4: push_const(1)  -- code
     5: get_index
-    6: jump_null(17)
-    7: push_const(2)  -- op
+    6: jump_null(16)
+    7: load_var(2)  -- _CMP_INSTR
     8: load_var(3)  -- OP
-    9: push_const(4)  -- operand
-    10: push_const(5)  -- null
-    11: make_map(2)
-    12: make_list(1)
-    13: jump_null(16)
-    14: add
-    15: jump(19)
+    9: load_var(4)  -- OPERAND
+    10: call(2)
+    11: make_list(1)
+    12: jump_null(15)
+    13: add
+    14: jump(18)
+    15: pop
     16: pop
-    17: pop
-    18: push_const(5)  -- null
-    19: set_index
-    20: pop_scope
-    21: ret
-CHUNK ___CMP_FOR_26 (NODE, CHUNK, STATE)
+    17: push_const(5)  -- null
+    18: set_index
+    19: pop_scope
+    20: ret
+CHUNK ___CMP_EMIT_12 (CHUNK, OP)
+  CONST  0: CHUNK
+  CONST  1: code
+  CONST  2: _CMP_INSTR
+  CONST  3: OP
+  CONST  4: null
+  CODE:
+    0: push_scope
+    1: load_var(0)  -- CHUNK
+    2: push_const(1)  -- code
+    3: load_var(0)  -- CHUNK
+    4: push_const(1)  -- code
+    5: get_index
+    6: jump_null(16)
+    7: load_var(2)  -- _CMP_INSTR
+    8: load_var(3)  -- OP
+    9: push_const(4)  -- null
+    10: call(2)
+    11: make_list(1)
+    12: jump_null(15)
+    13: add
+    14: jump(18)
+    15: pop
+    16: pop
+    17: push_const(4)  -- null
+    18: set_index
+    19: pop_scope
+    20: ret
+CHUNK ___CMP_FOR_27 (NODE, CHUNK, STATE)
   CONST  0: NODE
-  CONST  1: children
+  CONST  1: CHILDREN
   CONST  2: CH
-  CONST  3: val
+  CONST  3: VAL
   CONST  4: VAR_NAME
   CONST  5: LENGTH
   CONST  6: 3
@@ -1082,492 +1091,490 @@ CHUNK ___CMP_FOR_26 (NODE, CHUNK, STATE)
   CODE:
     0: push_scope
     1: load_var(0)  -- NODE
-    2: push_const(1)  -- children
-    3: get_index
-    4: store_var(2)  -- CH
-    5: load_var(2)  -- CH
-    6: pop
-    7: load_var(0)  -- NODE
-    8: push_const(3)  -- val
-    9: get_index
-    10: store_var(4)  -- VAR_NAME
-    11: load_var(4)  -- VAR_NAME
-    12: pop
-    13: load_var(5)  -- LENGTH
-    14: load_var(2)  -- CH
-    15: call(1)
-    16: jump_null(22)
-    17: push_const(6)  -- 3
-    18: jump_null(21)
-    19: cmp_gt
-    20: jump(24)
-    21: pop
-    22: pop
-    23: push_const(7)  -- null
-    24: store_var(8)  -- HAS_STEP
-    25: load_var(8)  -- HAS_STEP
-    26: pop
-    27: load_var(9)  -- _CMP_ALLOC_REG
-    28: load_var(10)  -- CHUNK
-    29: call(1)
-    30: store_var(11)  -- RSV
-    31: load_var(11)  -- RSV
-    32: pop
-    33: load_var(9)  -- _CMP_ALLOC_REG
-    34: load_var(10)  -- CHUNK
-    35: call(1)
-    36: store_var(12)  -- RFIN
-    37: load_var(12)  -- RFIN
-    38: pop
-    39: load_var(9)  -- _CMP_ALLOC_REG
-    40: load_var(10)  -- CHUNK
-    41: call(1)
-    42: store_var(13)  -- RTGT
-    43: load_var(13)  -- RTGT
-    44: pop
-    45: load_var(9)  -- _CMP_ALLOC_REG
-    46: load_var(10)  -- CHUNK
-    47: call(1)
-    48: store_var(14)  -- RUP
-    49: load_var(14)  -- RUP
-    50: pop
-    51: load_var(9)  -- _CMP_ALLOC_REG
-    52: load_var(10)  -- CHUNK
-    53: call(1)
-    54: store_var(15)  -- RSTEP
-    55: load_var(15)  -- RSTEP
-    56: pop
-    57: load_var(9)  -- _CMP_ALLOC_REG
-    58: load_var(10)  -- CHUNK
-    59: call(1)
-    60: store_var(16)  -- RNEXT
-    61: load_var(16)  -- RNEXT
-    62: pop
-    63: load_var(9)  -- _CMP_ALLOC_REG
-    64: load_var(10)  -- CHUNK
-    65: call(1)
-    66: store_var(17)  -- ROVER
-    67: load_var(17)  -- ROVER
-    68: pop
-    69: load_var(18)  -- _CMP_NODE
-    70: load_var(2)  -- CH
-    71: push_const(19)  -- 0
-    72: get_index
-    73: load_var(10)  -- CHUNK
-    74: load_var(20)  -- STATE
-    75: call(3)
-    76: pop
-    77: load_var(21)  -- _CMP_EMIT1
-    78: load_var(10)  -- CHUNK
-    79: push_const(22)  -- store_var
-    80: load_var(23)  -- _CMP_CONST_NAME
-    81: load_var(10)  -- CHUNK
-    82: load_var(4)  -- VAR_NAME
-    83: call(2)
-    84: call(3)
-    85: pop
-    86: load_var(21)  -- _CMP_EMIT1
-    87: load_var(10)  -- CHUNK
-    88: push_const(24)  -- load_var
-    89: load_var(23)  -- _CMP_CONST_NAME
-    90: load_var(10)  -- CHUNK
-    91: load_var(4)  -- VAR_NAME
-    92: call(2)
-    93: call(3)
-    94: pop
-    95: load_var(25)  -- _CMP_EMIT
-    96: load_var(10)  -- CHUNK
-    97: push_const(26)  -- pop
-    98: call(2)
-    99: pop
-    100: load_var(21)  -- _CMP_EMIT1
-    101: load_var(10)  -- CHUNK
-    102: push_const(24)  -- load_var
-    103: load_var(23)  -- _CMP_CONST_NAME
-    104: load_var(10)  -- CHUNK
-    105: load_var(4)  -- VAR_NAME
-    106: call(2)
-    107: call(3)
-    108: pop
-    109: load_var(21)  -- _CMP_EMIT1
-    110: load_var(10)  -- CHUNK
-    111: push_const(27)  -- store_reg
-    112: load_var(11)  -- RSV
-    113: call(3)
-    114: pop
-    115: load_var(21)  -- _CMP_EMIT1
-    116: load_var(10)  -- CHUNK
-    117: push_const(28)  -- push_const
-    118: load_var(29)  -- _CMP_CONST_BOOL
-    119: load_var(10)  -- CHUNK
-    120: push_const(30)  -- false
-    121: call(2)
-    122: call(3)
-    123: pop
-    124: load_var(21)  -- _CMP_EMIT1
-    125: load_var(10)  -- CHUNK
-    126: push_const(27)  -- store_reg
-    127: load_var(12)  -- RFIN
-    128: call(3)
-    129: pop
-    130: load_var(5)  -- LENGTH
-    131: load_var(10)  -- CHUNK
-    132: push_const(31)  -- code
-    133: get_index
-    134: call(1)
-    135: store_var(32)  -- LOOP_TOP
+    2: get_member(1)  -- CHILDREN
+    3: store_var(2)  -- CH
+    4: load_var(2)  -- CH
+    5: pop
+    6: load_var(0)  -- NODE
+    7: get_member(3)  -- VAL
+    8: store_var(4)  -- VAR_NAME
+    9: load_var(4)  -- VAR_NAME
+    10: pop
+    11: load_var(5)  -- LENGTH
+    12: load_var(2)  -- CH
+    13: call(1)
+    14: jump_null(20)
+    15: push_const(6)  -- 3
+    16: jump_null(19)
+    17: cmp_gt
+    18: jump(22)
+    19: pop
+    20: pop
+    21: push_const(7)  -- null
+    22: store_var(8)  -- HAS_STEP
+    23: load_var(8)  -- HAS_STEP
+    24: pop
+    25: load_var(9)  -- _CMP_ALLOC_REG
+    26: load_var(10)  -- CHUNK
+    27: call(1)
+    28: store_var(11)  -- RSV
+    29: load_var(11)  -- RSV
+    30: pop
+    31: load_var(9)  -- _CMP_ALLOC_REG
+    32: load_var(10)  -- CHUNK
+    33: call(1)
+    34: store_var(12)  -- RFIN
+    35: load_var(12)  -- RFIN
+    36: pop
+    37: load_var(9)  -- _CMP_ALLOC_REG
+    38: load_var(10)  -- CHUNK
+    39: call(1)
+    40: store_var(13)  -- RTGT
+    41: load_var(13)  -- RTGT
+    42: pop
+    43: load_var(9)  -- _CMP_ALLOC_REG
+    44: load_var(10)  -- CHUNK
+    45: call(1)
+    46: store_var(14)  -- RUP
+    47: load_var(14)  -- RUP
+    48: pop
+    49: load_var(9)  -- _CMP_ALLOC_REG
+    50: load_var(10)  -- CHUNK
+    51: call(1)
+    52: store_var(15)  -- RSTEP
+    53: load_var(15)  -- RSTEP
+    54: pop
+    55: load_var(9)  -- _CMP_ALLOC_REG
+    56: load_var(10)  -- CHUNK
+    57: call(1)
+    58: store_var(16)  -- RNEXT
+    59: load_var(16)  -- RNEXT
+    60: pop
+    61: load_var(9)  -- _CMP_ALLOC_REG
+    62: load_var(10)  -- CHUNK
+    63: call(1)
+    64: store_var(17)  -- ROVER
+    65: load_var(17)  -- ROVER
+    66: pop
+    67: load_var(18)  -- _CMP_NODE
+    68: load_var(2)  -- CH
+    69: push_const(19)  -- 0
+    70: get_index
+    71: load_var(10)  -- CHUNK
+    72: load_var(20)  -- STATE
+    73: call(3)
+    74: pop
+    75: load_var(21)  -- _CMP_EMIT1
+    76: load_var(10)  -- CHUNK
+    77: push_const(22)  -- store_var
+    78: load_var(23)  -- _CMP_CONST_NAME
+    79: load_var(10)  -- CHUNK
+    80: load_var(4)  -- VAR_NAME
+    81: call(2)
+    82: call(3)
+    83: pop
+    84: load_var(21)  -- _CMP_EMIT1
+    85: load_var(10)  -- CHUNK
+    86: push_const(24)  -- load_var
+    87: load_var(23)  -- _CMP_CONST_NAME
+    88: load_var(10)  -- CHUNK
+    89: load_var(4)  -- VAR_NAME
+    90: call(2)
+    91: call(3)
+    92: pop
+    93: load_var(25)  -- _CMP_EMIT
+    94: load_var(10)  -- CHUNK
+    95: push_const(26)  -- pop
+    96: call(2)
+    97: pop
+    98: load_var(21)  -- _CMP_EMIT1
+    99: load_var(10)  -- CHUNK
+    100: push_const(24)  -- load_var
+    101: load_var(23)  -- _CMP_CONST_NAME
+    102: load_var(10)  -- CHUNK
+    103: load_var(4)  -- VAR_NAME
+    104: call(2)
+    105: call(3)
+    106: pop
+    107: load_var(21)  -- _CMP_EMIT1
+    108: load_var(10)  -- CHUNK
+    109: push_const(27)  -- store_reg
+    110: load_var(11)  -- RSV
+    111: call(3)
+    112: pop
+    113: load_var(21)  -- _CMP_EMIT1
+    114: load_var(10)  -- CHUNK
+    115: push_const(28)  -- push_const
+    116: load_var(29)  -- _CMP_CONST_BOOL
+    117: load_var(10)  -- CHUNK
+    118: push_const(30)  -- false
+    119: call(2)
+    120: call(3)
+    121: pop
+    122: load_var(21)  -- _CMP_EMIT1
+    123: load_var(10)  -- CHUNK
+    124: push_const(27)  -- store_reg
+    125: load_var(12)  -- RFIN
+    126: call(3)
+    127: pop
+    128: load_var(5)  -- LENGTH
+    129: load_var(10)  -- CHUNK
+    130: push_const(31)  -- code
+    131: get_index
+    132: call(1)
+    133: store_var(32)  -- LOOP_TOP
+    134: load_var(32)  -- LOOP_TOP
+    135: pop
     136: load_var(32)  -- LOOP_TOP
-    137: pop
-    138: load_var(32)  -- LOOP_TOP
-    139: store_var(33)  -- BODY_START
-    140: load_var(33)  -- BODY_START
-    141: pop
-    142: load_var(18)  -- _CMP_NODE
-    143: load_var(2)  -- CH
-    144: push_const(34)  -- 2
-    145: get_index
-    146: load_var(10)  -- CHUNK
-    147: load_var(20)  -- STATE
-    148: call(3)
-    149: pop
-    150: load_var(25)  -- _CMP_EMIT
-    151: load_var(10)  -- CHUNK
-    152: push_const(26)  -- pop
-    153: call(2)
-    154: pop
-    155: load_var(5)  -- LENGTH
-    156: load_var(10)  -- CHUNK
-    157: push_const(31)  -- code
-    158: get_index
-    159: call(1)
-    160: store_var(35)  -- CONT_ADDR
-    161: load_var(35)  -- CONT_ADDR
-    162: pop
-    163: load_var(21)  -- _CMP_EMIT1
-    164: load_var(10)  -- CHUNK
-    165: push_const(36)  -- load_reg
-    166: load_var(12)  -- RFIN
-    167: call(3)
-    168: pop
-    169: load_var(37)  -- _CMP_JUMP
-    170: load_var(10)  -- CHUNK
-    171: push_const(38)  -- jump_true
-    172: call(2)
-    173: store_var(39)  -- FIN_BREAK
-    174: load_var(39)  -- FIN_BREAK
-    175: pop
-    176: load_var(18)  -- _CMP_NODE
-    177: load_var(2)  -- CH
-    178: push_const(40)  -- 1
-    179: get_index
-    180: load_var(10)  -- CHUNK
-    181: load_var(20)  -- STATE
-    182: call(3)
-    183: pop
-    184: load_var(21)  -- _CMP_EMIT1
-    185: load_var(10)  -- CHUNK
-    186: push_const(27)  -- store_reg
-    187: load_var(13)  -- RTGT
-    188: call(3)
-    189: pop
-    190: load_var(21)  -- _CMP_EMIT1
-    191: load_var(10)  -- CHUNK
-    192: push_const(36)  -- load_reg
-    193: load_var(13)  -- RTGT
-    194: call(3)
-    195: pop
-    196: load_var(21)  -- _CMP_EMIT1
-    197: load_var(10)  -- CHUNK
-    198: push_const(36)  -- load_reg
-    199: load_var(11)  -- RSV
-    200: call(3)
-    201: pop
-    202: load_var(25)  -- _CMP_EMIT
-    203: load_var(10)  -- CHUNK
-    204: push_const(41)  -- cmp_gte
-    205: call(2)
-    206: pop
-    207: load_var(21)  -- _CMP_EMIT1
-    208: load_var(10)  -- CHUNK
-    209: push_const(27)  -- store_reg
-    210: load_var(14)  -- RUP
-    211: call(3)
-    212: pop
-    213: load_var(8)  -- HAS_STEP
-    214: jump_false(231)
-    215: push_scope
-    216: load_var(18)  -- _CMP_NODE
-    217: load_var(2)  -- CH
-    218: push_const(6)  -- 3
-    219: get_index
-    220: load_var(10)  -- CHUNK
-    221: load_var(20)  -- STATE
-    222: call(3)
-    223: pop
-    224: load_var(21)  -- _CMP_EMIT1
-    225: load_var(10)  -- CHUNK
-    226: push_const(27)  -- store_reg
-    227: load_var(15)  -- RSTEP
-    228: call(3)
-    229: pop_scope
-    230: jump(288)
-    231: push_scope
-    232: load_var(21)  -- _CMP_EMIT1
-    233: load_var(10)  -- CHUNK
-    234: push_const(36)  -- load_reg
-    235: load_var(14)  -- RUP
-    236: call(3)
-    237: pop
-    238: load_var(37)  -- _CMP_JUMP
-    239: load_var(10)  -- CHUNK
-    240: push_const(42)  -- jump_false
-    241: call(2)
-    242: store_var(43)  -- TO_NEG
-    243: load_var(43)  -- TO_NEG
-    244: pop
-    245: load_var(21)  -- _CMP_EMIT1
-    246: load_var(10)  -- CHUNK
-    247: push_const(28)  -- push_const
-    248: load_var(44)  -- _CMP_CONST_INT
-    249: load_var(10)  -- CHUNK
-    250: push_const(40)  -- 1
-    251: call(2)
-    252: call(3)
-    253: pop
-    254: load_var(37)  -- _CMP_JUMP
-    255: load_var(10)  -- CHUNK
-    256: push_const(45)  -- jump
-    257: call(2)
-    258: store_var(46)  -- STEP_DONE
-    259: load_var(46)  -- STEP_DONE
-    260: pop
-    261: load_var(47)  -- _CMP_PATCH
-    262: load_var(10)  -- CHUNK
-    263: load_var(43)  -- TO_NEG
-    264: call(2)
-    265: pop
-    266: load_var(21)  -- _CMP_EMIT1
-    267: load_var(10)  -- CHUNK
-    268: push_const(28)  -- push_const
-    269: load_var(44)  -- _CMP_CONST_INT
-    270: load_var(10)  -- CHUNK
-    271: push_const(40)  -- 1
-    272: jump_null(274)
-    273: neg
-    274: call(2)
-    275: call(3)
-    276: pop
-    277: load_var(47)  -- _CMP_PATCH
-    278: load_var(10)  -- CHUNK
-    279: load_var(46)  -- STEP_DONE
-    280: call(2)
-    281: pop
-    282: load_var(21)  -- _CMP_EMIT1
-    283: load_var(10)  -- CHUNK
-    284: push_const(27)  -- store_reg
-    285: load_var(15)  -- RSTEP
-    286: call(3)
-    287: pop_scope
-    288: pop
-    289: load_var(21)  -- _CMP_EMIT1
-    290: load_var(10)  -- CHUNK
-    291: push_const(24)  -- load_var
-    292: load_var(23)  -- _CMP_CONST_NAME
-    293: load_var(10)  -- CHUNK
-    294: load_var(4)  -- VAR_NAME
-    295: call(2)
-    296: call(3)
-    297: pop
-    298: load_var(21)  -- _CMP_EMIT1
-    299: load_var(10)  -- CHUNK
-    300: push_const(36)  -- load_reg
-    301: load_var(15)  -- RSTEP
-    302: call(3)
-    303: pop
-    304: load_var(25)  -- _CMP_EMIT
-    305: load_var(10)  -- CHUNK
-    306: push_const(48)  -- add
-    307: call(2)
-    308: pop
-    309: load_var(21)  -- _CMP_EMIT1
-    310: load_var(10)  -- CHUNK
-    311: push_const(27)  -- store_reg
-    312: load_var(16)  -- RNEXT
-    313: call(3)
-    314: pop
-    315: load_var(21)  -- _CMP_EMIT1
-    316: load_var(10)  -- CHUNK
-    317: push_const(36)  -- load_reg
-    318: load_var(14)  -- RUP
-    319: call(3)
-    320: pop
-    321: load_var(21)  -- _CMP_EMIT1
-    322: load_var(10)  -- CHUNK
-    323: push_const(36)  -- load_reg
-    324: load_var(16)  -- RNEXT
-    325: call(3)
-    326: pop
-    327: load_var(21)  -- _CMP_EMIT1
-    328: load_var(10)  -- CHUNK
-    329: push_const(36)  -- load_reg
-    330: load_var(13)  -- RTGT
-    331: call(3)
-    332: pop
-    333: load_var(25)  -- _CMP_EMIT
-    334: load_var(10)  -- CHUNK
-    335: push_const(49)  -- cmp_gt
-    336: call(2)
-    337: pop
-    338: load_var(25)  -- _CMP_EMIT
-    339: load_var(10)  -- CHUNK
-    340: push_const(50)  -- log_and
-    341: call(2)
-    342: pop
-    343: load_var(21)  -- _CMP_EMIT1
-    344: load_var(10)  -- CHUNK
-    345: push_const(36)  -- load_reg
-    346: load_var(14)  -- RUP
-    347: call(3)
-    348: pop
-    349: load_var(25)  -- _CMP_EMIT
-    350: load_var(10)  -- CHUNK
-    351: push_const(51)  -- log_not
-    352: call(2)
-    353: pop
-    354: load_var(21)  -- _CMP_EMIT1
-    355: load_var(10)  -- CHUNK
-    356: push_const(36)  -- load_reg
-    357: load_var(16)  -- RNEXT
-    358: call(3)
-    359: pop
-    360: load_var(21)  -- _CMP_EMIT1
-    361: load_var(10)  -- CHUNK
-    362: push_const(36)  -- load_reg
-    363: load_var(13)  -- RTGT
-    364: call(3)
-    365: pop
-    366: load_var(25)  -- _CMP_EMIT
-    367: load_var(10)  -- CHUNK
-    368: push_const(52)  -- cmp_lt
-    369: call(2)
-    370: pop
-    371: load_var(25)  -- _CMP_EMIT
-    372: load_var(10)  -- CHUNK
-    373: push_const(50)  -- log_and
-    374: call(2)
-    375: pop
-    376: load_var(25)  -- _CMP_EMIT
-    377: load_var(10)  -- CHUNK
-    378: push_const(53)  -- log_or
-    379: call(2)
-    380: pop
-    381: load_var(21)  -- _CMP_EMIT1
-    382: load_var(10)  -- CHUNK
-    383: push_const(27)  -- store_reg
-    384: load_var(17)  -- ROVER
-    385: call(3)
-    386: pop
-    387: load_var(21)  -- _CMP_EMIT1
-    388: load_var(10)  -- CHUNK
-    389: push_const(36)  -- load_reg
-    390: load_var(17)  -- ROVER
-    391: call(3)
-    392: pop
-    393: load_var(21)  -- _CMP_EMIT1
-    394: load_var(10)  -- CHUNK
-    395: push_const(36)  -- load_reg
-    396: load_var(16)  -- RNEXT
-    397: call(3)
-    398: pop
-    399: load_var(21)  -- _CMP_EMIT1
-    400: load_var(10)  -- CHUNK
-    401: push_const(36)  -- load_reg
-    402: load_var(13)  -- RTGT
-    403: call(3)
-    404: pop
-    405: load_var(25)  -- _CMP_EMIT
-    406: load_var(10)  -- CHUNK
-    407: push_const(54)  -- cmp_eq
-    408: call(2)
-    409: pop
-    410: load_var(25)  -- _CMP_EMIT
-    411: load_var(10)  -- CHUNK
-    412: push_const(53)  -- log_or
-    413: call(2)
-    414: pop
-    415: load_var(21)  -- _CMP_EMIT1
-    416: load_var(10)  -- CHUNK
-    417: push_const(27)  -- store_reg
-    418: load_var(12)  -- RFIN
-    419: call(3)
-    420: pop
-    421: load_var(21)  -- _CMP_EMIT1
-    422: load_var(10)  -- CHUNK
-    423: push_const(36)  -- load_reg
-    424: load_var(17)  -- ROVER
-    425: call(3)
-    426: pop
-    427: load_var(37)  -- _CMP_JUMP
-    428: load_var(10)  -- CHUNK
-    429: push_const(38)  -- jump_true
-    430: call(2)
-    431: store_var(55)  -- OVER_BREAK
-    432: load_var(55)  -- OVER_BREAK
-    433: pop
-    434: load_var(21)  -- _CMP_EMIT1
-    435: load_var(10)  -- CHUNK
-    436: push_const(36)  -- load_reg
-    437: load_var(16)  -- RNEXT
-    438: call(3)
-    439: pop
-    440: load_var(21)  -- _CMP_EMIT1
-    441: load_var(10)  -- CHUNK
-    442: push_const(22)  -- store_var
-    443: load_var(23)  -- _CMP_CONST_NAME
-    444: load_var(10)  -- CHUNK
-    445: load_var(4)  -- VAR_NAME
-    446: call(2)
-    447: call(3)
-    448: pop
-    449: load_var(21)  -- _CMP_EMIT1
-    450: load_var(10)  -- CHUNK
-    451: push_const(45)  -- jump
-    452: load_var(32)  -- LOOP_TOP
-    453: call(3)
-    454: pop
-    455: load_var(47)  -- _CMP_PATCH
-    456: load_var(10)  -- CHUNK
-    457: load_var(39)  -- FIN_BREAK
-    458: call(2)
-    459: pop
-    460: load_var(47)  -- _CMP_PATCH
-    461: load_var(10)  -- CHUNK
-    462: load_var(55)  -- OVER_BREAK
-    463: call(2)
-    464: pop
-    465: load_var(56)  -- _CMP_PATCH_LOOP
-    466: load_var(10)  -- CHUNK
-    467: load_var(33)  -- BODY_START
-    468: load_var(5)  -- LENGTH
-    469: load_var(10)  -- CHUNK
-    470: push_const(31)  -- code
-    471: get_index
-    472: call(1)
-    473: load_var(35)  -- CONT_ADDR
-    474: call(4)
-    475: pop
-    476: load_var(21)  -- _CMP_EMIT1
-    477: load_var(10)  -- CHUNK
-    478: push_const(28)  -- push_const
-    479: load_var(57)  -- _CMP_CONST_NULL
-    480: load_var(10)  -- CHUNK
-    481: call(1)
-    482: call(3)
-    483: pop_scope
-    484: ret
-CHUNK ___CMP_FRESH_18 (STATE, HINT)
+    137: store_var(33)  -- BODY_START
+    138: load_var(33)  -- BODY_START
+    139: pop
+    140: load_var(18)  -- _CMP_NODE
+    141: load_var(2)  -- CH
+    142: push_const(34)  -- 2
+    143: get_index
+    144: load_var(10)  -- CHUNK
+    145: load_var(20)  -- STATE
+    146: call(3)
+    147: pop
+    148: load_var(25)  -- _CMP_EMIT
+    149: load_var(10)  -- CHUNK
+    150: push_const(26)  -- pop
+    151: call(2)
+    152: pop
+    153: load_var(5)  -- LENGTH
+    154: load_var(10)  -- CHUNK
+    155: push_const(31)  -- code
+    156: get_index
+    157: call(1)
+    158: store_var(35)  -- CONT_ADDR
+    159: load_var(35)  -- CONT_ADDR
+    160: pop
+    161: load_var(21)  -- _CMP_EMIT1
+    162: load_var(10)  -- CHUNK
+    163: push_const(36)  -- load_reg
+    164: load_var(12)  -- RFIN
+    165: call(3)
+    166: pop
+    167: load_var(37)  -- _CMP_JUMP
+    168: load_var(10)  -- CHUNK
+    169: push_const(38)  -- jump_true
+    170: call(2)
+    171: store_var(39)  -- FIN_BREAK
+    172: load_var(39)  -- FIN_BREAK
+    173: pop
+    174: load_var(18)  -- _CMP_NODE
+    175: load_var(2)  -- CH
+    176: push_const(40)  -- 1
+    177: get_index
+    178: load_var(10)  -- CHUNK
+    179: load_var(20)  -- STATE
+    180: call(3)
+    181: pop
+    182: load_var(21)  -- _CMP_EMIT1
+    183: load_var(10)  -- CHUNK
+    184: push_const(27)  -- store_reg
+    185: load_var(13)  -- RTGT
+    186: call(3)
+    187: pop
+    188: load_var(21)  -- _CMP_EMIT1
+    189: load_var(10)  -- CHUNK
+    190: push_const(36)  -- load_reg
+    191: load_var(13)  -- RTGT
+    192: call(3)
+    193: pop
+    194: load_var(21)  -- _CMP_EMIT1
+    195: load_var(10)  -- CHUNK
+    196: push_const(36)  -- load_reg
+    197: load_var(11)  -- RSV
+    198: call(3)
+    199: pop
+    200: load_var(25)  -- _CMP_EMIT
+    201: load_var(10)  -- CHUNK
+    202: push_const(41)  -- cmp_gte
+    203: call(2)
+    204: pop
+    205: load_var(21)  -- _CMP_EMIT1
+    206: load_var(10)  -- CHUNK
+    207: push_const(27)  -- store_reg
+    208: load_var(14)  -- RUP
+    209: call(3)
+    210: pop
+    211: load_var(8)  -- HAS_STEP
+    212: jump_false(229)
+    213: push_scope
+    214: load_var(18)  -- _CMP_NODE
+    215: load_var(2)  -- CH
+    216: push_const(6)  -- 3
+    217: get_index
+    218: load_var(10)  -- CHUNK
+    219: load_var(20)  -- STATE
+    220: call(3)
+    221: pop
+    222: load_var(21)  -- _CMP_EMIT1
+    223: load_var(10)  -- CHUNK
+    224: push_const(27)  -- store_reg
+    225: load_var(15)  -- RSTEP
+    226: call(3)
+    227: pop_scope
+    228: jump(286)
+    229: push_scope
+    230: load_var(21)  -- _CMP_EMIT1
+    231: load_var(10)  -- CHUNK
+    232: push_const(36)  -- load_reg
+    233: load_var(14)  -- RUP
+    234: call(3)
+    235: pop
+    236: load_var(37)  -- _CMP_JUMP
+    237: load_var(10)  -- CHUNK
+    238: push_const(42)  -- jump_false
+    239: call(2)
+    240: store_var(43)  -- TO_NEG
+    241: load_var(43)  -- TO_NEG
+    242: pop
+    243: load_var(21)  -- _CMP_EMIT1
+    244: load_var(10)  -- CHUNK
+    245: push_const(28)  -- push_const
+    246: load_var(44)  -- _CMP_CONST_INT
+    247: load_var(10)  -- CHUNK
+    248: push_const(40)  -- 1
+    249: call(2)
+    250: call(3)
+    251: pop
+    252: load_var(37)  -- _CMP_JUMP
+    253: load_var(10)  -- CHUNK
+    254: push_const(45)  -- jump
+    255: call(2)
+    256: store_var(46)  -- STEP_DONE
+    257: load_var(46)  -- STEP_DONE
+    258: pop
+    259: load_var(47)  -- _CMP_PATCH
+    260: load_var(10)  -- CHUNK
+    261: load_var(43)  -- TO_NEG
+    262: call(2)
+    263: pop
+    264: load_var(21)  -- _CMP_EMIT1
+    265: load_var(10)  -- CHUNK
+    266: push_const(28)  -- push_const
+    267: load_var(44)  -- _CMP_CONST_INT
+    268: load_var(10)  -- CHUNK
+    269: push_const(40)  -- 1
+    270: jump_null(272)
+    271: neg
+    272: call(2)
+    273: call(3)
+    274: pop
+    275: load_var(47)  -- _CMP_PATCH
+    276: load_var(10)  -- CHUNK
+    277: load_var(46)  -- STEP_DONE
+    278: call(2)
+    279: pop
+    280: load_var(21)  -- _CMP_EMIT1
+    281: load_var(10)  -- CHUNK
+    282: push_const(27)  -- store_reg
+    283: load_var(15)  -- RSTEP
+    284: call(3)
+    285: pop_scope
+    286: pop
+    287: load_var(21)  -- _CMP_EMIT1
+    288: load_var(10)  -- CHUNK
+    289: push_const(24)  -- load_var
+    290: load_var(23)  -- _CMP_CONST_NAME
+    291: load_var(10)  -- CHUNK
+    292: load_var(4)  -- VAR_NAME
+    293: call(2)
+    294: call(3)
+    295: pop
+    296: load_var(21)  -- _CMP_EMIT1
+    297: load_var(10)  -- CHUNK
+    298: push_const(36)  -- load_reg
+    299: load_var(15)  -- RSTEP
+    300: call(3)
+    301: pop
+    302: load_var(25)  -- _CMP_EMIT
+    303: load_var(10)  -- CHUNK
+    304: push_const(48)  -- add
+    305: call(2)
+    306: pop
+    307: load_var(21)  -- _CMP_EMIT1
+    308: load_var(10)  -- CHUNK
+    309: push_const(27)  -- store_reg
+    310: load_var(16)  -- RNEXT
+    311: call(3)
+    312: pop
+    313: load_var(21)  -- _CMP_EMIT1
+    314: load_var(10)  -- CHUNK
+    315: push_const(36)  -- load_reg
+    316: load_var(14)  -- RUP
+    317: call(3)
+    318: pop
+    319: load_var(21)  -- _CMP_EMIT1
+    320: load_var(10)  -- CHUNK
+    321: push_const(36)  -- load_reg
+    322: load_var(16)  -- RNEXT
+    323: call(3)
+    324: pop
+    325: load_var(21)  -- _CMP_EMIT1
+    326: load_var(10)  -- CHUNK
+    327: push_const(36)  -- load_reg
+    328: load_var(13)  -- RTGT
+    329: call(3)
+    330: pop
+    331: load_var(25)  -- _CMP_EMIT
+    332: load_var(10)  -- CHUNK
+    333: push_const(49)  -- cmp_gt
+    334: call(2)
+    335: pop
+    336: load_var(25)  -- _CMP_EMIT
+    337: load_var(10)  -- CHUNK
+    338: push_const(50)  -- log_and
+    339: call(2)
+    340: pop
+    341: load_var(21)  -- _CMP_EMIT1
+    342: load_var(10)  -- CHUNK
+    343: push_const(36)  -- load_reg
+    344: load_var(14)  -- RUP
+    345: call(3)
+    346: pop
+    347: load_var(25)  -- _CMP_EMIT
+    348: load_var(10)  -- CHUNK
+    349: push_const(51)  -- log_not
+    350: call(2)
+    351: pop
+    352: load_var(21)  -- _CMP_EMIT1
+    353: load_var(10)  -- CHUNK
+    354: push_const(36)  -- load_reg
+    355: load_var(16)  -- RNEXT
+    356: call(3)
+    357: pop
+    358: load_var(21)  -- _CMP_EMIT1
+    359: load_var(10)  -- CHUNK
+    360: push_const(36)  -- load_reg
+    361: load_var(13)  -- RTGT
+    362: call(3)
+    363: pop
+    364: load_var(25)  -- _CMP_EMIT
+    365: load_var(10)  -- CHUNK
+    366: push_const(52)  -- cmp_lt
+    367: call(2)
+    368: pop
+    369: load_var(25)  -- _CMP_EMIT
+    370: load_var(10)  -- CHUNK
+    371: push_const(50)  -- log_and
+    372: call(2)
+    373: pop
+    374: load_var(25)  -- _CMP_EMIT
+    375: load_var(10)  -- CHUNK
+    376: push_const(53)  -- log_or
+    377: call(2)
+    378: pop
+    379: load_var(21)  -- _CMP_EMIT1
+    380: load_var(10)  -- CHUNK
+    381: push_const(27)  -- store_reg
+    382: load_var(17)  -- ROVER
+    383: call(3)
+    384: pop
+    385: load_var(21)  -- _CMP_EMIT1
+    386: load_var(10)  -- CHUNK
+    387: push_const(36)  -- load_reg
+    388: load_var(17)  -- ROVER
+    389: call(3)
+    390: pop
+    391: load_var(21)  -- _CMP_EMIT1
+    392: load_var(10)  -- CHUNK
+    393: push_const(36)  -- load_reg
+    394: load_var(16)  -- RNEXT
+    395: call(3)
+    396: pop
+    397: load_var(21)  -- _CMP_EMIT1
+    398: load_var(10)  -- CHUNK
+    399: push_const(36)  -- load_reg
+    400: load_var(13)  -- RTGT
+    401: call(3)
+    402: pop
+    403: load_var(25)  -- _CMP_EMIT
+    404: load_var(10)  -- CHUNK
+    405: push_const(54)  -- cmp_eq
+    406: call(2)
+    407: pop
+    408: load_var(25)  -- _CMP_EMIT
+    409: load_var(10)  -- CHUNK
+    410: push_const(53)  -- log_or
+    411: call(2)
+    412: pop
+    413: load_var(21)  -- _CMP_EMIT1
+    414: load_var(10)  -- CHUNK
+    415: push_const(27)  -- store_reg
+    416: load_var(12)  -- RFIN
+    417: call(3)
+    418: pop
+    419: load_var(21)  -- _CMP_EMIT1
+    420: load_var(10)  -- CHUNK
+    421: push_const(36)  -- load_reg
+    422: load_var(17)  -- ROVER
+    423: call(3)
+    424: pop
+    425: load_var(37)  -- _CMP_JUMP
+    426: load_var(10)  -- CHUNK
+    427: push_const(38)  -- jump_true
+    428: call(2)
+    429: store_var(55)  -- OVER_BREAK
+    430: load_var(55)  -- OVER_BREAK
+    431: pop
+    432: load_var(21)  -- _CMP_EMIT1
+    433: load_var(10)  -- CHUNK
+    434: push_const(36)  -- load_reg
+    435: load_var(16)  -- RNEXT
+    436: call(3)
+    437: pop
+    438: load_var(21)  -- _CMP_EMIT1
+    439: load_var(10)  -- CHUNK
+    440: push_const(22)  -- store_var
+    441: load_var(23)  -- _CMP_CONST_NAME
+    442: load_var(10)  -- CHUNK
+    443: load_var(4)  -- VAR_NAME
+    444: call(2)
+    445: call(3)
+    446: pop
+    447: load_var(21)  -- _CMP_EMIT1
+    448: load_var(10)  -- CHUNK
+    449: push_const(45)  -- jump
+    450: load_var(32)  -- LOOP_TOP
+    451: call(3)
+    452: pop
+    453: load_var(47)  -- _CMP_PATCH
+    454: load_var(10)  -- CHUNK
+    455: load_var(39)  -- FIN_BREAK
+    456: call(2)
+    457: pop
+    458: load_var(47)  -- _CMP_PATCH
+    459: load_var(10)  -- CHUNK
+    460: load_var(55)  -- OVER_BREAK
+    461: call(2)
+    462: pop
+    463: load_var(56)  -- _CMP_PATCH_LOOP
+    464: load_var(10)  -- CHUNK
+    465: load_var(33)  -- BODY_START
+    466: load_var(5)  -- LENGTH
+    467: load_var(10)  -- CHUNK
+    468: push_const(31)  -- code
+    469: get_index
+    470: call(1)
+    471: load_var(35)  -- CONT_ADDR
+    472: call(4)
+    473: pop
+    474: load_var(21)  -- _CMP_EMIT1
+    475: load_var(10)  -- CHUNK
+    476: push_const(28)  -- push_const
+    477: load_var(57)  -- _CMP_CONST_NULL
+    478: load_var(10)  -- CHUNK
+    479: call(1)
+    480: call(3)
+    481: pop_scope
+    482: ret
+CHUNK ___CMP_FRESH_19 (STATE, HINT)
   CONST  0: STATE
-  CONST  1: counter
+  CONST  1: COUNTER
   CONST  2: N
   CONST  3: 1
   CONST  4: null
@@ -1578,57 +1585,55 @@ CHUNK ___CMP_FRESH_18 (STATE, HINT)
   CODE:
     0: push_scope
     1: load_var(0)  -- STATE
-    2: push_const(1)  -- counter
-    3: get_index
-    4: store_var(2)  -- N
-    5: load_var(2)  -- N
-    6: pop
-    7: load_var(0)  -- STATE
-    8: push_const(1)  -- counter
-    9: load_var(2)  -- N
-    10: jump_null(16)
-    11: push_const(3)  -- 1
-    12: jump_null(15)
-    13: add
-    14: jump(18)
-    15: pop
-    16: pop
-    17: push_const(4)  -- null
-    18: set_index
-    19: pop
-    20: push_const(5)  -- __
-    21: jump_null(27)
-    22: load_var(6)  -- HINT
-    23: jump_null(26)
-    24: add
-    25: jump(29)
-    26: pop
-    27: pop
-    28: push_const(4)  -- null
-    29: jump_null(35)
-    30: push_const(7)  -- _
-    31: jump_null(34)
-    32: add
-    33: jump(37)
-    34: pop
-    35: pop
-    36: push_const(4)  -- null
-    37: jump_null(45)
-    38: load_var(8)  -- STRING
-    39: load_var(2)  -- N
-    40: call(1)
-    41: jump_null(44)
-    42: add
-    43: jump(47)
-    44: pop
-    45: pop
-    46: push_const(4)  -- null
+    2: get_member(1)  -- COUNTER
+    3: store_var(2)  -- N
+    4: load_var(2)  -- N
+    5: pop
+    6: load_var(0)  -- STATE
+    7: load_var(2)  -- N
+    8: jump_null(14)
+    9: push_const(3)  -- 1
+    10: jump_null(13)
+    11: add
+    12: jump(16)
+    13: pop
+    14: pop
+    15: push_const(4)  -- null
+    16: set_member(1)  -- COUNTER
+    17: pop
+    18: push_const(5)  -- __
+    19: jump_null(25)
+    20: load_var(6)  -- HINT
+    21: jump_null(24)
+    22: add
+    23: jump(27)
+    24: pop
+    25: pop
+    26: push_const(4)  -- null
+    27: jump_null(33)
+    28: push_const(7)  -- _
+    29: jump_null(32)
+    30: add
+    31: jump(35)
+    32: pop
+    33: pop
+    34: push_const(4)  -- null
+    35: jump_null(43)
+    36: load_var(8)  -- STRING
+    37: load_var(2)  -- N
+    38: call(1)
+    39: jump_null(42)
+    40: add
+    41: jump(45)
+    42: pop
+    43: pop
+    44: push_const(4)  -- null
+    45: ret
+    46: pop_scope
     47: ret
-    48: pop_scope
-    49: ret
-CHUNK ___CMP_IF_23 (NODE, CHUNK, STATE)
+CHUNK ___CMP_IF_24 (NODE, CHUNK, STATE)
   CONST  0: NODE
-  CONST  1: children
+  CONST  1: CHILDREN
   CONST  2: CH
   CONST  3: _CMP_NODE
   CONST  4: 0
@@ -1650,102 +1655,113 @@ CHUNK ___CMP_IF_23 (NODE, CHUNK, STATE)
   CODE:
     0: push_scope
     1: load_var(0)  -- NODE
-    2: push_const(1)  -- children
-    3: get_index
-    4: store_var(2)  -- CH
-    5: load_var(2)  -- CH
-    6: pop
-    7: load_var(3)  -- _CMP_NODE
-    8: load_var(2)  -- CH
-    9: push_const(4)  -- 0
-    10: get_index
-    11: load_var(5)  -- CHUNK
-    12: load_var(6)  -- STATE
-    13: call(3)
-    14: pop
-    15: load_var(7)  -- _CMP_JUMP
-    16: load_var(5)  -- CHUNK
-    17: push_const(8)  -- jump_false
-    18: call(2)
-    19: store_var(9)  -- JF
-    20: load_var(9)  -- JF
-    21: pop
-    22: load_var(3)  -- _CMP_NODE
-    23: load_var(2)  -- CH
-    24: push_const(10)  -- 1
-    25: get_index
-    26: load_var(5)  -- CHUNK
-    27: load_var(6)  -- STATE
-    28: call(3)
-    29: pop
-    30: load_var(11)  -- LENGTH
-    31: load_var(2)  -- CH
-    32: call(1)
-    33: jump_null(39)
-    34: push_const(12)  -- 2
-    35: jump_null(38)
-    36: cmp_gt
-    37: jump(41)
+    2: get_member(1)  -- CHILDREN
+    3: store_var(2)  -- CH
+    4: load_var(2)  -- CH
+    5: pop
+    6: load_var(3)  -- _CMP_NODE
+    7: load_var(2)  -- CH
+    8: push_const(4)  -- 0
+    9: get_index
+    10: load_var(5)  -- CHUNK
+    11: load_var(6)  -- STATE
+    12: call(3)
+    13: pop
+    14: load_var(7)  -- _CMP_JUMP
+    15: load_var(5)  -- CHUNK
+    16: push_const(8)  -- jump_false
+    17: call(2)
+    18: store_var(9)  -- JF
+    19: load_var(9)  -- JF
+    20: pop
+    21: load_var(3)  -- _CMP_NODE
+    22: load_var(2)  -- CH
+    23: push_const(10)  -- 1
+    24: get_index
+    25: load_var(5)  -- CHUNK
+    26: load_var(6)  -- STATE
+    27: call(3)
+    28: pop
+    29: load_var(11)  -- LENGTH
+    30: load_var(2)  -- CH
+    31: call(1)
+    32: jump_null(38)
+    33: push_const(12)  -- 2
+    34: jump_null(37)
+    35: cmp_gt
+    36: jump(40)
+    37: pop
     38: pop
-    39: pop
-    40: push_const(13)  -- null
-    41: jump_false(69)
-    42: push_scope
-    43: load_var(7)  -- _CMP_JUMP
-    44: load_var(5)  -- CHUNK
-    45: push_const(14)  -- jump
-    46: call(2)
-    47: store_var(15)  -- JE
-    48: load_var(15)  -- JE
-    49: pop
-    50: load_var(16)  -- _CMP_PATCH
-    51: load_var(5)  -- CHUNK
-    52: load_var(9)  -- JF
-    53: call(2)
-    54: pop
-    55: load_var(3)  -- _CMP_NODE
-    56: load_var(2)  -- CH
-    57: push_const(12)  -- 2
-    58: get_index
-    59: load_var(5)  -- CHUNK
-    60: load_var(6)  -- STATE
-    61: call(3)
-    62: pop
-    63: load_var(16)  -- _CMP_PATCH
-    64: load_var(5)  -- CHUNK
-    65: load_var(15)  -- JE
-    66: call(2)
-    67: pop_scope
-    68: jump(95)
-    69: push_scope
-    70: load_var(7)  -- _CMP_JUMP
-    71: load_var(5)  -- CHUNK
-    72: push_const(14)  -- jump
-    73: call(2)
-    74: store_var(15)  -- JE
-    75: load_var(15)  -- JE
-    76: pop
-    77: load_var(16)  -- _CMP_PATCH
-    78: load_var(5)  -- CHUNK
-    79: load_var(9)  -- JF
-    80: call(2)
-    81: pop
-    82: load_var(17)  -- _CMP_EMIT1
-    83: load_var(5)  -- CHUNK
-    84: push_const(18)  -- push_const
-    85: load_var(19)  -- _CMP_CONST_NULL
-    86: load_var(5)  -- CHUNK
-    87: call(1)
-    88: call(3)
-    89: pop
-    90: load_var(16)  -- _CMP_PATCH
-    91: load_var(5)  -- CHUNK
-    92: load_var(15)  -- JE
-    93: call(2)
+    39: push_const(13)  -- null
+    40: jump_false(68)
+    41: push_scope
+    42: load_var(7)  -- _CMP_JUMP
+    43: load_var(5)  -- CHUNK
+    44: push_const(14)  -- jump
+    45: call(2)
+    46: store_var(15)  -- JE
+    47: load_var(15)  -- JE
+    48: pop
+    49: load_var(16)  -- _CMP_PATCH
+    50: load_var(5)  -- CHUNK
+    51: load_var(9)  -- JF
+    52: call(2)
+    53: pop
+    54: load_var(3)  -- _CMP_NODE
+    55: load_var(2)  -- CH
+    56: push_const(12)  -- 2
+    57: get_index
+    58: load_var(5)  -- CHUNK
+    59: load_var(6)  -- STATE
+    60: call(3)
+    61: pop
+    62: load_var(16)  -- _CMP_PATCH
+    63: load_var(5)  -- CHUNK
+    64: load_var(15)  -- JE
+    65: call(2)
+    66: pop_scope
+    67: jump(94)
+    68: push_scope
+    69: load_var(7)  -- _CMP_JUMP
+    70: load_var(5)  -- CHUNK
+    71: push_const(14)  -- jump
+    72: call(2)
+    73: store_var(15)  -- JE
+    74: load_var(15)  -- JE
+    75: pop
+    76: load_var(16)  -- _CMP_PATCH
+    77: load_var(5)  -- CHUNK
+    78: load_var(9)  -- JF
+    79: call(2)
+    80: pop
+    81: load_var(17)  -- _CMP_EMIT1
+    82: load_var(5)  -- CHUNK
+    83: push_const(18)  -- push_const
+    84: load_var(19)  -- _CMP_CONST_NULL
+    85: load_var(5)  -- CHUNK
+    86: call(1)
+    87: call(3)
+    88: pop
+    89: load_var(16)  -- _CMP_PATCH
+    90: load_var(5)  -- CHUNK
+    91: load_var(15)  -- JE
+    92: call(2)
+    93: pop_scope
     94: pop_scope
-    95: pop_scope
-    96: ret
-CHUNK ___CMP_JUMP_13 (CHUNK, OP)
+    95: ret
+CHUNK ___CMP_INSTR_0 (_CI_OP, _CI_OPERAND)
+  CONST  0: op
+  CONST  1: _CI_OP
+  CONST  2: operand
+  CONST  3: _CI_OPERAND
+  CODE:
+    0: push_const(0)  -- op
+    1: load_var(1)  -- _CI_OP
+    2: push_const(2)  -- operand
+    3: load_var(3)  -- _CI_OPERAND
+    4: make_map(2)
+    5: ret
+CHUNK ___CMP_JUMP_14 (CHUNK, OP)
   CONST  0: LENGTH
   CONST  1: CHUNK
   CONST  2: code
@@ -1775,86 +1791,93 @@ CHUNK ___CMP_JUMP_13 (CHUNK, OP)
     18: ret
     19: pop_scope
     20: ret
-CHUNK ___CMP_LAMBDA_22 (NODE, CHUNK, STATE)
+CHUNK ___CMP_LAMBDA_23 (NODE, CHUNK, STATE)
   CONST  0: NODE
-  CONST  1: val
+  CONST  1: VAL
   CONST  2: PARAMS
-  CONST  3: children
-  CONST  4: 0
-  CONST  5: BODY
-  CONST  6: _CMP_FRESH
-  CONST  7: STATE
-  CONST  8: lambda
-  CONST  9: CNAME
-  CONST  10: _CMP_NEW_CHUNK
-  CONST  11: FN_CHUNK
-  CONST  12: chunks
-  CONST  13: _CMP_NODE
-  CONST  14: _CMP_EMIT
-  CONST  15: ret
-  CONST  16: _CMP_EMIT1
-  CONST  17: CHUNK
-  CONST  18: make_closure
-  CONST  19: _CMP_CONST_REF
+  CONST  3: CHILDREN
+  CONST  4: _NCH
+  CONST  5: 0
+  CONST  6: BODY
+  CONST  7: _CMP_FRESH
+  CONST  8: STATE
+  CONST  9: lambda
+  CONST  10: CNAME
+  CONST  11: _CMP_NEW_CHUNK
+  CONST  12: FN_CHUNK
+  CONST  13: CHUNKS
+  CONST  14: _LM_CHUNKS
+  CONST  15: _CMP_NODE
+  CONST  16: _CMP_EMIT
+  CONST  17: ret
+  CONST  18: _CMP_EMIT1
+  CONST  19: CHUNK
+  CONST  20: make_closure
+  CONST  21: _CMP_CONST_REF
   CODE:
     0: push_scope
     1: load_var(0)  -- NODE
-    2: push_const(1)  -- val
-    3: get_index
-    4: store_var(2)  -- PARAMS
-    5: load_var(2)  -- PARAMS
-    6: pop
-    7: load_var(0)  -- NODE
-    8: push_const(3)  -- children
-    9: get_index
-    10: push_const(4)  -- 0
-    11: get_index
-    12: store_var(5)  -- BODY
-    13: load_var(5)  -- BODY
-    14: pop
-    15: load_var(6)  -- _CMP_FRESH
-    16: load_var(7)  -- STATE
-    17: push_const(8)  -- lambda
-    18: call(2)
-    19: store_var(9)  -- CNAME
-    20: load_var(9)  -- CNAME
-    21: pop
-    22: load_var(10)  -- _CMP_NEW_CHUNK
-    23: load_var(9)  -- CNAME
-    24: load_var(2)  -- PARAMS
-    25: call(2)
-    26: store_var(11)  -- FN_CHUNK
-    27: load_var(11)  -- FN_CHUNK
-    28: pop
-    29: load_var(7)  -- STATE
-    30: push_const(12)  -- chunks
-    31: get_index
-    32: load_var(9)  -- CNAME
-    33: load_var(11)  -- FN_CHUNK
-    34: set_index
+    2: get_member(1)  -- VAL
+    3: store_var(2)  -- PARAMS
+    4: load_var(2)  -- PARAMS
+    5: pop
+    6: load_var(0)  -- NODE
+    7: get_member(3)  -- CHILDREN
+    8: store_var(4)  -- _NCH
+    9: load_var(4)  -- _NCH
+    10: pop
+    11: load_var(4)  -- _NCH
+    12: push_const(5)  -- 0
+    13: get_index
+    14: store_var(6)  -- BODY
+    15: load_var(6)  -- BODY
+    16: pop
+    17: load_var(7)  -- _CMP_FRESH
+    18: load_var(8)  -- STATE
+    19: push_const(9)  -- lambda
+    20: call(2)
+    21: store_var(10)  -- CNAME
+    22: load_var(10)  -- CNAME
+    23: pop
+    24: load_var(11)  -- _CMP_NEW_CHUNK
+    25: load_var(10)  -- CNAME
+    26: load_var(2)  -- PARAMS
+    27: call(2)
+    28: store_var(12)  -- FN_CHUNK
+    29: load_var(12)  -- FN_CHUNK
+    30: pop
+    31: load_var(8)  -- STATE
+    32: get_member(13)  -- CHUNKS
+    33: store_var(14)  -- _LM_CHUNKS
+    34: load_var(14)  -- _LM_CHUNKS
     35: pop
-    36: load_var(13)  -- _CMP_NODE
-    37: load_var(5)  -- BODY
-    38: load_var(11)  -- FN_CHUNK
-    39: load_var(7)  -- STATE
-    40: call(3)
-    41: pop
-    42: load_var(14)  -- _CMP_EMIT
-    43: load_var(11)  -- FN_CHUNK
-    44: push_const(15)  -- ret
-    45: call(2)
+    36: load_var(14)  -- _LM_CHUNKS
+    37: load_var(10)  -- CNAME
+    38: load_var(12)  -- FN_CHUNK
+    39: set_index
+    40: pop
+    41: load_var(15)  -- _CMP_NODE
+    42: load_var(6)  -- BODY
+    43: load_var(12)  -- FN_CHUNK
+    44: load_var(8)  -- STATE
+    45: call(3)
     46: pop
-    47: load_var(16)  -- _CMP_EMIT1
-    48: load_var(17)  -- CHUNK
-    49: push_const(18)  -- make_closure
-    50: load_var(19)  -- _CMP_CONST_REF
-    51: load_var(17)  -- CHUNK
-    52: load_var(9)  -- CNAME
-    53: call(2)
-    54: call(3)
-    55: pop_scope
-    56: ret
-CHUNK ___CMP_NEW_CHUNK_0 (NAME, PARAMS)
+    47: load_var(16)  -- _CMP_EMIT
+    48: load_var(12)  -- FN_CHUNK
+    49: push_const(17)  -- ret
+    50: call(2)
+    51: pop
+    52: load_var(18)  -- _CMP_EMIT1
+    53: load_var(19)  -- CHUNK
+    54: push_const(20)  -- make_closure
+    55: load_var(21)  -- _CMP_CONST_REF
+    56: load_var(19)  -- CHUNK
+    57: load_var(10)  -- CNAME
+    58: call(2)
+    59: call(3)
+    60: pop_scope
+    61: ret
+CHUNK ___CMP_NEW_CHUNK_1 (NAME, PARAMS)
   CONST  0: name
   CONST  1: NAME
   CONST  2: params
@@ -1879,34 +1902,34 @@ CHUNK ___CMP_NEW_CHUNK_0 (NAME, PARAMS)
     11: push_const(8)  -- 0
     12: make_map(6)
     13: ret
-CHUNK ___CMP_NODE_19 (NODE, CHUNK, STATE)
+CHUNK ___CMP_NODE_20 (NODE, CHUNK, STATE)
   CONST  0: NODE
-  CONST  1: sym
-  CONST  2: SYM
-  CONST  3: children
-  CONST  4: CH
-  CONST  5: val
-  CONST  6: V
-  CONST  7: int_lit
-  CONST  8: _CMP_EMIT1
-  CONST  9: CHUNK
-  CONST  10: push_const
-  CONST  11: _CMP_CONST_INT
-  CONST  12: null
-  CONST  13: float_lit
-  CONST  14: _CMP_CONST_FLT
-  CONST  15: str_lit
-  CONST  16: _CMP_CONST_STR
-  CONST  17: null_lit
-  CONST  18: _CMP_CONST_NULL
-  CONST  19: true_lit
-  CONST  20: _CMP_CONST_BOOL
-  CONST  21: true
-  CONST  22: false_lit
-  CONST  23: false
-  CONST  24: ident
-  CONST  25: STATE
-  CONST  26: consts
+  CONST  1: SYM
+  CONST  2: CHILDREN
+  CONST  3: CH
+  CONST  4: VAL
+  CONST  5: V
+  CONST  6: int_lit
+  CONST  7: _CMP_EMIT1
+  CONST  8: CHUNK
+  CONST  9: push_const
+  CONST  10: _CMP_CONST_INT
+  CONST  11: null
+  CONST  12: float_lit
+  CONST  13: _CMP_CONST_FLT
+  CONST  14: str_lit
+  CONST  15: _CMP_CONST_STR
+  CONST  16: null_lit
+  CONST  17: _CMP_CONST_NULL
+  CONST  18: true_lit
+  CONST  19: _CMP_CONST_BOOL
+  CONST  20: true
+  CONST  21: false_lit
+  CONST  22: false
+  CONST  23: ident
+  CONST  24: STATE
+  CONST  25: CONSTS
+  CONST  26: _SC
   CONST  27: CV
   CONST  28: _CMP_CONST_CV
   CONST  29: load_var
@@ -1986,785 +2009,786 @@ CHUNK ___CMP_NODE_19 (NODE, CHUNK, STATE)
   CONST  103: make_list
   CONST  104: map
   CONST  105: KV
-  CONST  106: make_map
-  CONST  107: object
-  CONST  108: KEY_NAME
-  CONST  109: UPPERCASE
-  CONST  110: make_object_here
+  CONST  106: _KV_CH
+  CONST  107: make_map
+  CONST  108: object
+  CONST  109: KEY_NAME
+  CONST  110: UPPERCASE
+  CONST  111: make_object_here
   CODE:
     0: push_scope
     1: load_var(0)  -- NODE
-    2: push_const(1)  -- sym
-    3: get_index
-    4: store_var(2)  -- SYM
-    5: load_var(2)  -- SYM
-    6: pop
-    7: load_var(0)  -- NODE
-    8: push_const(3)  -- children
-    9: get_index
-    10: store_var(4)  -- CH
-    11: load_var(4)  -- CH
-    12: pop
-    13: load_var(0)  -- NODE
-    14: push_const(5)  -- val
-    15: get_index
-    16: store_var(6)  -- V
-    17: load_var(6)  -- V
-    18: pop
-    19: load_var(2)  -- SYM
-    20: push_const(7)  -- int_lit
-    21: cmp_eq
-    22: jump_false(37)
-    23: push_scope
-    24: load_var(8)  -- _CMP_EMIT1
-    25: load_var(9)  -- CHUNK
-    26: push_const(10)  -- push_const
-    27: load_var(11)  -- _CMP_CONST_INT
-    28: load_var(9)  -- CHUNK
-    29: load_var(6)  -- V
-    30: call(2)
-    31: call(3)
-    32: pop
-    33: push_const(12)  -- null
-    34: ret
-    35: pop_scope
-    36: jump(38)
-    37: push_const(12)  -- null
-    38: pop
-    39: load_var(2)  -- SYM
-    40: push_const(13)  -- float_lit
-    41: cmp_eq
-    42: jump_false(57)
-    43: push_scope
-    44: load_var(8)  -- _CMP_EMIT1
-    45: load_var(9)  -- CHUNK
-    46: push_const(10)  -- push_const
-    47: load_var(14)  -- _CMP_CONST_FLT
-    48: load_var(9)  -- CHUNK
-    49: load_var(6)  -- V
-    50: call(2)
-    51: call(3)
-    52: pop
-    53: push_const(12)  -- null
-    54: ret
-    55: pop_scope
-    56: jump(58)
-    57: push_const(12)  -- null
-    58: pop
-    59: load_var(2)  -- SYM
-    60: push_const(15)  -- str_lit
-    61: cmp_eq
-    62: jump_false(77)
-    63: push_scope
-    64: load_var(8)  -- _CMP_EMIT1
-    65: load_var(9)  -- CHUNK
-    66: push_const(10)  -- push_const
-    67: load_var(16)  -- _CMP_CONST_STR
-    68: load_var(9)  -- CHUNK
-    69: load_var(6)  -- V
-    70: call(2)
-    71: call(3)
-    72: pop
-    73: push_const(12)  -- null
-    74: ret
-    75: pop_scope
-    76: jump(78)
-    77: push_const(12)  -- null
-    78: pop
-    79: load_var(2)  -- SYM
-    80: push_const(17)  -- null_lit
-    81: cmp_eq
-    82: jump_false(96)
-    83: push_scope
-    84: load_var(8)  -- _CMP_EMIT1
-    85: load_var(9)  -- CHUNK
-    86: push_const(10)  -- push_const
-    87: load_var(18)  -- _CMP_CONST_NULL
-    88: load_var(9)  -- CHUNK
-    89: call(1)
-    90: call(3)
-    91: pop
-    92: push_const(12)  -- null
-    93: ret
-    94: pop_scope
-    95: jump(97)
-    96: push_const(12)  -- null
-    97: pop
-    98: load_var(2)  -- SYM
-    99: push_const(19)  -- true_lit
-    100: cmp_eq
-    101: jump_false(116)
-    102: push_scope
-    103: load_var(8)  -- _CMP_EMIT1
-    104: load_var(9)  -- CHUNK
-    105: push_const(10)  -- push_const
-    106: load_var(20)  -- _CMP_CONST_BOOL
-    107: load_var(9)  -- CHUNK
-    108: push_const(21)  -- true
-    109: call(2)
-    110: call(3)
-    111: pop
-    112: push_const(12)  -- null
-    113: ret
-    114: pop_scope
-    115: jump(117)
-    116: push_const(12)  -- null
-    117: pop
-    118: load_var(2)  -- SYM
-    119: push_const(22)  -- false_lit
-    120: cmp_eq
-    121: jump_false(136)
-    122: push_scope
-    123: load_var(8)  -- _CMP_EMIT1
-    124: load_var(9)  -- CHUNK
-    125: push_const(10)  -- push_const
-    126: load_var(20)  -- _CMP_CONST_BOOL
-    127: load_var(9)  -- CHUNK
-    128: push_const(23)  -- false
-    129: call(2)
-    130: call(3)
-    131: pop
-    132: push_const(12)  -- null
-    133: ret
-    134: pop_scope
-    135: jump(137)
-    136: push_const(12)  -- null
-    137: pop
-    138: load_var(2)  -- SYM
-    139: push_const(24)  -- ident
-    140: cmp_eq
-    141: jump_false(184)
-    142: push_scope
-    143: load_var(25)  -- STATE
-    144: push_const(26)  -- consts
-    145: get_index
-    146: load_var(6)  -- V
+    2: get_member(1)  -- SYM
+    3: store_var(1)  -- SYM
+    4: load_var(1)  -- SYM
+    5: pop
+    6: load_var(0)  -- NODE
+    7: get_member(2)  -- CHILDREN
+    8: store_var(3)  -- CH
+    9: load_var(3)  -- CH
+    10: pop
+    11: load_var(0)  -- NODE
+    12: get_member(4)  -- VAL
+    13: store_var(5)  -- V
+    14: load_var(5)  -- V
+    15: pop
+    16: load_var(1)  -- SYM
+    17: push_const(6)  -- int_lit
+    18: cmp_eq
+    19: jump_false(34)
+    20: push_scope
+    21: load_var(7)  -- _CMP_EMIT1
+    22: load_var(8)  -- CHUNK
+    23: push_const(9)  -- push_const
+    24: load_var(10)  -- _CMP_CONST_INT
+    25: load_var(8)  -- CHUNK
+    26: load_var(5)  -- V
+    27: call(2)
+    28: call(3)
+    29: pop
+    30: push_const(11)  -- null
+    31: ret
+    32: pop_scope
+    33: jump(35)
+    34: push_const(11)  -- null
+    35: pop
+    36: load_var(1)  -- SYM
+    37: push_const(12)  -- float_lit
+    38: cmp_eq
+    39: jump_false(54)
+    40: push_scope
+    41: load_var(7)  -- _CMP_EMIT1
+    42: load_var(8)  -- CHUNK
+    43: push_const(9)  -- push_const
+    44: load_var(13)  -- _CMP_CONST_FLT
+    45: load_var(8)  -- CHUNK
+    46: load_var(5)  -- V
+    47: call(2)
+    48: call(3)
+    49: pop
+    50: push_const(11)  -- null
+    51: ret
+    52: pop_scope
+    53: jump(55)
+    54: push_const(11)  -- null
+    55: pop
+    56: load_var(1)  -- SYM
+    57: push_const(14)  -- str_lit
+    58: cmp_eq
+    59: jump_false(74)
+    60: push_scope
+    61: load_var(7)  -- _CMP_EMIT1
+    62: load_var(8)  -- CHUNK
+    63: push_const(9)  -- push_const
+    64: load_var(15)  -- _CMP_CONST_STR
+    65: load_var(8)  -- CHUNK
+    66: load_var(5)  -- V
+    67: call(2)
+    68: call(3)
+    69: pop
+    70: push_const(11)  -- null
+    71: ret
+    72: pop_scope
+    73: jump(75)
+    74: push_const(11)  -- null
+    75: pop
+    76: load_var(1)  -- SYM
+    77: push_const(16)  -- null_lit
+    78: cmp_eq
+    79: jump_false(93)
+    80: push_scope
+    81: load_var(7)  -- _CMP_EMIT1
+    82: load_var(8)  -- CHUNK
+    83: push_const(9)  -- push_const
+    84: load_var(17)  -- _CMP_CONST_NULL
+    85: load_var(8)  -- CHUNK
+    86: call(1)
+    87: call(3)
+    88: pop
+    89: push_const(11)  -- null
+    90: ret
+    91: pop_scope
+    92: jump(94)
+    93: push_const(11)  -- null
+    94: pop
+    95: load_var(1)  -- SYM
+    96: push_const(18)  -- true_lit
+    97: cmp_eq
+    98: jump_false(113)
+    99: push_scope
+    100: load_var(7)  -- _CMP_EMIT1
+    101: load_var(8)  -- CHUNK
+    102: push_const(9)  -- push_const
+    103: load_var(19)  -- _CMP_CONST_BOOL
+    104: load_var(8)  -- CHUNK
+    105: push_const(20)  -- true
+    106: call(2)
+    107: call(3)
+    108: pop
+    109: push_const(11)  -- null
+    110: ret
+    111: pop_scope
+    112: jump(114)
+    113: push_const(11)  -- null
+    114: pop
+    115: load_var(1)  -- SYM
+    116: push_const(21)  -- false_lit
+    117: cmp_eq
+    118: jump_false(133)
+    119: push_scope
+    120: load_var(7)  -- _CMP_EMIT1
+    121: load_var(8)  -- CHUNK
+    122: push_const(9)  -- push_const
+    123: load_var(19)  -- _CMP_CONST_BOOL
+    124: load_var(8)  -- CHUNK
+    125: push_const(22)  -- false
+    126: call(2)
+    127: call(3)
+    128: pop
+    129: push_const(11)  -- null
+    130: ret
+    131: pop_scope
+    132: jump(134)
+    133: push_const(11)  -- null
+    134: pop
+    135: load_var(1)  -- SYM
+    136: push_const(23)  -- ident
+    137: cmp_eq
+    138: jump_false(184)
+    139: push_scope
+    140: load_var(24)  -- STATE
+    141: get_member(25)  -- CONSTS
+    142: store_var(26)  -- _SC
+    143: load_var(26)  -- _SC
+    144: pop
+    145: load_var(26)  -- _SC
+    146: load_var(5)  -- V
     147: get_index
     148: store_var(27)  -- CV
     149: load_var(27)  -- CV
     150: pop
     151: load_var(27)  -- CV
-    152: push_const(12)  -- null
+    152: push_const(11)  -- null
     153: cmp_neq
     154: jump_false(169)
     155: push_scope
-    156: load_var(8)  -- _CMP_EMIT1
-    157: load_var(9)  -- CHUNK
-    158: push_const(10)  -- push_const
+    156: load_var(7)  -- _CMP_EMIT1
+    157: load_var(8)  -- CHUNK
+    158: push_const(9)  -- push_const
     159: load_var(28)  -- _CMP_CONST_CV
-    160: load_var(9)  -- CHUNK
+    160: load_var(8)  -- CHUNK
     161: load_var(27)  -- CV
     162: call(2)
     163: call(3)
     164: pop
-    165: push_const(12)  -- null
+    165: push_const(11)  -- null
     166: ret
     167: pop_scope
     168: jump(170)
-    169: push_const(12)  -- null
+    169: push_const(11)  -- null
     170: pop
-    171: load_var(8)  -- _CMP_EMIT1
-    172: load_var(9)  -- CHUNK
+    171: load_var(7)  -- _CMP_EMIT1
+    172: load_var(8)  -- CHUNK
     173: push_const(29)  -- load_var
     174: load_var(30)  -- _CMP_CONST_NAME
-    175: load_var(9)  -- CHUNK
-    176: load_var(6)  -- V
+    175: load_var(8)  -- CHUNK
+    176: load_var(5)  -- V
     177: call(2)
     178: call(3)
     179: pop
-    180: push_const(12)  -- null
+    180: push_const(11)  -- null
     181: ret
     182: pop_scope
     183: jump(185)
-    184: push_const(12)  -- null
+    184: push_const(11)  -- null
     185: pop
-    186: load_var(2)  -- SYM
+    186: load_var(1)  -- SYM
     187: push_const(31)  -- add
     188: cmp_eq
     189: jump_false(202)
     190: push_scope
     191: load_var(32)  -- _CMP_NULL_BINOP
     192: load_var(0)  -- NODE
-    193: load_var(9)  -- CHUNK
-    194: load_var(25)  -- STATE
+    193: load_var(8)  -- CHUNK
+    194: load_var(24)  -- STATE
     195: push_const(31)  -- add
     196: call(4)
     197: pop
-    198: push_const(12)  -- null
+    198: push_const(11)  -- null
     199: ret
     200: pop_scope
     201: jump(203)
-    202: push_const(12)  -- null
+    202: push_const(11)  -- null
     203: pop
-    204: load_var(2)  -- SYM
+    204: load_var(1)  -- SYM
     205: push_const(33)  -- sub
     206: cmp_eq
     207: jump_false(220)
     208: push_scope
     209: load_var(32)  -- _CMP_NULL_BINOP
     210: load_var(0)  -- NODE
-    211: load_var(9)  -- CHUNK
-    212: load_var(25)  -- STATE
+    211: load_var(8)  -- CHUNK
+    212: load_var(24)  -- STATE
     213: push_const(33)  -- sub
     214: call(4)
     215: pop
-    216: push_const(12)  -- null
+    216: push_const(11)  -- null
     217: ret
     218: pop_scope
     219: jump(221)
-    220: push_const(12)  -- null
+    220: push_const(11)  -- null
     221: pop
-    222: load_var(2)  -- SYM
+    222: load_var(1)  -- SYM
     223: push_const(34)  -- mul
     224: cmp_eq
     225: jump_false(238)
     226: push_scope
     227: load_var(32)  -- _CMP_NULL_BINOP
     228: load_var(0)  -- NODE
-    229: load_var(9)  -- CHUNK
-    230: load_var(25)  -- STATE
+    229: load_var(8)  -- CHUNK
+    230: load_var(24)  -- STATE
     231: push_const(34)  -- mul
     232: call(4)
     233: pop
-    234: push_const(12)  -- null
+    234: push_const(11)  -- null
     235: ret
     236: pop_scope
     237: jump(239)
-    238: push_const(12)  -- null
+    238: push_const(11)  -- null
     239: pop
-    240: load_var(2)  -- SYM
+    240: load_var(1)  -- SYM
     241: push_const(35)  -- div
     242: cmp_eq
     243: jump_false(256)
     244: push_scope
     245: load_var(32)  -- _CMP_NULL_BINOP
     246: load_var(0)  -- NODE
-    247: load_var(9)  -- CHUNK
-    248: load_var(25)  -- STATE
+    247: load_var(8)  -- CHUNK
+    248: load_var(24)  -- STATE
     249: push_const(35)  -- div
     250: call(4)
     251: pop
-    252: push_const(12)  -- null
+    252: push_const(11)  -- null
     253: ret
     254: pop_scope
     255: jump(257)
-    256: push_const(12)  -- null
+    256: push_const(11)  -- null
     257: pop
-    258: load_var(2)  -- SYM
+    258: load_var(1)  -- SYM
     259: push_const(36)  -- mod
     260: cmp_eq
     261: jump_false(274)
     262: push_scope
     263: load_var(32)  -- _CMP_NULL_BINOP
     264: load_var(0)  -- NODE
-    265: load_var(9)  -- CHUNK
-    266: load_var(25)  -- STATE
+    265: load_var(8)  -- CHUNK
+    266: load_var(24)  -- STATE
     267: push_const(36)  -- mod
     268: call(4)
     269: pop
-    270: push_const(12)  -- null
+    270: push_const(11)  -- null
     271: ret
     272: pop_scope
     273: jump(275)
-    274: push_const(12)  -- null
+    274: push_const(11)  -- null
     275: pop
-    276: load_var(2)  -- SYM
+    276: load_var(1)  -- SYM
     277: push_const(37)  -- pow
     278: cmp_eq
     279: jump_false(292)
     280: push_scope
     281: load_var(32)  -- _CMP_NULL_BINOP
     282: load_var(0)  -- NODE
-    283: load_var(9)  -- CHUNK
-    284: load_var(25)  -- STATE
+    283: load_var(8)  -- CHUNK
+    284: load_var(24)  -- STATE
     285: push_const(37)  -- pow
     286: call(4)
     287: pop
-    288: push_const(12)  -- null
+    288: push_const(11)  -- null
     289: ret
     290: pop_scope
     291: jump(293)
-    292: push_const(12)  -- null
+    292: push_const(11)  -- null
     293: pop
-    294: load_var(2)  -- SYM
+    294: load_var(1)  -- SYM
     295: push_const(38)  -- eq
     296: cmp_eq
     297: jump_false(310)
     298: push_scope
     299: load_var(39)  -- _CMP_PLAIN_BINOP
     300: load_var(0)  -- NODE
-    301: load_var(9)  -- CHUNK
-    302: load_var(25)  -- STATE
+    301: load_var(8)  -- CHUNK
+    302: load_var(24)  -- STATE
     303: push_const(40)  -- cmp_eq
     304: call(4)
     305: pop
-    306: push_const(12)  -- null
+    306: push_const(11)  -- null
     307: ret
     308: pop_scope
     309: jump(311)
-    310: push_const(12)  -- null
+    310: push_const(11)  -- null
     311: pop
-    312: load_var(2)  -- SYM
+    312: load_var(1)  -- SYM
     313: push_const(41)  -- neq
     314: cmp_eq
     315: jump_false(328)
     316: push_scope
     317: load_var(39)  -- _CMP_PLAIN_BINOP
     318: load_var(0)  -- NODE
-    319: load_var(9)  -- CHUNK
-    320: load_var(25)  -- STATE
+    319: load_var(8)  -- CHUNK
+    320: load_var(24)  -- STATE
     321: push_const(42)  -- cmp_neq
     322: call(4)
     323: pop
-    324: push_const(12)  -- null
+    324: push_const(11)  -- null
     325: ret
     326: pop_scope
     327: jump(329)
-    328: push_const(12)  -- null
+    328: push_const(11)  -- null
     329: pop
-    330: load_var(2)  -- SYM
+    330: load_var(1)  -- SYM
     331: push_const(43)  -- lt
     332: cmp_eq
     333: jump_false(346)
     334: push_scope
     335: load_var(32)  -- _CMP_NULL_BINOP
     336: load_var(0)  -- NODE
-    337: load_var(9)  -- CHUNK
-    338: load_var(25)  -- STATE
+    337: load_var(8)  -- CHUNK
+    338: load_var(24)  -- STATE
     339: push_const(44)  -- cmp_lt
     340: call(4)
     341: pop
-    342: push_const(12)  -- null
+    342: push_const(11)  -- null
     343: ret
     344: pop_scope
     345: jump(347)
-    346: push_const(12)  -- null
+    346: push_const(11)  -- null
     347: pop
-    348: load_var(2)  -- SYM
+    348: load_var(1)  -- SYM
     349: push_const(45)  -- lte
     350: cmp_eq
     351: jump_false(364)
     352: push_scope
     353: load_var(32)  -- _CMP_NULL_BINOP
     354: load_var(0)  -- NODE
-    355: load_var(9)  -- CHUNK
-    356: load_var(25)  -- STATE
+    355: load_var(8)  -- CHUNK
+    356: load_var(24)  -- STATE
     357: push_const(46)  -- cmp_lte
     358: call(4)
     359: pop
-    360: push_const(12)  -- null
+    360: push_const(11)  -- null
     361: ret
     362: pop_scope
     363: jump(365)
-    364: push_const(12)  -- null
+    364: push_const(11)  -- null
     365: pop
-    366: load_var(2)  -- SYM
+    366: load_var(1)  -- SYM
     367: push_const(47)  -- gt
     368: cmp_eq
     369: jump_false(382)
     370: push_scope
     371: load_var(32)  -- _CMP_NULL_BINOP
     372: load_var(0)  -- NODE
-    373: load_var(9)  -- CHUNK
-    374: load_var(25)  -- STATE
+    373: load_var(8)  -- CHUNK
+    374: load_var(24)  -- STATE
     375: push_const(48)  -- cmp_gt
     376: call(4)
     377: pop
-    378: push_const(12)  -- null
+    378: push_const(11)  -- null
     379: ret
     380: pop_scope
     381: jump(383)
-    382: push_const(12)  -- null
+    382: push_const(11)  -- null
     383: pop
-    384: load_var(2)  -- SYM
+    384: load_var(1)  -- SYM
     385: push_const(49)  -- gte
     386: cmp_eq
     387: jump_false(400)
     388: push_scope
     389: load_var(32)  -- _CMP_NULL_BINOP
     390: load_var(0)  -- NODE
-    391: load_var(9)  -- CHUNK
-    392: load_var(25)  -- STATE
+    391: load_var(8)  -- CHUNK
+    392: load_var(24)  -- STATE
     393: push_const(50)  -- cmp_gte
     394: call(4)
     395: pop
-    396: push_const(12)  -- null
+    396: push_const(11)  -- null
     397: ret
     398: pop_scope
     399: jump(401)
-    400: push_const(12)  -- null
+    400: push_const(11)  -- null
     401: pop
-    402: load_var(2)  -- SYM
+    402: load_var(1)  -- SYM
     403: push_const(51)  -- match
     404: cmp_eq
     405: jump_false(418)
     406: push_scope
     407: load_var(32)  -- _CMP_NULL_BINOP
     408: load_var(0)  -- NODE
-    409: load_var(9)  -- CHUNK
-    410: load_var(25)  -- STATE
+    409: load_var(8)  -- CHUNK
+    410: load_var(24)  -- STATE
     411: push_const(52)  -- op_match
     412: call(4)
     413: pop
-    414: push_const(12)  -- null
+    414: push_const(11)  -- null
     415: ret
     416: pop_scope
     417: jump(419)
-    418: push_const(12)  -- null
+    418: push_const(11)  -- null
     419: pop
-    420: load_var(2)  -- SYM
+    420: load_var(1)  -- SYM
     421: push_const(53)  -- not_match
     422: cmp_eq
     423: jump_false(436)
     424: push_scope
     425: load_var(32)  -- _CMP_NULL_BINOP
     426: load_var(0)  -- NODE
-    427: load_var(9)  -- CHUNK
-    428: load_var(25)  -- STATE
+    427: load_var(8)  -- CHUNK
+    428: load_var(24)  -- STATE
     429: push_const(54)  -- op_not_match
     430: call(4)
     431: pop
-    432: push_const(12)  -- null
+    432: push_const(11)  -- null
     433: ret
     434: pop_scope
     435: jump(437)
-    436: push_const(12)  -- null
+    436: push_const(11)  -- null
     437: pop
-    438: load_var(2)  -- SYM
+    438: load_var(1)  -- SYM
     439: push_const(55)  -- in
     440: cmp_eq
     441: jump_false(454)
     442: push_scope
     443: load_var(32)  -- _CMP_NULL_BINOP
     444: load_var(0)  -- NODE
-    445: load_var(9)  -- CHUNK
-    446: load_var(25)  -- STATE
+    445: load_var(8)  -- CHUNK
+    446: load_var(24)  -- STATE
     447: push_const(56)  -- op_in
     448: call(4)
     449: pop
-    450: push_const(12)  -- null
+    450: push_const(11)  -- null
     451: ret
     452: pop_scope
     453: jump(455)
-    454: push_const(12)  -- null
+    454: push_const(11)  -- null
     455: pop
-    456: load_var(2)  -- SYM
+    456: load_var(1)  -- SYM
     457: push_const(57)  -- and
     458: cmp_eq
     459: jump_false(486)
     460: push_scope
     461: load_var(58)  -- _CMP_NODE
-    462: load_var(4)  -- CH
+    462: load_var(3)  -- CH
     463: push_const(59)  -- 0
     464: get_index
-    465: load_var(9)  -- CHUNK
-    466: load_var(25)  -- STATE
+    465: load_var(8)  -- CHUNK
+    466: load_var(24)  -- STATE
     467: call(3)
     468: pop
     469: load_var(58)  -- _CMP_NODE
-    470: load_var(4)  -- CH
+    470: load_var(3)  -- CH
     471: push_const(60)  -- 1
     472: get_index
-    473: load_var(9)  -- CHUNK
-    474: load_var(25)  -- STATE
+    473: load_var(8)  -- CHUNK
+    474: load_var(24)  -- STATE
     475: call(3)
     476: pop
     477: load_var(61)  -- _CMP_EMIT
-    478: load_var(9)  -- CHUNK
+    478: load_var(8)  -- CHUNK
     479: push_const(62)  -- log_and
     480: call(2)
     481: pop
-    482: push_const(12)  -- null
+    482: push_const(11)  -- null
     483: ret
     484: pop_scope
     485: jump(487)
-    486: push_const(12)  -- null
+    486: push_const(11)  -- null
     487: pop
-    488: load_var(2)  -- SYM
+    488: load_var(1)  -- SYM
     489: push_const(63)  -- or
     490: cmp_eq
     491: jump_false(518)
     492: push_scope
     493: load_var(58)  -- _CMP_NODE
-    494: load_var(4)  -- CH
+    494: load_var(3)  -- CH
     495: push_const(59)  -- 0
     496: get_index
-    497: load_var(9)  -- CHUNK
-    498: load_var(25)  -- STATE
+    497: load_var(8)  -- CHUNK
+    498: load_var(24)  -- STATE
     499: call(3)
     500: pop
     501: load_var(58)  -- _CMP_NODE
-    502: load_var(4)  -- CH
+    502: load_var(3)  -- CH
     503: push_const(60)  -- 1
     504: get_index
-    505: load_var(9)  -- CHUNK
-    506: load_var(25)  -- STATE
+    505: load_var(8)  -- CHUNK
+    506: load_var(24)  -- STATE
     507: call(3)
     508: pop
     509: load_var(61)  -- _CMP_EMIT
-    510: load_var(9)  -- CHUNK
+    510: load_var(8)  -- CHUNK
     511: push_const(64)  -- log_or
     512: call(2)
     513: pop
-    514: push_const(12)  -- null
+    514: push_const(11)  -- null
     515: ret
     516: pop_scope
     517: jump(519)
-    518: push_const(12)  -- null
+    518: push_const(11)  -- null
     519: pop
-    520: load_var(2)  -- SYM
+    520: load_var(1)  -- SYM
     521: push_const(65)  -- xor
     522: cmp_eq
     523: jump_false(578)
     524: push_scope
     525: load_var(58)  -- _CMP_NODE
-    526: load_var(4)  -- CH
+    526: load_var(3)  -- CH
     527: push_const(59)  -- 0
     528: get_index
-    529: load_var(9)  -- CHUNK
-    530: load_var(25)  -- STATE
+    529: load_var(8)  -- CHUNK
+    530: load_var(24)  -- STATE
     531: call(3)
     532: pop
-    533: load_var(8)  -- _CMP_EMIT1
-    534: load_var(9)  -- CHUNK
-    535: push_const(10)  -- push_const
-    536: load_var(20)  -- _CMP_CONST_BOOL
-    537: load_var(9)  -- CHUNK
-    538: push_const(21)  -- true
+    533: load_var(7)  -- _CMP_EMIT1
+    534: load_var(8)  -- CHUNK
+    535: push_const(9)  -- push_const
+    536: load_var(19)  -- _CMP_CONST_BOOL
+    537: load_var(8)  -- CHUNK
+    538: push_const(20)  -- true
     539: call(2)
     540: call(3)
     541: pop
     542: load_var(61)  -- _CMP_EMIT
-    543: load_var(9)  -- CHUNK
+    543: load_var(8)  -- CHUNK
     544: push_const(62)  -- log_and
     545: call(2)
     546: pop
     547: load_var(58)  -- _CMP_NODE
-    548: load_var(4)  -- CH
+    548: load_var(3)  -- CH
     549: push_const(60)  -- 1
     550: get_index
-    551: load_var(9)  -- CHUNK
-    552: load_var(25)  -- STATE
+    551: load_var(8)  -- CHUNK
+    552: load_var(24)  -- STATE
     553: call(3)
     554: pop
-    555: load_var(8)  -- _CMP_EMIT1
-    556: load_var(9)  -- CHUNK
-    557: push_const(10)  -- push_const
-    558: load_var(20)  -- _CMP_CONST_BOOL
-    559: load_var(9)  -- CHUNK
-    560: push_const(21)  -- true
+    555: load_var(7)  -- _CMP_EMIT1
+    556: load_var(8)  -- CHUNK
+    557: push_const(9)  -- push_const
+    558: load_var(19)  -- _CMP_CONST_BOOL
+    559: load_var(8)  -- CHUNK
+    560: push_const(20)  -- true
     561: call(2)
     562: call(3)
     563: pop
     564: load_var(61)  -- _CMP_EMIT
-    565: load_var(9)  -- CHUNK
+    565: load_var(8)  -- CHUNK
     566: push_const(62)  -- log_and
     567: call(2)
     568: pop
     569: load_var(61)  -- _CMP_EMIT
-    570: load_var(9)  -- CHUNK
+    570: load_var(8)  -- CHUNK
     571: push_const(42)  -- cmp_neq
     572: call(2)
     573: pop
-    574: push_const(12)  -- null
+    574: push_const(11)  -- null
     575: ret
     576: pop_scope
     577: jump(579)
-    578: push_const(12)  -- null
+    578: push_const(11)  -- null
     579: pop
-    580: load_var(2)  -- SYM
+    580: load_var(1)  -- SYM
     581: push_const(66)  -- neg
     582: cmp_eq
     583: jump_false(598)
     584: push_scope
     585: load_var(67)  -- _CMP_NULL_UNOP
-    586: load_var(4)  -- CH
+    586: load_var(3)  -- CH
     587: push_const(59)  -- 0
     588: get_index
-    589: load_var(9)  -- CHUNK
-    590: load_var(25)  -- STATE
+    589: load_var(8)  -- CHUNK
+    590: load_var(24)  -- STATE
     591: push_const(66)  -- neg
     592: call(4)
     593: pop
-    594: push_const(12)  -- null
+    594: push_const(11)  -- null
     595: ret
     596: pop_scope
     597: jump(599)
-    598: push_const(12)  -- null
+    598: push_const(11)  -- null
     599: pop
-    600: load_var(2)  -- SYM
+    600: load_var(1)  -- SYM
     601: push_const(68)  -- not
     602: cmp_eq
     603: jump_false(618)
     604: push_scope
     605: load_var(67)  -- _CMP_NULL_UNOP
-    606: load_var(4)  -- CH
+    606: load_var(3)  -- CH
     607: push_const(59)  -- 0
     608: get_index
-    609: load_var(9)  -- CHUNK
-    610: load_var(25)  -- STATE
+    609: load_var(8)  -- CHUNK
+    610: load_var(24)  -- STATE
     611: push_const(69)  -- log_not
     612: call(4)
     613: pop
-    614: push_const(12)  -- null
+    614: push_const(11)  -- null
     615: ret
     616: pop_scope
     617: jump(619)
-    618: push_const(12)  -- null
+    618: push_const(11)  -- null
     619: pop
-    620: load_var(2)  -- SYM
+    620: load_var(1)  -- SYM
     621: push_const(70)  -- program
     622: cmp_eq
     623: jump_false(635)
     624: push_scope
     625: load_var(71)  -- _CMP_SEQUENCE
-    626: load_var(4)  -- CH
-    627: load_var(9)  -- CHUNK
-    628: load_var(25)  -- STATE
+    626: load_var(3)  -- CH
+    627: load_var(8)  -- CHUNK
+    628: load_var(24)  -- STATE
     629: call(3)
     630: pop
-    631: push_const(12)  -- null
+    631: push_const(11)  -- null
     632: ret
     633: pop_scope
     634: jump(636)
-    635: push_const(12)  -- null
+    635: push_const(11)  -- null
     636: pop
-    637: load_var(2)  -- SYM
+    637: load_var(1)  -- SYM
     638: push_const(72)  -- begin
     639: cmp_eq
     640: jump_false(662)
     641: push_scope
     642: load_var(61)  -- _CMP_EMIT
-    643: load_var(9)  -- CHUNK
+    643: load_var(8)  -- CHUNK
     644: push_const(73)  -- push_scope
     645: call(2)
     646: pop
     647: load_var(71)  -- _CMP_SEQUENCE
-    648: load_var(4)  -- CH
-    649: load_var(9)  -- CHUNK
-    650: load_var(25)  -- STATE
+    648: load_var(3)  -- CH
+    649: load_var(8)  -- CHUNK
+    650: load_var(24)  -- STATE
     651: call(3)
     652: pop
     653: load_var(61)  -- _CMP_EMIT
-    654: load_var(9)  -- CHUNK
+    654: load_var(8)  -- CHUNK
     655: push_const(74)  -- pop_scope
     656: call(2)
     657: pop
-    658: push_const(12)  -- null
+    658: push_const(11)  -- null
     659: ret
     660: pop_scope
     661: jump(663)
-    662: push_const(12)  -- null
+    662: push_const(11)  -- null
     663: pop
-    664: load_var(2)  -- SYM
+    664: load_var(1)  -- SYM
     665: push_const(75)  -- assign
     666: cmp_eq
     667: jump_false(679)
     668: push_scope
     669: load_var(76)  -- _CMP_ASSIGN
     670: load_var(0)  -- NODE
-    671: load_var(9)  -- CHUNK
-    672: load_var(25)  -- STATE
+    671: load_var(8)  -- CHUNK
+    672: load_var(24)  -- STATE
     673: call(3)
     674: pop
-    675: push_const(12)  -- null
+    675: push_const(11)  -- null
     676: ret
     677: pop_scope
     678: jump(680)
-    679: push_const(12)  -- null
+    679: push_const(11)  -- null
     680: pop
-    681: load_var(2)  -- SYM
+    681: load_var(1)  -- SYM
     682: push_const(77)  -- lambda
     683: cmp_eq
     684: jump_false(696)
     685: push_scope
     686: load_var(78)  -- _CMP_LAMBDA
     687: load_var(0)  -- NODE
-    688: load_var(9)  -- CHUNK
-    689: load_var(25)  -- STATE
+    688: load_var(8)  -- CHUNK
+    689: load_var(24)  -- STATE
     690: call(3)
     691: pop
-    692: push_const(12)  -- null
+    692: push_const(11)  -- null
     693: ret
     694: pop_scope
     695: jump(697)
-    696: push_const(12)  -- null
+    696: push_const(11)  -- null
     697: pop
-    698: load_var(2)  -- SYM
+    698: load_var(1)  -- SYM
     699: push_const(79)  -- if
     700: cmp_eq
     701: jump_false(713)
     702: push_scope
     703: load_var(80)  -- _CMP_IF
     704: load_var(0)  -- NODE
-    705: load_var(9)  -- CHUNK
-    706: load_var(25)  -- STATE
+    705: load_var(8)  -- CHUNK
+    706: load_var(24)  -- STATE
     707: call(3)
     708: pop
-    709: push_const(12)  -- null
+    709: push_const(11)  -- null
     710: ret
     711: pop_scope
     712: jump(714)
-    713: push_const(12)  -- null
+    713: push_const(11)  -- null
     714: pop
-    715: load_var(2)  -- SYM
+    715: load_var(1)  -- SYM
     716: push_const(81)  -- while
     717: cmp_eq
     718: jump_false(730)
     719: push_scope
     720: load_var(82)  -- _CMP_WHILE
     721: load_var(0)  -- NODE
-    722: load_var(9)  -- CHUNK
-    723: load_var(25)  -- STATE
+    722: load_var(8)  -- CHUNK
+    723: load_var(24)  -- STATE
     724: call(3)
     725: pop
-    726: push_const(12)  -- null
+    726: push_const(11)  -- null
     727: ret
     728: pop_scope
     729: jump(731)
-    730: push_const(12)  -- null
+    730: push_const(11)  -- null
     731: pop
-    732: load_var(2)  -- SYM
+    732: load_var(1)  -- SYM
     733: push_const(83)  -- repeat
     734: cmp_eq
     735: jump_false(747)
     736: push_scope
     737: load_var(84)  -- _CMP_REPEAT
     738: load_var(0)  -- NODE
-    739: load_var(9)  -- CHUNK
-    740: load_var(25)  -- STATE
+    739: load_var(8)  -- CHUNK
+    740: load_var(24)  -- STATE
     741: call(3)
     742: pop
-    743: push_const(12)  -- null
+    743: push_const(11)  -- null
     744: ret
     745: pop_scope
     746: jump(748)
-    747: push_const(12)  -- null
+    747: push_const(11)  -- null
     748: pop
-    749: load_var(2)  -- SYM
+    749: load_var(1)  -- SYM
     750: push_const(85)  -- for
     751: cmp_eq
     752: jump_false(764)
     753: push_scope
     754: load_var(86)  -- _CMP_FOR
     755: load_var(0)  -- NODE
-    756: load_var(9)  -- CHUNK
-    757: load_var(25)  -- STATE
+    756: load_var(8)  -- CHUNK
+    757: load_var(24)  -- STATE
     758: call(3)
     759: pop
-    760: push_const(12)  -- null
+    760: push_const(11)  -- null
     761: ret
     762: pop_scope
     763: jump(765)
-    764: push_const(12)  -- null
+    764: push_const(11)  -- null
     765: pop
-    766: load_var(2)  -- SYM
+    766: load_var(1)  -- SYM
     767: push_const(87)  -- return
     768: cmp_eq
     769: jump_false(808)
     770: push_scope
     771: load_var(88)  -- LENGTH
-    772: load_var(4)  -- CH
+    772: load_var(3)  -- CH
     773: call(1)
     774: jump_null(780)
     775: push_const(59)  -- 0
@@ -2773,151 +2797,151 @@ CHUNK ___CMP_NODE_19 (NODE, CHUNK, STATE)
     778: jump(782)
     779: pop
     780: pop
-    781: push_const(12)  -- null
+    781: push_const(11)  -- null
     782: jump_false(791)
     783: load_var(58)  -- _CMP_NODE
-    784: load_var(4)  -- CH
+    784: load_var(3)  -- CH
     785: push_const(59)  -- 0
     786: get_index
-    787: load_var(9)  -- CHUNK
-    788: load_var(25)  -- STATE
+    787: load_var(8)  -- CHUNK
+    788: load_var(24)  -- STATE
     789: call(3)
     790: jump(798)
-    791: load_var(8)  -- _CMP_EMIT1
-    792: load_var(9)  -- CHUNK
-    793: push_const(10)  -- push_const
-    794: load_var(18)  -- _CMP_CONST_NULL
-    795: load_var(9)  -- CHUNK
+    791: load_var(7)  -- _CMP_EMIT1
+    792: load_var(8)  -- CHUNK
+    793: push_const(9)  -- push_const
+    794: load_var(17)  -- _CMP_CONST_NULL
+    795: load_var(8)  -- CHUNK
     796: call(1)
     797: call(3)
     798: pop
     799: load_var(61)  -- _CMP_EMIT
-    800: load_var(9)  -- CHUNK
+    800: load_var(8)  -- CHUNK
     801: push_const(89)  -- ret
     802: call(2)
     803: pop
-    804: push_const(12)  -- null
+    804: push_const(11)  -- null
     805: ret
     806: pop_scope
     807: jump(809)
-    808: push_const(12)  -- null
+    808: push_const(11)  -- null
     809: pop
-    810: load_var(2)  -- SYM
+    810: load_var(1)  -- SYM
     811: push_const(90)  -- break
     812: cmp_eq
     813: jump_false(827)
     814: push_scope
-    815: load_var(8)  -- _CMP_EMIT1
-    816: load_var(9)  -- CHUNK
+    815: load_var(7)  -- _CMP_EMIT1
+    816: load_var(8)  -- CHUNK
     817: push_const(91)  -- jump
     818: push_const(92)  -- 999
     819: jump_null(821)
     820: neg
     821: call(3)
     822: pop
-    823: push_const(12)  -- null
+    823: push_const(11)  -- null
     824: ret
     825: pop_scope
     826: jump(828)
-    827: push_const(12)  -- null
+    827: push_const(11)  -- null
     828: pop
-    829: load_var(2)  -- SYM
+    829: load_var(1)  -- SYM
     830: push_const(93)  -- continue
     831: cmp_eq
     832: jump_false(846)
     833: push_scope
-    834: load_var(8)  -- _CMP_EMIT1
-    835: load_var(9)  -- CHUNK
+    834: load_var(7)  -- _CMP_EMIT1
+    835: load_var(8)  -- CHUNK
     836: push_const(91)  -- jump
     837: push_const(94)  -- 998
     838: jump_null(840)
     839: neg
     840: call(3)
     841: pop
-    842: push_const(12)  -- null
+    842: push_const(11)  -- null
     843: ret
     844: pop_scope
     845: jump(847)
-    846: push_const(12)  -- null
+    846: push_const(11)  -- null
     847: pop
-    848: load_var(2)  -- SYM
+    848: load_var(1)  -- SYM
     849: push_const(95)  -- call
     850: cmp_eq
     851: jump_false(863)
     852: push_scope
     853: load_var(96)  -- _CMP_CALL
     854: load_var(0)  -- NODE
-    855: load_var(9)  -- CHUNK
-    856: load_var(25)  -- STATE
+    855: load_var(8)  -- CHUNK
+    856: load_var(24)  -- STATE
     857: call(3)
     858: pop
-    859: push_const(12)  -- null
+    859: push_const(11)  -- null
     860: ret
     861: pop_scope
     862: jump(864)
-    863: push_const(12)  -- null
+    863: push_const(11)  -- null
     864: pop
-    865: load_var(2)  -- SYM
+    865: load_var(1)  -- SYM
     866: push_const(97)  -- index
     867: cmp_eq
     868: jump_false(895)
     869: push_scope
     870: load_var(58)  -- _CMP_NODE
-    871: load_var(4)  -- CH
+    871: load_var(3)  -- CH
     872: push_const(59)  -- 0
     873: get_index
-    874: load_var(9)  -- CHUNK
-    875: load_var(25)  -- STATE
+    874: load_var(8)  -- CHUNK
+    875: load_var(24)  -- STATE
     876: call(3)
     877: pop
     878: load_var(58)  -- _CMP_NODE
-    879: load_var(4)  -- CH
+    879: load_var(3)  -- CH
     880: push_const(60)  -- 1
     881: get_index
-    882: load_var(9)  -- CHUNK
-    883: load_var(25)  -- STATE
+    882: load_var(8)  -- CHUNK
+    883: load_var(24)  -- STATE
     884: call(3)
     885: pop
     886: load_var(61)  -- _CMP_EMIT
-    887: load_var(9)  -- CHUNK
+    887: load_var(8)  -- CHUNK
     888: push_const(98)  -- get_index
     889: call(2)
     890: pop
-    891: push_const(12)  -- null
+    891: push_const(11)  -- null
     892: ret
     893: pop_scope
     894: jump(896)
-    895: push_const(12)  -- null
+    895: push_const(11)  -- null
     896: pop
-    897: load_var(2)  -- SYM
+    897: load_var(1)  -- SYM
     898: push_const(99)  -- member
     899: cmp_eq
     900: jump_false(923)
     901: push_scope
     902: load_var(58)  -- _CMP_NODE
-    903: load_var(4)  -- CH
+    903: load_var(3)  -- CH
     904: push_const(59)  -- 0
     905: get_index
-    906: load_var(9)  -- CHUNK
-    907: load_var(25)  -- STATE
+    906: load_var(8)  -- CHUNK
+    907: load_var(24)  -- STATE
     908: call(3)
     909: pop
-    910: load_var(8)  -- _CMP_EMIT1
-    911: load_var(9)  -- CHUNK
+    910: load_var(7)  -- _CMP_EMIT1
+    911: load_var(8)  -- CHUNK
     912: push_const(100)  -- get_member
     913: load_var(30)  -- _CMP_CONST_NAME
-    914: load_var(9)  -- CHUNK
-    915: load_var(6)  -- V
+    914: load_var(8)  -- CHUNK
+    915: load_var(5)  -- V
     916: call(2)
     917: call(3)
     918: pop
-    919: push_const(12)  -- null
+    919: push_const(11)  -- null
     920: ret
     921: pop_scope
     922: jump(924)
-    923: push_const(12)  -- null
+    923: push_const(11)  -- null
     924: pop
-    925: load_var(2)  -- SYM
+    925: load_var(1)  -- SYM
     926: push_const(101)  -- list
     927: cmp_eq
     928: jump_false(985)
@@ -2926,27 +2950,27 @@ CHUNK ___CMP_NODE_19 (NODE, CHUNK, STATE)
     931: store_var(102)  -- I
     932: load_var(102)  -- I
     933: pop
-    934: push_const(12)  -- null
+    934: push_const(11)  -- null
     935: store_reg(0)
     936: load_var(102)  -- I
     937: jump_null(945)
     938: load_var(88)  -- LENGTH
-    939: load_var(4)  -- CH
+    939: load_var(3)  -- CH
     940: call(1)
     941: jump_null(944)
     942: cmp_lt
     943: jump(947)
     944: pop
     945: pop
-    946: push_const(12)  -- null
+    946: push_const(11)  -- null
     947: jump_false(971)
     948: push_scope
     949: load_var(58)  -- _CMP_NODE
-    950: load_var(4)  -- CH
+    950: load_var(3)  -- CH
     951: load_var(102)  -- I
     952: get_index
-    953: load_var(9)  -- CHUNK
-    954: load_var(25)  -- STATE
+    953: load_var(8)  -- CHUNK
+    954: load_var(24)  -- STATE
     955: call(3)
     956: pop
     957: load_var(102)  -- I
@@ -2957,7 +2981,7 @@ CHUNK ___CMP_NODE_19 (NODE, CHUNK, STATE)
     962: jump(966)
     963: pop
     964: pop
-    965: push_const(12)  -- null
+    965: push_const(11)  -- null
     966: store_var(102)  -- I
     967: load_var(102)  -- I
     968: pop_scope
@@ -2965,306 +2989,309 @@ CHUNK ___CMP_NODE_19 (NODE, CHUNK, STATE)
     970: jump(936)
     971: load_reg(0)
     972: pop
-    973: load_var(8)  -- _CMP_EMIT1
-    974: load_var(9)  -- CHUNK
+    973: load_var(7)  -- _CMP_EMIT1
+    974: load_var(8)  -- CHUNK
     975: push_const(103)  -- make_list
     976: load_var(88)  -- LENGTH
-    977: load_var(4)  -- CH
+    977: load_var(3)  -- CH
     978: call(1)
     979: call(3)
     980: pop
-    981: push_const(12)  -- null
+    981: push_const(11)  -- null
     982: ret
     983: pop_scope
     984: jump(986)
-    985: push_const(12)  -- null
+    985: push_const(11)  -- null
     986: pop
-    987: load_var(2)  -- SYM
+    987: load_var(1)  -- SYM
     988: push_const(104)  -- map
     989: cmp_eq
-    990: jump_false(1065)
+    990: jump_false(1066)
     991: push_scope
     992: push_const(59)  -- 0
     993: store_var(102)  -- I
     994: load_var(102)  -- I
     995: pop
-    996: push_const(12)  -- null
+    996: push_const(11)  -- null
     997: store_reg(1)
     998: load_var(102)  -- I
     999: jump_null(1007)
     1000: load_var(88)  -- LENGTH
-    1001: load_var(4)  -- CH
+    1001: load_var(3)  -- CH
     1002: call(1)
     1003: jump_null(1006)
     1004: cmp_lt
     1005: jump(1009)
     1006: pop
     1007: pop
-    1008: push_const(12)  -- null
-    1009: jump_false(1051)
+    1008: push_const(11)  -- null
+    1009: jump_false(1052)
     1010: push_scope
-    1011: load_var(4)  -- CH
+    1011: load_var(3)  -- CH
     1012: load_var(102)  -- I
     1013: get_index
     1014: store_var(105)  -- KV
     1015: load_var(105)  -- KV
     1016: pop
-    1017: load_var(58)  -- _CMP_NODE
-    1018: load_var(105)  -- KV
-    1019: push_const(3)  -- children
-    1020: get_index
-    1021: push_const(59)  -- 0
-    1022: get_index
-    1023: load_var(9)  -- CHUNK
-    1024: load_var(25)  -- STATE
-    1025: call(3)
-    1026: pop
-    1027: load_var(58)  -- _CMP_NODE
-    1028: load_var(105)  -- KV
-    1029: push_const(3)  -- children
-    1030: get_index
-    1031: push_const(60)  -- 1
-    1032: get_index
-    1033: load_var(9)  -- CHUNK
-    1034: load_var(25)  -- STATE
-    1035: call(3)
-    1036: pop
-    1037: load_var(102)  -- I
-    1038: jump_null(1044)
-    1039: push_const(60)  -- 1
-    1040: jump_null(1043)
-    1041: add
-    1042: jump(1046)
-    1043: pop
+    1017: load_var(105)  -- KV
+    1018: get_member(2)  -- CHILDREN
+    1019: store_var(106)  -- _KV_CH
+    1020: load_var(106)  -- _KV_CH
+    1021: pop
+    1022: load_var(58)  -- _CMP_NODE
+    1023: load_var(106)  -- _KV_CH
+    1024: push_const(59)  -- 0
+    1025: get_index
+    1026: load_var(8)  -- CHUNK
+    1027: load_var(24)  -- STATE
+    1028: call(3)
+    1029: pop
+    1030: load_var(58)  -- _CMP_NODE
+    1031: load_var(106)  -- _KV_CH
+    1032: push_const(60)  -- 1
+    1033: get_index
+    1034: load_var(8)  -- CHUNK
+    1035: load_var(24)  -- STATE
+    1036: call(3)
+    1037: pop
+    1038: load_var(102)  -- I
+    1039: jump_null(1045)
+    1040: push_const(60)  -- 1
+    1041: jump_null(1044)
+    1042: add
+    1043: jump(1047)
     1044: pop
-    1045: push_const(12)  -- null
-    1046: store_var(102)  -- I
-    1047: load_var(102)  -- I
-    1048: pop_scope
-    1049: store_reg(1)
-    1050: jump(998)
-    1051: load_reg(1)
-    1052: pop
-    1053: load_var(8)  -- _CMP_EMIT1
-    1054: load_var(9)  -- CHUNK
-    1055: push_const(106)  -- make_map
-    1056: load_var(88)  -- LENGTH
-    1057: load_var(4)  -- CH
-    1058: call(1)
-    1059: call(3)
-    1060: pop
-    1061: push_const(12)  -- null
-    1062: ret
-    1063: pop_scope
-    1064: jump(1066)
-    1065: push_const(12)  -- null
-    1066: pop
-    1067: load_var(2)  -- SYM
-    1068: push_const(107)  -- object
-    1069: cmp_eq
-    1070: jump_false(1166)
-    1071: push_scope
-    1072: load_var(61)  -- _CMP_EMIT
-    1073: load_var(9)  -- CHUNK
-    1074: push_const(73)  -- push_scope
-    1075: call(2)
-    1076: pop
-    1077: push_const(59)  -- 0
-    1078: store_var(102)  -- I
-    1079: load_var(102)  -- I
-    1080: pop
-    1081: push_const(12)  -- null
-    1082: store_reg(2)
-    1083: load_var(102)  -- I
-    1084: jump_null(1092)
-    1085: load_var(88)  -- LENGTH
-    1086: load_var(4)  -- CH
-    1087: call(1)
-    1088: jump_null(1091)
-    1089: cmp_lt
-    1090: jump(1094)
-    1091: pop
+    1045: pop
+    1046: push_const(11)  -- null
+    1047: store_var(102)  -- I
+    1048: load_var(102)  -- I
+    1049: pop_scope
+    1050: store_reg(1)
+    1051: jump(998)
+    1052: load_reg(1)
+    1053: pop
+    1054: load_var(7)  -- _CMP_EMIT1
+    1055: load_var(8)  -- CHUNK
+    1056: push_const(107)  -- make_map
+    1057: load_var(88)  -- LENGTH
+    1058: load_var(3)  -- CH
+    1059: call(1)
+    1060: call(3)
+    1061: pop
+    1062: push_const(11)  -- null
+    1063: ret
+    1064: pop_scope
+    1065: jump(1067)
+    1066: push_const(11)  -- null
+    1067: pop
+    1068: load_var(1)  -- SYM
+    1069: push_const(108)  -- object
+    1070: cmp_eq
+    1071: jump_false(1167)
+    1072: push_scope
+    1073: load_var(61)  -- _CMP_EMIT
+    1074: load_var(8)  -- CHUNK
+    1075: push_const(73)  -- push_scope
+    1076: call(2)
+    1077: pop
+    1078: push_const(59)  -- 0
+    1079: store_var(102)  -- I
+    1080: load_var(102)  -- I
+    1081: pop
+    1082: push_const(11)  -- null
+    1083: store_reg(2)
+    1084: load_var(102)  -- I
+    1085: jump_null(1093)
+    1086: load_var(88)  -- LENGTH
+    1087: load_var(3)  -- CH
+    1088: call(1)
+    1089: jump_null(1092)
+    1090: cmp_lt
+    1091: jump(1095)
     1092: pop
-    1093: push_const(12)  -- null
-    1094: jump_false(1147)
-    1095: push_scope
-    1096: load_var(4)  -- CH
-    1097: load_var(102)  -- I
-    1098: get_index
-    1099: store_var(105)  -- KV
-    1100: load_var(105)  -- KV
-    1101: pop
-    1102: load_var(105)  -- KV
-    1103: push_const(3)  -- children
-    1104: get_index
-    1105: push_const(59)  -- 0
-    1106: get_index
-    1107: push_const(5)  -- val
-    1108: get_index
-    1109: store_var(108)  -- KEY_NAME
-    1110: load_var(108)  -- KEY_NAME
-    1111: pop
-    1112: load_var(8)  -- _CMP_EMIT1
-    1113: load_var(9)  -- CHUNK
-    1114: push_const(10)  -- push_const
-    1115: load_var(30)  -- _CMP_CONST_NAME
-    1116: load_var(9)  -- CHUNK
-    1117: load_var(109)  -- UPPERCASE
-    1118: load_var(108)  -- KEY_NAME
-    1119: call(1)
-    1120: call(2)
-    1121: call(3)
-    1122: pop
-    1123: load_var(58)  -- _CMP_NODE
-    1124: load_var(105)  -- KV
-    1125: push_const(3)  -- children
-    1126: get_index
-    1127: push_const(60)  -- 1
-    1128: get_index
-    1129: load_var(9)  -- CHUNK
-    1130: load_var(25)  -- STATE
-    1131: call(3)
-    1132: pop
-    1133: load_var(102)  -- I
-    1134: jump_null(1140)
-    1135: push_const(60)  -- 1
-    1136: jump_null(1139)
-    1137: add
-    1138: jump(1142)
-    1139: pop
+    1093: pop
+    1094: push_const(11)  -- null
+    1095: jump_false(1148)
+    1096: push_scope
+    1097: load_var(3)  -- CH
+    1098: load_var(102)  -- I
+    1099: get_index
+    1100: store_var(105)  -- KV
+    1101: load_var(105)  -- KV
+    1102: pop
+    1103: load_var(105)  -- KV
+    1104: get_member(2)  -- CHILDREN
+    1105: store_var(106)  -- _KV_CH
+    1106: load_var(106)  -- _KV_CH
+    1107: pop
+    1108: load_var(106)  -- _KV_CH
+    1109: push_const(59)  -- 0
+    1110: get_index
+    1111: get_member(4)  -- VAL
+    1112: store_var(109)  -- KEY_NAME
+    1113: load_var(109)  -- KEY_NAME
+    1114: pop
+    1115: load_var(7)  -- _CMP_EMIT1
+    1116: load_var(8)  -- CHUNK
+    1117: push_const(9)  -- push_const
+    1118: load_var(30)  -- _CMP_CONST_NAME
+    1119: load_var(8)  -- CHUNK
+    1120: load_var(110)  -- UPPERCASE
+    1121: load_var(109)  -- KEY_NAME
+    1122: call(1)
+    1123: call(2)
+    1124: call(3)
+    1125: pop
+    1126: load_var(58)  -- _CMP_NODE
+    1127: load_var(106)  -- _KV_CH
+    1128: push_const(60)  -- 1
+    1129: get_index
+    1130: load_var(8)  -- CHUNK
+    1131: load_var(24)  -- STATE
+    1132: call(3)
+    1133: pop
+    1134: load_var(102)  -- I
+    1135: jump_null(1141)
+    1136: push_const(60)  -- 1
+    1137: jump_null(1140)
+    1138: add
+    1139: jump(1143)
     1140: pop
-    1141: push_const(12)  -- null
-    1142: store_var(102)  -- I
-    1143: load_var(102)  -- I
-    1144: pop_scope
-    1145: store_reg(2)
-    1146: jump(1083)
-    1147: load_reg(2)
-    1148: pop
-    1149: load_var(8)  -- _CMP_EMIT1
-    1150: load_var(9)  -- CHUNK
-    1151: push_const(110)  -- make_object_here
-    1152: load_var(88)  -- LENGTH
-    1153: load_var(4)  -- CH
-    1154: call(1)
-    1155: call(3)
-    1156: pop
-    1157: load_var(61)  -- _CMP_EMIT
-    1158: load_var(9)  -- CHUNK
-    1159: push_const(74)  -- pop_scope
-    1160: call(2)
-    1161: pop
-    1162: push_const(12)  -- null
-    1163: ret
-    1164: pop_scope
-    1165: jump(1167)
-    1166: push_const(12)  -- null
-    1167: pop_scope
-    1168: ret
-CHUNK ___CMP_NULL_BINOP_15 (NODE, CHUNK, STATE, OP)
-  CONST  0: _CMP_NODE
-  CONST  1: NODE
-  CONST  2: children
-  CONST  3: 0
-  CONST  4: CHUNK
-  CONST  5: STATE
-  CONST  6: _CMP_JUMP
-  CONST  7: jump_null
-  CONST  8: J1
-  CONST  9: 1
-  CONST  10: J2
-  CONST  11: _CMP_EMIT
-  CONST  12: OP
-  CONST  13: jump
-  CONST  14: J3
-  CONST  15: _CMP_PATCH
-  CONST  16: pop
-  CONST  17: _CMP_EMIT1
-  CONST  18: push_const
-  CONST  19: _CMP_CONST_NULL
+    1141: pop
+    1142: push_const(11)  -- null
+    1143: store_var(102)  -- I
+    1144: load_var(102)  -- I
+    1145: pop_scope
+    1146: store_reg(2)
+    1147: jump(1084)
+    1148: load_reg(2)
+    1149: pop
+    1150: load_var(7)  -- _CMP_EMIT1
+    1151: load_var(8)  -- CHUNK
+    1152: push_const(111)  -- make_object_here
+    1153: load_var(88)  -- LENGTH
+    1154: load_var(3)  -- CH
+    1155: call(1)
+    1156: call(3)
+    1157: pop
+    1158: load_var(61)  -- _CMP_EMIT
+    1159: load_var(8)  -- CHUNK
+    1160: push_const(74)  -- pop_scope
+    1161: call(2)
+    1162: pop
+    1163: push_const(11)  -- null
+    1164: ret
+    1165: pop_scope
+    1166: jump(1168)
+    1167: push_const(11)  -- null
+    1168: pop_scope
+    1169: ret
+CHUNK ___CMP_NULL_BINOP_16 (NODE, CHUNK, STATE, OP)
+  CONST  0: NODE
+  CONST  1: CHILDREN
+  CONST  2: _CH
+  CONST  3: _CMP_NODE
+  CONST  4: 0
+  CONST  5: CHUNK
+  CONST  6: STATE
+  CONST  7: _CMP_JUMP
+  CONST  8: jump_null
+  CONST  9: J1
+  CONST  10: 1
+  CONST  11: J2
+  CONST  12: _CMP_EMIT
+  CONST  13: OP
+  CONST  14: jump
+  CONST  15: J3
+  CONST  16: _CMP_PATCH
+  CONST  17: pop
+  CONST  18: _CMP_EMIT1
+  CONST  19: push_const
+  CONST  20: _CMP_CONST_NULL
   CODE:
     0: push_scope
-    1: load_var(0)  -- _CMP_NODE
-    2: load_var(1)  -- NODE
-    3: push_const(2)  -- children
-    4: get_index
-    5: push_const(3)  -- 0
-    6: get_index
-    7: load_var(4)  -- CHUNK
-    8: load_var(5)  -- STATE
-    9: call(3)
-    10: pop
-    11: load_var(6)  -- _CMP_JUMP
-    12: load_var(4)  -- CHUNK
-    13: push_const(7)  -- jump_null
-    14: call(2)
-    15: store_var(8)  -- J1
-    16: load_var(8)  -- J1
-    17: pop
-    18: load_var(0)  -- _CMP_NODE
-    19: load_var(1)  -- NODE
-    20: push_const(2)  -- children
-    21: get_index
-    22: push_const(9)  -- 1
-    23: get_index
-    24: load_var(4)  -- CHUNK
-    25: load_var(5)  -- STATE
-    26: call(3)
-    27: pop
-    28: load_var(6)  -- _CMP_JUMP
-    29: load_var(4)  -- CHUNK
-    30: push_const(7)  -- jump_null
-    31: call(2)
-    32: store_var(10)  -- J2
-    33: load_var(10)  -- J2
-    34: pop
-    35: load_var(11)  -- _CMP_EMIT
-    36: load_var(4)  -- CHUNK
-    37: load_var(12)  -- OP
-    38: call(2)
-    39: pop
-    40: load_var(6)  -- _CMP_JUMP
-    41: load_var(4)  -- CHUNK
-    42: push_const(13)  -- jump
-    43: call(2)
-    44: store_var(14)  -- J3
-    45: load_var(14)  -- J3
-    46: pop
-    47: load_var(15)  -- _CMP_PATCH
-    48: load_var(4)  -- CHUNK
-    49: load_var(10)  -- J2
-    50: call(2)
-    51: pop
-    52: load_var(11)  -- _CMP_EMIT
-    53: load_var(4)  -- CHUNK
-    54: push_const(16)  -- pop
-    55: call(2)
-    56: pop
-    57: load_var(15)  -- _CMP_PATCH
-    58: load_var(4)  -- CHUNK
-    59: load_var(8)  -- J1
-    60: call(2)
-    61: pop
-    62: load_var(11)  -- _CMP_EMIT
-    63: load_var(4)  -- CHUNK
-    64: push_const(16)  -- pop
-    65: call(2)
-    66: pop
-    67: load_var(17)  -- _CMP_EMIT1
-    68: load_var(4)  -- CHUNK
-    69: push_const(18)  -- push_const
-    70: load_var(19)  -- _CMP_CONST_NULL
-    71: load_var(4)  -- CHUNK
-    72: call(1)
-    73: call(3)
-    74: pop
-    75: load_var(15)  -- _CMP_PATCH
-    76: load_var(4)  -- CHUNK
-    77: load_var(14)  -- J3
-    78: call(2)
-    79: pop_scope
-    80: ret
-CHUNK ___CMP_NULL_UNOP_17 (CHILD, CHUNK, STATE, OP)
+    1: load_var(0)  -- NODE
+    2: get_member(1)  -- CHILDREN
+    3: store_var(2)  -- _CH
+    4: load_var(2)  -- _CH
+    5: pop
+    6: load_var(3)  -- _CMP_NODE
+    7: load_var(2)  -- _CH
+    8: push_const(4)  -- 0
+    9: get_index
+    10: load_var(5)  -- CHUNK
+    11: load_var(6)  -- STATE
+    12: call(3)
+    13: pop
+    14: load_var(7)  -- _CMP_JUMP
+    15: load_var(5)  -- CHUNK
+    16: push_const(8)  -- jump_null
+    17: call(2)
+    18: store_var(9)  -- J1
+    19: load_var(9)  -- J1
+    20: pop
+    21: load_var(3)  -- _CMP_NODE
+    22: load_var(2)  -- _CH
+    23: push_const(10)  -- 1
+    24: get_index
+    25: load_var(5)  -- CHUNK
+    26: load_var(6)  -- STATE
+    27: call(3)
+    28: pop
+    29: load_var(7)  -- _CMP_JUMP
+    30: load_var(5)  -- CHUNK
+    31: push_const(8)  -- jump_null
+    32: call(2)
+    33: store_var(11)  -- J2
+    34: load_var(11)  -- J2
+    35: pop
+    36: load_var(12)  -- _CMP_EMIT
+    37: load_var(5)  -- CHUNK
+    38: load_var(13)  -- OP
+    39: call(2)
+    40: pop
+    41: load_var(7)  -- _CMP_JUMP
+    42: load_var(5)  -- CHUNK
+    43: push_const(14)  -- jump
+    44: call(2)
+    45: store_var(15)  -- J3
+    46: load_var(15)  -- J3
+    47: pop
+    48: load_var(16)  -- _CMP_PATCH
+    49: load_var(5)  -- CHUNK
+    50: load_var(11)  -- J2
+    51: call(2)
+    52: pop
+    53: load_var(12)  -- _CMP_EMIT
+    54: load_var(5)  -- CHUNK
+    55: push_const(17)  -- pop
+    56: call(2)
+    57: pop
+    58: load_var(16)  -- _CMP_PATCH
+    59: load_var(5)  -- CHUNK
+    60: load_var(9)  -- J1
+    61: call(2)
+    62: pop
+    63: load_var(12)  -- _CMP_EMIT
+    64: load_var(5)  -- CHUNK
+    65: push_const(17)  -- pop
+    66: call(2)
+    67: pop
+    68: load_var(18)  -- _CMP_EMIT1
+    69: load_var(5)  -- CHUNK
+    70: push_const(19)  -- push_const
+    71: load_var(20)  -- _CMP_CONST_NULL
+    72: load_var(5)  -- CHUNK
+    73: call(1)
+    74: call(3)
+    75: pop
+    76: load_var(16)  -- _CMP_PATCH
+    77: load_var(5)  -- CHUNK
+    78: load_var(15)  -- J3
+    79: call(2)
+    80: pop_scope
+    81: ret
+CHUNK ___CMP_NULL_UNOP_18 (CHILD, CHUNK, STATE, OP)
   CONST  0: _CMP_NODE
   CONST  1: CHILD
   CONST  2: CHUNK
@@ -3301,201 +3328,203 @@ CHUNK ___CMP_NULL_UNOP_17 (CHILD, CHUNK, STATE, OP)
     22: call(2)
     23: pop_scope
     24: ret
-CHUNK ___CMP_PATCH_14 (CHUNK, JUMP_IDX)
+CHUNK ___CMP_PATCH_15 (CHUNK, JUMP_IDX)
   CONST  0: CHUNK
   CONST  1: code
-  CONST  2: JUMP_IDX
-  CONST  3: INSTR
-  CONST  4: op
-  CONST  5: operand
-  CONST  6: LENGTH
+  CONST  2: _CP_CODE
+  CONST  3: JUMP_IDX
+  CONST  4: INSTR
+  CONST  5: _CMP_INSTR
+  CONST  6: op
+  CONST  7: LENGTH
   CODE:
     0: push_scope
     1: load_var(0)  -- CHUNK
     2: push_const(1)  -- code
     3: get_index
-    4: load_var(2)  -- JUMP_IDX
-    5: get_index
-    6: store_var(3)  -- INSTR
-    7: load_var(3)  -- INSTR
-    8: pop
-    9: load_var(0)  -- CHUNK
-    10: push_const(1)  -- code
-    11: get_index
-    12: load_var(2)  -- JUMP_IDX
-    13: push_const(4)  -- op
-    14: load_var(3)  -- INSTR
-    15: push_const(4)  -- op
-    16: get_index
-    17: push_const(5)  -- operand
-    18: load_var(6)  -- LENGTH
-    19: load_var(0)  -- CHUNK
-    20: push_const(1)  -- code
-    21: get_index
-    22: call(1)
-    23: make_map(2)
-    24: set_index
-    25: pop_scope
-    26: ret
-CHUNK ___CMP_PATCH_LOOP_27 (CHUNK, FROM, TO_EXCL, CONTINUE_ADDR)
+    4: store_var(2)  -- _CP_CODE
+    5: load_var(2)  -- _CP_CODE
+    6: pop
+    7: load_var(2)  -- _CP_CODE
+    8: load_var(3)  -- JUMP_IDX
+    9: get_index
+    10: store_var(4)  -- INSTR
+    11: load_var(4)  -- INSTR
+    12: pop
+    13: load_var(2)  -- _CP_CODE
+    14: load_var(3)  -- JUMP_IDX
+    15: load_var(5)  -- _CMP_INSTR
+    16: load_var(4)  -- INSTR
+    17: push_const(6)  -- op
+    18: get_index
+    19: load_var(7)  -- LENGTH
+    20: load_var(2)  -- _CP_CODE
+    21: call(1)
+    22: call(2)
+    23: set_index
+    24: pop_scope
+    25: ret
+CHUNK ___CMP_PATCH_LOOP_28 (CHUNK, FROM, TO_EXCL, CONTINUE_ADDR)
   CONST  0: TO_EXCL
   CONST  1: BREAK_ADDR
-  CONST  2: FROM
-  CONST  3: I
-  CONST  4: null
-  CONST  5: CHUNK
-  CONST  6: code
-  CONST  7: INSTR
-  CONST  8: op
-  CONST  9: jump
-  CONST  10: operand
-  CONST  11: 999
-  CONST  12: 998
-  CONST  13: CONTINUE_ADDR
-  CONST  14: 1
+  CONST  2: CHUNK
+  CONST  3: code
+  CONST  4: _PL_CODE
+  CONST  5: FROM
+  CONST  6: I
+  CONST  7: null
+  CONST  8: INSTR
+  CONST  9: op
+  CONST  10: jump
+  CONST  11: operand
+  CONST  12: 999
+  CONST  13: _CMP_INSTR
+  CONST  14: 998
+  CONST  15: CONTINUE_ADDR
+  CONST  16: 1
   CODE:
     0: push_scope
     1: load_var(0)  -- TO_EXCL
     2: store_var(1)  -- BREAK_ADDR
     3: load_var(1)  -- BREAK_ADDR
     4: pop
-    5: load_var(2)  -- FROM
-    6: store_var(3)  -- I
-    7: load_var(3)  -- I
-    8: pop
-    9: push_const(4)  -- null
-    10: store_reg(0)
-    11: load_var(3)  -- I
-    12: jump_null(18)
-    13: load_var(0)  -- TO_EXCL
-    14: jump_null(17)
-    15: cmp_lt
-    16: jump(20)
-    17: pop
-    18: pop
-    19: push_const(4)  -- null
-    20: jump_false(98)
-    21: push_scope
-    22: load_var(5)  -- CHUNK
-    23: push_const(6)  -- code
-    24: get_index
-    25: load_var(3)  -- I
-    26: get_index
-    27: store_var(7)  -- INSTR
-    28: load_var(7)  -- INSTR
-    29: pop
-    30: load_var(7)  -- INSTR
-    31: push_const(8)  -- op
-    32: get_index
-    33: push_const(9)  -- jump
-    34: cmp_eq
-    35: load_var(7)  -- INSTR
-    36: push_const(10)  -- operand
-    37: get_index
-    38: push_const(11)  -- 999
-    39: jump_null(41)
-    40: neg
-    41: cmp_eq
-    42: log_and
-    43: jump_false(55)
-    44: load_var(5)  -- CHUNK
-    45: push_const(6)  -- code
-    46: get_index
-    47: load_var(3)  -- I
-    48: push_const(8)  -- op
-    49: push_const(9)  -- jump
-    50: push_const(10)  -- operand
-    51: load_var(1)  -- BREAK_ADDR
-    52: make_map(2)
-    53: set_index
-    54: jump(56)
-    55: push_const(4)  -- null
-    56: pop
-    57: load_var(7)  -- INSTR
-    58: push_const(8)  -- op
-    59: get_index
-    60: push_const(9)  -- jump
-    61: cmp_eq
-    62: load_var(7)  -- INSTR
-    63: push_const(10)  -- operand
-    64: get_index
-    65: push_const(12)  -- 998
-    66: jump_null(68)
-    67: neg
-    68: cmp_eq
-    69: log_and
-    70: jump_false(82)
-    71: load_var(5)  -- CHUNK
-    72: push_const(6)  -- code
-    73: get_index
-    74: load_var(3)  -- I
-    75: push_const(8)  -- op
-    76: push_const(9)  -- jump
-    77: push_const(10)  -- operand
-    78: load_var(13)  -- CONTINUE_ADDR
-    79: make_map(2)
-    80: set_index
-    81: jump(83)
-    82: push_const(4)  -- null
-    83: pop
-    84: load_var(3)  -- I
-    85: jump_null(91)
-    86: push_const(14)  -- 1
-    87: jump_null(90)
-    88: add
-    89: jump(93)
-    90: pop
-    91: pop
-    92: push_const(4)  -- null
-    93: store_var(3)  -- I
-    94: load_var(3)  -- I
-    95: pop_scope
-    96: store_reg(0)
-    97: jump(11)
-    98: load_reg(0)
-    99: pop_scope
-    100: ret
-CHUNK ___CMP_PLAIN_BINOP_16 (NODE, CHUNK, STATE, OP)
-  CONST  0: _CMP_NODE
-  CONST  1: NODE
-  CONST  2: children
-  CONST  3: 0
-  CONST  4: CHUNK
-  CONST  5: STATE
-  CONST  6: 1
-  CONST  7: _CMP_EMIT
-  CONST  8: OP
+    5: load_var(2)  -- CHUNK
+    6: push_const(3)  -- code
+    7: get_index
+    8: store_var(4)  -- _PL_CODE
+    9: load_var(4)  -- _PL_CODE
+    10: pop
+    11: load_var(5)  -- FROM
+    12: store_var(6)  -- I
+    13: load_var(6)  -- I
+    14: pop
+    15: push_const(7)  -- null
+    16: store_reg(0)
+    17: load_var(6)  -- I
+    18: jump_null(24)
+    19: load_var(0)  -- TO_EXCL
+    20: jump_null(23)
+    21: cmp_lt
+    22: jump(26)
+    23: pop
+    24: pop
+    25: push_const(7)  -- null
+    26: jump_false(96)
+    27: push_scope
+    28: load_var(4)  -- _PL_CODE
+    29: load_var(6)  -- I
+    30: get_index
+    31: store_var(8)  -- INSTR
+    32: load_var(8)  -- INSTR
+    33: pop
+    34: load_var(8)  -- INSTR
+    35: push_const(9)  -- op
+    36: get_index
+    37: push_const(10)  -- jump
+    38: cmp_eq
+    39: load_var(8)  -- INSTR
+    40: push_const(11)  -- operand
+    41: get_index
+    42: push_const(12)  -- 999
+    43: jump_null(45)
+    44: neg
+    45: cmp_eq
+    46: log_and
+    47: jump_false(56)
+    48: load_var(4)  -- _PL_CODE
+    49: load_var(6)  -- I
+    50: load_var(13)  -- _CMP_INSTR
+    51: push_const(10)  -- jump
+    52: load_var(1)  -- BREAK_ADDR
+    53: call(2)
+    54: set_index
+    55: jump(57)
+    56: push_const(7)  -- null
+    57: pop
+    58: load_var(8)  -- INSTR
+    59: push_const(9)  -- op
+    60: get_index
+    61: push_const(10)  -- jump
+    62: cmp_eq
+    63: load_var(8)  -- INSTR
+    64: push_const(11)  -- operand
+    65: get_index
+    66: push_const(14)  -- 998
+    67: jump_null(69)
+    68: neg
+    69: cmp_eq
+    70: log_and
+    71: jump_false(80)
+    72: load_var(4)  -- _PL_CODE
+    73: load_var(6)  -- I
+    74: load_var(13)  -- _CMP_INSTR
+    75: push_const(10)  -- jump
+    76: load_var(15)  -- CONTINUE_ADDR
+    77: call(2)
+    78: set_index
+    79: jump(81)
+    80: push_const(7)  -- null
+    81: pop
+    82: load_var(6)  -- I
+    83: jump_null(89)
+    84: push_const(16)  -- 1
+    85: jump_null(88)
+    86: add
+    87: jump(91)
+    88: pop
+    89: pop
+    90: push_const(7)  -- null
+    91: store_var(6)  -- I
+    92: load_var(6)  -- I
+    93: pop_scope
+    94: store_reg(0)
+    95: jump(17)
+    96: load_reg(0)
+    97: pop_scope
+    98: ret
+CHUNK ___CMP_PLAIN_BINOP_17 (NODE, CHUNK, STATE, OP)
+  CONST  0: NODE
+  CONST  1: CHILDREN
+  CONST  2: _CH
+  CONST  3: _CMP_NODE
+  CONST  4: 0
+  CONST  5: CHUNK
+  CONST  6: STATE
+  CONST  7: 1
+  CONST  8: _CMP_EMIT
+  CONST  9: OP
   CODE:
     0: push_scope
-    1: load_var(0)  -- _CMP_NODE
-    2: load_var(1)  -- NODE
-    3: push_const(2)  -- children
-    4: get_index
-    5: push_const(3)  -- 0
-    6: get_index
-    7: load_var(4)  -- CHUNK
-    8: load_var(5)  -- STATE
-    9: call(3)
-    10: pop
-    11: load_var(0)  -- _CMP_NODE
-    12: load_var(1)  -- NODE
-    13: push_const(2)  -- children
-    14: get_index
-    15: push_const(6)  -- 1
-    16: get_index
-    17: load_var(4)  -- CHUNK
-    18: load_var(5)  -- STATE
-    19: call(3)
-    20: pop
-    21: load_var(7)  -- _CMP_EMIT
-    22: load_var(4)  -- CHUNK
-    23: load_var(8)  -- OP
-    24: call(2)
-    25: pop_scope
-    26: ret
-CHUNK ___CMP_REPEAT_25 (NODE, CHUNK, STATE)
+    1: load_var(0)  -- NODE
+    2: get_member(1)  -- CHILDREN
+    3: store_var(2)  -- _CH
+    4: load_var(2)  -- _CH
+    5: pop
+    6: load_var(3)  -- _CMP_NODE
+    7: load_var(2)  -- _CH
+    8: push_const(4)  -- 0
+    9: get_index
+    10: load_var(5)  -- CHUNK
+    11: load_var(6)  -- STATE
+    12: call(3)
+    13: pop
+    14: load_var(3)  -- _CMP_NODE
+    15: load_var(2)  -- _CH
+    16: push_const(7)  -- 1
+    17: get_index
+    18: load_var(5)  -- CHUNK
+    19: load_var(6)  -- STATE
+    20: call(3)
+    21: pop
+    22: load_var(8)  -- _CMP_EMIT
+    23: load_var(5)  -- CHUNK
+    24: load_var(9)  -- OP
+    25: call(2)
+    26: pop_scope
+    27: ret
+CHUNK ___CMP_REPEAT_26 (NODE, CHUNK, STATE)
   CONST  0: NODE
-  CONST  1: children
+  CONST  1: CHILDREN
   CONST  2: CH
   CONST  3: _CMP_ALLOC_REG
   CONST  4: CHUNK
@@ -3519,94 +3548,93 @@ CHUNK ___CMP_REPEAT_25 (NODE, CHUNK, STATE)
   CODE:
     0: push_scope
     1: load_var(0)  -- NODE
-    2: push_const(1)  -- children
-    3: get_index
-    4: store_var(2)  -- CH
-    5: load_var(2)  -- CH
-    6: pop
-    7: load_var(3)  -- _CMP_ALLOC_REG
-    8: load_var(4)  -- CHUNK
-    9: call(1)
-    10: store_var(5)  -- RRES
-    11: load_var(5)  -- RRES
-    12: pop
-    13: load_var(6)  -- _CMP_EMIT1
-    14: load_var(4)  -- CHUNK
-    15: push_const(7)  -- push_const
-    16: load_var(8)  -- _CMP_CONST_NULL
-    17: load_var(4)  -- CHUNK
-    18: call(1)
-    19: call(3)
-    20: pop
-    21: load_var(6)  -- _CMP_EMIT1
-    22: load_var(4)  -- CHUNK
-    23: push_const(9)  -- store_reg
-    24: load_var(5)  -- RRES
-    25: call(3)
-    26: pop
-    27: load_var(10)  -- LENGTH
-    28: load_var(4)  -- CHUNK
-    29: push_const(11)  -- code
-    30: get_index
-    31: call(1)
-    32: store_var(12)  -- LOOP_TOP
-    33: load_var(12)  -- LOOP_TOP
-    34: pop
-    35: load_var(12)  -- LOOP_TOP
-    36: store_var(13)  -- BODY_START
-    37: load_var(13)  -- BODY_START
-    38: pop
-    39: load_var(14)  -- _CMP_NODE
-    40: load_var(2)  -- CH
-    41: push_const(15)  -- 0
-    42: get_index
-    43: load_var(4)  -- CHUNK
-    44: load_var(16)  -- STATE
-    45: call(3)
-    46: pop
-    47: load_var(6)  -- _CMP_EMIT1
-    48: load_var(4)  -- CHUNK
-    49: push_const(9)  -- store_reg
-    50: load_var(5)  -- RRES
-    51: call(3)
-    52: pop
-    53: load_var(14)  -- _CMP_NODE
-    54: load_var(2)  -- CH
-    55: push_const(17)  -- 1
-    56: get_index
-    57: load_var(4)  -- CHUNK
-    58: load_var(16)  -- STATE
-    59: call(3)
-    60: pop
-    61: load_var(6)  -- _CMP_EMIT1
-    62: load_var(4)  -- CHUNK
-    63: push_const(18)  -- jump_false
-    64: load_var(12)  -- LOOP_TOP
-    65: call(3)
-    66: pop
-    67: load_var(10)  -- LENGTH
-    68: load_var(4)  -- CHUNK
-    69: push_const(11)  -- code
-    70: get_index
-    71: call(1)
-    72: store_var(19)  -- BREAK_ADDR
-    73: load_var(19)  -- BREAK_ADDR
-    74: pop
-    75: load_var(20)  -- _CMP_PATCH_LOOP
-    76: load_var(4)  -- CHUNK
-    77: load_var(13)  -- BODY_START
-    78: load_var(19)  -- BREAK_ADDR
-    79: load_var(12)  -- LOOP_TOP
-    80: call(4)
-    81: pop
-    82: load_var(6)  -- _CMP_EMIT1
-    83: load_var(4)  -- CHUNK
-    84: push_const(21)  -- load_reg
-    85: load_var(5)  -- RRES
-    86: call(3)
-    87: pop_scope
-    88: ret
-CHUNK ___CMP_SEQUENCE_20 (CHILDREN, CHUNK, STATE)
+    2: get_member(1)  -- CHILDREN
+    3: store_var(2)  -- CH
+    4: load_var(2)  -- CH
+    5: pop
+    6: load_var(3)  -- _CMP_ALLOC_REG
+    7: load_var(4)  -- CHUNK
+    8: call(1)
+    9: store_var(5)  -- RRES
+    10: load_var(5)  -- RRES
+    11: pop
+    12: load_var(6)  -- _CMP_EMIT1
+    13: load_var(4)  -- CHUNK
+    14: push_const(7)  -- push_const
+    15: load_var(8)  -- _CMP_CONST_NULL
+    16: load_var(4)  -- CHUNK
+    17: call(1)
+    18: call(3)
+    19: pop
+    20: load_var(6)  -- _CMP_EMIT1
+    21: load_var(4)  -- CHUNK
+    22: push_const(9)  -- store_reg
+    23: load_var(5)  -- RRES
+    24: call(3)
+    25: pop
+    26: load_var(10)  -- LENGTH
+    27: load_var(4)  -- CHUNK
+    28: push_const(11)  -- code
+    29: get_index
+    30: call(1)
+    31: store_var(12)  -- LOOP_TOP
+    32: load_var(12)  -- LOOP_TOP
+    33: pop
+    34: load_var(12)  -- LOOP_TOP
+    35: store_var(13)  -- BODY_START
+    36: load_var(13)  -- BODY_START
+    37: pop
+    38: load_var(14)  -- _CMP_NODE
+    39: load_var(2)  -- CH
+    40: push_const(15)  -- 0
+    41: get_index
+    42: load_var(4)  -- CHUNK
+    43: load_var(16)  -- STATE
+    44: call(3)
+    45: pop
+    46: load_var(6)  -- _CMP_EMIT1
+    47: load_var(4)  -- CHUNK
+    48: push_const(9)  -- store_reg
+    49: load_var(5)  -- RRES
+    50: call(3)
+    51: pop
+    52: load_var(14)  -- _CMP_NODE
+    53: load_var(2)  -- CH
+    54: push_const(17)  -- 1
+    55: get_index
+    56: load_var(4)  -- CHUNK
+    57: load_var(16)  -- STATE
+    58: call(3)
+    59: pop
+    60: load_var(6)  -- _CMP_EMIT1
+    61: load_var(4)  -- CHUNK
+    62: push_const(18)  -- jump_false
+    63: load_var(12)  -- LOOP_TOP
+    64: call(3)
+    65: pop
+    66: load_var(10)  -- LENGTH
+    67: load_var(4)  -- CHUNK
+    68: push_const(11)  -- code
+    69: get_index
+    70: call(1)
+    71: store_var(19)  -- BREAK_ADDR
+    72: load_var(19)  -- BREAK_ADDR
+    73: pop
+    74: load_var(20)  -- _CMP_PATCH_LOOP
+    75: load_var(4)  -- CHUNK
+    76: load_var(13)  -- BODY_START
+    77: load_var(19)  -- BREAK_ADDR
+    78: load_var(12)  -- LOOP_TOP
+    79: call(4)
+    80: pop
+    81: load_var(6)  -- _CMP_EMIT1
+    82: load_var(4)  -- CHUNK
+    83: push_const(21)  -- load_reg
+    84: load_var(5)  -- RRES
+    85: call(3)
+    86: pop_scope
+    87: ret
+CHUNK ___CMP_SEQUENCE_21 (CHILDREN, CHUNK, STATE)
   CONST  0: LENGTH
   CONST  1: CHILDREN
   CONST  2: N
@@ -3716,9 +3744,9 @@ CHUNK ___CMP_SEQUENCE_20 (CHILDREN, CHUNK, STATE)
     90: load_reg(0)
     91: pop_scope
     92: ret
-CHUNK ___CMP_WHILE_24 (NODE, CHUNK, STATE)
+CHUNK ___CMP_WHILE_25 (NODE, CHUNK, STATE)
   CONST  0: NODE
-  CONST  1: children
+  CONST  1: CHILDREN
   CONST  2: CH
   CONST  3: _CMP_ALLOC_REG
   CONST  4: CHUNK
@@ -3746,110 +3774,109 @@ CHUNK ___CMP_WHILE_24 (NODE, CHUNK, STATE)
   CODE:
     0: push_scope
     1: load_var(0)  -- NODE
-    2: push_const(1)  -- children
-    3: get_index
-    4: store_var(2)  -- CH
-    5: load_var(2)  -- CH
-    6: pop
-    7: load_var(3)  -- _CMP_ALLOC_REG
-    8: load_var(4)  -- CHUNK
-    9: call(1)
-    10: store_var(5)  -- RRES
-    11: load_var(5)  -- RRES
-    12: pop
-    13: load_var(6)  -- _CMP_EMIT1
-    14: load_var(4)  -- CHUNK
-    15: push_const(7)  -- push_const
-    16: load_var(8)  -- _CMP_CONST_NULL
-    17: load_var(4)  -- CHUNK
-    18: call(1)
-    19: call(3)
-    20: pop
-    21: load_var(6)  -- _CMP_EMIT1
-    22: load_var(4)  -- CHUNK
-    23: push_const(9)  -- store_reg
-    24: load_var(5)  -- RRES
-    25: call(3)
-    26: pop
-    27: load_var(10)  -- LENGTH
-    28: load_var(4)  -- CHUNK
-    29: push_const(11)  -- code
-    30: get_index
-    31: call(1)
-    32: store_var(12)  -- LOOP_TOP
-    33: load_var(12)  -- LOOP_TOP
-    34: pop
-    35: load_var(13)  -- _CMP_NODE
-    36: load_var(2)  -- CH
-    37: push_const(14)  -- 0
-    38: get_index
-    39: load_var(4)  -- CHUNK
-    40: load_var(15)  -- STATE
-    41: call(3)
-    42: pop
-    43: load_var(16)  -- _CMP_JUMP
-    44: load_var(4)  -- CHUNK
-    45: push_const(17)  -- jump_false
-    46: call(2)
-    47: store_var(18)  -- JF
-    48: load_var(18)  -- JF
-    49: pop
-    50: load_var(10)  -- LENGTH
-    51: load_var(4)  -- CHUNK
-    52: push_const(11)  -- code
-    53: get_index
-    54: call(1)
-    55: store_var(19)  -- BODY_START
-    56: load_var(19)  -- BODY_START
-    57: pop
-    58: load_var(13)  -- _CMP_NODE
-    59: load_var(2)  -- CH
-    60: push_const(20)  -- 1
-    61: get_index
-    62: load_var(4)  -- CHUNK
-    63: load_var(15)  -- STATE
-    64: call(3)
-    65: pop
-    66: load_var(6)  -- _CMP_EMIT1
-    67: load_var(4)  -- CHUNK
-    68: push_const(9)  -- store_reg
-    69: load_var(5)  -- RRES
-    70: call(3)
-    71: pop
-    72: load_var(6)  -- _CMP_EMIT1
-    73: load_var(4)  -- CHUNK
-    74: push_const(21)  -- jump
-    75: load_var(12)  -- LOOP_TOP
-    76: call(3)
-    77: pop
-    78: load_var(22)  -- _CMP_PATCH
-    79: load_var(4)  -- CHUNK
-    80: load_var(18)  -- JF
-    81: call(2)
-    82: pop
-    83: load_var(10)  -- LENGTH
-    84: load_var(4)  -- CHUNK
-    85: push_const(11)  -- code
-    86: get_index
-    87: call(1)
-    88: store_var(23)  -- BREAK_ADDR
-    89: load_var(23)  -- BREAK_ADDR
-    90: pop
-    91: load_var(24)  -- _CMP_PATCH_LOOP
-    92: load_var(4)  -- CHUNK
-    93: load_var(19)  -- BODY_START
-    94: load_var(23)  -- BREAK_ADDR
-    95: load_var(12)  -- LOOP_TOP
-    96: call(4)
-    97: pop
-    98: load_var(6)  -- _CMP_EMIT1
-    99: load_var(4)  -- CHUNK
-    100: push_const(25)  -- load_reg
-    101: load_var(5)  -- RRES
-    102: call(3)
-    103: pop_scope
-    104: ret
-CHUNK __lambda_30 (TREE, CONSTS)
+    2: get_member(1)  -- CHILDREN
+    3: store_var(2)  -- CH
+    4: load_var(2)  -- CH
+    5: pop
+    6: load_var(3)  -- _CMP_ALLOC_REG
+    7: load_var(4)  -- CHUNK
+    8: call(1)
+    9: store_var(5)  -- RRES
+    10: load_var(5)  -- RRES
+    11: pop
+    12: load_var(6)  -- _CMP_EMIT1
+    13: load_var(4)  -- CHUNK
+    14: push_const(7)  -- push_const
+    15: load_var(8)  -- _CMP_CONST_NULL
+    16: load_var(4)  -- CHUNK
+    17: call(1)
+    18: call(3)
+    19: pop
+    20: load_var(6)  -- _CMP_EMIT1
+    21: load_var(4)  -- CHUNK
+    22: push_const(9)  -- store_reg
+    23: load_var(5)  -- RRES
+    24: call(3)
+    25: pop
+    26: load_var(10)  -- LENGTH
+    27: load_var(4)  -- CHUNK
+    28: push_const(11)  -- code
+    29: get_index
+    30: call(1)
+    31: store_var(12)  -- LOOP_TOP
+    32: load_var(12)  -- LOOP_TOP
+    33: pop
+    34: load_var(13)  -- _CMP_NODE
+    35: load_var(2)  -- CH
+    36: push_const(14)  -- 0
+    37: get_index
+    38: load_var(4)  -- CHUNK
+    39: load_var(15)  -- STATE
+    40: call(3)
+    41: pop
+    42: load_var(16)  -- _CMP_JUMP
+    43: load_var(4)  -- CHUNK
+    44: push_const(17)  -- jump_false
+    45: call(2)
+    46: store_var(18)  -- JF
+    47: load_var(18)  -- JF
+    48: pop
+    49: load_var(10)  -- LENGTH
+    50: load_var(4)  -- CHUNK
+    51: push_const(11)  -- code
+    52: get_index
+    53: call(1)
+    54: store_var(19)  -- BODY_START
+    55: load_var(19)  -- BODY_START
+    56: pop
+    57: load_var(13)  -- _CMP_NODE
+    58: load_var(2)  -- CH
+    59: push_const(20)  -- 1
+    60: get_index
+    61: load_var(4)  -- CHUNK
+    62: load_var(15)  -- STATE
+    63: call(3)
+    64: pop
+    65: load_var(6)  -- _CMP_EMIT1
+    66: load_var(4)  -- CHUNK
+    67: push_const(9)  -- store_reg
+    68: load_var(5)  -- RRES
+    69: call(3)
+    70: pop
+    71: load_var(6)  -- _CMP_EMIT1
+    72: load_var(4)  -- CHUNK
+    73: push_const(21)  -- jump
+    74: load_var(12)  -- LOOP_TOP
+    75: call(3)
+    76: pop
+    77: load_var(22)  -- _CMP_PATCH
+    78: load_var(4)  -- CHUNK
+    79: load_var(18)  -- JF
+    80: call(2)
+    81: pop
+    82: load_var(10)  -- LENGTH
+    83: load_var(4)  -- CHUNK
+    84: push_const(11)  -- code
+    85: get_index
+    86: call(1)
+    87: store_var(23)  -- BREAK_ADDR
+    88: load_var(23)  -- BREAK_ADDR
+    89: pop
+    90: load_var(24)  -- _CMP_PATCH_LOOP
+    91: load_var(4)  -- CHUNK
+    92: load_var(19)  -- BODY_START
+    93: load_var(23)  -- BREAK_ADDR
+    94: load_var(12)  -- LOOP_TOP
+    95: call(4)
+    96: pop
+    97: load_var(6)  -- _CMP_EMIT1
+    98: load_var(4)  -- CHUNK
+    99: push_const(25)  -- load_reg
+    100: load_var(5)  -- RRES
+    101: call(3)
+    102: pop_scope
+    103: ret
+CHUNK __lambda_31 (TREE, CONSTS)
   CONST  0: _CMP_COMPILE
   CONST  1: TREE
   CONST  2: CONSTS

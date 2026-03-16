@@ -2,7 +2,7 @@
 -- SHQL™ Parser — shunting-yard operator-precedence parser.
 -- 1:1 translation of the Dart Parser (parser.dart).
 --
--- Parse-tree node: {"sym": S, "children": [...], "val": V}
+-- Parse-tree node: OBJECT { sym: S, children: [...], val: V }
 --
 -- Symbols used:
 --   "program"    sequence of statements
@@ -27,7 +27,7 @@
 --   "return"     children = [] or [expr]
 --   "break" "continue"
 --   "list"       children = elements
---   "map"        children = kv pairs  {"sym":"kv","children":[k,v]}
+--   "map"        children = kv pairs  OBJECT { sym:"kv", children:[k,v], val:NULL }
 --   "object"     children = kv pairs  (keys are idents, val=name)
 --   "int_lit"    val = integer value (as number)
 --   "float_lit"  val = float value   (as number)
@@ -42,10 +42,15 @@
 --   Locals:     _pv_xxxx (different prefix, uppercases to _PV_XXXX — no collision)
 -- ============================================================
 
--- ---- Helpers ----
-_PR_NODE(_pv_sym, _pv_ch) := {"sym": _pv_sym, "children": _pv_ch, "val": NULL};
-_PR_LEAF(_pv_sym, _pv_v) := {"sym": _pv_sym, "children": [], "val": _pv_v};
-_PR_KV(_pv_k, _pv_v) := {"sym": "kv", "children": [_pv_k, _pv_v], "val": NULL};
+-- ---- Node factories ----
+_PR_NODE(_pv_sym, _pv_ch)           := OBJECT { sym: _pv_sym, children: _pv_ch,       val: NULL    };
+_PR_LEAF(_pv_sym, _pv_v)            := OBJECT { sym: _pv_sym, children: [],            val: _pv_v   };
+_PR_NODE_V(_pv_sym, _pv_ch, _pv_v)  := OBJECT { sym: _pv_sym, children: _pv_ch,       val: _pv_v   };
+_PR_KV(_pv_k, _pv_v)               := OBJECT { sym: "kv",    children: [_pv_k, _pv_v], val: NULL   };
+
+-- ---- Result factories ----
+_PR_RESULT(_pv_nd, _pv_pos)         := OBJECT { node: _pv_nd,   pos: _pv_pos   };
+_PR_POPRESULT(_pv_ops, _pv_nds)     := OBJECT { op_stk: _pv_ops, nd_stk: _pv_nds };
 
 -- ---- Operator precedence table ----
 -- Lower number = tighter binding. -1 = not an operator.
@@ -78,8 +83,8 @@ _PR_OP_SYM := {
 };
 
 -- ---- Token access helpers ----
-_PR_TT(_pv_toks, _pv_p) := _pv_toks[_pv_p]["t"];
-_PR_TV(_pv_toks, _pv_p) := _pv_toks[_pv_p]["v"];
+_PR_TT(_pv_toks, _pv_p) := _pv_toks[_pv_p].t;
+_PR_TV(_pv_toks, _pv_p) := _pv_toks[_pv_p].v;
 
 -- Get precedence of token type string (-1 if not operator)
 _PR_GET_PREC(_pv_tok) := BEGIN
@@ -98,42 +103,42 @@ _PR_POP_OP(_pv_ops, _pv_nds) := BEGIN
 
   -- Special handling for assignment
   IF _pv_op = ":=" THEN
-    RETURN {"op_stk": _pv_new_ops, "nd_stk": _pv_new_nds + [_PR_NODE("assign", [_pv_lhs, _pv_rhs])]};
+    RETURN _PR_POPRESULT(_pv_new_ops, _pv_new_nds + [_PR_NODE("assign", [_pv_lhs, _pv_rhs])]);
 
   -- Special handling for lambda =>
   IF _pv_op = "=>" THEN BEGIN
     _pv_params := _PR_EXTRACT_PARAMS(_pv_lhs);
-    RETURN {"op_stk": _pv_new_ops, "nd_stk": _pv_new_nds + [{"sym": "lambda", "children": [_pv_rhs], "val": _pv_params}]};
+    RETURN _PR_POPRESULT(_pv_new_ops, _pv_new_nds + [_PR_NODE_V("lambda", [_pv_rhs], _pv_params)]);
   END;
 
   -- Special handling for member access .
   IF _pv_op = "." THEN
-    RETURN {"op_stk": _pv_new_ops, "nd_stk": _pv_new_nds + [{"sym": "member", "children": [_pv_lhs], "val": _pv_rhs["val"]}]};
+    RETURN _PR_POPRESULT(_pv_new_ops, _pv_new_nds + [_PR_NODE_V("member", [_pv_lhs], _pv_rhs.val)]);
 
   -- General binary operator
   _pv_sym := _PR_OP_SYM[_pv_op];
-  RETURN {"op_stk": _pv_new_ops, "nd_stk": _pv_new_nds + [_PR_NODE(_pv_sym, [_pv_lhs, _pv_rhs])]};
+  RETURN _PR_POPRESULT(_pv_new_ops, _pv_new_nds + [_PR_NODE(_pv_sym, [_pv_lhs, _pv_rhs])]);
 END;
 
 -- Extract parameter names from lambda LHS
 _PR_EXTRACT_PARAMS(_pv_node) := BEGIN
-  IF _pv_node["sym"] = "ident" THEN RETURN [_pv_node["val"]];
-  IF _pv_node["sym"] = "call" THEN BEGIN
+  IF _pv_node.sym = "ident" THEN RETURN [_pv_node.val];
+  IF _pv_node.sym = "call" THEN BEGIN
     _pv_params := [];
     _pv_idx := 1;
-    WHILE _pv_idx < LENGTH(_pv_node["children"]) DO BEGIN
-      _pv_ch := _pv_node["children"][_pv_idx];
-      IF _pv_ch["sym"] = "ident" THEN _pv_params := _pv_params + [_pv_ch["val"]];
+    WHILE _pv_idx < LENGTH(_pv_node.children) DO BEGIN
+      _pv_ch := _pv_node.children[_pv_idx];
+      IF _pv_ch.sym = "ident" THEN _pv_params := _pv_params + [_pv_ch.val];
       _pv_idx := _pv_idx + 1;
     END;
     RETURN _pv_params;
   END;
-  IF _pv_node["sym"] = "list" THEN BEGIN
+  IF _pv_node.sym = "list" THEN BEGIN
     _pv_params := [];
     _pv_idx := 0;
-    WHILE _pv_idx < LENGTH(_pv_node["children"]) DO BEGIN
-      _pv_ch := _pv_node["children"][_pv_idx];
-      IF _pv_ch["sym"] = "ident" THEN _pv_params := _pv_params + [_pv_ch["val"]];
+    WHILE _pv_idx < LENGTH(_pv_node.children) DO BEGIN
+      _pv_ch := _pv_node.children[_pv_idx];
+      IF _pv_ch.sym = "ident" THEN _pv_params := _pv_params + [_pv_ch.val];
       _pv_idx := _pv_idx + 1;
     END;
     RETURN _pv_params;
@@ -143,7 +148,7 @@ END;
 
 -- ============================================================
 -- tryParseExpression — shunting-yard core
--- Takes (tokens, pos), returns {"node": N, "pos": P}
+-- Takes (tokens, pos), returns OBJECT { node: N, pos: P }
 -- ============================================================
 
 _PR_EXPR(_pv_toks, _pv_pos) := BEGIN
@@ -154,8 +159,8 @@ _PR_EXPR(_pv_toks, _pv_pos) := BEGIN
   WHILE NOT _pv_done DO BEGIN
     -- [1] Parse operand (primary or bracketed expression)
     _pv_r := _PR_OPERAND(_pv_toks, _pv_pos);
-    _pv_nd_stk := _pv_nd_stk + [_pv_r["node"]];
-    _pv_pos := _pv_r["pos"];
+    _pv_nd_stk := _pv_nd_stk + [_pv_r.node];
+    _pv_pos := _pv_r.pos;
 
     -- [2] Consume postfix operators (calls, indexing, member access)
     _pv_pf := TRUE;
@@ -168,30 +173,30 @@ _PR_EXPR(_pv_toks, _pv_pos) := BEGIN
         _pv_cargs := [];
         WHILE _PR_TT(_pv_toks, _pv_pos) <> ")" AND _PR_TT(_pv_toks, _pv_pos) <> "EOF" DO BEGIN
           _pv_ra := _PR_EXPR(_pv_toks, _pv_pos);
-          _pv_cargs := _pv_cargs + [_pv_ra["node"]];
-          _pv_pos := _pv_ra["pos"];
+          _pv_cargs := _pv_cargs + [_pv_ra.node];
+          _pv_pos := _pv_ra.pos;
           IF _PR_TT(_pv_toks, _pv_pos) = "," THEN _pv_pos := _pv_pos + 1;
         END;
         IF _PR_TT(_pv_toks, _pv_pos) = ")" THEN _pv_pos := _pv_pos + 1;
         _pv_callee := _pv_nd_stk[LENGTH(_pv_nd_stk) - 1];
         _pv_nd_stk := SLICE(_pv_nd_stk, 0, LENGTH(_pv_nd_stk) - 2) +
-          [{"sym": "call", "children": [_pv_callee] + _pv_cargs, "val": NULL}];
+          [_PR_NODE("call", [_pv_callee] + _pv_cargs)];
       END ELSE IF _pv_toktype = "[" THEN BEGIN
         -- Indexing
         _pv_pos := _pv_pos + 1;
         _pv_ri := _PR_EXPR(_pv_toks, _pv_pos);
-        _pv_pos := _pv_ri["pos"];
+        _pv_pos := _pv_ri.pos;
         IF _PR_TT(_pv_toks, _pv_pos) = "]" THEN _pv_pos := _pv_pos + 1;
         _pv_obj := _pv_nd_stk[LENGTH(_pv_nd_stk) - 1];
         _pv_nd_stk := SLICE(_pv_nd_stk, 0, LENGTH(_pv_nd_stk) - 2) +
-          [_PR_NODE("index", [_pv_obj, _pv_ri["node"]])];
+          [_PR_NODE("index", [_pv_obj, _pv_ri.node])];
       END ELSE IF _pv_toktype = "." AND _pv_nxt = "ID" THEN BEGIN
         -- Member access via postfix
         _pv_field := _PR_TV(_pv_toks, _pv_pos + 1);
         _pv_pos := _pv_pos + 2;
         _pv_obj := _pv_nd_stk[LENGTH(_pv_nd_stk) - 1];
         _pv_nd_stk := SLICE(_pv_nd_stk, 0, LENGTH(_pv_nd_stk) - 2) +
-          [{"sym": "member", "children": [_pv_obj], "val": _pv_field}];
+          [_PR_NODE_V("member", [_pv_obj], _pv_field)];
       END ELSE
         _pv_pf := FALSE;
     END;
@@ -214,8 +219,8 @@ _PR_EXPR(_pv_toks, _pv_pos) := BEGIN
           IF _pv_cur_prec < _pv_top_prec THEN BREAK;
         END;
         _pv_pop := _PR_POP_OP(_pv_op_stk, _pv_nd_stk);
-        _pv_op_stk := _pv_pop["op_stk"];
-        _pv_nd_stk := _pv_pop["nd_stk"];
+        _pv_op_stk := _pv_pop.op_stk;
+        _pv_nd_stk := _pv_pop.nd_stk;
       END;
       _pv_op_stk := _pv_op_stk + [_pv_toktype];
       _pv_pos := _pv_pos + 1;
@@ -223,8 +228,8 @@ _PR_EXPR(_pv_toks, _pv_pos) := BEGIN
       -- No infix operator found, flush remaining operators
       WHILE LENGTH(_pv_op_stk) > 0 DO BEGIN
         _pv_pop := _PR_POP_OP(_pv_op_stk, _pv_nd_stk);
-        _pv_op_stk := _pv_pop["op_stk"];
-        _pv_nd_stk := _pv_pop["nd_stk"];
+        _pv_op_stk := _pv_pop.op_stk;
+        _pv_nd_stk := _pv_pop.nd_stk;
       END;
       _pv_done := TRUE;
     END;
@@ -237,8 +242,8 @@ _PR_EXPR(_pv_toks, _pv_pos) := BEGIN
   END;
 
   IF LENGTH(_pv_nd_stk) > 0 THEN
-    RETURN {"node": _pv_nd_stk[LENGTH(_pv_nd_stk) - 1], "pos": _pv_pos};
-  RETURN {"node": _PR_LEAF("null_lit", NULL), "pos": _pv_pos};
+    RETURN _PR_RESULT(_pv_nd_stk[LENGTH(_pv_nd_stk) - 1], _pv_pos);
+  RETURN _PR_RESULT(_PR_LEAF("null_lit", NULL), _pv_pos);
 END;
 
 -- ============================================================
@@ -247,28 +252,28 @@ END;
 
 _PR_OPERAND(_pv_toks, _pv_pos) := BEGIN
   _pv_toktype := _PR_TT(_pv_toks, _pv_pos);
-  _pv_tokval := _PR_TV(_pv_toks, _pv_pos);
+  _pv_tokval  := _PR_TV(_pv_toks, _pv_pos);
 
   -- Integer literal
-  IF _pv_toktype = "INT"   THEN RETURN {"node": _PR_LEAF("int_lit",   INT(_pv_tokval)),    "pos": _pv_pos + 1};
+  IF _pv_toktype = "INT"   THEN RETURN _PR_RESULT(_PR_LEAF("int_lit",   INT(_pv_tokval)),    _pv_pos + 1);
   -- Float literal
-  IF _pv_toktype = "FLOAT" THEN RETURN {"node": _PR_LEAF("float_lit", DOUBLE(_pv_tokval)), "pos": _pv_pos + 1};
+  IF _pv_toktype = "FLOAT" THEN RETURN _PR_RESULT(_PR_LEAF("float_lit", DOUBLE(_pv_tokval)), _pv_pos + 1);
   -- String literal
-  IF _pv_toktype = "STR"   THEN RETURN {"node": _PR_LEAF("str_lit",   _pv_tokval),         "pos": _pv_pos + 1};
+  IF _pv_toktype = "STR"   THEN RETURN _PR_RESULT(_PR_LEAF("str_lit",   _pv_tokval),         _pv_pos + 1);
 
   -- Identifier (NULL/TRUE/FALSE are special)
   IF _pv_toktype = "ID" THEN BEGIN
-    IF _pv_tokval = "NULL"  THEN RETURN {"node": _PR_LEAF("null_lit",  NULL),  "pos": _pv_pos + 1};
-    IF _pv_tokval = "TRUE"  THEN RETURN {"node": _PR_LEAF("true_lit",  TRUE),  "pos": _pv_pos + 1};
-    IF _pv_tokval = "FALSE" THEN RETURN {"node": _PR_LEAF("false_lit", FALSE), "pos": _pv_pos + 1};
-    RETURN {"node": _PR_LEAF("ident", _pv_tokval), "pos": _pv_pos + 1};
+    IF _pv_tokval = "NULL"  THEN RETURN _PR_RESULT(_PR_LEAF("null_lit",  NULL),  _pv_pos + 1);
+    IF _pv_tokval = "TRUE"  THEN RETURN _PR_RESULT(_PR_LEAF("true_lit",  TRUE),  _pv_pos + 1);
+    IF _pv_tokval = "FALSE" THEN RETURN _PR_RESULT(_PR_LEAF("false_lit", FALSE), _pv_pos + 1);
+    RETURN _PR_RESULT(_PR_LEAF("ident", _pv_tokval), _pv_pos + 1);
   END;
 
   -- Unary minus
   IF _pv_toktype = "-" THEN BEGIN
     _pv_pos := _pv_pos + 1;
     _pv_r := _PR_UNARY_RHS(_pv_toks, _pv_pos);
-    RETURN {"node": _PR_NODE("neg", [_pv_r["node"]]), "pos": _pv_r["pos"]};
+    RETURN _PR_RESULT(_PR_NODE("neg", [_pv_r.node]), _pv_r.pos);
   END;
 
   -- Unary plus (discard sign)
@@ -281,7 +286,7 @@ _PR_OPERAND(_pv_toks, _pv_pos) := BEGIN
   IF _pv_toktype = "NOT" THEN BEGIN
     _pv_pos := _pv_pos + 1;
     _pv_r := _PR_UNARY_RHS(_pv_toks, _pv_pos);
-    RETURN {"node": _PR_NODE("not", [_pv_r["node"]]), "pos": _pv_r["pos"]};
+    RETURN _PR_RESULT(_PR_NODE("not", [_pv_r.node]), _pv_r.pos);
   END;
 
   -- IF/THEN/ELSE
@@ -296,15 +301,15 @@ _PR_OPERAND(_pv_toks, _pv_pos) := BEGIN
   IF _pv_toktype = "(" THEN BEGIN
     _pv_pos := _pv_pos + 1;
     IF _PR_TT(_pv_toks, _pv_pos) = ")" THEN
-      RETURN {"node": _PR_NODE("list", []), "pos": _pv_pos + 1};
+      RETURN _PR_RESULT(_PR_NODE("list", []), _pv_pos + 1);
     _pv_r := _PR_EXPR(_pv_toks, _pv_pos);
-    _pv_items := [_pv_r["node"]];
-    _pv_pos := _pv_r["pos"];
+    _pv_items := [_pv_r.node];
+    _pv_pos := _pv_r.pos;
     WHILE _PR_TT(_pv_toks, _pv_pos) = "," DO BEGIN
       _pv_pos := _pv_pos + 1;
       _pv_r2 := _PR_EXPR(_pv_toks, _pv_pos);
-      _pv_items := _pv_items + [_pv_r2["node"]];
-      _pv_pos := _pv_r2["pos"];
+      _pv_items := _pv_items + [_pv_r2.node];
+      _pv_pos := _pv_r2.pos;
     END;
     IF _PR_TT(_pv_toks, _pv_pos) = ")" THEN _pv_pos := _pv_pos + 1;
     IF LENGTH(_pv_items) = 1 THEN BEGIN
@@ -312,12 +317,12 @@ _PR_OPERAND(_pv_toks, _pv_pos) := BEGIN
       _pv_ntt := _PR_TT(_pv_toks, _pv_pos);
       IF _pv_ntt = "ID" OR _pv_ntt = "INT" OR _pv_ntt = "FLOAT" OR _pv_ntt = "IF" THEN BEGIN
         _pv_r2 := _PR_OPERAND(_pv_toks, _pv_pos);
-        _pv_r2 := _PR_CONSUME_PF(_pv_toks, _pv_r2["pos"], _pv_r2["node"]);
-        RETURN {"node": _PR_NODE("mul", [_pv_items[0], _pv_r2["node"]]), "pos": _pv_r2["pos"]};
+        _pv_r2 := _PR_CONSUME_PF(_pv_toks, _pv_r2.pos, _pv_r2.node);
+        RETURN _PR_RESULT(_PR_NODE("mul", [_pv_items[0], _pv_r2.node]), _pv_r2.pos);
       END;
-      RETURN {"node": _pv_items[0], "pos": _pv_pos};
+      RETURN _PR_RESULT(_pv_items[0], _pv_pos);
     END;
-    RETURN {"node": _PR_NODE("list", _pv_items), "pos": _pv_pos};
+    RETURN _PR_RESULT(_PR_NODE("list", _pv_items), _pv_pos);
   END;
 
   -- List literal: [...]
@@ -326,19 +331,19 @@ _PR_OPERAND(_pv_toks, _pv_pos) := BEGIN
     _pv_items := [];
     WHILE _PR_TT(_pv_toks, _pv_pos) <> "]" AND _PR_TT(_pv_toks, _pv_pos) <> "EOF" DO BEGIN
       _pv_r := _PR_EXPR(_pv_toks, _pv_pos);
-      _pv_items := _pv_items + [_pv_r["node"]];
-      _pv_pos := _pv_r["pos"];
+      _pv_items := _pv_items + [_pv_r.node];
+      _pv_pos := _pv_r.pos;
       IF _PR_TT(_pv_toks, _pv_pos) = "," THEN _pv_pos := _pv_pos + 1;
     END;
     IF _PR_TT(_pv_toks, _pv_pos) = "]" THEN _pv_pos := _pv_pos + 1;
-    RETURN {"node": _PR_NODE("list", _pv_items), "pos": _pv_pos};
+    RETURN _PR_RESULT(_PR_NODE("list", _pv_items), _pv_pos);
   END;
 
   -- Map literal: {...}
   IF _pv_toktype = "{" THEN RETURN _PR_MAP(_pv_toks, _pv_pos);
 
   -- Fallback
-  RETURN {"node": _PR_LEAF("error", "Unexpected token: " + _pv_toktype + " (" + _pv_tokval + ")"), "pos": _pv_pos + 1};
+  RETURN _PR_RESULT(_PR_LEAF("error", "Unexpected token: " + _pv_toktype + " (" + _pv_tokval + ")"), _pv_pos + 1);
 END;
 
 -- Parse operand for unary prefix (handles brackets and postfix chains)
@@ -353,8 +358,8 @@ _PR_UNARY_RHS(_pv_toks, _pv_pos) := BEGIN
       _pv_pos := _pv_pos + 1;
     END ELSE BEGIN
       _pv_r := _PR_EXPR(_pv_toks, _pv_pos);
-      _pv_nd := _pv_r["node"];
-      _pv_pos := _pv_r["pos"];
+      _pv_nd := _pv_r.node;
+      _pv_pos := _pv_r.pos;
       IF _PR_TT(_pv_toks, _pv_pos) = ")" THEN _pv_pos := _pv_pos + 1;
     END;
     -- Consume postfix chains after the bracket (member access, calls)
@@ -362,7 +367,7 @@ _PR_UNARY_RHS(_pv_toks, _pv_pos) := BEGIN
   END;
   -- Otherwise parse a plain operand, then consume postfix
   _pv_r := _PR_OPERAND(_pv_toks, _pv_pos);
-  RETURN _PR_CONSUME_PF(_pv_toks, _pv_r["pos"], _pv_r["node"]);
+  RETURN _PR_CONSUME_PF(_pv_toks, _pv_r.pos, _pv_r.node);
 END;
 
 -- Consume postfix operators on a given node (calls, indexing, member access)
@@ -376,26 +381,26 @@ _PR_CONSUME_PF(_pv_toks, _pv_pos, _pv_nd) := BEGIN
       _pv_cargs := [];
       WHILE _PR_TT(_pv_toks, _pv_pos) <> ")" AND _PR_TT(_pv_toks, _pv_pos) <> "EOF" DO BEGIN
         _pv_ra := _PR_EXPR(_pv_toks, _pv_pos);
-        _pv_cargs := _pv_cargs + [_pv_ra["node"]];
-        _pv_pos := _pv_ra["pos"];
+        _pv_cargs := _pv_cargs + [_pv_ra.node];
+        _pv_pos := _pv_ra.pos;
         IF _PR_TT(_pv_toks, _pv_pos) = "," THEN _pv_pos := _pv_pos + 1;
       END;
       IF _PR_TT(_pv_toks, _pv_pos) = ")" THEN _pv_pos := _pv_pos + 1;
-      _pv_nd := {"sym": "call", "children": [_pv_nd] + _pv_cargs, "val": NULL};
+      _pv_nd := _PR_NODE("call", [_pv_nd] + _pv_cargs);
     END ELSE IF _pv_toktype = "[" THEN BEGIN
       _pv_pos := _pv_pos + 1;
       _pv_ri := _PR_EXPR(_pv_toks, _pv_pos);
-      _pv_pos := _pv_ri["pos"];
+      _pv_pos := _pv_ri.pos;
       IF _PR_TT(_pv_toks, _pv_pos) = "]" THEN _pv_pos := _pv_pos + 1;
-      _pv_nd := _PR_NODE("index", [_pv_nd, _pv_ri["node"]]);
+      _pv_nd := _PR_NODE("index", [_pv_nd, _pv_ri.node]);
     END ELSE IF _pv_toktype = "." AND _pv_nxt = "ID" THEN BEGIN
       _pv_field := _PR_TV(_pv_toks, _pv_pos + 1);
       _pv_pos := _pv_pos + 2;
-      _pv_nd := {"sym": "member", "children": [_pv_nd], "val": _pv_field};
+      _pv_nd := _PR_NODE_V("member", [_pv_nd], _pv_field);
     END ELSE
       _pv_pf_done := TRUE;
   END;
-  RETURN {"node": _pv_nd, "pos": _pv_pos};
+  RETURN _PR_RESULT(_pv_nd, _pv_pos);
 END;
 
 -- ---- Map literal {k: v, ...} ----
@@ -404,17 +409,17 @@ _PR_MAP(_pv_toks, _pv_pos) := BEGIN
   _pv_pairs := [];
   WHILE _PR_TT(_pv_toks, _pv_pos) <> "}" AND _PR_TT(_pv_toks, _pv_pos) <> "EOF" DO BEGIN
     _pv_rk := _PR_EXPR(_pv_toks, _pv_pos);
-    _pv_k := _pv_rk["node"];
-    _pv_pos := _pv_rk["pos"];
+    _pv_k  := _pv_rk.node;
+    _pv_pos := _pv_rk.pos;
     IF _PR_TT(_pv_toks, _pv_pos) = ":" THEN _pv_pos := _pv_pos + 1;
     _pv_rv := _PR_EXPR(_pv_toks, _pv_pos);
-    _pv_vl := _pv_rv["node"];
-    _pv_pos := _pv_rv["pos"];
+    _pv_vl := _pv_rv.node;
+    _pv_pos := _pv_rv.pos;
     _pv_pairs := _pv_pairs + [_PR_KV(_pv_k, _pv_vl)];
     IF _PR_TT(_pv_toks, _pv_pos) = "," THEN _pv_pos := _pv_pos + 1;
   END;
   IF _PR_TT(_pv_toks, _pv_pos) = "}" THEN _pv_pos := _pv_pos + 1;
-  RETURN {"node": _PR_NODE("map", _pv_pairs), "pos": _pv_pos};
+  RETURN _PR_RESULT(_PR_NODE("map", _pv_pairs), _pv_pos);
 END;
 
 -- ---- OBJECT{ident: expr, ...} ----
@@ -424,85 +429,85 @@ _PR_OBJECT(_pv_toks, _pv_pos) := BEGIN
   _pv_pairs := [];
   WHILE _PR_TT(_pv_toks, _pv_pos) <> "}" AND _PR_TT(_pv_toks, _pv_pos) <> "EOF" DO BEGIN
     _pv_kn := _PR_TV(_pv_toks, _pv_pos);
-    _pv_k := _PR_LEAF("str_lit", _pv_kn);
+    _pv_k  := _PR_LEAF("str_lit", _pv_kn);
     _pv_pos := _pv_pos + 1;
     IF _PR_TT(_pv_toks, _pv_pos) = ":" THEN _pv_pos := _pv_pos + 1;
     _pv_rv := _PR_EXPR(_pv_toks, _pv_pos);
-    _pv_vl := _pv_rv["node"];
-    _pv_pos := _pv_rv["pos"];
+    _pv_vl := _pv_rv.node;
+    _pv_pos := _pv_rv.pos;
     _pv_pairs := _pv_pairs + [_PR_KV(_pv_k, _pv_vl)];
     IF _PR_TT(_pv_toks, _pv_pos) = "," THEN _pv_pos := _pv_pos + 1;
   END;
   IF _PR_TT(_pv_toks, _pv_pos) = "}" THEN _pv_pos := _pv_pos + 1;
-  RETURN {"node": _PR_NODE("object", _pv_pairs), "pos": _pv_pos};
+  RETURN _PR_RESULT(_PR_NODE("object", _pv_pairs), _pv_pos);
 END;
 
 -- ---- IF/THEN/ELSE ----
 _PR_IF(_pv_toks, _pv_pos) := BEGIN
   _pv_pos := _pv_pos + 1;  -- skip IF
   _pv_rc := _PR_EXPR(_pv_toks, _pv_pos);
-  _pv_cond := _pv_rc["node"];
-  _pv_pos := _pv_rc["pos"];
+  _pv_cond := _pv_rc.node;
+  _pv_pos  := _pv_rc.pos;
   IF _PR_TT(_pv_toks, _pv_pos) = "THEN" THEN _pv_pos := _pv_pos + 1;
   _pv_rt := _PR_STMT(_pv_toks, _pv_pos);
-  _pv_then := _pv_rt["node"];
-  _pv_pos := _pv_rt["pos"];
+  _pv_then := _pv_rt.node;
+  _pv_pos  := _pv_rt.pos;
   IF _PR_TT(_pv_toks, _pv_pos) = "ELSE" THEN BEGIN
     _pv_pos := _pv_pos + 1;
     _pv_re := _PR_STMT(_pv_toks, _pv_pos);
-    RETURN {"node": _PR_NODE("if", [_pv_cond, _pv_then, _pv_re["node"]]), "pos": _pv_re["pos"]};
+    RETURN _PR_RESULT(_PR_NODE("if", [_pv_cond, _pv_then, _pv_re.node]), _pv_re.pos);
   END;
-  RETURN {"node": _PR_NODE("if", [_pv_cond, _pv_then]), "pos": _pv_pos};
+  RETURN _PR_RESULT(_PR_NODE("if", [_pv_cond, _pv_then]), _pv_pos);
 END;
 
 -- ---- WHILE/DO ----
 _PR_WHILE(_pv_toks, _pv_pos) := BEGIN
   _pv_pos := _pv_pos + 1;  -- skip WHILE
   _pv_rc := _PR_EXPR(_pv_toks, _pv_pos);
-  _pv_cond := _pv_rc["node"];
-  _pv_pos := _pv_rc["pos"];
+  _pv_cond := _pv_rc.node;
+  _pv_pos  := _pv_rc.pos;
   IF _PR_TT(_pv_toks, _pv_pos) = "DO" THEN _pv_pos := _pv_pos + 1;
   _pv_rb := _PR_STMT(_pv_toks, _pv_pos);
-  RETURN {"node": _PR_NODE("while", [_pv_cond, _pv_rb["node"]]), "pos": _pv_rb["pos"]};
+  RETURN _PR_RESULT(_PR_NODE("while", [_pv_cond, _pv_rb.node]), _pv_rb.pos);
 END;
 
 -- ---- REPEAT/UNTIL ----
 _PR_REPEAT(_pv_toks, _pv_pos) := BEGIN
   _pv_pos := _pv_pos + 1;  -- skip REPEAT
   _pv_rb := _PR_STMT(_pv_toks, _pv_pos);
-  _pv_pos := _pv_rb["pos"];
+  _pv_pos := _pv_rb.pos;
   IF _PR_TT(_pv_toks, _pv_pos) = "UNTIL" THEN _pv_pos := _pv_pos + 1;
   _pv_rc := _PR_EXPR(_pv_toks, _pv_pos);
-  RETURN {"node": _PR_NODE("repeat", [_pv_rb["node"], _pv_rc["node"]]), "pos": _pv_rc["pos"]};
+  RETURN _PR_RESULT(_PR_NODE("repeat", [_pv_rb.node, _pv_rc.node]), _pv_rc.pos);
 END;
 
 -- ---- FOR var := start TO end [STEP s] DO body ----
 _PR_FOR(_pv_toks, _pv_pos) := BEGIN
   _pv_pos := _pv_pos + 1;  -- skip FOR
-  _pv_vn := _PR_TV(_pv_toks, _pv_pos);
+  _pv_vn  := _PR_TV(_pv_toks, _pv_pos);
   _pv_pos := _pv_pos + 1;  -- skip var
   IF _PR_TT(_pv_toks, _pv_pos) = ":=" THEN _pv_pos := _pv_pos + 1;
   _pv_rs := _PR_EXPR(_pv_toks, _pv_pos);
-  _pv_start := _pv_rs["node"];
-  _pv_pos := _pv_rs["pos"];
+  _pv_start := _pv_rs.node;
+  _pv_pos   := _pv_rs.pos;
   IF _PR_TT(_pv_toks, _pv_pos) = "TO" THEN _pv_pos := _pv_pos + 1;
   _pv_re := _PR_EXPR(_pv_toks, _pv_pos);
-  _pv_end := _pv_re["node"];
-  _pv_pos := _pv_re["pos"];
+  _pv_end := _pv_re.node;
+  _pv_pos := _pv_re.pos;
   _pv_step := NULL;
   IF _PR_TT(_pv_toks, _pv_pos) = "ID" AND _PR_TV(_pv_toks, _pv_pos) = "STEP" THEN BEGIN
     _pv_pos := _pv_pos + 1;
-    _pv_rst := _PR_EXPR(_pv_toks, _pv_pos);
-    _pv_step := _pv_rst["node"];
-    _pv_pos := _pv_rst["pos"];
+    _pv_rst  := _PR_EXPR(_pv_toks, _pv_pos);
+    _pv_step := _pv_rst.node;
+    _pv_pos  := _pv_rst.pos;
   END;
   IF _PR_TT(_pv_toks, _pv_pos) = "DO" THEN _pv_pos := _pv_pos + 1;
-  _pv_rb := _PR_STMT(_pv_toks, _pv_pos);
-  _pv_body := _pv_rb["node"];
-  _pv_pos := _pv_rb["pos"];
-  _pv_ch := [_pv_start, _pv_end, _pv_body];
+  _pv_rb   := _PR_STMT(_pv_toks, _pv_pos);
+  _pv_body := _pv_rb.node;
+  _pv_pos  := _pv_rb.pos;
+  _pv_ch   := [_pv_start, _pv_end, _pv_body];
   IF _pv_step <> NULL THEN _pv_ch := _pv_ch + [_pv_step];
-  RETURN {"node": {"sym": "for", "children": _pv_ch, "val": UPPERCASE(_pv_vn)}, "pos": _pv_pos};
+  RETURN _PR_RESULT(_PR_NODE_V("for", _pv_ch, UPPERCASE(_pv_vn)), _pv_pos);
 END;
 
 -- ---- BEGIN...END ----
@@ -512,12 +517,12 @@ _PR_BEGIN(_pv_toks, _pv_pos) := BEGIN
   WHILE _PR_TT(_pv_toks, _pv_pos) = ";" DO _pv_pos := _pv_pos + 1;
   WHILE _PR_TT(_pv_toks, _pv_pos) <> "END" AND _PR_TT(_pv_toks, _pv_pos) <> "EOF" DO BEGIN
     _pv_r := _PR_STMT(_pv_toks, _pv_pos);
-    _pv_stmts := _pv_stmts + [_pv_r["node"]];
-    _pv_pos := _pv_r["pos"];
+    _pv_stmts := _pv_stmts + [_pv_r.node];
+    _pv_pos   := _pv_r.pos;
     WHILE _PR_TT(_pv_toks, _pv_pos) = ";" DO _pv_pos := _pv_pos + 1;
   END;
   IF _PR_TT(_pv_toks, _pv_pos) = "END" THEN _pv_pos := _pv_pos + 1;
-  RETURN {"node": _PR_NODE("begin", _pv_stmts), "pos": _pv_pos};
+  RETURN _PR_RESULT(_PR_NODE("begin", _pv_stmts), _pv_pos);
 END;
 
 -- ---- Statement dispatcher ----
@@ -527,12 +532,12 @@ _PR_STMT(_pv_toks, _pv_pos) := BEGIN
     _pv_pos := _pv_pos + 1;
     _pv_ntt := _PR_TT(_pv_toks, _pv_pos);
     IF _pv_ntt = ";" OR _pv_ntt = "EOF" OR _pv_ntt = "END" THEN
-      RETURN {"node": _PR_NODE("return", []), "pos": _pv_pos};
+      RETURN _PR_RESULT(_PR_NODE("return", []), _pv_pos);
     _pv_r := _PR_EXPR(_pv_toks, _pv_pos);
-    RETURN {"node": _PR_NODE("return", [_pv_r["node"]]), "pos": _pv_r["pos"]};
+    RETURN _PR_RESULT(_PR_NODE("return", [_pv_r.node]), _pv_r.pos);
   END;
-  IF _pv_toktype = "BREAK"    THEN RETURN {"node": _PR_LEAF("break", NULL), "pos": _pv_pos + 1};
-  IF _pv_toktype = "CONTINUE" THEN RETURN {"node": _PR_LEAF("continue", NULL), "pos": _pv_pos + 1};
+  IF _pv_toktype = "BREAK"    THEN RETURN _PR_RESULT(_PR_LEAF("break",    NULL), _pv_pos + 1);
+  IF _pv_toktype = "CONTINUE" THEN RETURN _PR_RESULT(_PR_LEAF("continue", NULL), _pv_pos + 1);
   RETURN _PR_EXPR(_pv_toks, _pv_pos);
 END;
 
@@ -543,15 +548,15 @@ _PR_PROGRAM(_pv_toks) := BEGIN
   WHILE _PR_TT(_pv_toks, _pv_pos) = ";" DO _pv_pos := _pv_pos + 1;
   IF _PR_TT(_pv_toks, _pv_pos) = "EOF" THEN RETURN _PR_NODE("program", []);
   _pv_r := _PR_STMT(_pv_toks, _pv_pos);
-  _pv_stmts := _pv_stmts + [_pv_r["node"]];
-  _pv_pos := _pv_r["pos"];
+  _pv_stmts := _pv_stmts + [_pv_r.node];
+  _pv_pos   := _pv_r.pos;
   WHILE _PR_TT(_pv_toks, _pv_pos) = ";" DO BEGIN
     _pv_pos := _pv_pos + 1;
     WHILE _PR_TT(_pv_toks, _pv_pos) = ";" DO _pv_pos := _pv_pos + 1;
     IF _PR_TT(_pv_toks, _pv_pos) = "EOF" THEN BREAK;
     _pv_r := _PR_STMT(_pv_toks, _pv_pos);
-    _pv_stmts := _pv_stmts + [_pv_r["node"]];
-    _pv_pos := _pv_r["pos"];
+    _pv_stmts := _pv_stmts + [_pv_r.node];
+    _pv_pos   := _pv_r.pos;
   END;
   IF LENGTH(_pv_stmts) = 1 THEN RETURN _pv_stmts[0];
   RETURN _PR_NODE("program", _pv_stmts);

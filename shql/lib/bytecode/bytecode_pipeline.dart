@@ -1,19 +1,43 @@
 /// Utilities for working with the SHQL™ self-hosting compiler pipeline.
 ///
-/// [shqlMapToProgram] converts the Map output of the SHQL™ compiler into a
-/// typed [BytecodeProgram].  [canonicalCodec] produces the same human-readable
-/// listing format as `shql_codec.shql`'s `codec.decode()`.
+/// [shqlMapToProgram] converts the output of the SHQL™ compiler (a plain
+/// Dart [Map]) into a typed [BytecodeProgram].
+/// [canonicalCodec] produces the same human-readable listing format as
+/// `shql_codec.shql`'s `codec.decode()`.
 library;
 
 import 'package:shql/bytecode/bytecode.dart';
+import 'package:shql/execution/runtime/runtime.dart' as shqlrt;
+import 'package:shql/parser/constants_set.dart';
 
-/// Convert the Map produced by the SHQL™ self-hosting compiler to a typed
+/// Recursively convert an SHQL™ [Object] (or plain [Map]/[List]) to a nested
+/// plain Dart structure.  SHQL™ Object field names are lowercased, matching
+/// [ShqlBindings.objectToMap].  Useful for test assertions on SHQL™ output.
+dynamic shqlToNested(dynamic value, ConstantsTable<String> ids) {
+  if (value is shqlrt.Variable) return shqlToNested(value.value, ids);
+  if (value is shqlrt.Object) {
+    final map = <String, dynamic>{};
+    for (final entry in value.variables.entries) {
+      final name = ids.getByIndex(entry.key);
+      if (name == null) continue;
+      final val = entry.value.value;
+      if (val is shqlrt.Object && identical(val, value)) continue; // skip THIS
+      map[name.toLowerCase()] = shqlToNested(val, ids);
+    }
+    return map;
+  }
+  if (value is Map) return {for (final e in value.entries) e.key: shqlToNested(e.value, ids)};
+  if (value is List) return value.map((e) => shqlToNested(e, ids)).toList();
+  return value;
+}
+
+/// Convert the output of the SHQL™ self-hosting compiler to a typed
 /// [BytecodeProgram] that [BytecodeInterpreter] can execute.
 ///
-/// The SHQL™ compiler outputs `{ "chunks": { name: chunk, ... } }` where each
-/// chunk has `name`, `params`, `constants`, and `code` (list of instruction
-/// maps with `op` and optional `operand`).  ChunkRefs are stored as strings
-/// of the form `'@chunkName'` (length > 1).
+/// The SHQL™ compiler outputs `{ chunks: {name: chunk, ...} }` where each
+/// chunk is `{ name, params, constants, cmap, code }` and each instruction
+/// is `{ op, operand }`.  ChunkRefs are stored as strings of the form
+/// `'@chunkName'` (length > 1).
 BytecodeProgram shqlMapToProgram(Map program) {
   final opcodeByMnemonic = {for (final op in Opcode.values) op.mnemonic: op};
   final chunksMap = program['chunks'] as Map;

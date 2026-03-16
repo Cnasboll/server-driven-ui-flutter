@@ -2,7 +2,7 @@
 -- SHQL™ Codec — serializes a bytecode program (from shql_compiler)
 -- to a list of human-readable lines.
 --
--- Input:  {"chunks": {name: chunk, ...}}
+-- Input:  OBJECT { chunks: {name: chunk, ...} }
 -- Output: list of strings, one per line.
 --
 -- Format:

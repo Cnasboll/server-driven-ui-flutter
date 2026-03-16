@@ -2,7 +2,7 @@
 -- SHQL™ Lexer — state-machine tokenizer.
 -- 1:1 translation of the Dart StateMachine (state_machine.dart).
 --
--- Each token: {"t": type, "v": value, "l": line, "sc": start_col, "len": length}
+-- Each token: OBJECT { t: type, v: value, l: line, sc: start_col, len: length }
 --
 -- Token types:
 --   "INT"   integer literal       "FLOAT" float literal
@@ -190,6 +190,11 @@ _SM_UNESCAPE(_sm_s) := BEGIN
   RETURN _sm_res;
 END;
 
+-- ---- Token factory ----
+
+_SM_TOKEN(_sm_t, _sm_v, _sm_l, _sm_sc, _sm_len) :=
+  OBJECT { t: _sm_t, v: _sm_v, l: _sm_l, sc: _sm_sc, len: _sm_len };
+
 -- ---- Emit a token ----
 
 _SM_EMIT(_sm_tt, _sm_buf, _sm_line, _sm_col) := BEGIN
@@ -198,21 +203,21 @@ _SM_EMIT(_sm_tt, _sm_buf, _sm_line, _sm_col) := BEGIN
     _sm_word := UPPERCASE(_sm_buf);
     _sm_kwv := _SM_KW[_sm_word];
     IF _sm_kwv <> NULL THEN
-      RETURN {"t": _sm_kwv, "v": _sm_word, "l": _sm_line, "sc": _sm_col, "len": _sm_len};
-    RETURN {"t": "ID", "v": _sm_word, "l": _sm_line, "sc": _sm_col, "len": _sm_len};
+      RETURN _SM_TOKEN(_sm_kwv, _sm_word, _sm_line, _sm_col, _sm_len);
+    RETURN _SM_TOKEN("ID", _sm_word, _sm_line, _sm_col, _sm_len);
   END;
   IF _sm_tt = "STR" THEN BEGIN
     _sm_raw := SUBSTRING(_sm_buf, 1, _sm_len - 1);
     _sm_val := _SM_UNESCAPE(_sm_raw);
-    RETURN {"t": "STR", "v": _sm_val, "l": _sm_line, "sc": _sm_col, "len": _sm_len};
+    RETURN _SM_TOKEN("STR", _sm_val, _sm_line, _sm_col, _sm_len);
   END;
   IF _sm_tt = "RAW_STR" THEN BEGIN
     _sm_val := SUBSTRING(_sm_buf, 2, _sm_len - 1);
-    RETURN {"t": "STR", "v": _sm_val, "l": _sm_line, "sc": _sm_col, "len": _sm_len};
+    RETURN _SM_TOKEN("STR", _sm_val, _sm_line, _sm_col, _sm_len);
   END;
   IF _sm_tt = "NOT" THEN
-    RETURN {"t": "NOT", "v": "NOT", "l": _sm_line, "sc": _sm_col, "len": _sm_len};
-  RETURN {"t": _sm_tt, "v": _sm_buf, "l": _sm_line, "sc": _sm_col, "len": _sm_len};
+    RETURN _SM_TOKEN("NOT", "NOT", _sm_line, _sm_col, _sm_len);
+  RETURN _SM_TOKEN(_sm_tt, _sm_buf, _sm_line, _sm_col, _sm_len);
 END;
 
 -- ============================================================
@@ -307,7 +312,7 @@ _SM_TOKENIZE(_sm_src) := BEGIN
     _sm_i := _sm_i + 1;
   END;
 
-  _sm_tokens := _sm_tokens + [{"t": "EOF", "v": "", "l": _sm_line, "sc": _sm_col, "len": 0}];
+  _sm_tokens := _sm_tokens + [_SM_TOKEN("EOF", "", _sm_line, _sm_col, 0)];
   RETURN _sm_tokens;
 END;
 

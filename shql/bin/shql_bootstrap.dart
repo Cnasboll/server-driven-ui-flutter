@@ -1,4 +1,5 @@
-/// SHQL™ Bootstrap — recompiles all pipeline files from source.
+/// SHQL™ Bootstrap — recompiles all pipeline files from source using the SHQL™
+/// compiler itself, then compiles shql.dart and shqlc.dart to native binaries.
 ///
 /// Usage:  dart run shql:shql_bootstrap [output_dir]
 import 'dart:io';
@@ -61,4 +62,14 @@ Future<void> main(List<String> args) async {
   );
   swBoot.stop();
   stderr.writeln('\nBootstrap completed in ${swBoot.elapsedMilliseconds}ms');
+
+  final binDir = assetsDir.replaceFirst(RegExp(r'/assets$'), '/bin');
+  for (final name in ['shql', 'shqlc']) {
+    stderr.writeln('Compiling $name.dart to native binary...');
+    final result = await Process.run(
+      'dart', ['compile', 'exe', '$binDir/$name.dart'],
+    );
+    if (result.stdout.toString().isNotEmpty) stdout.write(result.stdout);
+    if (result.stderr.toString().isNotEmpty) stderr.write(result.stderr);
+  }
 }

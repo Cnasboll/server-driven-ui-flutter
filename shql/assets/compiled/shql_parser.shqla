@@ -3,103 +3,109 @@ CHUNK main ()
   CONST  1: _PR_NODE
   CONST  2: .___PR_LEAF_1
   CONST  3: _PR_LEAF
-  CONST  4: .___PR_KV_2
-  CONST  5: _PR_KV
-  CONST  6: .
-  CONST  7: 0
-  CONST  8: ^
-  CONST  9: 1
-  CONST  10: *
-  CONST  11: 2
-  CONST  12: /
-  CONST  13: %
-  CONST  14: +
-  CONST  15: 3
-  CONST  16: -
-  CONST  17: <
-  CONST  18: 4
-  CONST  19: <=
-  CONST  20: >
-  CONST  21: >=
-  CONST  22: =
-  CONST  23: 5
-  CONST  24: <>
-  CONST  25: ~
-  CONST  26: !~
-  CONST  27: AND
-  CONST  28: 6
-  CONST  29: OR
-  CONST  30: 7
-  CONST  31: XOR
-  CONST  32: IN
-  CONST  33: 8
-  CONST  34: =>
-  CONST  35: 9
-  CONST  36: :=
-  CONST  37: _PR_PREC
-  CONST  38: true
-  CONST  39: _PR_RA
-  CONST  40: add
-  CONST  41: sub
-  CONST  42: mul
-  CONST  43: div
-  CONST  44: mod
-  CONST  45: pow
-  CONST  46: eq
-  CONST  47: neq
-  CONST  48: lt
-  CONST  49: lte
-  CONST  50: gt
-  CONST  51: gte
-  CONST  52: match
-  CONST  53: not_match
-  CONST  54: and
-  CONST  55: or
-  CONST  56: xor
-  CONST  57: in
-  CONST  58: :
-  CONST  59: colon
-  CONST  60: member
-  CONST  61: _PR_OP_SYM
-  CONST  62: .___PR_TT_3
-  CONST  63: _PR_TT
-  CONST  64: .___PR_TV_4
-  CONST  65: _PR_TV
-  CONST  66: .___PR_GET_PREC_5
-  CONST  67: _PR_GET_PREC
-  CONST  68: .___PR_POP_OP_6
-  CONST  69: _PR_POP_OP
-  CONST  70: .___PR_EXTRACT_PARAMS_7
-  CONST  71: _PR_EXTRACT_PARAMS
-  CONST  72: .___PR_EXPR_8
-  CONST  73: _PR_EXPR
-  CONST  74: .___PR_OPERAND_9
-  CONST  75: _PR_OPERAND
-  CONST  76: .___PR_UNARY_RHS_10
-  CONST  77: _PR_UNARY_RHS
-  CONST  78: .___PR_CONSUME_PF_11
-  CONST  79: _PR_CONSUME_PF
-  CONST  80: .___PR_MAP_12
-  CONST  81: _PR_MAP
-  CONST  82: .___PR_OBJECT_13
-  CONST  83: _PR_OBJECT
-  CONST  84: .___PR_IF_14
-  CONST  85: _PR_IF
-  CONST  86: .___PR_WHILE_15
-  CONST  87: _PR_WHILE
-  CONST  88: .___PR_REPEAT_16
-  CONST  89: _PR_REPEAT
-  CONST  90: .___PR_FOR_17
-  CONST  91: _PR_FOR
-  CONST  92: .___PR_BEGIN_18
-  CONST  93: _PR_BEGIN
-  CONST  94: .___PR_STMT_19
-  CONST  95: _PR_STMT
-  CONST  96: .___PR_PROGRAM_20
-  CONST  97: _PR_PROGRAM
-  CONST  98: PARSE
-  CONST  99: .__lambda_21
-  CONST  100: PARSER
+  CONST  4: .___PR_NODE_V_2
+  CONST  5: _PR_NODE_V
+  CONST  6: .___PR_KV_3
+  CONST  7: _PR_KV
+  CONST  8: .___PR_RESULT_4
+  CONST  9: _PR_RESULT
+  CONST  10: .___PR_POPRESULT_5
+  CONST  11: _PR_POPRESULT
+  CONST  12: .
+  CONST  13: 0
+  CONST  14: ^
+  CONST  15: 1
+  CONST  16: *
+  CONST  17: 2
+  CONST  18: /
+  CONST  19: %
+  CONST  20: +
+  CONST  21: 3
+  CONST  22: -
+  CONST  23: <
+  CONST  24: 4
+  CONST  25: <=
+  CONST  26: >
+  CONST  27: >=
+  CONST  28: =
+  CONST  29: 5
+  CONST  30: <>
+  CONST  31: ~
+  CONST  32: !~
+  CONST  33: AND
+  CONST  34: 6
+  CONST  35: OR
+  CONST  36: 7
+  CONST  37: XOR
+  CONST  38: IN
+  CONST  39: 8
+  CONST  40: =>
+  CONST  41: 9
+  CONST  42: :=
+  CONST  43: _PR_PREC
+  CONST  44: true
+  CONST  45: _PR_RA
+  CONST  46: add
+  CONST  47: sub
+  CONST  48: mul
+  CONST  49: div
+  CONST  50: mod
+  CONST  51: pow
+  CONST  52: eq
+  CONST  53: neq
+  CONST  54: lt
+  CONST  55: lte
+  CONST  56: gt
+  CONST  57: gte
+  CONST  58: match
+  CONST  59: not_match
+  CONST  60: and
+  CONST  61: or
+  CONST  62: xor
+  CONST  63: in
+  CONST  64: :
+  CONST  65: colon
+  CONST  66: member
+  CONST  67: _PR_OP_SYM
+  CONST  68: .___PR_TT_6
+  CONST  69: _PR_TT
+  CONST  70: .___PR_TV_7
+  CONST  71: _PR_TV
+  CONST  72: .___PR_GET_PREC_8
+  CONST  73: _PR_GET_PREC
+  CONST  74: .___PR_POP_OP_9
+  CONST  75: _PR_POP_OP
+  CONST  76: .___PR_EXTRACT_PARAMS_10
+  CONST  77: _PR_EXTRACT_PARAMS
+  CONST  78: .___PR_EXPR_11
+  CONST  79: _PR_EXPR
+  CONST  80: .___PR_OPERAND_12
+  CONST  81: _PR_OPERAND
+  CONST  82: .___PR_UNARY_RHS_13
+  CONST  83: _PR_UNARY_RHS
+  CONST  84: .___PR_CONSUME_PF_14
+  CONST  85: _PR_CONSUME_PF
+  CONST  86: .___PR_MAP_15
+  CONST  87: _PR_MAP
+  CONST  88: .___PR_OBJECT_16
+  CONST  89: _PR_OBJECT
+  CONST  90: .___PR_IF_17
+  CONST  91: _PR_IF
+  CONST  92: .___PR_WHILE_18
+  CONST  93: _PR_WHILE
+  CONST  94: .___PR_REPEAT_19
+  CONST  95: _PR_REPEAT
+  CONST  96: .___PR_FOR_20
+  CONST  97: _PR_FOR
+  CONST  98: .___PR_BEGIN_21
+  CONST  99: _PR_BEGIN
+  CONST  100: .___PR_STMT_22
+  CONST  101: _PR_STMT
+  CONST  102: .___PR_PROGRAM_23
+  CONST  103: _PR_PROGRAM
+  CONST  104: PARSE
+  CONST  105: .__lambda_24
+  CONST  106: PARSER
   CODE:
     0: make_closure(0)  -- .___PR_NODE_0
     1: store_var(1)  -- _PR_NODE
@@ -109,191 +115,203 @@ CHUNK main ()
     5: store_var(3)  -- _PR_LEAF
     6: load_var(3)  -- _PR_LEAF
     7: pop
-    8: make_closure(4)  -- .___PR_KV_2
-    9: store_var(5)  -- _PR_KV
-    10: load_var(5)  -- _PR_KV
+    8: make_closure(4)  -- .___PR_NODE_V_2
+    9: store_var(5)  -- _PR_NODE_V
+    10: load_var(5)  -- _PR_NODE_V
     11: pop
-    12: push_const(6)  -- .
-    13: push_const(7)  -- 0
-    14: push_const(8)  -- ^
-    15: push_const(9)  -- 1
-    16: push_const(10)  -- *
-    17: push_const(11)  -- 2
-    18: push_const(12)  -- /
-    19: push_const(11)  -- 2
-    20: push_const(13)  -- %
-    21: push_const(11)  -- 2
-    22: push_const(14)  -- +
-    23: push_const(15)  -- 3
-    24: push_const(16)  -- -
-    25: push_const(15)  -- 3
-    26: push_const(17)  -- <
-    27: push_const(18)  -- 4
-    28: push_const(19)  -- <=
-    29: push_const(18)  -- 4
-    30: push_const(20)  -- >
-    31: push_const(18)  -- 4
-    32: push_const(21)  -- >=
-    33: push_const(18)  -- 4
-    34: push_const(22)  -- =
-    35: push_const(23)  -- 5
-    36: push_const(24)  -- <>
-    37: push_const(23)  -- 5
-    38: push_const(25)  -- ~
-    39: push_const(23)  -- 5
-    40: push_const(26)  -- !~
-    41: push_const(23)  -- 5
-    42: push_const(27)  -- AND
-    43: push_const(28)  -- 6
-    44: push_const(29)  -- OR
-    45: push_const(30)  -- 7
-    46: push_const(31)  -- XOR
-    47: push_const(30)  -- 7
-    48: push_const(32)  -- IN
-    49: push_const(33)  -- 8
-    50: push_const(34)  -- =>
-    51: push_const(35)  -- 9
-    52: push_const(36)  -- :=
-    53: push_const(35)  -- 9
-    54: make_map(21)
-    55: store_var(37)  -- _PR_PREC
-    56: load_var(37)  -- _PR_PREC
-    57: pop
-    58: push_const(8)  -- ^
-    59: push_const(38)  -- true
-    60: push_const(34)  -- =>
-    61: push_const(38)  -- true
-    62: push_const(36)  -- :=
-    63: push_const(38)  -- true
-    64: make_map(3)
-    65: store_var(39)  -- _PR_RA
-    66: load_var(39)  -- _PR_RA
-    67: pop
-    68: push_const(14)  -- +
-    69: push_const(40)  -- add
-    70: push_const(16)  -- -
-    71: push_const(41)  -- sub
-    72: push_const(10)  -- *
-    73: push_const(42)  -- mul
-    74: push_const(12)  -- /
-    75: push_const(43)  -- div
-    76: push_const(13)  -- %
-    77: push_const(44)  -- mod
-    78: push_const(8)  -- ^
-    79: push_const(45)  -- pow
-    80: push_const(22)  -- =
-    81: push_const(46)  -- eq
-    82: push_const(24)  -- <>
-    83: push_const(47)  -- neq
-    84: push_const(17)  -- <
-    85: push_const(48)  -- lt
-    86: push_const(19)  -- <=
-    87: push_const(49)  -- lte
-    88: push_const(20)  -- >
-    89: push_const(50)  -- gt
-    90: push_const(21)  -- >=
-    91: push_const(51)  -- gte
-    92: push_const(25)  -- ~
-    93: push_const(52)  -- match
-    94: push_const(26)  -- !~
-    95: push_const(53)  -- not_match
-    96: push_const(27)  -- AND
-    97: push_const(54)  -- and
-    98: push_const(29)  -- OR
-    99: push_const(55)  -- or
-    100: push_const(31)  -- XOR
-    101: push_const(56)  -- xor
-    102: push_const(32)  -- IN
-    103: push_const(57)  -- in
-    104: push_const(58)  -- :
-    105: push_const(59)  -- colon
-    106: push_const(6)  -- .
-    107: push_const(60)  -- member
-    108: make_map(20)
-    109: store_var(61)  -- _PR_OP_SYM
-    110: load_var(61)  -- _PR_OP_SYM
-    111: pop
-    112: make_closure(62)  -- .___PR_TT_3
-    113: store_var(63)  -- _PR_TT
-    114: load_var(63)  -- _PR_TT
-    115: pop
-    116: make_closure(64)  -- .___PR_TV_4
-    117: store_var(65)  -- _PR_TV
-    118: load_var(65)  -- _PR_TV
-    119: pop
-    120: make_closure(66)  -- .___PR_GET_PREC_5
-    121: store_var(67)  -- _PR_GET_PREC
-    122: load_var(67)  -- _PR_GET_PREC
+    12: make_closure(6)  -- .___PR_KV_3
+    13: store_var(7)  -- _PR_KV
+    14: load_var(7)  -- _PR_KV
+    15: pop
+    16: make_closure(8)  -- .___PR_RESULT_4
+    17: store_var(9)  -- _PR_RESULT
+    18: load_var(9)  -- _PR_RESULT
+    19: pop
+    20: make_closure(10)  -- .___PR_POPRESULT_5
+    21: store_var(11)  -- _PR_POPRESULT
+    22: load_var(11)  -- _PR_POPRESULT
+    23: pop
+    24: push_const(12)  -- .
+    25: push_const(13)  -- 0
+    26: push_const(14)  -- ^
+    27: push_const(15)  -- 1
+    28: push_const(16)  -- *
+    29: push_const(17)  -- 2
+    30: push_const(18)  -- /
+    31: push_const(17)  -- 2
+    32: push_const(19)  -- %
+    33: push_const(17)  -- 2
+    34: push_const(20)  -- +
+    35: push_const(21)  -- 3
+    36: push_const(22)  -- -
+    37: push_const(21)  -- 3
+    38: push_const(23)  -- <
+    39: push_const(24)  -- 4
+    40: push_const(25)  -- <=
+    41: push_const(24)  -- 4
+    42: push_const(26)  -- >
+    43: push_const(24)  -- 4
+    44: push_const(27)  -- >=
+    45: push_const(24)  -- 4
+    46: push_const(28)  -- =
+    47: push_const(29)  -- 5
+    48: push_const(30)  -- <>
+    49: push_const(29)  -- 5
+    50: push_const(31)  -- ~
+    51: push_const(29)  -- 5
+    52: push_const(32)  -- !~
+    53: push_const(29)  -- 5
+    54: push_const(33)  -- AND
+    55: push_const(34)  -- 6
+    56: push_const(35)  -- OR
+    57: push_const(36)  -- 7
+    58: push_const(37)  -- XOR
+    59: push_const(36)  -- 7
+    60: push_const(38)  -- IN
+    61: push_const(39)  -- 8
+    62: push_const(40)  -- =>
+    63: push_const(41)  -- 9
+    64: push_const(42)  -- :=
+    65: push_const(41)  -- 9
+    66: make_map(21)
+    67: store_var(43)  -- _PR_PREC
+    68: load_var(43)  -- _PR_PREC
+    69: pop
+    70: push_const(14)  -- ^
+    71: push_const(44)  -- true
+    72: push_const(40)  -- =>
+    73: push_const(44)  -- true
+    74: push_const(42)  -- :=
+    75: push_const(44)  -- true
+    76: make_map(3)
+    77: store_var(45)  -- _PR_RA
+    78: load_var(45)  -- _PR_RA
+    79: pop
+    80: push_const(20)  -- +
+    81: push_const(46)  -- add
+    82: push_const(22)  -- -
+    83: push_const(47)  -- sub
+    84: push_const(16)  -- *
+    85: push_const(48)  -- mul
+    86: push_const(18)  -- /
+    87: push_const(49)  -- div
+    88: push_const(19)  -- %
+    89: push_const(50)  -- mod
+    90: push_const(14)  -- ^
+    91: push_const(51)  -- pow
+    92: push_const(28)  -- =
+    93: push_const(52)  -- eq
+    94: push_const(30)  -- <>
+    95: push_const(53)  -- neq
+    96: push_const(23)  -- <
+    97: push_const(54)  -- lt
+    98: push_const(25)  -- <=
+    99: push_const(55)  -- lte
+    100: push_const(26)  -- >
+    101: push_const(56)  -- gt
+    102: push_const(27)  -- >=
+    103: push_const(57)  -- gte
+    104: push_const(31)  -- ~
+    105: push_const(58)  -- match
+    106: push_const(32)  -- !~
+    107: push_const(59)  -- not_match
+    108: push_const(33)  -- AND
+    109: push_const(60)  -- and
+    110: push_const(35)  -- OR
+    111: push_const(61)  -- or
+    112: push_const(37)  -- XOR
+    113: push_const(62)  -- xor
+    114: push_const(38)  -- IN
+    115: push_const(63)  -- in
+    116: push_const(64)  -- :
+    117: push_const(65)  -- colon
+    118: push_const(12)  -- .
+    119: push_const(66)  -- member
+    120: make_map(20)
+    121: store_var(67)  -- _PR_OP_SYM
+    122: load_var(67)  -- _PR_OP_SYM
     123: pop
-    124: make_closure(68)  -- .___PR_POP_OP_6
-    125: store_var(69)  -- _PR_POP_OP
-    126: load_var(69)  -- _PR_POP_OP
+    124: make_closure(68)  -- .___PR_TT_6
+    125: store_var(69)  -- _PR_TT
+    126: load_var(69)  -- _PR_TT
     127: pop
-    128: make_closure(70)  -- .___PR_EXTRACT_PARAMS_7
-    129: store_var(71)  -- _PR_EXTRACT_PARAMS
-    130: load_var(71)  -- _PR_EXTRACT_PARAMS
+    128: make_closure(70)  -- .___PR_TV_7
+    129: store_var(71)  -- _PR_TV
+    130: load_var(71)  -- _PR_TV
     131: pop
-    132: make_closure(72)  -- .___PR_EXPR_8
-    133: store_var(73)  -- _PR_EXPR
-    134: load_var(73)  -- _PR_EXPR
+    132: make_closure(72)  -- .___PR_GET_PREC_8
+    133: store_var(73)  -- _PR_GET_PREC
+    134: load_var(73)  -- _PR_GET_PREC
     135: pop
-    136: make_closure(74)  -- .___PR_OPERAND_9
-    137: store_var(75)  -- _PR_OPERAND
-    138: load_var(75)  -- _PR_OPERAND
+    136: make_closure(74)  -- .___PR_POP_OP_9
+    137: store_var(75)  -- _PR_POP_OP
+    138: load_var(75)  -- _PR_POP_OP
     139: pop
-    140: make_closure(76)  -- .___PR_UNARY_RHS_10
-    141: store_var(77)  -- _PR_UNARY_RHS
-    142: load_var(77)  -- _PR_UNARY_RHS
+    140: make_closure(76)  -- .___PR_EXTRACT_PARAMS_10
+    141: store_var(77)  -- _PR_EXTRACT_PARAMS
+    142: load_var(77)  -- _PR_EXTRACT_PARAMS
     143: pop
-    144: make_closure(78)  -- .___PR_CONSUME_PF_11
-    145: store_var(79)  -- _PR_CONSUME_PF
-    146: load_var(79)  -- _PR_CONSUME_PF
+    144: make_closure(78)  -- .___PR_EXPR_11
+    145: store_var(79)  -- _PR_EXPR
+    146: load_var(79)  -- _PR_EXPR
     147: pop
-    148: make_closure(80)  -- .___PR_MAP_12
-    149: store_var(81)  -- _PR_MAP
-    150: load_var(81)  -- _PR_MAP
+    148: make_closure(80)  -- .___PR_OPERAND_12
+    149: store_var(81)  -- _PR_OPERAND
+    150: load_var(81)  -- _PR_OPERAND
     151: pop
-    152: make_closure(82)  -- .___PR_OBJECT_13
-    153: store_var(83)  -- _PR_OBJECT
-    154: load_var(83)  -- _PR_OBJECT
+    152: make_closure(82)  -- .___PR_UNARY_RHS_13
+    153: store_var(83)  -- _PR_UNARY_RHS
+    154: load_var(83)  -- _PR_UNARY_RHS
     155: pop
-    156: make_closure(84)  -- .___PR_IF_14
-    157: store_var(85)  -- _PR_IF
-    158: load_var(85)  -- _PR_IF
+    156: make_closure(84)  -- .___PR_CONSUME_PF_14
+    157: store_var(85)  -- _PR_CONSUME_PF
+    158: load_var(85)  -- _PR_CONSUME_PF
     159: pop
-    160: make_closure(86)  -- .___PR_WHILE_15
-    161: store_var(87)  -- _PR_WHILE
-    162: load_var(87)  -- _PR_WHILE
+    160: make_closure(86)  -- .___PR_MAP_15
+    161: store_var(87)  -- _PR_MAP
+    162: load_var(87)  -- _PR_MAP
     163: pop
-    164: make_closure(88)  -- .___PR_REPEAT_16
-    165: store_var(89)  -- _PR_REPEAT
-    166: load_var(89)  -- _PR_REPEAT
+    164: make_closure(88)  -- .___PR_OBJECT_16
+    165: store_var(89)  -- _PR_OBJECT
+    166: load_var(89)  -- _PR_OBJECT
     167: pop
-    168: make_closure(90)  -- .___PR_FOR_17
-    169: store_var(91)  -- _PR_FOR
-    170: load_var(91)  -- _PR_FOR
+    168: make_closure(90)  -- .___PR_IF_17
+    169: store_var(91)  -- _PR_IF
+    170: load_var(91)  -- _PR_IF
     171: pop
-    172: make_closure(92)  -- .___PR_BEGIN_18
-    173: store_var(93)  -- _PR_BEGIN
-    174: load_var(93)  -- _PR_BEGIN
+    172: make_closure(92)  -- .___PR_WHILE_18
+    173: store_var(93)  -- _PR_WHILE
+    174: load_var(93)  -- _PR_WHILE
     175: pop
-    176: make_closure(94)  -- .___PR_STMT_19
-    177: store_var(95)  -- _PR_STMT
-    178: load_var(95)  -- _PR_STMT
+    176: make_closure(94)  -- .___PR_REPEAT_19
+    177: store_var(95)  -- _PR_REPEAT
+    178: load_var(95)  -- _PR_REPEAT
     179: pop
-    180: make_closure(96)  -- .___PR_PROGRAM_20
-    181: store_var(97)  -- _PR_PROGRAM
-    182: load_var(97)  -- _PR_PROGRAM
+    180: make_closure(96)  -- .___PR_FOR_20
+    181: store_var(97)  -- _PR_FOR
+    182: load_var(97)  -- _PR_FOR
     183: pop
-    184: push_scope
-    185: push_const(98)  -- PARSE
-    186: make_closure(99)  -- .__lambda_21
-    187: make_object_here(1)
-    188: pop_scope
-    189: store_var(100)  -- PARSER
-    190: load_var(100)  -- PARSER
-    191: ret
-CHUNK ___PR_BEGIN_18 (_PV_TOKS, _PV_POS)
+    184: make_closure(98)  -- .___PR_BEGIN_21
+    185: store_var(99)  -- _PR_BEGIN
+    186: load_var(99)  -- _PR_BEGIN
+    187: pop
+    188: make_closure(100)  -- .___PR_STMT_22
+    189: store_var(101)  -- _PR_STMT
+    190: load_var(101)  -- _PR_STMT
+    191: pop
+    192: make_closure(102)  -- .___PR_PROGRAM_23
+    193: store_var(103)  -- _PR_PROGRAM
+    194: load_var(103)  -- _PR_PROGRAM
+    195: pop
+    196: push_scope
+    197: push_const(104)  -- PARSE
+    198: make_closure(105)  -- .__lambda_24
+    199: make_object_here(1)
+    200: pop_scope
+    201: store_var(106)  -- PARSER
+    202: load_var(106)  -- PARSER
+    203: ret
+CHUNK ___PR_BEGIN_21 (_PV_TOKS, _PV_POS)
   CONST  0: _PV_POS
   CONST  1: 1
   CONST  2: null
@@ -305,10 +323,11 @@ CHUNK ___PR_BEGIN_18 (_PV_TOKS, _PV_POS)
   CONST  8: EOF
   CONST  9: _PR_STMT
   CONST  10: _PV_R
-  CONST  11: node
-  CONST  12: pos
-  CONST  13: _PR_NODE
-  CONST  14: begin
+  CONST  11: NODE
+  CONST  12: POS
+  CONST  13: _PR_RESULT
+  CONST  14: _PR_NODE
+  CONST  15: begin
   CODE:
     0: push_scope
     1: load_var(0)  -- _PV_POS
@@ -366,7 +385,7 @@ CHUNK ___PR_BEGIN_18 (_PV_TOKS, _PV_POS)
     53: push_const(8)  -- EOF
     54: cmp_neq
     55: log_and
-    56: jump_false(112)
+    56: jump_false(110)
     57: push_scope
     58: load_var(9)  -- _PR_STMT
     59: load_var(5)  -- _PV_TOKS
@@ -376,87 +395,84 @@ CHUNK ___PR_BEGIN_18 (_PV_TOKS, _PV_POS)
     63: load_var(10)  -- _PV_R
     64: pop
     65: load_var(3)  -- _PV_STMTS
-    66: jump_null(75)
+    66: jump_null(74)
     67: load_var(10)  -- _PV_R
-    68: push_const(11)  -- node
-    69: get_index
-    70: make_list(1)
-    71: jump_null(74)
-    72: add
-    73: jump(77)
+    68: get_member(11)  -- NODE
+    69: make_list(1)
+    70: jump_null(73)
+    71: add
+    72: jump(76)
+    73: pop
     74: pop
-    75: pop
-    76: push_const(2)  -- null
-    77: store_var(3)  -- _PV_STMTS
-    78: load_var(3)  -- _PV_STMTS
-    79: pop
-    80: load_var(10)  -- _PV_R
-    81: push_const(12)  -- pos
-    82: get_index
-    83: store_var(0)  -- _PV_POS
-    84: load_var(0)  -- _PV_POS
-    85: pop
-    86: push_const(2)  -- null
-    87: store_reg(2)
-    88: load_var(4)  -- _PR_TT
-    89: load_var(5)  -- _PV_TOKS
-    90: load_var(0)  -- _PV_POS
-    91: call(2)
-    92: push_const(6)  -- ;
-    93: cmp_eq
-    94: jump_false(108)
-    95: load_var(0)  -- _PV_POS
-    96: jump_null(102)
-    97: push_const(1)  -- 1
-    98: jump_null(101)
-    99: add
-    100: jump(104)
-    101: pop
-    102: pop
-    103: push_const(2)  -- null
-    104: store_var(0)  -- _PV_POS
-    105: load_var(0)  -- _PV_POS
-    106: store_reg(2)
-    107: jump(88)
-    108: load_reg(2)
-    109: pop_scope
-    110: store_reg(1)
-    111: jump(43)
-    112: load_reg(1)
-    113: pop
-    114: load_var(4)  -- _PR_TT
-    115: load_var(5)  -- _PV_TOKS
-    116: load_var(0)  -- _PV_POS
-    117: call(2)
-    118: push_const(7)  -- END
-    119: cmp_eq
-    120: jump_false(133)
-    121: load_var(0)  -- _PV_POS
-    122: jump_null(128)
-    123: push_const(1)  -- 1
-    124: jump_null(127)
-    125: add
-    126: jump(130)
-    127: pop
-    128: pop
-    129: push_const(2)  -- null
-    130: store_var(0)  -- _PV_POS
-    131: load_var(0)  -- _PV_POS
-    132: jump(134)
-    133: push_const(2)  -- null
-    134: pop
-    135: push_const(11)  -- node
-    136: load_var(13)  -- _PR_NODE
-    137: push_const(14)  -- begin
-    138: load_var(3)  -- _PV_STMTS
+    75: push_const(2)  -- null
+    76: store_var(3)  -- _PV_STMTS
+    77: load_var(3)  -- _PV_STMTS
+    78: pop
+    79: load_var(10)  -- _PV_R
+    80: get_member(12)  -- POS
+    81: store_var(0)  -- _PV_POS
+    82: load_var(0)  -- _PV_POS
+    83: pop
+    84: push_const(2)  -- null
+    85: store_reg(2)
+    86: load_var(4)  -- _PR_TT
+    87: load_var(5)  -- _PV_TOKS
+    88: load_var(0)  -- _PV_POS
+    89: call(2)
+    90: push_const(6)  -- ;
+    91: cmp_eq
+    92: jump_false(106)
+    93: load_var(0)  -- _PV_POS
+    94: jump_null(100)
+    95: push_const(1)  -- 1
+    96: jump_null(99)
+    97: add
+    98: jump(102)
+    99: pop
+    100: pop
+    101: push_const(2)  -- null
+    102: store_var(0)  -- _PV_POS
+    103: load_var(0)  -- _PV_POS
+    104: store_reg(2)
+    105: jump(86)
+    106: load_reg(2)
+    107: pop_scope
+    108: store_reg(1)
+    109: jump(43)
+    110: load_reg(1)
+    111: pop
+    112: load_var(4)  -- _PR_TT
+    113: load_var(5)  -- _PV_TOKS
+    114: load_var(0)  -- _PV_POS
+    115: call(2)
+    116: push_const(7)  -- END
+    117: cmp_eq
+    118: jump_false(131)
+    119: load_var(0)  -- _PV_POS
+    120: jump_null(126)
+    121: push_const(1)  -- 1
+    122: jump_null(125)
+    123: add
+    124: jump(128)
+    125: pop
+    126: pop
+    127: push_const(2)  -- null
+    128: store_var(0)  -- _PV_POS
+    129: load_var(0)  -- _PV_POS
+    130: jump(132)
+    131: push_const(2)  -- null
+    132: pop
+    133: load_var(13)  -- _PR_RESULT
+    134: load_var(14)  -- _PR_NODE
+    135: push_const(15)  -- begin
+    136: load_var(3)  -- _PV_STMTS
+    137: call(2)
+    138: load_var(0)  -- _PV_POS
     139: call(2)
-    140: push_const(12)  -- pos
-    141: load_var(0)  -- _PV_POS
-    142: make_map(2)
-    143: ret
-    144: pop_scope
-    145: ret
-CHUNK ___PR_CONSUME_PF_11 (_PV_TOKS, _PV_POS, _PV_ND)
+    140: ret
+    141: pop_scope
+    142: ret
+CHUNK ___PR_CONSUME_PF_14 (_PV_TOKS, _PV_POS, _PV_ND)
   CONST  0: false
   CONST  1: _PV_PF_DONE
   CONST  2: null
@@ -474,26 +490,25 @@ CHUNK ___PR_CONSUME_PF_11 (_PV_TOKS, _PV_POS, _PV_ND)
   CONST  14: EOF
   CONST  15: _PR_EXPR
   CONST  16: _PV_RA
-  CONST  17: node
-  CONST  18: pos
+  CONST  17: NODE
+  CONST  18: POS
   CONST  19: ,
-  CONST  20: sym
+  CONST  20: _PR_NODE
   CONST  21: call
-  CONST  22: children
-  CONST  23: _PV_ND
-  CONST  24: val
-  CONST  25: [
-  CONST  26: _PV_RI
-  CONST  27: ]
-  CONST  28: _PR_NODE
-  CONST  29: index
-  CONST  30: .
-  CONST  31: ID
-  CONST  32: _PR_TV
-  CONST  33: _PV_FIELD
-  CONST  34: 2
-  CONST  35: member
-  CONST  36: true
+  CONST  22: _PV_ND
+  CONST  23: [
+  CONST  24: _PV_RI
+  CONST  25: ]
+  CONST  26: index
+  CONST  27: .
+  CONST  28: ID
+  CONST  29: _PR_TV
+  CONST  30: _PV_FIELD
+  CONST  31: 2
+  CONST  32: _PR_NODE_V
+  CONST  33: member
+  CONST  34: true
+  CONST  35: _PR_RESULT
   CODE:
     0: push_scope
     1: push_const(0)  -- false
@@ -505,7 +520,7 @@ CHUNK ___PR_CONSUME_PF_11 (_PV_TOKS, _PV_POS, _PV_ND)
     7: load_var(1)  -- _PV_PF_DONE
     8: jump_null(10)
     9: log_not
-    10: jump_false(305)
+    10: jump_false(296)
     11: push_scope
     12: load_var(3)  -- _PR_TT
     13: load_var(4)  -- _PV_TOKS
@@ -554,7 +569,7 @@ CHUNK ___PR_CONSUME_PF_11 (_PV_TOKS, _PV_POS, _PV_ND)
     56: load_var(6)  -- _PV_TOKTYPE
     57: push_const(11)  -- (
     58: cmp_eq
-    59: jump_false(188)
+    59: jump_false(183)
     60: push_scope
     61: load_var(5)  -- _PV_POS
     62: jump_null(68)
@@ -587,7 +602,7 @@ CHUNK ___PR_CONSUME_PF_11 (_PV_TOKS, _PV_POS, _PV_ND)
     89: push_const(14)  -- EOF
     90: cmp_neq
     91: log_and
-    92: jump_false(145)
+    92: jump_false(143)
     93: push_scope
     94: load_var(15)  -- _PR_EXPR
     95: load_var(4)  -- _PV_TOKS
@@ -597,220 +612,210 @@ CHUNK ___PR_CONSUME_PF_11 (_PV_TOKS, _PV_POS, _PV_ND)
     99: load_var(16)  -- _PV_RA
     100: pop
     101: load_var(12)  -- _PV_CARGS
-    102: jump_null(111)
+    102: jump_null(110)
     103: load_var(16)  -- _PV_RA
-    104: push_const(17)  -- node
-    105: get_index
-    106: make_list(1)
-    107: jump_null(110)
-    108: add
-    109: jump(113)
+    104: get_member(17)  -- NODE
+    105: make_list(1)
+    106: jump_null(109)
+    107: add
+    108: jump(112)
+    109: pop
     110: pop
-    111: pop
-    112: push_const(2)  -- null
-    113: store_var(12)  -- _PV_CARGS
-    114: load_var(12)  -- _PV_CARGS
-    115: pop
-    116: load_var(16)  -- _PV_RA
-    117: push_const(18)  -- pos
-    118: get_index
-    119: store_var(5)  -- _PV_POS
-    120: load_var(5)  -- _PV_POS
-    121: pop
-    122: load_var(3)  -- _PR_TT
-    123: load_var(4)  -- _PV_TOKS
-    124: load_var(5)  -- _PV_POS
-    125: call(2)
-    126: push_const(19)  -- ,
-    127: cmp_eq
-    128: jump_false(141)
-    129: load_var(5)  -- _PV_POS
-    130: jump_null(136)
-    131: push_const(7)  -- 1
-    132: jump_null(135)
-    133: add
-    134: jump(138)
-    135: pop
-    136: pop
-    137: push_const(2)  -- null
-    138: store_var(5)  -- _PV_POS
-    139: load_var(5)  -- _PV_POS
-    140: jump(142)
-    141: push_const(2)  -- null
-    142: pop_scope
-    143: store_reg(1)
-    144: jump(79)
-    145: load_reg(1)
-    146: pop
-    147: load_var(3)  -- _PR_TT
-    148: load_var(4)  -- _PV_TOKS
-    149: load_var(5)  -- _PV_POS
-    150: call(2)
-    151: push_const(13)  -- )
-    152: cmp_eq
-    153: jump_false(166)
-    154: load_var(5)  -- _PV_POS
-    155: jump_null(161)
-    156: push_const(7)  -- 1
-    157: jump_null(160)
-    158: add
-    159: jump(163)
-    160: pop
-    161: pop
-    162: push_const(2)  -- null
-    163: store_var(5)  -- _PV_POS
-    164: load_var(5)  -- _PV_POS
-    165: jump(167)
-    166: push_const(2)  -- null
-    167: pop
-    168: push_const(20)  -- sym
-    169: push_const(21)  -- call
-    170: push_const(22)  -- children
-    171: load_var(23)  -- _PV_ND
-    172: make_list(1)
-    173: jump_null(179)
-    174: load_var(12)  -- _PV_CARGS
-    175: jump_null(178)
-    176: add
-    177: jump(181)
-    178: pop
-    179: pop
-    180: push_const(2)  -- null
-    181: push_const(24)  -- val
-    182: push_const(2)  -- null
-    183: make_map(3)
-    184: store_var(23)  -- _PV_ND
-    185: load_var(23)  -- _PV_ND
-    186: pop_scope
-    187: jump(302)
-    188: load_var(6)  -- _PV_TOKTYPE
-    189: push_const(25)  -- [
-    190: cmp_eq
-    191: jump_false(251)
-    192: push_scope
-    193: load_var(5)  -- _PV_POS
-    194: jump_null(200)
-    195: push_const(7)  -- 1
-    196: jump_null(199)
-    197: add
-    198: jump(202)
+    111: push_const(2)  -- null
+    112: store_var(12)  -- _PV_CARGS
+    113: load_var(12)  -- _PV_CARGS
+    114: pop
+    115: load_var(16)  -- _PV_RA
+    116: get_member(18)  -- POS
+    117: store_var(5)  -- _PV_POS
+    118: load_var(5)  -- _PV_POS
+    119: pop
+    120: load_var(3)  -- _PR_TT
+    121: load_var(4)  -- _PV_TOKS
+    122: load_var(5)  -- _PV_POS
+    123: call(2)
+    124: push_const(19)  -- ,
+    125: cmp_eq
+    126: jump_false(139)
+    127: load_var(5)  -- _PV_POS
+    128: jump_null(134)
+    129: push_const(7)  -- 1
+    130: jump_null(133)
+    131: add
+    132: jump(136)
+    133: pop
+    134: pop
+    135: push_const(2)  -- null
+    136: store_var(5)  -- _PV_POS
+    137: load_var(5)  -- _PV_POS
+    138: jump(140)
+    139: push_const(2)  -- null
+    140: pop_scope
+    141: store_reg(1)
+    142: jump(79)
+    143: load_reg(1)
+    144: pop
+    145: load_var(3)  -- _PR_TT
+    146: load_var(4)  -- _PV_TOKS
+    147: load_var(5)  -- _PV_POS
+    148: call(2)
+    149: push_const(13)  -- )
+    150: cmp_eq
+    151: jump_false(164)
+    152: load_var(5)  -- _PV_POS
+    153: jump_null(159)
+    154: push_const(7)  -- 1
+    155: jump_null(158)
+    156: add
+    157: jump(161)
+    158: pop
+    159: pop
+    160: push_const(2)  -- null
+    161: store_var(5)  -- _PV_POS
+    162: load_var(5)  -- _PV_POS
+    163: jump(165)
+    164: push_const(2)  -- null
+    165: pop
+    166: load_var(20)  -- _PR_NODE
+    167: push_const(21)  -- call
+    168: load_var(22)  -- _PV_ND
+    169: make_list(1)
+    170: jump_null(176)
+    171: load_var(12)  -- _PV_CARGS
+    172: jump_null(175)
+    173: add
+    174: jump(178)
+    175: pop
+    176: pop
+    177: push_const(2)  -- null
+    178: call(2)
+    179: store_var(22)  -- _PV_ND
+    180: load_var(22)  -- _PV_ND
+    181: pop_scope
+    182: jump(293)
+    183: load_var(6)  -- _PV_TOKTYPE
+    184: push_const(23)  -- [
+    185: cmp_eq
+    186: jump_false(244)
+    187: push_scope
+    188: load_var(5)  -- _PV_POS
+    189: jump_null(195)
+    190: push_const(7)  -- 1
+    191: jump_null(194)
+    192: add
+    193: jump(197)
+    194: pop
+    195: pop
+    196: push_const(2)  -- null
+    197: store_var(5)  -- _PV_POS
+    198: load_var(5)  -- _PV_POS
     199: pop
-    200: pop
-    201: push_const(2)  -- null
-    202: store_var(5)  -- _PV_POS
-    203: load_var(5)  -- _PV_POS
-    204: pop
-    205: load_var(15)  -- _PR_EXPR
-    206: load_var(4)  -- _PV_TOKS
-    207: load_var(5)  -- _PV_POS
-    208: call(2)
-    209: store_var(26)  -- _PV_RI
-    210: load_var(26)  -- _PV_RI
+    200: load_var(15)  -- _PR_EXPR
+    201: load_var(4)  -- _PV_TOKS
+    202: load_var(5)  -- _PV_POS
+    203: call(2)
+    204: store_var(24)  -- _PV_RI
+    205: load_var(24)  -- _PV_RI
+    206: pop
+    207: load_var(24)  -- _PV_RI
+    208: get_member(18)  -- POS
+    209: store_var(5)  -- _PV_POS
+    210: load_var(5)  -- _PV_POS
     211: pop
-    212: load_var(26)  -- _PV_RI
-    213: push_const(18)  -- pos
-    214: get_index
-    215: store_var(5)  -- _PV_POS
-    216: load_var(5)  -- _PV_POS
-    217: pop
-    218: load_var(3)  -- _PR_TT
-    219: load_var(4)  -- _PV_TOKS
-    220: load_var(5)  -- _PV_POS
-    221: call(2)
-    222: push_const(27)  -- ]
-    223: cmp_eq
-    224: jump_false(237)
-    225: load_var(5)  -- _PV_POS
-    226: jump_null(232)
-    227: push_const(7)  -- 1
-    228: jump_null(231)
-    229: add
-    230: jump(234)
-    231: pop
+    212: load_var(3)  -- _PR_TT
+    213: load_var(4)  -- _PV_TOKS
+    214: load_var(5)  -- _PV_POS
+    215: call(2)
+    216: push_const(25)  -- ]
+    217: cmp_eq
+    218: jump_false(231)
+    219: load_var(5)  -- _PV_POS
+    220: jump_null(226)
+    221: push_const(7)  -- 1
+    222: jump_null(225)
+    223: add
+    224: jump(228)
+    225: pop
+    226: pop
+    227: push_const(2)  -- null
+    228: store_var(5)  -- _PV_POS
+    229: load_var(5)  -- _PV_POS
+    230: jump(232)
+    231: push_const(2)  -- null
     232: pop
-    233: push_const(2)  -- null
-    234: store_var(5)  -- _PV_POS
-    235: load_var(5)  -- _PV_POS
-    236: jump(238)
-    237: push_const(2)  -- null
-    238: pop
-    239: load_var(28)  -- _PR_NODE
-    240: push_const(29)  -- index
-    241: load_var(23)  -- _PV_ND
-    242: load_var(26)  -- _PV_RI
-    243: push_const(17)  -- node
-    244: get_index
-    245: make_list(2)
-    246: call(2)
-    247: store_var(23)  -- _PV_ND
-    248: load_var(23)  -- _PV_ND
-    249: pop_scope
-    250: jump(302)
-    251: load_var(6)  -- _PV_TOKTYPE
-    252: push_const(30)  -- .
-    253: cmp_eq
-    254: load_var(10)  -- _PV_NXT
-    255: push_const(31)  -- ID
-    256: cmp_eq
-    257: log_and
-    258: jump_false(299)
-    259: push_scope
-    260: load_var(32)  -- _PR_TV
-    261: load_var(4)  -- _PV_TOKS
-    262: load_var(5)  -- _PV_POS
-    263: jump_null(269)
-    264: push_const(7)  -- 1
-    265: jump_null(268)
-    266: add
-    267: jump(271)
-    268: pop
-    269: pop
-    270: push_const(2)  -- null
-    271: call(2)
-    272: store_var(33)  -- _PV_FIELD
-    273: load_var(33)  -- _PV_FIELD
+    233: load_var(20)  -- _PR_NODE
+    234: push_const(26)  -- index
+    235: load_var(22)  -- _PV_ND
+    236: load_var(24)  -- _PV_RI
+    237: get_member(17)  -- NODE
+    238: make_list(2)
+    239: call(2)
+    240: store_var(22)  -- _PV_ND
+    241: load_var(22)  -- _PV_ND
+    242: pop_scope
+    243: jump(293)
+    244: load_var(6)  -- _PV_TOKTYPE
+    245: push_const(27)  -- .
+    246: cmp_eq
+    247: load_var(10)  -- _PV_NXT
+    248: push_const(28)  -- ID
+    249: cmp_eq
+    250: log_and
+    251: jump_false(290)
+    252: push_scope
+    253: load_var(29)  -- _PR_TV
+    254: load_var(4)  -- _PV_TOKS
+    255: load_var(5)  -- _PV_POS
+    256: jump_null(262)
+    257: push_const(7)  -- 1
+    258: jump_null(261)
+    259: add
+    260: jump(264)
+    261: pop
+    262: pop
+    263: push_const(2)  -- null
+    264: call(2)
+    265: store_var(30)  -- _PV_FIELD
+    266: load_var(30)  -- _PV_FIELD
+    267: pop
+    268: load_var(5)  -- _PV_POS
+    269: jump_null(275)
+    270: push_const(31)  -- 2
+    271: jump_null(274)
+    272: add
+    273: jump(277)
     274: pop
-    275: load_var(5)  -- _PV_POS
-    276: jump_null(282)
-    277: push_const(34)  -- 2
-    278: jump_null(281)
-    279: add
-    280: jump(284)
-    281: pop
-    282: pop
-    283: push_const(2)  -- null
-    284: store_var(5)  -- _PV_POS
-    285: load_var(5)  -- _PV_POS
-    286: pop
-    287: push_const(20)  -- sym
-    288: push_const(35)  -- member
-    289: push_const(22)  -- children
-    290: load_var(23)  -- _PV_ND
-    291: make_list(1)
-    292: push_const(24)  -- val
-    293: load_var(33)  -- _PV_FIELD
-    294: make_map(3)
-    295: store_var(23)  -- _PV_ND
-    296: load_var(23)  -- _PV_ND
-    297: pop_scope
-    298: jump(302)
-    299: push_const(36)  -- true
-    300: store_var(1)  -- _PV_PF_DONE
-    301: load_var(1)  -- _PV_PF_DONE
-    302: pop_scope
-    303: store_reg(0)
-    304: jump(7)
-    305: load_reg(0)
-    306: pop
-    307: push_const(17)  -- node
-    308: load_var(23)  -- _PV_ND
-    309: push_const(18)  -- pos
-    310: load_var(5)  -- _PV_POS
-    311: make_map(2)
-    312: ret
-    313: pop_scope
-    314: ret
-CHUNK ___PR_EXPR_8 (_PV_TOKS, _PV_POS)
+    275: pop
+    276: push_const(2)  -- null
+    277: store_var(5)  -- _PV_POS
+    278: load_var(5)  -- _PV_POS
+    279: pop
+    280: load_var(32)  -- _PR_NODE_V
+    281: push_const(33)  -- member
+    282: load_var(22)  -- _PV_ND
+    283: make_list(1)
+    284: load_var(30)  -- _PV_FIELD
+    285: call(3)
+    286: store_var(22)  -- _PV_ND
+    287: load_var(22)  -- _PV_ND
+    288: pop_scope
+    289: jump(293)
+    290: push_const(34)  -- true
+    291: store_var(1)  -- _PV_PF_DONE
+    292: load_var(1)  -- _PV_PF_DONE
+    293: pop_scope
+    294: store_reg(0)
+    295: jump(7)
+    296: load_reg(0)
+    297: pop
+    298: load_var(35)  -- _PR_RESULT
+    299: load_var(22)  -- _PV_ND
+    300: load_var(5)  -- _PV_POS
+    301: call(2)
+    302: ret
+    303: pop_scope
+    304: ret
+CHUNK ___PR_EXPR_11 (_PV_TOKS, _PV_POS)
   CONST  0: _PV_ND_STK
   CONST  1: _PV_OP_STK
   CONST  2: false
@@ -820,8 +825,8 @@ CHUNK ___PR_EXPR_8 (_PV_TOKS, _PV_POS)
   CONST  6: _PV_TOKS
   CONST  7: _PV_POS
   CONST  8: _PV_R
-  CONST  9: node
-  CONST  10: pos
+  CONST  9: NODE
+  CONST  10: POS
   CONST  11: true
   CONST  12: _PV_PF
   CONST  13: _PR_TT
@@ -841,33 +846,32 @@ CHUNK ___PR_EXPR_8 (_PV_TOKS, _PV_POS)
   CONST  27: SLICE
   CONST  28: 0
   CONST  29: 2
-  CONST  30: sym
+  CONST  30: _PR_NODE
   CONST  31: call
-  CONST  32: children
-  CONST  33: val
-  CONST  34: [
-  CONST  35: _PV_RI
-  CONST  36: ]
-  CONST  37: _PV_OBJ
-  CONST  38: _PR_NODE
-  CONST  39: index
-  CONST  40: .
-  CONST  41: ID
-  CONST  42: _PR_TV
-  CONST  43: _PV_FIELD
-  CONST  44: member
-  CONST  45: _PR_GET_PREC
-  CONST  46: _PV_CUR_PREC
-  CONST  47: NOT
-  CONST  48: _PR_RA
-  CONST  49: _PV_IS_RA
-  CONST  50: _PV_TOP_PREC
-  CONST  51: _PR_POP_OP
-  CONST  52: _PV_POP
-  CONST  53: op_stk
-  CONST  54: nd_stk
-  CONST  55: _PR_LEAF
-  CONST  56: null_lit
+  CONST  32: [
+  CONST  33: _PV_RI
+  CONST  34: ]
+  CONST  35: _PV_OBJ
+  CONST  36: index
+  CONST  37: .
+  CONST  38: ID
+  CONST  39: _PR_TV
+  CONST  40: _PV_FIELD
+  CONST  41: _PR_NODE_V
+  CONST  42: member
+  CONST  43: _PR_GET_PREC
+  CONST  44: _PV_CUR_PREC
+  CONST  45: NOT
+  CONST  46: _PR_RA
+  CONST  47: _PV_IS_RA
+  CONST  48: _PV_TOP_PREC
+  CONST  49: _PR_POP_OP
+  CONST  50: _PV_POP
+  CONST  51: OP_STK
+  CONST  52: ND_STK
+  CONST  53: _PR_RESULT
+  CONST  54: _PR_LEAF
+  CONST  55: null_lit
   CODE:
     0: push_scope
     1: make_list(0)
@@ -887,7 +891,7 @@ CHUNK ___PR_EXPR_8 (_PV_TOKS, _PV_POS)
     15: load_var(3)  -- _PV_DONE
     16: jump_null(18)
     17: log_not
-    18: jump_false(703)
+    18: jump_false(688)
     19: push_scope
     20: load_var(5)  -- _PR_OPERAND
     21: load_var(6)  -- _PV_TOKS
@@ -897,933 +901,904 @@ CHUNK ___PR_EXPR_8 (_PV_TOKS, _PV_POS)
     25: load_var(8)  -- _PV_R
     26: pop
     27: load_var(0)  -- _PV_ND_STK
-    28: jump_null(37)
+    28: jump_null(36)
     29: load_var(8)  -- _PV_R
-    30: push_const(9)  -- node
-    31: get_index
-    32: make_list(1)
-    33: jump_null(36)
-    34: add
-    35: jump(39)
+    30: get_member(9)  -- NODE
+    31: make_list(1)
+    32: jump_null(35)
+    33: add
+    34: jump(38)
+    35: pop
     36: pop
-    37: pop
-    38: push_const(4)  -- null
-    39: store_var(0)  -- _PV_ND_STK
-    40: load_var(0)  -- _PV_ND_STK
-    41: pop
-    42: load_var(8)  -- _PV_R
-    43: push_const(10)  -- pos
-    44: get_index
-    45: store_var(7)  -- _PV_POS
-    46: load_var(7)  -- _PV_POS
-    47: pop
-    48: push_const(11)  -- true
-    49: store_var(12)  -- _PV_PF
-    50: load_var(12)  -- _PV_PF
-    51: pop
-    52: push_const(4)  -- null
-    53: store_reg(1)
-    54: load_var(12)  -- _PV_PF
-    55: jump_false(467)
-    56: push_scope
-    57: load_var(13)  -- _PR_TT
-    58: load_var(6)  -- _PV_TOKS
-    59: load_var(7)  -- _PV_POS
-    60: call(2)
-    61: store_var(14)  -- _PV_TOKTYPE
-    62: load_var(14)  -- _PV_TOKTYPE
-    63: pop
-    64: load_var(7)  -- _PV_POS
-    65: jump_null(71)
-    66: push_const(15)  -- 1
-    67: jump_null(70)
-    68: add
-    69: jump(73)
-    70: pop
-    71: pop
-    72: push_const(4)  -- null
-    73: jump_null(81)
-    74: load_var(16)  -- LENGTH
-    75: load_var(6)  -- _PV_TOKS
-    76: call(1)
-    77: jump_null(80)
-    78: cmp_lt
-    79: jump(83)
-    80: pop
-    81: pop
-    82: push_const(4)  -- null
-    83: jump_false(97)
-    84: load_var(13)  -- _PR_TT
-    85: load_var(6)  -- _PV_TOKS
-    86: load_var(7)  -- _PV_POS
-    87: jump_null(93)
-    88: push_const(15)  -- 1
-    89: jump_null(92)
-    90: add
-    91: jump(95)
-    92: pop
-    93: pop
-    94: push_const(4)  -- null
-    95: call(2)
-    96: jump(98)
-    97: push_const(17)  -- 
-    98: store_var(18)  -- _PV_NXT
-    99: load_var(18)  -- _PV_NXT
-    100: pop
-    101: load_var(14)  -- _PV_TOKTYPE
-    102: push_const(19)  -- (
-    103: cmp_eq
-    104: jump_false(272)
-    105: push_scope
-    106: load_var(7)  -- _PV_POS
-    107: jump_null(113)
-    108: push_const(15)  -- 1
-    109: jump_null(112)
-    110: add
-    111: jump(115)
-    112: pop
-    113: pop
-    114: push_const(4)  -- null
-    115: store_var(7)  -- _PV_POS
-    116: load_var(7)  -- _PV_POS
-    117: pop
-    118: make_list(0)
-    119: store_var(20)  -- _PV_CARGS
-    120: load_var(20)  -- _PV_CARGS
-    121: pop
-    122: push_const(4)  -- null
-    123: store_reg(2)
-    124: load_var(13)  -- _PR_TT
-    125: load_var(6)  -- _PV_TOKS
-    126: load_var(7)  -- _PV_POS
-    127: call(2)
-    128: push_const(21)  -- )
-    129: cmp_neq
-    130: load_var(13)  -- _PR_TT
-    131: load_var(6)  -- _PV_TOKS
-    132: load_var(7)  -- _PV_POS
-    133: call(2)
-    134: push_const(22)  -- EOF
-    135: cmp_neq
-    136: log_and
-    137: jump_false(190)
-    138: push_scope
-    139: load_var(23)  -- _PR_EXPR
-    140: load_var(6)  -- _PV_TOKS
-    141: load_var(7)  -- _PV_POS
-    142: call(2)
-    143: store_var(24)  -- _PV_RA
-    144: load_var(24)  -- _PV_RA
-    145: pop
-    146: load_var(20)  -- _PV_CARGS
-    147: jump_null(156)
-    148: load_var(24)  -- _PV_RA
-    149: push_const(9)  -- node
-    150: get_index
-    151: make_list(1)
-    152: jump_null(155)
-    153: add
-    154: jump(158)
-    155: pop
-    156: pop
-    157: push_const(4)  -- null
-    158: store_var(20)  -- _PV_CARGS
-    159: load_var(20)  -- _PV_CARGS
-    160: pop
-    161: load_var(24)  -- _PV_RA
-    162: push_const(10)  -- pos
-    163: get_index
-    164: store_var(7)  -- _PV_POS
+    37: push_const(4)  -- null
+    38: store_var(0)  -- _PV_ND_STK
+    39: load_var(0)  -- _PV_ND_STK
+    40: pop
+    41: load_var(8)  -- _PV_R
+    42: get_member(10)  -- POS
+    43: store_var(7)  -- _PV_POS
+    44: load_var(7)  -- _PV_POS
+    45: pop
+    46: push_const(11)  -- true
+    47: store_var(12)  -- _PV_PF
+    48: load_var(12)  -- _PV_PF
+    49: pop
+    50: push_const(4)  -- null
+    51: store_reg(1)
+    52: load_var(12)  -- _PV_PF
+    53: jump_false(456)
+    54: push_scope
+    55: load_var(13)  -- _PR_TT
+    56: load_var(6)  -- _PV_TOKS
+    57: load_var(7)  -- _PV_POS
+    58: call(2)
+    59: store_var(14)  -- _PV_TOKTYPE
+    60: load_var(14)  -- _PV_TOKTYPE
+    61: pop
+    62: load_var(7)  -- _PV_POS
+    63: jump_null(69)
+    64: push_const(15)  -- 1
+    65: jump_null(68)
+    66: add
+    67: jump(71)
+    68: pop
+    69: pop
+    70: push_const(4)  -- null
+    71: jump_null(79)
+    72: load_var(16)  -- LENGTH
+    73: load_var(6)  -- _PV_TOKS
+    74: call(1)
+    75: jump_null(78)
+    76: cmp_lt
+    77: jump(81)
+    78: pop
+    79: pop
+    80: push_const(4)  -- null
+    81: jump_false(95)
+    82: load_var(13)  -- _PR_TT
+    83: load_var(6)  -- _PV_TOKS
+    84: load_var(7)  -- _PV_POS
+    85: jump_null(91)
+    86: push_const(15)  -- 1
+    87: jump_null(90)
+    88: add
+    89: jump(93)
+    90: pop
+    91: pop
+    92: push_const(4)  -- null
+    93: call(2)
+    94: jump(96)
+    95: push_const(17)  -- 
+    96: store_var(18)  -- _PV_NXT
+    97: load_var(18)  -- _PV_NXT
+    98: pop
+    99: load_var(14)  -- _PV_TOKTYPE
+    100: push_const(19)  -- (
+    101: cmp_eq
+    102: jump_false(265)
+    103: push_scope
+    104: load_var(7)  -- _PV_POS
+    105: jump_null(111)
+    106: push_const(15)  -- 1
+    107: jump_null(110)
+    108: add
+    109: jump(113)
+    110: pop
+    111: pop
+    112: push_const(4)  -- null
+    113: store_var(7)  -- _PV_POS
+    114: load_var(7)  -- _PV_POS
+    115: pop
+    116: make_list(0)
+    117: store_var(20)  -- _PV_CARGS
+    118: load_var(20)  -- _PV_CARGS
+    119: pop
+    120: push_const(4)  -- null
+    121: store_reg(2)
+    122: load_var(13)  -- _PR_TT
+    123: load_var(6)  -- _PV_TOKS
+    124: load_var(7)  -- _PV_POS
+    125: call(2)
+    126: push_const(21)  -- )
+    127: cmp_neq
+    128: load_var(13)  -- _PR_TT
+    129: load_var(6)  -- _PV_TOKS
+    130: load_var(7)  -- _PV_POS
+    131: call(2)
+    132: push_const(22)  -- EOF
+    133: cmp_neq
+    134: log_and
+    135: jump_false(186)
+    136: push_scope
+    137: load_var(23)  -- _PR_EXPR
+    138: load_var(6)  -- _PV_TOKS
+    139: load_var(7)  -- _PV_POS
+    140: call(2)
+    141: store_var(24)  -- _PV_RA
+    142: load_var(24)  -- _PV_RA
+    143: pop
+    144: load_var(20)  -- _PV_CARGS
+    145: jump_null(153)
+    146: load_var(24)  -- _PV_RA
+    147: get_member(9)  -- NODE
+    148: make_list(1)
+    149: jump_null(152)
+    150: add
+    151: jump(155)
+    152: pop
+    153: pop
+    154: push_const(4)  -- null
+    155: store_var(20)  -- _PV_CARGS
+    156: load_var(20)  -- _PV_CARGS
+    157: pop
+    158: load_var(24)  -- _PV_RA
+    159: get_member(10)  -- POS
+    160: store_var(7)  -- _PV_POS
+    161: load_var(7)  -- _PV_POS
+    162: pop
+    163: load_var(13)  -- _PR_TT
+    164: load_var(6)  -- _PV_TOKS
     165: load_var(7)  -- _PV_POS
-    166: pop
-    167: load_var(13)  -- _PR_TT
-    168: load_var(6)  -- _PV_TOKS
-    169: load_var(7)  -- _PV_POS
-    170: call(2)
-    171: push_const(25)  -- ,
-    172: cmp_eq
-    173: jump_false(186)
-    174: load_var(7)  -- _PV_POS
-    175: jump_null(181)
-    176: push_const(15)  -- 1
-    177: jump_null(180)
-    178: add
-    179: jump(183)
-    180: pop
-    181: pop
+    166: call(2)
+    167: push_const(25)  -- ,
+    168: cmp_eq
+    169: jump_false(182)
+    170: load_var(7)  -- _PV_POS
+    171: jump_null(177)
+    172: push_const(15)  -- 1
+    173: jump_null(176)
+    174: add
+    175: jump(179)
+    176: pop
+    177: pop
+    178: push_const(4)  -- null
+    179: store_var(7)  -- _PV_POS
+    180: load_var(7)  -- _PV_POS
+    181: jump(183)
     182: push_const(4)  -- null
-    183: store_var(7)  -- _PV_POS
-    184: load_var(7)  -- _PV_POS
-    185: jump(187)
-    186: push_const(4)  -- null
-    187: pop_scope
-    188: store_reg(2)
-    189: jump(124)
-    190: load_reg(2)
-    191: pop
-    192: load_var(13)  -- _PR_TT
-    193: load_var(6)  -- _PV_TOKS
-    194: load_var(7)  -- _PV_POS
-    195: call(2)
-    196: push_const(21)  -- )
-    197: cmp_eq
-    198: jump_false(211)
-    199: load_var(7)  -- _PV_POS
-    200: jump_null(206)
-    201: push_const(15)  -- 1
-    202: jump_null(205)
-    203: add
-    204: jump(208)
-    205: pop
-    206: pop
+    183: pop_scope
+    184: store_reg(2)
+    185: jump(122)
+    186: load_reg(2)
+    187: pop
+    188: load_var(13)  -- _PR_TT
+    189: load_var(6)  -- _PV_TOKS
+    190: load_var(7)  -- _PV_POS
+    191: call(2)
+    192: push_const(21)  -- )
+    193: cmp_eq
+    194: jump_false(207)
+    195: load_var(7)  -- _PV_POS
+    196: jump_null(202)
+    197: push_const(15)  -- 1
+    198: jump_null(201)
+    199: add
+    200: jump(204)
+    201: pop
+    202: pop
+    203: push_const(4)  -- null
+    204: store_var(7)  -- _PV_POS
+    205: load_var(7)  -- _PV_POS
+    206: jump(208)
     207: push_const(4)  -- null
-    208: store_var(7)  -- _PV_POS
-    209: load_var(7)  -- _PV_POS
-    210: jump(212)
-    211: push_const(4)  -- null
-    212: pop
-    213: load_var(0)  -- _PV_ND_STK
-    214: load_var(16)  -- LENGTH
-    215: load_var(0)  -- _PV_ND_STK
-    216: call(1)
-    217: jump_null(223)
-    218: push_const(15)  -- 1
-    219: jump_null(222)
-    220: sub
-    221: jump(225)
-    222: pop
-    223: pop
-    224: push_const(4)  -- null
-    225: get_index
-    226: store_var(26)  -- _PV_CALLEE
-    227: load_var(26)  -- _PV_CALLEE
-    228: pop
-    229: load_var(27)  -- SLICE
-    230: load_var(0)  -- _PV_ND_STK
-    231: push_const(28)  -- 0
-    232: load_var(16)  -- LENGTH
-    233: load_var(0)  -- _PV_ND_STK
-    234: call(1)
-    235: jump_null(241)
-    236: push_const(29)  -- 2
-    237: jump_null(240)
-    238: sub
-    239: jump(243)
-    240: pop
-    241: pop
-    242: push_const(4)  -- null
-    243: call(3)
-    244: jump_null(266)
-    245: push_const(30)  -- sym
-    246: push_const(31)  -- call
-    247: push_const(32)  -- children
-    248: load_var(26)  -- _PV_CALLEE
-    249: make_list(1)
-    250: jump_null(256)
-    251: load_var(20)  -- _PV_CARGS
-    252: jump_null(255)
-    253: add
-    254: jump(258)
-    255: pop
-    256: pop
-    257: push_const(4)  -- null
-    258: push_const(33)  -- val
-    259: push_const(4)  -- null
-    260: make_map(3)
-    261: make_list(1)
-    262: jump_null(265)
-    263: add
-    264: jump(268)
-    265: pop
-    266: pop
-    267: push_const(4)  -- null
-    268: store_var(0)  -- _PV_ND_STK
-    269: load_var(0)  -- _PV_ND_STK
-    270: pop_scope
-    271: jump(464)
-    272: load_var(14)  -- _PV_TOKTYPE
-    273: push_const(34)  -- [
-    274: cmp_eq
-    275: jump_false(374)
-    276: push_scope
-    277: load_var(7)  -- _PV_POS
-    278: jump_null(284)
-    279: push_const(15)  -- 1
-    280: jump_null(283)
-    281: add
-    282: jump(286)
-    283: pop
-    284: pop
-    285: push_const(4)  -- null
-    286: store_var(7)  -- _PV_POS
-    287: load_var(7)  -- _PV_POS
+    208: pop
+    209: load_var(0)  -- _PV_ND_STK
+    210: load_var(16)  -- LENGTH
+    211: load_var(0)  -- _PV_ND_STK
+    212: call(1)
+    213: jump_null(219)
+    214: push_const(15)  -- 1
+    215: jump_null(218)
+    216: sub
+    217: jump(221)
+    218: pop
+    219: pop
+    220: push_const(4)  -- null
+    221: get_index
+    222: store_var(26)  -- _PV_CALLEE
+    223: load_var(26)  -- _PV_CALLEE
+    224: pop
+    225: load_var(27)  -- SLICE
+    226: load_var(0)  -- _PV_ND_STK
+    227: push_const(28)  -- 0
+    228: load_var(16)  -- LENGTH
+    229: load_var(0)  -- _PV_ND_STK
+    230: call(1)
+    231: jump_null(237)
+    232: push_const(29)  -- 2
+    233: jump_null(236)
+    234: sub
+    235: jump(239)
+    236: pop
+    237: pop
+    238: push_const(4)  -- null
+    239: call(3)
+    240: jump_null(259)
+    241: load_var(30)  -- _PR_NODE
+    242: push_const(31)  -- call
+    243: load_var(26)  -- _PV_CALLEE
+    244: make_list(1)
+    245: jump_null(251)
+    246: load_var(20)  -- _PV_CARGS
+    247: jump_null(250)
+    248: add
+    249: jump(253)
+    250: pop
+    251: pop
+    252: push_const(4)  -- null
+    253: call(2)
+    254: make_list(1)
+    255: jump_null(258)
+    256: add
+    257: jump(261)
+    258: pop
+    259: pop
+    260: push_const(4)  -- null
+    261: store_var(0)  -- _PV_ND_STK
+    262: load_var(0)  -- _PV_ND_STK
+    263: pop_scope
+    264: jump(453)
+    265: load_var(14)  -- _PV_TOKTYPE
+    266: push_const(32)  -- [
+    267: cmp_eq
+    268: jump_false(365)
+    269: push_scope
+    270: load_var(7)  -- _PV_POS
+    271: jump_null(277)
+    272: push_const(15)  -- 1
+    273: jump_null(276)
+    274: add
+    275: jump(279)
+    276: pop
+    277: pop
+    278: push_const(4)  -- null
+    279: store_var(7)  -- _PV_POS
+    280: load_var(7)  -- _PV_POS
+    281: pop
+    282: load_var(23)  -- _PR_EXPR
+    283: load_var(6)  -- _PV_TOKS
+    284: load_var(7)  -- _PV_POS
+    285: call(2)
+    286: store_var(33)  -- _PV_RI
+    287: load_var(33)  -- _PV_RI
     288: pop
-    289: load_var(23)  -- _PR_EXPR
-    290: load_var(6)  -- _PV_TOKS
-    291: load_var(7)  -- _PV_POS
-    292: call(2)
-    293: store_var(35)  -- _PV_RI
-    294: load_var(35)  -- _PV_RI
-    295: pop
-    296: load_var(35)  -- _PV_RI
-    297: push_const(10)  -- pos
-    298: get_index
-    299: store_var(7)  -- _PV_POS
-    300: load_var(7)  -- _PV_POS
-    301: pop
-    302: load_var(13)  -- _PR_TT
-    303: load_var(6)  -- _PV_TOKS
-    304: load_var(7)  -- _PV_POS
-    305: call(2)
-    306: push_const(36)  -- ]
-    307: cmp_eq
-    308: jump_false(321)
-    309: load_var(7)  -- _PV_POS
-    310: jump_null(316)
-    311: push_const(15)  -- 1
-    312: jump_null(315)
-    313: add
-    314: jump(318)
-    315: pop
-    316: pop
-    317: push_const(4)  -- null
-    318: store_var(7)  -- _PV_POS
-    319: load_var(7)  -- _PV_POS
-    320: jump(322)
-    321: push_const(4)  -- null
-    322: pop
-    323: load_var(0)  -- _PV_ND_STK
-    324: load_var(16)  -- LENGTH
-    325: load_var(0)  -- _PV_ND_STK
-    326: call(1)
-    327: jump_null(333)
-    328: push_const(15)  -- 1
-    329: jump_null(332)
-    330: sub
-    331: jump(335)
-    332: pop
-    333: pop
-    334: push_const(4)  -- null
-    335: get_index
-    336: store_var(37)  -- _PV_OBJ
-    337: load_var(37)  -- _PV_OBJ
-    338: pop
-    339: load_var(27)  -- SLICE
-    340: load_var(0)  -- _PV_ND_STK
-    341: push_const(28)  -- 0
-    342: load_var(16)  -- LENGTH
-    343: load_var(0)  -- _PV_ND_STK
-    344: call(1)
-    345: jump_null(351)
-    346: push_const(29)  -- 2
-    347: jump_null(350)
-    348: sub
-    349: jump(353)
-    350: pop
-    351: pop
-    352: push_const(4)  -- null
-    353: call(3)
-    354: jump_null(368)
-    355: load_var(38)  -- _PR_NODE
-    356: push_const(39)  -- index
-    357: load_var(37)  -- _PV_OBJ
-    358: load_var(35)  -- _PV_RI
-    359: push_const(9)  -- node
-    360: get_index
-    361: make_list(2)
-    362: call(2)
-    363: make_list(1)
-    364: jump_null(367)
-    365: add
-    366: jump(370)
-    367: pop
-    368: pop
-    369: push_const(4)  -- null
-    370: store_var(0)  -- _PV_ND_STK
-    371: load_var(0)  -- _PV_ND_STK
-    372: pop_scope
-    373: jump(464)
-    374: load_var(14)  -- _PV_TOKTYPE
-    375: push_const(40)  -- .
-    376: cmp_eq
-    377: load_var(18)  -- _PV_NXT
-    378: push_const(41)  -- ID
-    379: cmp_eq
-    380: log_and
-    381: jump_false(461)
-    382: push_scope
-    383: load_var(42)  -- _PR_TV
-    384: load_var(6)  -- _PV_TOKS
-    385: load_var(7)  -- _PV_POS
-    386: jump_null(392)
-    387: push_const(15)  -- 1
-    388: jump_null(391)
-    389: add
-    390: jump(394)
-    391: pop
-    392: pop
-    393: push_const(4)  -- null
-    394: call(2)
-    395: store_var(43)  -- _PV_FIELD
-    396: load_var(43)  -- _PV_FIELD
-    397: pop
-    398: load_var(7)  -- _PV_POS
-    399: jump_null(405)
-    400: push_const(29)  -- 2
-    401: jump_null(404)
-    402: add
-    403: jump(407)
-    404: pop
-    405: pop
-    406: push_const(4)  -- null
-    407: store_var(7)  -- _PV_POS
-    408: load_var(7)  -- _PV_POS
-    409: pop
-    410: load_var(0)  -- _PV_ND_STK
-    411: load_var(16)  -- LENGTH
-    412: load_var(0)  -- _PV_ND_STK
-    413: call(1)
-    414: jump_null(420)
-    415: push_const(15)  -- 1
-    416: jump_null(419)
-    417: sub
-    418: jump(422)
-    419: pop
-    420: pop
-    421: push_const(4)  -- null
-    422: get_index
-    423: store_var(37)  -- _PV_OBJ
-    424: load_var(37)  -- _PV_OBJ
-    425: pop
-    426: load_var(27)  -- SLICE
-    427: load_var(0)  -- _PV_ND_STK
-    428: push_const(28)  -- 0
-    429: load_var(16)  -- LENGTH
-    430: load_var(0)  -- _PV_ND_STK
-    431: call(1)
-    432: jump_null(438)
-    433: push_const(29)  -- 2
-    434: jump_null(437)
-    435: sub
-    436: jump(440)
-    437: pop
-    438: pop
-    439: push_const(4)  -- null
-    440: call(3)
-    441: jump_null(455)
-    442: push_const(30)  -- sym
-    443: push_const(44)  -- member
-    444: push_const(32)  -- children
-    445: load_var(37)  -- _PV_OBJ
-    446: make_list(1)
-    447: push_const(33)  -- val
-    448: load_var(43)  -- _PV_FIELD
-    449: make_map(3)
-    450: make_list(1)
-    451: jump_null(454)
-    452: add
-    453: jump(457)
-    454: pop
-    455: pop
-    456: push_const(4)  -- null
-    457: store_var(0)  -- _PV_ND_STK
-    458: load_var(0)  -- _PV_ND_STK
-    459: pop_scope
-    460: jump(464)
-    461: push_const(2)  -- false
-    462: store_var(12)  -- _PV_PF
-    463: load_var(12)  -- _PV_PF
-    464: pop_scope
-    465: store_reg(1)
-    466: jump(54)
-    467: load_reg(1)
-    468: pop
-    469: load_var(13)  -- _PR_TT
-    470: load_var(6)  -- _PV_TOKS
-    471: load_var(7)  -- _PV_POS
-    472: call(2)
-    473: store_var(14)  -- _PV_TOKTYPE
-    474: load_var(14)  -- _PV_TOKTYPE
-    475: pop
-    476: load_var(45)  -- _PR_GET_PREC
-    477: load_var(14)  -- _PV_TOKTYPE
-    478: call(1)
-    479: store_var(46)  -- _PV_CUR_PREC
-    480: load_var(46)  -- _PV_CUR_PREC
-    481: pop
-    482: load_var(46)  -- _PV_CUR_PREC
-    483: jump_null(489)
-    484: push_const(28)  -- 0
-    485: jump_null(488)
-    486: cmp_gte
-    487: jump(491)
-    488: pop
-    489: pop
-    490: push_const(4)  -- null
+    289: load_var(33)  -- _PV_RI
+    290: get_member(10)  -- POS
+    291: store_var(7)  -- _PV_POS
+    292: load_var(7)  -- _PV_POS
+    293: pop
+    294: load_var(13)  -- _PR_TT
+    295: load_var(6)  -- _PV_TOKS
+    296: load_var(7)  -- _PV_POS
+    297: call(2)
+    298: push_const(34)  -- ]
+    299: cmp_eq
+    300: jump_false(313)
+    301: load_var(7)  -- _PV_POS
+    302: jump_null(308)
+    303: push_const(15)  -- 1
+    304: jump_null(307)
+    305: add
+    306: jump(310)
+    307: pop
+    308: pop
+    309: push_const(4)  -- null
+    310: store_var(7)  -- _PV_POS
+    311: load_var(7)  -- _PV_POS
+    312: jump(314)
+    313: push_const(4)  -- null
+    314: pop
+    315: load_var(0)  -- _PV_ND_STK
+    316: load_var(16)  -- LENGTH
+    317: load_var(0)  -- _PV_ND_STK
+    318: call(1)
+    319: jump_null(325)
+    320: push_const(15)  -- 1
+    321: jump_null(324)
+    322: sub
+    323: jump(327)
+    324: pop
+    325: pop
+    326: push_const(4)  -- null
+    327: get_index
+    328: store_var(35)  -- _PV_OBJ
+    329: load_var(35)  -- _PV_OBJ
+    330: pop
+    331: load_var(27)  -- SLICE
+    332: load_var(0)  -- _PV_ND_STK
+    333: push_const(28)  -- 0
+    334: load_var(16)  -- LENGTH
+    335: load_var(0)  -- _PV_ND_STK
+    336: call(1)
+    337: jump_null(343)
+    338: push_const(29)  -- 2
+    339: jump_null(342)
+    340: sub
+    341: jump(345)
+    342: pop
+    343: pop
+    344: push_const(4)  -- null
+    345: call(3)
+    346: jump_null(359)
+    347: load_var(30)  -- _PR_NODE
+    348: push_const(36)  -- index
+    349: load_var(35)  -- _PV_OBJ
+    350: load_var(33)  -- _PV_RI
+    351: get_member(9)  -- NODE
+    352: make_list(2)
+    353: call(2)
+    354: make_list(1)
+    355: jump_null(358)
+    356: add
+    357: jump(361)
+    358: pop
+    359: pop
+    360: push_const(4)  -- null
+    361: store_var(0)  -- _PV_ND_STK
+    362: load_var(0)  -- _PV_ND_STK
+    363: pop_scope
+    364: jump(453)
+    365: load_var(14)  -- _PV_TOKTYPE
+    366: push_const(37)  -- .
+    367: cmp_eq
+    368: load_var(18)  -- _PV_NXT
+    369: push_const(38)  -- ID
+    370: cmp_eq
+    371: log_and
+    372: jump_false(450)
+    373: push_scope
+    374: load_var(39)  -- _PR_TV
+    375: load_var(6)  -- _PV_TOKS
+    376: load_var(7)  -- _PV_POS
+    377: jump_null(383)
+    378: push_const(15)  -- 1
+    379: jump_null(382)
+    380: add
+    381: jump(385)
+    382: pop
+    383: pop
+    384: push_const(4)  -- null
+    385: call(2)
+    386: store_var(40)  -- _PV_FIELD
+    387: load_var(40)  -- _PV_FIELD
+    388: pop
+    389: load_var(7)  -- _PV_POS
+    390: jump_null(396)
+    391: push_const(29)  -- 2
+    392: jump_null(395)
+    393: add
+    394: jump(398)
+    395: pop
+    396: pop
+    397: push_const(4)  -- null
+    398: store_var(7)  -- _PV_POS
+    399: load_var(7)  -- _PV_POS
+    400: pop
+    401: load_var(0)  -- _PV_ND_STK
+    402: load_var(16)  -- LENGTH
+    403: load_var(0)  -- _PV_ND_STK
+    404: call(1)
+    405: jump_null(411)
+    406: push_const(15)  -- 1
+    407: jump_null(410)
+    408: sub
+    409: jump(413)
+    410: pop
+    411: pop
+    412: push_const(4)  -- null
+    413: get_index
+    414: store_var(35)  -- _PV_OBJ
+    415: load_var(35)  -- _PV_OBJ
+    416: pop
+    417: load_var(27)  -- SLICE
+    418: load_var(0)  -- _PV_ND_STK
+    419: push_const(28)  -- 0
+    420: load_var(16)  -- LENGTH
+    421: load_var(0)  -- _PV_ND_STK
+    422: call(1)
+    423: jump_null(429)
+    424: push_const(29)  -- 2
+    425: jump_null(428)
+    426: sub
+    427: jump(431)
+    428: pop
+    429: pop
+    430: push_const(4)  -- null
+    431: call(3)
+    432: jump_null(444)
+    433: load_var(41)  -- _PR_NODE_V
+    434: push_const(42)  -- member
+    435: load_var(35)  -- _PV_OBJ
+    436: make_list(1)
+    437: load_var(40)  -- _PV_FIELD
+    438: call(3)
+    439: make_list(1)
+    440: jump_null(443)
+    441: add
+    442: jump(446)
+    443: pop
+    444: pop
+    445: push_const(4)  -- null
+    446: store_var(0)  -- _PV_ND_STK
+    447: load_var(0)  -- _PV_ND_STK
+    448: pop_scope
+    449: jump(453)
+    450: push_const(2)  -- false
+    451: store_var(12)  -- _PV_PF
+    452: load_var(12)  -- _PV_PF
+    453: pop_scope
+    454: store_reg(1)
+    455: jump(52)
+    456: load_reg(1)
+    457: pop
+    458: load_var(13)  -- _PR_TT
+    459: load_var(6)  -- _PV_TOKS
+    460: load_var(7)  -- _PV_POS
+    461: call(2)
+    462: store_var(14)  -- _PV_TOKTYPE
+    463: load_var(14)  -- _PV_TOKTYPE
+    464: pop
+    465: load_var(43)  -- _PR_GET_PREC
+    466: load_var(14)  -- _PV_TOKTYPE
+    467: call(1)
+    468: store_var(44)  -- _PV_CUR_PREC
+    469: load_var(44)  -- _PV_CUR_PREC
+    470: pop
+    471: load_var(44)  -- _PV_CUR_PREC
+    472: jump_null(478)
+    473: push_const(28)  -- 0
+    474: jump_null(477)
+    475: cmp_gte
+    476: jump(480)
+    477: pop
+    478: pop
+    479: push_const(4)  -- null
+    480: load_var(14)  -- _PV_TOKTYPE
+    481: push_const(37)  -- .
+    482: cmp_neq
+    483: log_and
+    484: load_var(14)  -- _PV_TOKTYPE
+    485: push_const(45)  -- NOT
+    486: cmp_neq
+    487: log_and
+    488: jump_false(612)
+    489: push_scope
+    490: load_var(46)  -- _PR_RA
     491: load_var(14)  -- _PV_TOKTYPE
-    492: push_const(40)  -- .
-    493: cmp_neq
-    494: log_and
-    495: load_var(14)  -- _PV_TOKTYPE
-    496: push_const(47)  -- NOT
-    497: cmp_neq
-    498: log_and
-    499: jump_false(625)
-    500: push_scope
-    501: load_var(48)  -- _PR_RA
-    502: load_var(14)  -- _PV_TOKTYPE
-    503: get_index
-    504: push_const(11)  -- true
-    505: cmp_eq
-    506: store_var(49)  -- _PV_IS_RA
-    507: load_var(49)  -- _PV_IS_RA
+    492: get_index
+    493: push_const(11)  -- true
+    494: cmp_eq
+    495: store_var(47)  -- _PV_IS_RA
+    496: load_var(47)  -- _PV_IS_RA
+    497: pop
+    498: push_const(4)  -- null
+    499: store_reg(3)
+    500: load_var(16)  -- LENGTH
+    501: load_var(1)  -- _PV_OP_STK
+    502: call(1)
+    503: jump_null(509)
+    504: push_const(28)  -- 0
+    505: jump_null(508)
+    506: cmp_gt
+    507: jump(511)
     508: pop
-    509: push_const(4)  -- null
-    510: store_reg(3)
-    511: load_var(16)  -- LENGTH
-    512: load_var(1)  -- _PV_OP_STK
-    513: call(1)
-    514: jump_null(520)
-    515: push_const(28)  -- 0
-    516: jump_null(519)
-    517: cmp_gt
-    518: jump(522)
-    519: pop
-    520: pop
-    521: push_const(4)  -- null
-    522: jump_false(597)
-    523: push_scope
-    524: load_var(45)  -- _PR_GET_PREC
-    525: load_var(1)  -- _PV_OP_STK
-    526: load_var(16)  -- LENGTH
-    527: load_var(1)  -- _PV_OP_STK
-    528: call(1)
-    529: jump_null(535)
-    530: push_const(15)  -- 1
-    531: jump_null(534)
-    532: sub
-    533: jump(537)
-    534: pop
-    535: pop
-    536: push_const(4)  -- null
-    537: get_index
-    538: call(1)
-    539: store_var(50)  -- _PV_TOP_PREC
-    540: load_var(50)  -- _PV_TOP_PREC
+    509: pop
+    510: push_const(4)  -- null
+    511: jump_false(584)
+    512: push_scope
+    513: load_var(43)  -- _PR_GET_PREC
+    514: load_var(1)  -- _PV_OP_STK
+    515: load_var(16)  -- LENGTH
+    516: load_var(1)  -- _PV_OP_STK
+    517: call(1)
+    518: jump_null(524)
+    519: push_const(15)  -- 1
+    520: jump_null(523)
+    521: sub
+    522: jump(526)
+    523: pop
+    524: pop
+    525: push_const(4)  -- null
+    526: get_index
+    527: call(1)
+    528: store_var(48)  -- _PV_TOP_PREC
+    529: load_var(48)  -- _PV_TOP_PREC
+    530: pop
+    531: load_var(47)  -- _PV_IS_RA
+    532: jump_false(549)
+    533: push_scope
+    534: load_var(44)  -- _PV_CUR_PREC
+    535: jump_null(541)
+    536: load_var(48)  -- _PV_TOP_PREC
+    537: jump_null(540)
+    538: cmp_lte
+    539: jump(543)
+    540: pop
     541: pop
-    542: load_var(49)  -- _PV_IS_RA
-    543: jump_false(560)
-    544: push_scope
-    545: load_var(46)  -- _PV_CUR_PREC
-    546: jump_null(552)
-    547: load_var(50)  -- _PV_TOP_PREC
-    548: jump_null(551)
-    549: cmp_lte
-    550: jump(554)
-    551: pop
-    552: pop
-    553: push_const(4)  -- null
-    554: jump_false(557)
-    555: jump(597)
-    556: jump(558)
-    557: push_const(4)  -- null
-    558: pop_scope
-    559: jump(575)
-    560: push_scope
-    561: load_var(46)  -- _PV_CUR_PREC
-    562: jump_null(568)
-    563: load_var(50)  -- _PV_TOP_PREC
-    564: jump_null(567)
-    565: cmp_lt
-    566: jump(570)
-    567: pop
-    568: pop
-    569: push_const(4)  -- null
-    570: jump_false(573)
-    571: jump(597)
-    572: jump(574)
-    573: push_const(4)  -- null
-    574: pop_scope
-    575: pop
-    576: load_var(51)  -- _PR_POP_OP
-    577: load_var(1)  -- _PV_OP_STK
-    578: load_var(0)  -- _PV_ND_STK
-    579: call(2)
-    580: store_var(52)  -- _PV_POP
-    581: load_var(52)  -- _PV_POP
-    582: pop
-    583: load_var(52)  -- _PV_POP
-    584: push_const(53)  -- op_stk
-    585: get_index
-    586: store_var(1)  -- _PV_OP_STK
-    587: load_var(1)  -- _PV_OP_STK
-    588: pop
-    589: load_var(52)  -- _PV_POP
-    590: push_const(54)  -- nd_stk
-    591: get_index
-    592: store_var(0)  -- _PV_ND_STK
-    593: load_var(0)  -- _PV_ND_STK
-    594: pop_scope
-    595: store_reg(3)
-    596: jump(511)
-    597: load_reg(3)
+    542: push_const(4)  -- null
+    543: jump_false(546)
+    544: jump(584)
+    545: jump(547)
+    546: push_const(4)  -- null
+    547: pop_scope
+    548: jump(564)
+    549: push_scope
+    550: load_var(44)  -- _PV_CUR_PREC
+    551: jump_null(557)
+    552: load_var(48)  -- _PV_TOP_PREC
+    553: jump_null(556)
+    554: cmp_lt
+    555: jump(559)
+    556: pop
+    557: pop
+    558: push_const(4)  -- null
+    559: jump_false(562)
+    560: jump(584)
+    561: jump(563)
+    562: push_const(4)  -- null
+    563: pop_scope
+    564: pop
+    565: load_var(49)  -- _PR_POP_OP
+    566: load_var(1)  -- _PV_OP_STK
+    567: load_var(0)  -- _PV_ND_STK
+    568: call(2)
+    569: store_var(50)  -- _PV_POP
+    570: load_var(50)  -- _PV_POP
+    571: pop
+    572: load_var(50)  -- _PV_POP
+    573: get_member(51)  -- OP_STK
+    574: store_var(1)  -- _PV_OP_STK
+    575: load_var(1)  -- _PV_OP_STK
+    576: pop
+    577: load_var(50)  -- _PV_POP
+    578: get_member(52)  -- ND_STK
+    579: store_var(0)  -- _PV_ND_STK
+    580: load_var(0)  -- _PV_ND_STK
+    581: pop_scope
+    582: store_reg(3)
+    583: jump(500)
+    584: load_reg(3)
+    585: pop
+    586: load_var(1)  -- _PV_OP_STK
+    587: jump_null(594)
+    588: load_var(14)  -- _PV_TOKTYPE
+    589: make_list(1)
+    590: jump_null(593)
+    591: add
+    592: jump(596)
+    593: pop
+    594: pop
+    595: push_const(4)  -- null
+    596: store_var(1)  -- _PV_OP_STK
+    597: load_var(1)  -- _PV_OP_STK
     598: pop
-    599: load_var(1)  -- _PV_OP_STK
-    600: jump_null(607)
-    601: load_var(14)  -- _PV_TOKTYPE
-    602: make_list(1)
-    603: jump_null(606)
-    604: add
-    605: jump(609)
+    599: load_var(7)  -- _PV_POS
+    600: jump_null(606)
+    601: push_const(15)  -- 1
+    602: jump_null(605)
+    603: add
+    604: jump(608)
+    605: pop
     606: pop
-    607: pop
-    608: push_const(4)  -- null
-    609: store_var(1)  -- _PV_OP_STK
-    610: load_var(1)  -- _PV_OP_STK
-    611: pop
-    612: load_var(7)  -- _PV_POS
-    613: jump_null(619)
-    614: push_const(15)  -- 1
-    615: jump_null(618)
-    616: add
-    617: jump(621)
-    618: pop
-    619: pop
-    620: push_const(4)  -- null
-    621: store_var(7)  -- _PV_POS
-    622: load_var(7)  -- _PV_POS
-    623: pop_scope
-    624: jump(668)
-    625: push_scope
-    626: push_const(4)  -- null
-    627: store_reg(4)
-    628: load_var(16)  -- LENGTH
+    607: push_const(4)  -- null
+    608: store_var(7)  -- _PV_POS
+    609: load_var(7)  -- _PV_POS
+    610: pop_scope
+    611: jump(653)
+    612: push_scope
+    613: push_const(4)  -- null
+    614: store_reg(4)
+    615: load_var(16)  -- LENGTH
+    616: load_var(1)  -- _PV_OP_STK
+    617: call(1)
+    618: jump_null(624)
+    619: push_const(28)  -- 0
+    620: jump_null(623)
+    621: cmp_gt
+    622: jump(626)
+    623: pop
+    624: pop
+    625: push_const(4)  -- null
+    626: jump_false(647)
+    627: push_scope
+    628: load_var(49)  -- _PR_POP_OP
     629: load_var(1)  -- _PV_OP_STK
-    630: call(1)
-    631: jump_null(637)
-    632: push_const(28)  -- 0
-    633: jump_null(636)
-    634: cmp_gt
-    635: jump(639)
-    636: pop
-    637: pop
-    638: push_const(4)  -- null
-    639: jump_false(662)
-    640: push_scope
-    641: load_var(51)  -- _PR_POP_OP
-    642: load_var(1)  -- _PV_OP_STK
+    630: load_var(0)  -- _PV_ND_STK
+    631: call(2)
+    632: store_var(50)  -- _PV_POP
+    633: load_var(50)  -- _PV_POP
+    634: pop
+    635: load_var(50)  -- _PV_POP
+    636: get_member(51)  -- OP_STK
+    637: store_var(1)  -- _PV_OP_STK
+    638: load_var(1)  -- _PV_OP_STK
+    639: pop
+    640: load_var(50)  -- _PV_POP
+    641: get_member(52)  -- ND_STK
+    642: store_var(0)  -- _PV_ND_STK
     643: load_var(0)  -- _PV_ND_STK
-    644: call(2)
-    645: store_var(52)  -- _PV_POP
-    646: load_var(52)  -- _PV_POP
-    647: pop
-    648: load_var(52)  -- _PV_POP
-    649: push_const(53)  -- op_stk
-    650: get_index
-    651: store_var(1)  -- _PV_OP_STK
-    652: load_var(1)  -- _PV_OP_STK
+    644: pop_scope
+    645: store_reg(4)
+    646: jump(615)
+    647: load_reg(4)
+    648: pop
+    649: push_const(11)  -- true
+    650: store_var(3)  -- _PV_DONE
+    651: load_var(3)  -- _PV_DONE
+    652: pop_scope
     653: pop
-    654: load_var(52)  -- _PV_POP
-    655: push_const(54)  -- nd_stk
-    656: get_index
-    657: store_var(0)  -- _PV_ND_STK
-    658: load_var(0)  -- _PV_ND_STK
-    659: pop_scope
-    660: store_reg(4)
-    661: jump(628)
-    662: load_reg(4)
-    663: pop
-    664: push_const(11)  -- true
-    665: store_var(3)  -- _PV_DONE
-    666: load_var(3)  -- _PV_DONE
-    667: pop_scope
-    668: pop
-    669: load_var(3)  -- _PV_DONE
-    670: jump_null(672)
-    671: log_not
-    672: jump_false(699)
-    673: push_scope
-    674: load_var(16)  -- LENGTH
-    675: load_var(1)  -- _PV_OP_STK
-    676: call(1)
-    677: push_const(28)  -- 0
-    678: cmp_eq
-    679: load_var(16)  -- LENGTH
-    680: load_var(0)  -- _PV_ND_STK
-    681: call(1)
-    682: jump_null(688)
-    683: push_const(15)  -- 1
-    684: jump_null(687)
-    685: cmp_lte
-    686: jump(690)
-    687: pop
-    688: pop
-    689: push_const(4)  -- null
-    690: log_and
-    691: jump_false(696)
-    692: push_const(11)  -- true
-    693: store_var(3)  -- _PV_DONE
-    694: load_var(3)  -- _PV_DONE
-    695: jump(697)
-    696: push_const(4)  -- null
-    697: pop_scope
-    698: jump(700)
-    699: push_const(4)  -- null
-    700: pop_scope
-    701: store_reg(0)
-    702: jump(15)
-    703: load_reg(0)
-    704: pop
-    705: load_var(16)  -- LENGTH
-    706: load_var(0)  -- _PV_ND_STK
-    707: call(1)
-    708: jump_null(714)
-    709: push_const(28)  -- 0
-    710: jump_null(713)
-    711: cmp_gt
-    712: jump(716)
+    654: load_var(3)  -- _PV_DONE
+    655: jump_null(657)
+    656: log_not
+    657: jump_false(684)
+    658: push_scope
+    659: load_var(16)  -- LENGTH
+    660: load_var(1)  -- _PV_OP_STK
+    661: call(1)
+    662: push_const(28)  -- 0
+    663: cmp_eq
+    664: load_var(16)  -- LENGTH
+    665: load_var(0)  -- _PV_ND_STK
+    666: call(1)
+    667: jump_null(673)
+    668: push_const(15)  -- 1
+    669: jump_null(672)
+    670: cmp_lte
+    671: jump(675)
+    672: pop
+    673: pop
+    674: push_const(4)  -- null
+    675: log_and
+    676: jump_false(681)
+    677: push_const(11)  -- true
+    678: store_var(3)  -- _PV_DONE
+    679: load_var(3)  -- _PV_DONE
+    680: jump(682)
+    681: push_const(4)  -- null
+    682: pop_scope
+    683: jump(685)
+    684: push_const(4)  -- null
+    685: pop_scope
+    686: store_reg(0)
+    687: jump(15)
+    688: load_reg(0)
+    689: pop
+    690: load_var(16)  -- LENGTH
+    691: load_var(0)  -- _PV_ND_STK
+    692: call(1)
+    693: jump_null(699)
+    694: push_const(28)  -- 0
+    695: jump_null(698)
+    696: cmp_gt
+    697: jump(701)
+    698: pop
+    699: pop
+    700: push_const(4)  -- null
+    701: jump_false(720)
+    702: load_var(53)  -- _PR_RESULT
+    703: load_var(0)  -- _PV_ND_STK
+    704: load_var(16)  -- LENGTH
+    705: load_var(0)  -- _PV_ND_STK
+    706: call(1)
+    707: jump_null(713)
+    708: push_const(15)  -- 1
+    709: jump_null(712)
+    710: sub
+    711: jump(715)
+    712: pop
     713: pop
-    714: pop
-    715: push_const(4)  -- null
-    716: jump_false(736)
-    717: push_const(9)  -- node
-    718: load_var(0)  -- _PV_ND_STK
-    719: load_var(16)  -- LENGTH
-    720: load_var(0)  -- _PV_ND_STK
-    721: call(1)
-    722: jump_null(728)
-    723: push_const(15)  -- 1
-    724: jump_null(727)
-    725: sub
-    726: jump(730)
-    727: pop
-    728: pop
-    729: push_const(4)  -- null
-    730: get_index
-    731: push_const(10)  -- pos
-    732: load_var(7)  -- _PV_POS
-    733: make_map(2)
-    734: ret
-    735: jump(737)
-    736: push_const(4)  -- null
-    737: pop
-    738: push_const(9)  -- node
-    739: load_var(55)  -- _PR_LEAF
-    740: push_const(56)  -- null_lit
-    741: push_const(4)  -- null
-    742: call(2)
-    743: push_const(10)  -- pos
-    744: load_var(7)  -- _PV_POS
-    745: make_map(2)
-    746: ret
-    747: pop_scope
-    748: ret
-CHUNK ___PR_EXTRACT_PARAMS_7 (_PV_NODE)
+    714: push_const(4)  -- null
+    715: get_index
+    716: load_var(7)  -- _PV_POS
+    717: call(2)
+    718: ret
+    719: jump(721)
+    720: push_const(4)  -- null
+    721: pop
+    722: load_var(53)  -- _PR_RESULT
+    723: load_var(54)  -- _PR_LEAF
+    724: push_const(55)  -- null_lit
+    725: push_const(4)  -- null
+    726: call(2)
+    727: load_var(7)  -- _PV_POS
+    728: call(2)
+    729: ret
+    730: pop_scope
+    731: ret
+CHUNK ___PR_EXTRACT_PARAMS_10 (_PV_NODE)
   CONST  0: _PV_NODE
-  CONST  1: sym
+  CONST  1: SYM
   CONST  2: ident
-  CONST  3: val
+  CONST  3: VAL
   CONST  4: null
   CONST  5: call
   CONST  6: _PV_PARAMS
   CONST  7: 1
   CONST  8: _PV_IDX
   CONST  9: LENGTH
-  CONST  10: children
+  CONST  10: CHILDREN
   CONST  11: _PV_CH
   CONST  12: list
   CONST  13: 0
   CODE:
     0: push_scope
     1: load_var(0)  -- _PV_NODE
-    2: push_const(1)  -- sym
-    3: get_index
-    4: push_const(2)  -- ident
-    5: cmp_eq
-    6: jump_false(13)
-    7: load_var(0)  -- _PV_NODE
-    8: push_const(3)  -- val
-    9: get_index
-    10: make_list(1)
-    11: ret
-    12: jump(14)
-    13: push_const(4)  -- null
-    14: pop
-    15: load_var(0)  -- _PV_NODE
-    16: push_const(1)  -- sym
-    17: get_index
-    18: push_const(5)  -- call
-    19: cmp_eq
-    20: jump_false(98)
-    21: push_scope
-    22: make_list(0)
-    23: store_var(6)  -- _PV_PARAMS
-    24: load_var(6)  -- _PV_PARAMS
-    25: pop
-    26: push_const(7)  -- 1
-    27: store_var(8)  -- _PV_IDX
-    28: load_var(8)  -- _PV_IDX
-    29: pop
-    30: push_const(4)  -- null
-    31: store_reg(0)
-    32: load_var(8)  -- _PV_IDX
-    33: jump_null(43)
-    34: load_var(9)  -- LENGTH
-    35: load_var(0)  -- _PV_NODE
-    36: push_const(10)  -- children
-    37: get_index
-    38: call(1)
-    39: jump_null(42)
-    40: cmp_lt
-    41: jump(45)
-    42: pop
-    43: pop
-    44: push_const(4)  -- null
-    45: jump_false(92)
-    46: push_scope
-    47: load_var(0)  -- _PV_NODE
-    48: push_const(10)  -- children
-    49: get_index
-    50: load_var(8)  -- _PV_IDX
-    51: get_index
-    52: store_var(11)  -- _PV_CH
-    53: load_var(11)  -- _PV_CH
-    54: pop
-    55: load_var(11)  -- _PV_CH
-    56: push_const(1)  -- sym
-    57: get_index
-    58: push_const(2)  -- ident
-    59: cmp_eq
-    60: jump_false(76)
-    61: load_var(6)  -- _PV_PARAMS
-    62: jump_null(71)
-    63: load_var(11)  -- _PV_CH
-    64: push_const(3)  -- val
-    65: get_index
-    66: make_list(1)
-    67: jump_null(70)
-    68: add
-    69: jump(73)
+    2: get_member(1)  -- SYM
+    3: push_const(2)  -- ident
+    4: cmp_eq
+    5: jump_false(11)
+    6: load_var(0)  -- _PV_NODE
+    7: get_member(3)  -- VAL
+    8: make_list(1)
+    9: ret
+    10: jump(12)
+    11: push_const(4)  -- null
+    12: pop
+    13: load_var(0)  -- _PV_NODE
+    14: get_member(1)  -- SYM
+    15: push_const(5)  -- call
+    16: cmp_eq
+    17: jump_false(91)
+    18: push_scope
+    19: make_list(0)
+    20: store_var(6)  -- _PV_PARAMS
+    21: load_var(6)  -- _PV_PARAMS
+    22: pop
+    23: push_const(7)  -- 1
+    24: store_var(8)  -- _PV_IDX
+    25: load_var(8)  -- _PV_IDX
+    26: pop
+    27: push_const(4)  -- null
+    28: store_reg(0)
+    29: load_var(8)  -- _PV_IDX
+    30: jump_null(39)
+    31: load_var(9)  -- LENGTH
+    32: load_var(0)  -- _PV_NODE
+    33: get_member(10)  -- CHILDREN
+    34: call(1)
+    35: jump_null(38)
+    36: cmp_lt
+    37: jump(41)
+    38: pop
+    39: pop
+    40: push_const(4)  -- null
+    41: jump_false(85)
+    42: push_scope
+    43: load_var(0)  -- _PV_NODE
+    44: get_member(10)  -- CHILDREN
+    45: load_var(8)  -- _PV_IDX
+    46: get_index
+    47: store_var(11)  -- _PV_CH
+    48: load_var(11)  -- _PV_CH
+    49: pop
+    50: load_var(11)  -- _PV_CH
+    51: get_member(1)  -- SYM
+    52: push_const(2)  -- ident
+    53: cmp_eq
+    54: jump_false(69)
+    55: load_var(6)  -- _PV_PARAMS
+    56: jump_null(64)
+    57: load_var(11)  -- _PV_CH
+    58: get_member(3)  -- VAL
+    59: make_list(1)
+    60: jump_null(63)
+    61: add
+    62: jump(66)
+    63: pop
+    64: pop
+    65: push_const(4)  -- null
+    66: store_var(6)  -- _PV_PARAMS
+    67: load_var(6)  -- _PV_PARAMS
+    68: jump(70)
+    69: push_const(4)  -- null
     70: pop
-    71: pop
-    72: push_const(4)  -- null
-    73: store_var(6)  -- _PV_PARAMS
-    74: load_var(6)  -- _PV_PARAMS
-    75: jump(77)
-    76: push_const(4)  -- null
+    71: load_var(8)  -- _PV_IDX
+    72: jump_null(78)
+    73: push_const(7)  -- 1
+    74: jump_null(77)
+    75: add
+    76: jump(80)
     77: pop
-    78: load_var(8)  -- _PV_IDX
-    79: jump_null(85)
-    80: push_const(7)  -- 1
-    81: jump_null(84)
-    82: add
-    83: jump(87)
-    84: pop
-    85: pop
-    86: push_const(4)  -- null
-    87: store_var(8)  -- _PV_IDX
-    88: load_var(8)  -- _PV_IDX
+    78: pop
+    79: push_const(4)  -- null
+    80: store_var(8)  -- _PV_IDX
+    81: load_var(8)  -- _PV_IDX
+    82: pop_scope
+    83: store_reg(0)
+    84: jump(29)
+    85: load_reg(0)
+    86: pop
+    87: load_var(6)  -- _PV_PARAMS
+    88: ret
     89: pop_scope
-    90: store_reg(0)
-    91: jump(32)
-    92: load_reg(0)
-    93: pop
-    94: load_var(6)  -- _PV_PARAMS
-    95: ret
-    96: pop_scope
-    97: jump(99)
-    98: push_const(4)  -- null
-    99: pop
-    100: load_var(0)  -- _PV_NODE
-    101: push_const(1)  -- sym
-    102: get_index
-    103: push_const(12)  -- list
-    104: cmp_eq
-    105: jump_false(183)
-    106: push_scope
-    107: make_list(0)
-    108: store_var(6)  -- _PV_PARAMS
-    109: load_var(6)  -- _PV_PARAMS
-    110: pop
-    111: push_const(13)  -- 0
-    112: store_var(8)  -- _PV_IDX
-    113: load_var(8)  -- _PV_IDX
-    114: pop
-    115: push_const(4)  -- null
-    116: store_reg(1)
-    117: load_var(8)  -- _PV_IDX
-    118: jump_null(128)
-    119: load_var(9)  -- LENGTH
-    120: load_var(0)  -- _PV_NODE
-    121: push_const(10)  -- children
-    122: get_index
-    123: call(1)
-    124: jump_null(127)
-    125: cmp_lt
-    126: jump(130)
-    127: pop
-    128: pop
-    129: push_const(4)  -- null
-    130: jump_false(177)
-    131: push_scope
-    132: load_var(0)  -- _PV_NODE
-    133: push_const(10)  -- children
-    134: get_index
-    135: load_var(8)  -- _PV_IDX
-    136: get_index
-    137: store_var(11)  -- _PV_CH
-    138: load_var(11)  -- _PV_CH
-    139: pop
-    140: load_var(11)  -- _PV_CH
-    141: push_const(1)  -- sym
-    142: get_index
-    143: push_const(2)  -- ident
-    144: cmp_eq
-    145: jump_false(161)
-    146: load_var(6)  -- _PV_PARAMS
-    147: jump_null(156)
-    148: load_var(11)  -- _PV_CH
-    149: push_const(3)  -- val
-    150: get_index
-    151: make_list(1)
-    152: jump_null(155)
-    153: add
-    154: jump(158)
-    155: pop
-    156: pop
-    157: push_const(4)  -- null
-    158: store_var(6)  -- _PV_PARAMS
-    159: load_var(6)  -- _PV_PARAMS
-    160: jump(162)
-    161: push_const(4)  -- null
-    162: pop
-    163: load_var(8)  -- _PV_IDX
-    164: jump_null(170)
-    165: push_const(7)  -- 1
-    166: jump_null(169)
-    167: add
-    168: jump(172)
-    169: pop
-    170: pop
+    90: jump(92)
+    91: push_const(4)  -- null
+    92: pop
+    93: load_var(0)  -- _PV_NODE
+    94: get_member(1)  -- SYM
+    95: push_const(12)  -- list
+    96: cmp_eq
+    97: jump_false(171)
+    98: push_scope
+    99: make_list(0)
+    100: store_var(6)  -- _PV_PARAMS
+    101: load_var(6)  -- _PV_PARAMS
+    102: pop
+    103: push_const(13)  -- 0
+    104: store_var(8)  -- _PV_IDX
+    105: load_var(8)  -- _PV_IDX
+    106: pop
+    107: push_const(4)  -- null
+    108: store_reg(1)
+    109: load_var(8)  -- _PV_IDX
+    110: jump_null(119)
+    111: load_var(9)  -- LENGTH
+    112: load_var(0)  -- _PV_NODE
+    113: get_member(10)  -- CHILDREN
+    114: call(1)
+    115: jump_null(118)
+    116: cmp_lt
+    117: jump(121)
+    118: pop
+    119: pop
+    120: push_const(4)  -- null
+    121: jump_false(165)
+    122: push_scope
+    123: load_var(0)  -- _PV_NODE
+    124: get_member(10)  -- CHILDREN
+    125: load_var(8)  -- _PV_IDX
+    126: get_index
+    127: store_var(11)  -- _PV_CH
+    128: load_var(11)  -- _PV_CH
+    129: pop
+    130: load_var(11)  -- _PV_CH
+    131: get_member(1)  -- SYM
+    132: push_const(2)  -- ident
+    133: cmp_eq
+    134: jump_false(149)
+    135: load_var(6)  -- _PV_PARAMS
+    136: jump_null(144)
+    137: load_var(11)  -- _PV_CH
+    138: get_member(3)  -- VAL
+    139: make_list(1)
+    140: jump_null(143)
+    141: add
+    142: jump(146)
+    143: pop
+    144: pop
+    145: push_const(4)  -- null
+    146: store_var(6)  -- _PV_PARAMS
+    147: load_var(6)  -- _PV_PARAMS
+    148: jump(150)
+    149: push_const(4)  -- null
+    150: pop
+    151: load_var(8)  -- _PV_IDX
+    152: jump_null(158)
+    153: push_const(7)  -- 1
+    154: jump_null(157)
+    155: add
+    156: jump(160)
+    157: pop
+    158: pop
+    159: push_const(4)  -- null
+    160: store_var(8)  -- _PV_IDX
+    161: load_var(8)  -- _PV_IDX
+    162: pop_scope
+    163: store_reg(1)
+    164: jump(109)
+    165: load_reg(1)
+    166: pop
+    167: load_var(6)  -- _PV_PARAMS
+    168: ret
+    169: pop_scope
+    170: jump(172)
     171: push_const(4)  -- null
-    172: store_var(8)  -- _PV_IDX
-    173: load_var(8)  -- _PV_IDX
-    174: pop_scope
-    175: store_reg(1)
-    176: jump(117)
-    177: load_reg(1)
-    178: pop
-    179: load_var(6)  -- _PV_PARAMS
-    180: ret
-    181: pop_scope
-    182: jump(184)
-    183: push_const(4)  -- null
-    184: pop
-    185: make_list(0)
-    186: ret
-    187: pop_scope
-    188: ret
-CHUNK ___PR_FOR_17 (_PV_TOKS, _PV_POS)
+    172: pop
+    173: make_list(0)
+    174: ret
+    175: pop_scope
+    176: ret
+CHUNK ___PR_FOR_20 (_PV_TOKS, _PV_POS)
   CONST  0: _PV_POS
   CONST  1: 1
   CONST  2: null
@@ -1834,9 +1809,9 @@ CHUNK ___PR_FOR_17 (_PV_TOKS, _PV_POS)
   CONST  7: :=
   CONST  8: _PR_EXPR
   CONST  9: _PV_RS
-  CONST  10: node
+  CONST  10: NODE
   CONST  11: _PV_START
-  CONST  12: pos
+  CONST  12: POS
   CONST  13: TO
   CONST  14: _PV_RE
   CONST  15: _PV_END
@@ -1849,11 +1824,10 @@ CHUNK ___PR_FOR_17 (_PV_TOKS, _PV_POS)
   CONST  22: _PV_RB
   CONST  23: _PV_BODY
   CONST  24: _PV_CH
-  CONST  25: sym
-  CONST  26: for
-  CONST  27: children
-  CONST  28: val
-  CONST  29: UPPERCASE
+  CONST  25: _PR_RESULT
+  CONST  26: _PR_NODE_V
+  CONST  27: for
+  CONST  28: UPPERCASE
   CODE:
     0: push_scope
     1: load_var(0)  -- _PV_POS
@@ -1916,193 +1890,182 @@ CHUNK ___PR_FOR_17 (_PV_TOKS, _PV_POS)
     58: load_var(9)  -- _PV_RS
     59: pop
     60: load_var(9)  -- _PV_RS
-    61: push_const(10)  -- node
-    62: get_index
-    63: store_var(11)  -- _PV_START
-    64: load_var(11)  -- _PV_START
-    65: pop
-    66: load_var(9)  -- _PV_RS
-    67: push_const(12)  -- pos
-    68: get_index
-    69: store_var(0)  -- _PV_POS
-    70: load_var(0)  -- _PV_POS
-    71: pop
-    72: load_var(6)  -- _PR_TT
-    73: load_var(4)  -- _PV_TOKS
-    74: load_var(0)  -- _PV_POS
-    75: call(2)
-    76: push_const(13)  -- TO
-    77: cmp_eq
-    78: jump_false(91)
-    79: load_var(0)  -- _PV_POS
-    80: jump_null(86)
-    81: push_const(1)  -- 1
-    82: jump_null(85)
-    83: add
-    84: jump(88)
-    85: pop
-    86: pop
-    87: push_const(2)  -- null
-    88: store_var(0)  -- _PV_POS
-    89: load_var(0)  -- _PV_POS
-    90: jump(92)
-    91: push_const(2)  -- null
-    92: pop
-    93: load_var(8)  -- _PR_EXPR
-    94: load_var(4)  -- _PV_TOKS
-    95: load_var(0)  -- _PV_POS
-    96: call(2)
-    97: store_var(14)  -- _PV_RE
+    61: get_member(10)  -- NODE
+    62: store_var(11)  -- _PV_START
+    63: load_var(11)  -- _PV_START
+    64: pop
+    65: load_var(9)  -- _PV_RS
+    66: get_member(12)  -- POS
+    67: store_var(0)  -- _PV_POS
+    68: load_var(0)  -- _PV_POS
+    69: pop
+    70: load_var(6)  -- _PR_TT
+    71: load_var(4)  -- _PV_TOKS
+    72: load_var(0)  -- _PV_POS
+    73: call(2)
+    74: push_const(13)  -- TO
+    75: cmp_eq
+    76: jump_false(89)
+    77: load_var(0)  -- _PV_POS
+    78: jump_null(84)
+    79: push_const(1)  -- 1
+    80: jump_null(83)
+    81: add
+    82: jump(86)
+    83: pop
+    84: pop
+    85: push_const(2)  -- null
+    86: store_var(0)  -- _PV_POS
+    87: load_var(0)  -- _PV_POS
+    88: jump(90)
+    89: push_const(2)  -- null
+    90: pop
+    91: load_var(8)  -- _PR_EXPR
+    92: load_var(4)  -- _PV_TOKS
+    93: load_var(0)  -- _PV_POS
+    94: call(2)
+    95: store_var(14)  -- _PV_RE
+    96: load_var(14)  -- _PV_RE
+    97: pop
     98: load_var(14)  -- _PV_RE
-    99: pop
-    100: load_var(14)  -- _PV_RE
-    101: push_const(10)  -- node
-    102: get_index
-    103: store_var(15)  -- _PV_END
-    104: load_var(15)  -- _PV_END
-    105: pop
-    106: load_var(14)  -- _PV_RE
-    107: push_const(12)  -- pos
-    108: get_index
-    109: store_var(0)  -- _PV_POS
-    110: load_var(0)  -- _PV_POS
+    99: get_member(10)  -- NODE
+    100: store_var(15)  -- _PV_END
+    101: load_var(15)  -- _PV_END
+    102: pop
+    103: load_var(14)  -- _PV_RE
+    104: get_member(12)  -- POS
+    105: store_var(0)  -- _PV_POS
+    106: load_var(0)  -- _PV_POS
+    107: pop
+    108: push_const(2)  -- null
+    109: store_var(16)  -- _PV_STEP
+    110: load_var(16)  -- _PV_STEP
     111: pop
-    112: push_const(2)  -- null
-    113: store_var(16)  -- _PV_STEP
-    114: load_var(16)  -- _PV_STEP
-    115: pop
-    116: load_var(6)  -- _PR_TT
-    117: load_var(4)  -- _PV_TOKS
-    118: load_var(0)  -- _PV_POS
-    119: call(2)
-    120: push_const(17)  -- ID
-    121: cmp_eq
-    122: load_var(3)  -- _PR_TV
-    123: load_var(4)  -- _PV_TOKS
-    124: load_var(0)  -- _PV_POS
-    125: call(2)
-    126: push_const(18)  -- STEP
-    127: cmp_eq
-    128: log_and
-    129: jump_false(163)
-    130: push_scope
-    131: load_var(0)  -- _PV_POS
-    132: jump_null(138)
-    133: push_const(1)  -- 1
-    134: jump_null(137)
-    135: add
-    136: jump(140)
-    137: pop
+    112: load_var(6)  -- _PR_TT
+    113: load_var(4)  -- _PV_TOKS
+    114: load_var(0)  -- _PV_POS
+    115: call(2)
+    116: push_const(17)  -- ID
+    117: cmp_eq
+    118: load_var(3)  -- _PR_TV
+    119: load_var(4)  -- _PV_TOKS
+    120: load_var(0)  -- _PV_POS
+    121: call(2)
+    122: push_const(18)  -- STEP
+    123: cmp_eq
+    124: log_and
+    125: jump_false(157)
+    126: push_scope
+    127: load_var(0)  -- _PV_POS
+    128: jump_null(134)
+    129: push_const(1)  -- 1
+    130: jump_null(133)
+    131: add
+    132: jump(136)
+    133: pop
+    134: pop
+    135: push_const(2)  -- null
+    136: store_var(0)  -- _PV_POS
+    137: load_var(0)  -- _PV_POS
     138: pop
-    139: push_const(2)  -- null
-    140: store_var(0)  -- _PV_POS
+    139: load_var(8)  -- _PR_EXPR
+    140: load_var(4)  -- _PV_TOKS
     141: load_var(0)  -- _PV_POS
-    142: pop
-    143: load_var(8)  -- _PR_EXPR
-    144: load_var(4)  -- _PV_TOKS
-    145: load_var(0)  -- _PV_POS
-    146: call(2)
-    147: store_var(19)  -- _PV_RST
-    148: load_var(19)  -- _PV_RST
-    149: pop
-    150: load_var(19)  -- _PV_RST
-    151: push_const(10)  -- node
-    152: get_index
-    153: store_var(16)  -- _PV_STEP
-    154: load_var(16)  -- _PV_STEP
-    155: pop
-    156: load_var(19)  -- _PV_RST
-    157: push_const(12)  -- pos
-    158: get_index
-    159: store_var(0)  -- _PV_POS
-    160: load_var(0)  -- _PV_POS
-    161: pop_scope
-    162: jump(164)
-    163: push_const(2)  -- null
-    164: pop
-    165: load_var(6)  -- _PR_TT
-    166: load_var(4)  -- _PV_TOKS
-    167: load_var(0)  -- _PV_POS
-    168: call(2)
-    169: push_const(20)  -- DO
-    170: cmp_eq
-    171: jump_false(184)
-    172: load_var(0)  -- _PV_POS
-    173: jump_null(179)
-    174: push_const(1)  -- 1
-    175: jump_null(178)
-    176: add
-    177: jump(181)
-    178: pop
+    142: call(2)
+    143: store_var(19)  -- _PV_RST
+    144: load_var(19)  -- _PV_RST
+    145: pop
+    146: load_var(19)  -- _PV_RST
+    147: get_member(10)  -- NODE
+    148: store_var(16)  -- _PV_STEP
+    149: load_var(16)  -- _PV_STEP
+    150: pop
+    151: load_var(19)  -- _PV_RST
+    152: get_member(12)  -- POS
+    153: store_var(0)  -- _PV_POS
+    154: load_var(0)  -- _PV_POS
+    155: pop_scope
+    156: jump(158)
+    157: push_const(2)  -- null
+    158: pop
+    159: load_var(6)  -- _PR_TT
+    160: load_var(4)  -- _PV_TOKS
+    161: load_var(0)  -- _PV_POS
+    162: call(2)
+    163: push_const(20)  -- DO
+    164: cmp_eq
+    165: jump_false(178)
+    166: load_var(0)  -- _PV_POS
+    167: jump_null(173)
+    168: push_const(1)  -- 1
+    169: jump_null(172)
+    170: add
+    171: jump(175)
+    172: pop
+    173: pop
+    174: push_const(2)  -- null
+    175: store_var(0)  -- _PV_POS
+    176: load_var(0)  -- _PV_POS
+    177: jump(179)
+    178: push_const(2)  -- null
     179: pop
-    180: push_const(2)  -- null
-    181: store_var(0)  -- _PV_POS
+    180: load_var(21)  -- _PR_STMT
+    181: load_var(4)  -- _PV_TOKS
     182: load_var(0)  -- _PV_POS
-    183: jump(185)
-    184: push_const(2)  -- null
-    185: pop
-    186: load_var(21)  -- _PR_STMT
-    187: load_var(4)  -- _PV_TOKS
-    188: load_var(0)  -- _PV_POS
-    189: call(2)
-    190: store_var(22)  -- _PV_RB
-    191: load_var(22)  -- _PV_RB
-    192: pop
-    193: load_var(22)  -- _PV_RB
-    194: push_const(10)  -- node
-    195: get_index
-    196: store_var(23)  -- _PV_BODY
-    197: load_var(23)  -- _PV_BODY
-    198: pop
-    199: load_var(22)  -- _PV_RB
-    200: push_const(12)  -- pos
-    201: get_index
-    202: store_var(0)  -- _PV_POS
-    203: load_var(0)  -- _PV_POS
-    204: pop
-    205: load_var(11)  -- _PV_START
-    206: load_var(15)  -- _PV_END
-    207: load_var(23)  -- _PV_BODY
-    208: make_list(3)
-    209: store_var(24)  -- _PV_CH
-    210: load_var(24)  -- _PV_CH
-    211: pop
-    212: load_var(16)  -- _PV_STEP
-    213: push_const(2)  -- null
-    214: cmp_neq
-    215: jump_false(229)
-    216: load_var(24)  -- _PV_CH
-    217: jump_null(224)
-    218: load_var(16)  -- _PV_STEP
-    219: make_list(1)
-    220: jump_null(223)
-    221: add
-    222: jump(226)
-    223: pop
-    224: pop
-    225: push_const(2)  -- null
-    226: store_var(24)  -- _PV_CH
-    227: load_var(24)  -- _PV_CH
-    228: jump(230)
-    229: push_const(2)  -- null
-    230: pop
-    231: push_const(10)  -- node
-    232: push_const(25)  -- sym
-    233: push_const(26)  -- for
-    234: push_const(27)  -- children
-    235: load_var(24)  -- _PV_CH
-    236: push_const(28)  -- val
-    237: load_var(29)  -- UPPERCASE
-    238: load_var(5)  -- _PV_VN
-    239: call(1)
-    240: make_map(3)
-    241: push_const(12)  -- pos
-    242: load_var(0)  -- _PV_POS
-    243: make_map(2)
-    244: ret
-    245: pop_scope
-    246: ret
-CHUNK ___PR_GET_PREC_5 (_PV_TOK)
+    183: call(2)
+    184: store_var(22)  -- _PV_RB
+    185: load_var(22)  -- _PV_RB
+    186: pop
+    187: load_var(22)  -- _PV_RB
+    188: get_member(10)  -- NODE
+    189: store_var(23)  -- _PV_BODY
+    190: load_var(23)  -- _PV_BODY
+    191: pop
+    192: load_var(22)  -- _PV_RB
+    193: get_member(12)  -- POS
+    194: store_var(0)  -- _PV_POS
+    195: load_var(0)  -- _PV_POS
+    196: pop
+    197: load_var(11)  -- _PV_START
+    198: load_var(15)  -- _PV_END
+    199: load_var(23)  -- _PV_BODY
+    200: make_list(3)
+    201: store_var(24)  -- _PV_CH
+    202: load_var(24)  -- _PV_CH
+    203: pop
+    204: load_var(16)  -- _PV_STEP
+    205: push_const(2)  -- null
+    206: cmp_neq
+    207: jump_false(221)
+    208: load_var(24)  -- _PV_CH
+    209: jump_null(216)
+    210: load_var(16)  -- _PV_STEP
+    211: make_list(1)
+    212: jump_null(215)
+    213: add
+    214: jump(218)
+    215: pop
+    216: pop
+    217: push_const(2)  -- null
+    218: store_var(24)  -- _PV_CH
+    219: load_var(24)  -- _PV_CH
+    220: jump(222)
+    221: push_const(2)  -- null
+    222: pop
+    223: load_var(25)  -- _PR_RESULT
+    224: load_var(26)  -- _PR_NODE_V
+    225: push_const(27)  -- for
+    226: load_var(24)  -- _PV_CH
+    227: load_var(28)  -- UPPERCASE
+    228: load_var(5)  -- _PV_VN
+    229: call(1)
+    230: call(3)
+    231: load_var(0)  -- _PV_POS
+    232: call(2)
+    233: ret
+    234: pop_scope
+    235: ret
+CHUNK ___PR_GET_PREC_8 (_PV_TOK)
   CONST  0: _PR_PREC
   CONST  1: _PV_TOK
   CONST  2: _PV_PR
@@ -2131,16 +2094,16 @@ CHUNK ___PR_GET_PREC_5 (_PV_TOK)
     19: ret
     20: pop_scope
     21: ret
-CHUNK ___PR_IF_14 (_PV_TOKS, _PV_POS)
+CHUNK ___PR_IF_17 (_PV_TOKS, _PV_POS)
   CONST  0: _PV_POS
   CONST  1: 1
   CONST  2: null
   CONST  3: _PR_EXPR
   CONST  4: _PV_TOKS
   CONST  5: _PV_RC
-  CONST  6: node
+  CONST  6: NODE
   CONST  7: _PV_COND
-  CONST  8: pos
+  CONST  8: POS
   CONST  9: _PR_TT
   CONST  10: THEN
   CONST  11: _PR_STMT
@@ -2148,8 +2111,9 @@ CHUNK ___PR_IF_14 (_PV_TOKS, _PV_POS)
   CONST  13: _PV_THEN
   CONST  14: ELSE
   CONST  15: _PV_RE
-  CONST  16: _PR_NODE
-  CONST  17: if
+  CONST  16: _PR_RESULT
+  CONST  17: _PR_NODE
+  CONST  18: if
   CODE:
     0: push_scope
     1: load_var(0)  -- _PV_POS
@@ -2172,152 +2136,148 @@ CHUNK ___PR_IF_14 (_PV_TOKS, _PV_POS)
     18: load_var(5)  -- _PV_RC
     19: pop
     20: load_var(5)  -- _PV_RC
-    21: push_const(6)  -- node
-    22: get_index
-    23: store_var(7)  -- _PV_COND
-    24: load_var(7)  -- _PV_COND
-    25: pop
-    26: load_var(5)  -- _PV_RC
-    27: push_const(8)  -- pos
-    28: get_index
-    29: store_var(0)  -- _PV_POS
-    30: load_var(0)  -- _PV_POS
-    31: pop
-    32: load_var(9)  -- _PR_TT
-    33: load_var(4)  -- _PV_TOKS
-    34: load_var(0)  -- _PV_POS
-    35: call(2)
-    36: push_const(10)  -- THEN
-    37: cmp_eq
-    38: jump_false(51)
-    39: load_var(0)  -- _PV_POS
-    40: jump_null(46)
-    41: push_const(1)  -- 1
-    42: jump_null(45)
-    43: add
-    44: jump(48)
-    45: pop
-    46: pop
-    47: push_const(2)  -- null
-    48: store_var(0)  -- _PV_POS
-    49: load_var(0)  -- _PV_POS
-    50: jump(52)
-    51: push_const(2)  -- null
-    52: pop
-    53: load_var(11)  -- _PR_STMT
-    54: load_var(4)  -- _PV_TOKS
-    55: load_var(0)  -- _PV_POS
-    56: call(2)
-    57: store_var(12)  -- _PV_RT
+    21: get_member(6)  -- NODE
+    22: store_var(7)  -- _PV_COND
+    23: load_var(7)  -- _PV_COND
+    24: pop
+    25: load_var(5)  -- _PV_RC
+    26: get_member(8)  -- POS
+    27: store_var(0)  -- _PV_POS
+    28: load_var(0)  -- _PV_POS
+    29: pop
+    30: load_var(9)  -- _PR_TT
+    31: load_var(4)  -- _PV_TOKS
+    32: load_var(0)  -- _PV_POS
+    33: call(2)
+    34: push_const(10)  -- THEN
+    35: cmp_eq
+    36: jump_false(49)
+    37: load_var(0)  -- _PV_POS
+    38: jump_null(44)
+    39: push_const(1)  -- 1
+    40: jump_null(43)
+    41: add
+    42: jump(46)
+    43: pop
+    44: pop
+    45: push_const(2)  -- null
+    46: store_var(0)  -- _PV_POS
+    47: load_var(0)  -- _PV_POS
+    48: jump(50)
+    49: push_const(2)  -- null
+    50: pop
+    51: load_var(11)  -- _PR_STMT
+    52: load_var(4)  -- _PV_TOKS
+    53: load_var(0)  -- _PV_POS
+    54: call(2)
+    55: store_var(12)  -- _PV_RT
+    56: load_var(12)  -- _PV_RT
+    57: pop
     58: load_var(12)  -- _PV_RT
-    59: pop
-    60: load_var(12)  -- _PV_RT
-    61: push_const(6)  -- node
-    62: get_index
-    63: store_var(13)  -- _PV_THEN
-    64: load_var(13)  -- _PV_THEN
-    65: pop
-    66: load_var(12)  -- _PV_RT
-    67: push_const(8)  -- pos
-    68: get_index
-    69: store_var(0)  -- _PV_POS
+    59: get_member(6)  -- NODE
+    60: store_var(13)  -- _PV_THEN
+    61: load_var(13)  -- _PV_THEN
+    62: pop
+    63: load_var(12)  -- _PV_RT
+    64: get_member(8)  -- POS
+    65: store_var(0)  -- _PV_POS
+    66: load_var(0)  -- _PV_POS
+    67: pop
+    68: load_var(9)  -- _PR_TT
+    69: load_var(4)  -- _PV_TOKS
     70: load_var(0)  -- _PV_POS
-    71: pop
-    72: load_var(9)  -- _PR_TT
-    73: load_var(4)  -- _PV_TOKS
-    74: load_var(0)  -- _PV_POS
-    75: call(2)
-    76: push_const(14)  -- ELSE
-    77: cmp_eq
-    78: jump_false(117)
-    79: push_scope
-    80: load_var(0)  -- _PV_POS
-    81: jump_null(87)
-    82: push_const(1)  -- 1
-    83: jump_null(86)
-    84: add
-    85: jump(89)
-    86: pop
+    71: call(2)
+    72: push_const(14)  -- ELSE
+    73: cmp_eq
+    74: jump_false(110)
+    75: push_scope
+    76: load_var(0)  -- _PV_POS
+    77: jump_null(83)
+    78: push_const(1)  -- 1
+    79: jump_null(82)
+    80: add
+    81: jump(85)
+    82: pop
+    83: pop
+    84: push_const(2)  -- null
+    85: store_var(0)  -- _PV_POS
+    86: load_var(0)  -- _PV_POS
     87: pop
-    88: push_const(2)  -- null
-    89: store_var(0)  -- _PV_POS
+    88: load_var(11)  -- _PR_STMT
+    89: load_var(4)  -- _PV_TOKS
     90: load_var(0)  -- _PV_POS
-    91: pop
-    92: load_var(11)  -- _PR_STMT
-    93: load_var(4)  -- _PV_TOKS
-    94: load_var(0)  -- _PV_POS
-    95: call(2)
-    96: store_var(15)  -- _PV_RE
-    97: load_var(15)  -- _PV_RE
-    98: pop
-    99: push_const(6)  -- node
-    100: load_var(16)  -- _PR_NODE
-    101: push_const(17)  -- if
-    102: load_var(7)  -- _PV_COND
-    103: load_var(13)  -- _PV_THEN
+    91: call(2)
+    92: store_var(15)  -- _PV_RE
+    93: load_var(15)  -- _PV_RE
+    94: pop
+    95: load_var(16)  -- _PR_RESULT
+    96: load_var(17)  -- _PR_NODE
+    97: push_const(18)  -- if
+    98: load_var(7)  -- _PV_COND
+    99: load_var(13)  -- _PV_THEN
+    100: load_var(15)  -- _PV_RE
+    101: get_member(6)  -- NODE
+    102: make_list(3)
+    103: call(2)
     104: load_var(15)  -- _PV_RE
-    105: push_const(6)  -- node
-    106: get_index
-    107: make_list(3)
-    108: call(2)
-    109: push_const(8)  -- pos
-    110: load_var(15)  -- _PV_RE
-    111: push_const(8)  -- pos
-    112: get_index
-    113: make_map(2)
-    114: ret
-    115: pop_scope
-    116: jump(118)
-    117: push_const(2)  -- null
-    118: pop
-    119: push_const(6)  -- node
-    120: load_var(16)  -- _PR_NODE
-    121: push_const(17)  -- if
-    122: load_var(7)  -- _PV_COND
-    123: load_var(13)  -- _PV_THEN
-    124: make_list(2)
-    125: call(2)
-    126: push_const(8)  -- pos
-    127: load_var(0)  -- _PV_POS
-    128: make_map(2)
-    129: ret
-    130: pop_scope
-    131: ret
-CHUNK ___PR_KV_2 (_PV_K, _PV_V)
-  CONST  0: sym
+    105: get_member(8)  -- POS
+    106: call(2)
+    107: ret
+    108: pop_scope
+    109: jump(111)
+    110: push_const(2)  -- null
+    111: pop
+    112: load_var(16)  -- _PR_RESULT
+    113: load_var(17)  -- _PR_NODE
+    114: push_const(18)  -- if
+    115: load_var(7)  -- _PV_COND
+    116: load_var(13)  -- _PV_THEN
+    117: make_list(2)
+    118: call(2)
+    119: load_var(0)  -- _PV_POS
+    120: call(2)
+    121: ret
+    122: pop_scope
+    123: ret
+CHUNK ___PR_KV_3 (_PV_K, _PV_V)
+  CONST  0: SYM
   CONST  1: kv
-  CONST  2: children
+  CONST  2: CHILDREN
   CONST  3: _PV_K
   CONST  4: _PV_V
-  CONST  5: val
+  CONST  5: VAL
   CONST  6: null
   CODE:
-    0: push_const(0)  -- sym
-    1: push_const(1)  -- kv
-    2: push_const(2)  -- children
-    3: load_var(3)  -- _PV_K
-    4: load_var(4)  -- _PV_V
-    5: make_list(2)
-    6: push_const(5)  -- val
-    7: push_const(6)  -- null
-    8: make_map(3)
-    9: ret
+    0: push_scope
+    1: push_const(0)  -- SYM
+    2: push_const(1)  -- kv
+    3: push_const(2)  -- CHILDREN
+    4: load_var(3)  -- _PV_K
+    5: load_var(4)  -- _PV_V
+    6: make_list(2)
+    7: push_const(5)  -- VAL
+    8: push_const(6)  -- null
+    9: make_object_here(3)
+    10: pop_scope
+    11: ret
 CHUNK ___PR_LEAF_1 (_PV_SYM, _PV_V)
-  CONST  0: sym
+  CONST  0: SYM
   CONST  1: _PV_SYM
-  CONST  2: children
-  CONST  3: val
+  CONST  2: CHILDREN
+  CONST  3: VAL
   CONST  4: _PV_V
   CODE:
-    0: push_const(0)  -- sym
-    1: load_var(1)  -- _PV_SYM
-    2: push_const(2)  -- children
-    3: make_list(0)
-    4: push_const(3)  -- val
-    5: load_var(4)  -- _PV_V
-    6: make_map(3)
-    7: ret
-CHUNK ___PR_MAP_12 (_PV_TOKS, _PV_POS)
+    0: push_scope
+    1: push_const(0)  -- SYM
+    2: load_var(1)  -- _PV_SYM
+    3: push_const(2)  -- CHILDREN
+    4: make_list(0)
+    5: push_const(3)  -- VAL
+    6: load_var(4)  -- _PV_V
+    7: make_object_here(3)
+    8: pop_scope
+    9: ret
+CHUNK ___PR_MAP_15 (_PV_TOKS, _PV_POS)
   CONST  0: _PV_POS
   CONST  1: 1
   CONST  2: null
@@ -2328,16 +2288,17 @@ CHUNK ___PR_MAP_12 (_PV_TOKS, _PV_POS)
   CONST  7: EOF
   CONST  8: _PR_EXPR
   CONST  9: _PV_RK
-  CONST  10: node
+  CONST  10: NODE
   CONST  11: _PV_K
-  CONST  12: pos
+  CONST  12: POS
   CONST  13: :
   CONST  14: _PV_RV
   CONST  15: _PV_VL
   CONST  16: _PR_KV
   CONST  17: ,
-  CONST  18: _PR_NODE
-  CONST  19: map
+  CONST  18: _PR_RESULT
+  CONST  19: _PR_NODE
+  CONST  20: map
   CODE:
     0: push_scope
     1: load_var(0)  -- _PV_POS
@@ -2371,7 +2332,7 @@ CHUNK ___PR_MAP_12 (_PV_TOKS, _PV_POS)
     29: push_const(7)  -- EOF
     30: cmp_neq
     31: log_and
-    32: jump_false(132)
+    32: jump_false(128)
     33: push_scope
     34: load_var(8)  -- _PR_EXPR
     35: load_var(5)  -- _PV_TOKS
@@ -2381,147 +2342,162 @@ CHUNK ___PR_MAP_12 (_PV_TOKS, _PV_POS)
     39: load_var(9)  -- _PV_RK
     40: pop
     41: load_var(9)  -- _PV_RK
-    42: push_const(10)  -- node
-    43: get_index
-    44: store_var(11)  -- _PV_K
-    45: load_var(11)  -- _PV_K
-    46: pop
-    47: load_var(9)  -- _PV_RK
-    48: push_const(12)  -- pos
-    49: get_index
-    50: store_var(0)  -- _PV_POS
-    51: load_var(0)  -- _PV_POS
-    52: pop
-    53: load_var(4)  -- _PR_TT
-    54: load_var(5)  -- _PV_TOKS
-    55: load_var(0)  -- _PV_POS
-    56: call(2)
-    57: push_const(13)  -- :
-    58: cmp_eq
-    59: jump_false(72)
-    60: load_var(0)  -- _PV_POS
-    61: jump_null(67)
-    62: push_const(1)  -- 1
-    63: jump_null(66)
-    64: add
-    65: jump(69)
-    66: pop
-    67: pop
-    68: push_const(2)  -- null
-    69: store_var(0)  -- _PV_POS
-    70: load_var(0)  -- _PV_POS
-    71: jump(73)
-    72: push_const(2)  -- null
-    73: pop
-    74: load_var(8)  -- _PR_EXPR
-    75: load_var(5)  -- _PV_TOKS
-    76: load_var(0)  -- _PV_POS
-    77: call(2)
-    78: store_var(14)  -- _PV_RV
+    42: get_member(10)  -- NODE
+    43: store_var(11)  -- _PV_K
+    44: load_var(11)  -- _PV_K
+    45: pop
+    46: load_var(9)  -- _PV_RK
+    47: get_member(12)  -- POS
+    48: store_var(0)  -- _PV_POS
+    49: load_var(0)  -- _PV_POS
+    50: pop
+    51: load_var(4)  -- _PR_TT
+    52: load_var(5)  -- _PV_TOKS
+    53: load_var(0)  -- _PV_POS
+    54: call(2)
+    55: push_const(13)  -- :
+    56: cmp_eq
+    57: jump_false(70)
+    58: load_var(0)  -- _PV_POS
+    59: jump_null(65)
+    60: push_const(1)  -- 1
+    61: jump_null(64)
+    62: add
+    63: jump(67)
+    64: pop
+    65: pop
+    66: push_const(2)  -- null
+    67: store_var(0)  -- _PV_POS
+    68: load_var(0)  -- _PV_POS
+    69: jump(71)
+    70: push_const(2)  -- null
+    71: pop
+    72: load_var(8)  -- _PR_EXPR
+    73: load_var(5)  -- _PV_TOKS
+    74: load_var(0)  -- _PV_POS
+    75: call(2)
+    76: store_var(14)  -- _PV_RV
+    77: load_var(14)  -- _PV_RV
+    78: pop
     79: load_var(14)  -- _PV_RV
-    80: pop
-    81: load_var(14)  -- _PV_RV
-    82: push_const(10)  -- node
-    83: get_index
-    84: store_var(15)  -- _PV_VL
-    85: load_var(15)  -- _PV_VL
-    86: pop
-    87: load_var(14)  -- _PV_RV
-    88: push_const(12)  -- pos
-    89: get_index
-    90: store_var(0)  -- _PV_POS
-    91: load_var(0)  -- _PV_POS
-    92: pop
-    93: load_var(3)  -- _PV_PAIRS
-    94: jump_null(104)
-    95: load_var(16)  -- _PR_KV
-    96: load_var(11)  -- _PV_K
-    97: load_var(15)  -- _PV_VL
-    98: call(2)
-    99: make_list(1)
-    100: jump_null(103)
-    101: add
-    102: jump(106)
-    103: pop
+    80: get_member(10)  -- NODE
+    81: store_var(15)  -- _PV_VL
+    82: load_var(15)  -- _PV_VL
+    83: pop
+    84: load_var(14)  -- _PV_RV
+    85: get_member(12)  -- POS
+    86: store_var(0)  -- _PV_POS
+    87: load_var(0)  -- _PV_POS
+    88: pop
+    89: load_var(3)  -- _PV_PAIRS
+    90: jump_null(100)
+    91: load_var(16)  -- _PR_KV
+    92: load_var(11)  -- _PV_K
+    93: load_var(15)  -- _PV_VL
+    94: call(2)
+    95: make_list(1)
+    96: jump_null(99)
+    97: add
+    98: jump(102)
+    99: pop
+    100: pop
+    101: push_const(2)  -- null
+    102: store_var(3)  -- _PV_PAIRS
+    103: load_var(3)  -- _PV_PAIRS
     104: pop
-    105: push_const(2)  -- null
-    106: store_var(3)  -- _PV_PAIRS
-    107: load_var(3)  -- _PV_PAIRS
-    108: pop
-    109: load_var(4)  -- _PR_TT
-    110: load_var(5)  -- _PV_TOKS
-    111: load_var(0)  -- _PV_POS
-    112: call(2)
-    113: push_const(17)  -- ,
-    114: cmp_eq
-    115: jump_false(128)
-    116: load_var(0)  -- _PV_POS
-    117: jump_null(123)
-    118: push_const(1)  -- 1
-    119: jump_null(122)
-    120: add
-    121: jump(125)
-    122: pop
-    123: pop
+    105: load_var(4)  -- _PR_TT
+    106: load_var(5)  -- _PV_TOKS
+    107: load_var(0)  -- _PV_POS
+    108: call(2)
+    109: push_const(17)  -- ,
+    110: cmp_eq
+    111: jump_false(124)
+    112: load_var(0)  -- _PV_POS
+    113: jump_null(119)
+    114: push_const(1)  -- 1
+    115: jump_null(118)
+    116: add
+    117: jump(121)
+    118: pop
+    119: pop
+    120: push_const(2)  -- null
+    121: store_var(0)  -- _PV_POS
+    122: load_var(0)  -- _PV_POS
+    123: jump(125)
     124: push_const(2)  -- null
-    125: store_var(0)  -- _PV_POS
-    126: load_var(0)  -- _PV_POS
-    127: jump(129)
-    128: push_const(2)  -- null
-    129: pop_scope
-    130: store_reg(0)
-    131: jump(19)
-    132: load_reg(0)
-    133: pop
-    134: load_var(4)  -- _PR_TT
-    135: load_var(5)  -- _PV_TOKS
-    136: load_var(0)  -- _PV_POS
-    137: call(2)
-    138: push_const(6)  -- }
-    139: cmp_eq
-    140: jump_false(153)
-    141: load_var(0)  -- _PV_POS
-    142: jump_null(148)
-    143: push_const(1)  -- 1
-    144: jump_null(147)
-    145: add
-    146: jump(150)
-    147: pop
-    148: pop
+    125: pop_scope
+    126: store_reg(0)
+    127: jump(19)
+    128: load_reg(0)
+    129: pop
+    130: load_var(4)  -- _PR_TT
+    131: load_var(5)  -- _PV_TOKS
+    132: load_var(0)  -- _PV_POS
+    133: call(2)
+    134: push_const(6)  -- }
+    135: cmp_eq
+    136: jump_false(149)
+    137: load_var(0)  -- _PV_POS
+    138: jump_null(144)
+    139: push_const(1)  -- 1
+    140: jump_null(143)
+    141: add
+    142: jump(146)
+    143: pop
+    144: pop
+    145: push_const(2)  -- null
+    146: store_var(0)  -- _PV_POS
+    147: load_var(0)  -- _PV_POS
+    148: jump(150)
     149: push_const(2)  -- null
-    150: store_var(0)  -- _PV_POS
-    151: load_var(0)  -- _PV_POS
-    152: jump(154)
-    153: push_const(2)  -- null
-    154: pop
-    155: push_const(10)  -- node
-    156: load_var(18)  -- _PR_NODE
-    157: push_const(19)  -- map
-    158: load_var(3)  -- _PV_PAIRS
-    159: call(2)
-    160: push_const(12)  -- pos
-    161: load_var(0)  -- _PV_POS
-    162: make_map(2)
-    163: ret
-    164: pop_scope
-    165: ret
+    150: pop
+    151: load_var(18)  -- _PR_RESULT
+    152: load_var(19)  -- _PR_NODE
+    153: push_const(20)  -- map
+    154: load_var(3)  -- _PV_PAIRS
+    155: call(2)
+    156: load_var(0)  -- _PV_POS
+    157: call(2)
+    158: ret
+    159: pop_scope
+    160: ret
 CHUNK ___PR_NODE_0 (_PV_SYM, _PV_CH)
-  CONST  0: sym
+  CONST  0: SYM
   CONST  1: _PV_SYM
-  CONST  2: children
+  CONST  2: CHILDREN
   CONST  3: _PV_CH
-  CONST  4: val
+  CONST  4: VAL
   CONST  5: null
   CODE:
-    0: push_const(0)  -- sym
-    1: load_var(1)  -- _PV_SYM
-    2: push_const(2)  -- children
-    3: load_var(3)  -- _PV_CH
-    4: push_const(4)  -- val
-    5: push_const(5)  -- null
-    6: make_map(3)
-    7: ret
-CHUNK ___PR_OBJECT_13 (_PV_TOKS, _PV_POS)
+    0: push_scope
+    1: push_const(0)  -- SYM
+    2: load_var(1)  -- _PV_SYM
+    3: push_const(2)  -- CHILDREN
+    4: load_var(3)  -- _PV_CH
+    5: push_const(4)  -- VAL
+    6: push_const(5)  -- null
+    7: make_object_here(3)
+    8: pop_scope
+    9: ret
+CHUNK ___PR_NODE_V_2 (_PV_SYM, _PV_CH, _PV_V)
+  CONST  0: SYM
+  CONST  1: _PV_SYM
+  CONST  2: CHILDREN
+  CONST  3: _PV_CH
+  CONST  4: VAL
+  CONST  5: _PV_V
+  CODE:
+    0: push_scope
+    1: push_const(0)  -- SYM
+    2: load_var(1)  -- _PV_SYM
+    3: push_const(2)  -- CHILDREN
+    4: load_var(3)  -- _PV_CH
+    5: push_const(4)  -- VAL
+    6: load_var(5)  -- _PV_V
+    7: make_object_here(3)
+    8: pop_scope
+    9: ret
+CHUNK ___PR_OBJECT_16 (_PV_TOKS, _PV_POS)
   CONST  0: _PV_POS
   CONST  1: 1
   CONST  2: null
@@ -2539,13 +2515,14 @@ CHUNK ___PR_OBJECT_13 (_PV_TOKS, _PV_POS)
   CONST  14: :
   CONST  15: _PR_EXPR
   CONST  16: _PV_RV
-  CONST  17: node
+  CONST  17: NODE
   CONST  18: _PV_VL
-  CONST  19: pos
+  CONST  19: POS
   CONST  20: _PR_KV
   CONST  21: ,
-  CONST  22: _PR_NODE
-  CONST  23: object
+  CONST  22: _PR_RESULT
+  CONST  23: _PR_NODE
+  CONST  24: object
   CODE:
     0: push_scope
     1: load_var(0)  -- _PV_POS
@@ -2600,7 +2577,7 @@ CHUNK ___PR_OBJECT_13 (_PV_TOKS, _PV_POS)
     50: push_const(8)  -- EOF
     51: cmp_neq
     52: log_and
-    53: jump_false(160)
+    53: jump_false(158)
     54: push_scope
     55: load_var(9)  -- _PR_TV
     56: load_var(4)  -- _PV_TOKS
@@ -2657,91 +2634,88 @@ CHUNK ___PR_OBJECT_13 (_PV_TOKS, _PV_POS)
     107: load_var(16)  -- _PV_RV
     108: pop
     109: load_var(16)  -- _PV_RV
-    110: push_const(17)  -- node
-    111: get_index
-    112: store_var(18)  -- _PV_VL
-    113: load_var(18)  -- _PV_VL
-    114: pop
-    115: load_var(16)  -- _PV_RV
-    116: push_const(19)  -- pos
-    117: get_index
-    118: store_var(0)  -- _PV_POS
-    119: load_var(0)  -- _PV_POS
-    120: pop
-    121: load_var(6)  -- _PV_PAIRS
-    122: jump_null(132)
-    123: load_var(20)  -- _PR_KV
-    124: load_var(13)  -- _PV_K
-    125: load_var(18)  -- _PV_VL
-    126: call(2)
-    127: make_list(1)
-    128: jump_null(131)
-    129: add
-    130: jump(134)
-    131: pop
-    132: pop
-    133: push_const(2)  -- null
-    134: store_var(6)  -- _PV_PAIRS
-    135: load_var(6)  -- _PV_PAIRS
-    136: pop
-    137: load_var(3)  -- _PR_TT
-    138: load_var(4)  -- _PV_TOKS
-    139: load_var(0)  -- _PV_POS
-    140: call(2)
-    141: push_const(21)  -- ,
-    142: cmp_eq
-    143: jump_false(156)
-    144: load_var(0)  -- _PV_POS
-    145: jump_null(151)
-    146: push_const(1)  -- 1
-    147: jump_null(150)
-    148: add
-    149: jump(153)
-    150: pop
-    151: pop
-    152: push_const(2)  -- null
-    153: store_var(0)  -- _PV_POS
-    154: load_var(0)  -- _PV_POS
-    155: jump(157)
-    156: push_const(2)  -- null
-    157: pop_scope
-    158: store_reg(0)
-    159: jump(40)
-    160: load_reg(0)
-    161: pop
-    162: load_var(3)  -- _PR_TT
-    163: load_var(4)  -- _PV_TOKS
-    164: load_var(0)  -- _PV_POS
-    165: call(2)
-    166: push_const(7)  -- }
-    167: cmp_eq
-    168: jump_false(181)
-    169: load_var(0)  -- _PV_POS
-    170: jump_null(176)
-    171: push_const(1)  -- 1
-    172: jump_null(175)
-    173: add
-    174: jump(178)
-    175: pop
-    176: pop
-    177: push_const(2)  -- null
-    178: store_var(0)  -- _PV_POS
-    179: load_var(0)  -- _PV_POS
-    180: jump(182)
-    181: push_const(2)  -- null
-    182: pop
-    183: push_const(17)  -- node
-    184: load_var(22)  -- _PR_NODE
-    185: push_const(23)  -- object
-    186: load_var(6)  -- _PV_PAIRS
+    110: get_member(17)  -- NODE
+    111: store_var(18)  -- _PV_VL
+    112: load_var(18)  -- _PV_VL
+    113: pop
+    114: load_var(16)  -- _PV_RV
+    115: get_member(19)  -- POS
+    116: store_var(0)  -- _PV_POS
+    117: load_var(0)  -- _PV_POS
+    118: pop
+    119: load_var(6)  -- _PV_PAIRS
+    120: jump_null(130)
+    121: load_var(20)  -- _PR_KV
+    122: load_var(13)  -- _PV_K
+    123: load_var(18)  -- _PV_VL
+    124: call(2)
+    125: make_list(1)
+    126: jump_null(129)
+    127: add
+    128: jump(132)
+    129: pop
+    130: pop
+    131: push_const(2)  -- null
+    132: store_var(6)  -- _PV_PAIRS
+    133: load_var(6)  -- _PV_PAIRS
+    134: pop
+    135: load_var(3)  -- _PR_TT
+    136: load_var(4)  -- _PV_TOKS
+    137: load_var(0)  -- _PV_POS
+    138: call(2)
+    139: push_const(21)  -- ,
+    140: cmp_eq
+    141: jump_false(154)
+    142: load_var(0)  -- _PV_POS
+    143: jump_null(149)
+    144: push_const(1)  -- 1
+    145: jump_null(148)
+    146: add
+    147: jump(151)
+    148: pop
+    149: pop
+    150: push_const(2)  -- null
+    151: store_var(0)  -- _PV_POS
+    152: load_var(0)  -- _PV_POS
+    153: jump(155)
+    154: push_const(2)  -- null
+    155: pop_scope
+    156: store_reg(0)
+    157: jump(40)
+    158: load_reg(0)
+    159: pop
+    160: load_var(3)  -- _PR_TT
+    161: load_var(4)  -- _PV_TOKS
+    162: load_var(0)  -- _PV_POS
+    163: call(2)
+    164: push_const(7)  -- }
+    165: cmp_eq
+    166: jump_false(179)
+    167: load_var(0)  -- _PV_POS
+    168: jump_null(174)
+    169: push_const(1)  -- 1
+    170: jump_null(173)
+    171: add
+    172: jump(176)
+    173: pop
+    174: pop
+    175: push_const(2)  -- null
+    176: store_var(0)  -- _PV_POS
+    177: load_var(0)  -- _PV_POS
+    178: jump(180)
+    179: push_const(2)  -- null
+    180: pop
+    181: load_var(22)  -- _PR_RESULT
+    182: load_var(23)  -- _PR_NODE
+    183: push_const(24)  -- object
+    184: load_var(6)  -- _PV_PAIRS
+    185: call(2)
+    186: load_var(0)  -- _PV_POS
     187: call(2)
-    188: push_const(19)  -- pos
-    189: load_var(0)  -- _PV_POS
-    190: make_map(2)
-    191: ret
-    192: pop_scope
-    193: ret
-CHUNK ___PR_OPERAND_9 (_PV_TOKS, _PV_POS)
+    188: ret
+    189: pop_scope
+    190: ret
+CHUNK ___PR_OPERAND_12 (_PV_TOKS, _PV_POS)
   CONST  0: _PR_TT
   CONST  1: _PV_TOKS
   CONST  2: _PV_POS
@@ -2749,68 +2723,69 @@ CHUNK ___PR_OPERAND_9 (_PV_TOKS, _PV_POS)
   CONST  4: _PR_TV
   CONST  5: _PV_TOKVAL
   CONST  6: INT
-  CONST  7: node
+  CONST  7: _PR_RESULT
   CONST  8: _PR_LEAF
   CONST  9: int_lit
-  CONST  10: pos
-  CONST  11: 1
-  CONST  12: null
-  CONST  13: FLOAT
-  CONST  14: float_lit
-  CONST  15: DOUBLE
-  CONST  16: STR
-  CONST  17: str_lit
-  CONST  18: ID
-  CONST  19: NULL
-  CONST  20: null_lit
-  CONST  21: TRUE
-  CONST  22: true_lit
-  CONST  23: true
-  CONST  24: FALSE
-  CONST  25: false_lit
-  CONST  26: false
-  CONST  27: ident
-  CONST  28: -
-  CONST  29: _PR_UNARY_RHS
-  CONST  30: _PV_R
-  CONST  31: _PR_NODE
-  CONST  32: neg
-  CONST  33: +
-  CONST  34: NOT
-  CONST  35: not
-  CONST  36: IF
-  CONST  37: _PR_IF
-  CONST  38: WHILE
-  CONST  39: _PR_WHILE
-  CONST  40: REPEAT
-  CONST  41: _PR_REPEAT
-  CONST  42: FOR
-  CONST  43: _PR_FOR
-  CONST  44: BEGIN
-  CONST  45: _PR_BEGIN
-  CONST  46: OBJECT
-  CONST  47: _PR_OBJECT
-  CONST  48: (
-  CONST  49: )
-  CONST  50: list
-  CONST  51: _PR_EXPR
-  CONST  52: _PV_ITEMS
-  CONST  53: ,
-  CONST  54: _PV_R2
-  CONST  55: LENGTH
-  CONST  56: _PV_NTT
-  CONST  57: _PR_OPERAND
-  CONST  58: _PR_CONSUME_PF
-  CONST  59: mul
-  CONST  60: 0
-  CONST  61: [
-  CONST  62: ]
-  CONST  63: EOF
-  CONST  64: {
-  CONST  65: _PR_MAP
-  CONST  66: error
-  CONST  67: Unexpected token: 
-  CONST  68:  (
+  CONST  10: 1
+  CONST  11: null
+  CONST  12: FLOAT
+  CONST  13: float_lit
+  CONST  14: DOUBLE
+  CONST  15: STR
+  CONST  16: str_lit
+  CONST  17: ID
+  CONST  18: NULL
+  CONST  19: null_lit
+  CONST  20: TRUE
+  CONST  21: true_lit
+  CONST  22: true
+  CONST  23: FALSE
+  CONST  24: false_lit
+  CONST  25: false
+  CONST  26: ident
+  CONST  27: -
+  CONST  28: _PR_UNARY_RHS
+  CONST  29: _PV_R
+  CONST  30: _PR_NODE
+  CONST  31: neg
+  CONST  32: NODE
+  CONST  33: POS
+  CONST  34: +
+  CONST  35: NOT
+  CONST  36: not
+  CONST  37: IF
+  CONST  38: _PR_IF
+  CONST  39: WHILE
+  CONST  40: _PR_WHILE
+  CONST  41: REPEAT
+  CONST  42: _PR_REPEAT
+  CONST  43: FOR
+  CONST  44: _PR_FOR
+  CONST  45: BEGIN
+  CONST  46: _PR_BEGIN
+  CONST  47: OBJECT
+  CONST  48: _PR_OBJECT
+  CONST  49: (
+  CONST  50: )
+  CONST  51: list
+  CONST  52: _PR_EXPR
+  CONST  53: _PV_ITEMS
+  CONST  54: ,
+  CONST  55: _PV_R2
+  CONST  56: LENGTH
+  CONST  57: _PV_NTT
+  CONST  58: _PR_OPERAND
+  CONST  59: _PR_CONSUME_PF
+  CONST  60: mul
+  CONST  61: 0
+  CONST  62: [
+  CONST  63: ]
+  CONST  64: EOF
+  CONST  65: {
+  CONST  66: _PR_MAP
+  CONST  67: error
+  CONST  68: Unexpected token: 
+  CONST  69:  (
   CODE:
     0: push_scope
     1: load_var(0)  -- _PR_TT
@@ -2830,783 +2805,768 @@ CHUNK ___PR_OPERAND_9 (_PV_TOKS, _PV_POS)
     15: load_var(3)  -- _PV_TOKTYPE
     16: push_const(6)  -- INT
     17: cmp_eq
-    18: jump_false(39)
-    19: push_const(7)  -- node
+    18: jump_false(38)
+    19: load_var(7)  -- _PR_RESULT
     20: load_var(8)  -- _PR_LEAF
     21: push_const(9)  -- int_lit
     22: load_var(6)  -- INT
     23: load_var(5)  -- _PV_TOKVAL
     24: call(1)
     25: call(2)
-    26: push_const(10)  -- pos
-    27: load_var(2)  -- _PV_POS
-    28: jump_null(34)
-    29: push_const(11)  -- 1
-    30: jump_null(33)
-    31: add
-    32: jump(36)
+    26: load_var(2)  -- _PV_POS
+    27: jump_null(33)
+    28: push_const(10)  -- 1
+    29: jump_null(32)
+    30: add
+    31: jump(35)
+    32: pop
     33: pop
-    34: pop
-    35: push_const(12)  -- null
-    36: make_map(2)
-    37: ret
-    38: jump(40)
-    39: push_const(12)  -- null
-    40: pop
-    41: load_var(3)  -- _PV_TOKTYPE
-    42: push_const(13)  -- FLOAT
-    43: cmp_eq
-    44: jump_false(65)
-    45: push_const(7)  -- node
-    46: load_var(8)  -- _PR_LEAF
-    47: push_const(14)  -- float_lit
-    48: load_var(15)  -- DOUBLE
-    49: load_var(5)  -- _PV_TOKVAL
-    50: call(1)
-    51: call(2)
-    52: push_const(10)  -- pos
-    53: load_var(2)  -- _PV_POS
-    54: jump_null(60)
-    55: push_const(11)  -- 1
-    56: jump_null(59)
-    57: add
-    58: jump(62)
-    59: pop
-    60: pop
-    61: push_const(12)  -- null
-    62: make_map(2)
-    63: ret
-    64: jump(66)
-    65: push_const(12)  -- null
-    66: pop
-    67: load_var(3)  -- _PV_TOKTYPE
-    68: push_const(16)  -- STR
-    69: cmp_eq
-    70: jump_false(89)
-    71: push_const(7)  -- node
-    72: load_var(8)  -- _PR_LEAF
-    73: push_const(17)  -- str_lit
-    74: load_var(5)  -- _PV_TOKVAL
-    75: call(2)
-    76: push_const(10)  -- pos
-    77: load_var(2)  -- _PV_POS
-    78: jump_null(84)
-    79: push_const(11)  -- 1
-    80: jump_null(83)
-    81: add
-    82: jump(86)
-    83: pop
-    84: pop
-    85: push_const(12)  -- null
-    86: make_map(2)
-    87: ret
-    88: jump(90)
-    89: push_const(12)  -- null
-    90: pop
-    91: load_var(3)  -- _PV_TOKTYPE
-    92: push_const(18)  -- ID
-    93: cmp_eq
-    94: jump_false(187)
-    95: push_scope
-    96: load_var(5)  -- _PV_TOKVAL
-    97: push_const(19)  -- NULL
-    98: cmp_eq
-    99: jump_false(118)
-    100: push_const(7)  -- node
-    101: load_var(8)  -- _PR_LEAF
-    102: push_const(20)  -- null_lit
-    103: push_const(12)  -- null
-    104: call(2)
-    105: push_const(10)  -- pos
-    106: load_var(2)  -- _PV_POS
-    107: jump_null(113)
-    108: push_const(11)  -- 1
-    109: jump_null(112)
-    110: add
-    111: jump(115)
-    112: pop
-    113: pop
-    114: push_const(12)  -- null
-    115: make_map(2)
-    116: ret
-    117: jump(119)
-    118: push_const(12)  -- null
-    119: pop
-    120: load_var(5)  -- _PV_TOKVAL
-    121: push_const(21)  -- TRUE
-    122: cmp_eq
-    123: jump_false(142)
-    124: push_const(7)  -- node
-    125: load_var(8)  -- _PR_LEAF
-    126: push_const(22)  -- true_lit
-    127: push_const(23)  -- true
-    128: call(2)
-    129: push_const(10)  -- pos
-    130: load_var(2)  -- _PV_POS
-    131: jump_null(137)
-    132: push_const(11)  -- 1
-    133: jump_null(136)
-    134: add
-    135: jump(139)
-    136: pop
-    137: pop
-    138: push_const(12)  -- null
-    139: make_map(2)
-    140: ret
-    141: jump(143)
-    142: push_const(12)  -- null
-    143: pop
-    144: load_var(5)  -- _PV_TOKVAL
-    145: push_const(24)  -- FALSE
-    146: cmp_eq
-    147: jump_false(166)
-    148: push_const(7)  -- node
-    149: load_var(8)  -- _PR_LEAF
-    150: push_const(25)  -- false_lit
-    151: push_const(26)  -- false
-    152: call(2)
-    153: push_const(10)  -- pos
-    154: load_var(2)  -- _PV_POS
-    155: jump_null(161)
-    156: push_const(11)  -- 1
-    157: jump_null(160)
-    158: add
-    159: jump(163)
-    160: pop
+    34: push_const(11)  -- null
+    35: call(2)
+    36: ret
+    37: jump(39)
+    38: push_const(11)  -- null
+    39: pop
+    40: load_var(3)  -- _PV_TOKTYPE
+    41: push_const(12)  -- FLOAT
+    42: cmp_eq
+    43: jump_false(63)
+    44: load_var(7)  -- _PR_RESULT
+    45: load_var(8)  -- _PR_LEAF
+    46: push_const(13)  -- float_lit
+    47: load_var(14)  -- DOUBLE
+    48: load_var(5)  -- _PV_TOKVAL
+    49: call(1)
+    50: call(2)
+    51: load_var(2)  -- _PV_POS
+    52: jump_null(58)
+    53: push_const(10)  -- 1
+    54: jump_null(57)
+    55: add
+    56: jump(60)
+    57: pop
+    58: pop
+    59: push_const(11)  -- null
+    60: call(2)
+    61: ret
+    62: jump(64)
+    63: push_const(11)  -- null
+    64: pop
+    65: load_var(3)  -- _PV_TOKTYPE
+    66: push_const(15)  -- STR
+    67: cmp_eq
+    68: jump_false(86)
+    69: load_var(7)  -- _PR_RESULT
+    70: load_var(8)  -- _PR_LEAF
+    71: push_const(16)  -- str_lit
+    72: load_var(5)  -- _PV_TOKVAL
+    73: call(2)
+    74: load_var(2)  -- _PV_POS
+    75: jump_null(81)
+    76: push_const(10)  -- 1
+    77: jump_null(80)
+    78: add
+    79: jump(83)
+    80: pop
+    81: pop
+    82: push_const(11)  -- null
+    83: call(2)
+    84: ret
+    85: jump(87)
+    86: push_const(11)  -- null
+    87: pop
+    88: load_var(3)  -- _PV_TOKTYPE
+    89: push_const(17)  -- ID
+    90: cmp_eq
+    91: jump_false(180)
+    92: push_scope
+    93: load_var(5)  -- _PV_TOKVAL
+    94: push_const(18)  -- NULL
+    95: cmp_eq
+    96: jump_false(114)
+    97: load_var(7)  -- _PR_RESULT
+    98: load_var(8)  -- _PR_LEAF
+    99: push_const(19)  -- null_lit
+    100: push_const(11)  -- null
+    101: call(2)
+    102: load_var(2)  -- _PV_POS
+    103: jump_null(109)
+    104: push_const(10)  -- 1
+    105: jump_null(108)
+    106: add
+    107: jump(111)
+    108: pop
+    109: pop
+    110: push_const(11)  -- null
+    111: call(2)
+    112: ret
+    113: jump(115)
+    114: push_const(11)  -- null
+    115: pop
+    116: load_var(5)  -- _PV_TOKVAL
+    117: push_const(20)  -- TRUE
+    118: cmp_eq
+    119: jump_false(137)
+    120: load_var(7)  -- _PR_RESULT
+    121: load_var(8)  -- _PR_LEAF
+    122: push_const(21)  -- true_lit
+    123: push_const(22)  -- true
+    124: call(2)
+    125: load_var(2)  -- _PV_POS
+    126: jump_null(132)
+    127: push_const(10)  -- 1
+    128: jump_null(131)
+    129: add
+    130: jump(134)
+    131: pop
+    132: pop
+    133: push_const(11)  -- null
+    134: call(2)
+    135: ret
+    136: jump(138)
+    137: push_const(11)  -- null
+    138: pop
+    139: load_var(5)  -- _PV_TOKVAL
+    140: push_const(23)  -- FALSE
+    141: cmp_eq
+    142: jump_false(160)
+    143: load_var(7)  -- _PR_RESULT
+    144: load_var(8)  -- _PR_LEAF
+    145: push_const(24)  -- false_lit
+    146: push_const(25)  -- false
+    147: call(2)
+    148: load_var(2)  -- _PV_POS
+    149: jump_null(155)
+    150: push_const(10)  -- 1
+    151: jump_null(154)
+    152: add
+    153: jump(157)
+    154: pop
+    155: pop
+    156: push_const(11)  -- null
+    157: call(2)
+    158: ret
+    159: jump(161)
+    160: push_const(11)  -- null
     161: pop
-    162: push_const(12)  -- null
-    163: make_map(2)
-    164: ret
-    165: jump(167)
-    166: push_const(12)  -- null
-    167: pop
-    168: push_const(7)  -- node
-    169: load_var(8)  -- _PR_LEAF
-    170: push_const(27)  -- ident
-    171: load_var(5)  -- _PV_TOKVAL
-    172: call(2)
-    173: push_const(10)  -- pos
-    174: load_var(2)  -- _PV_POS
-    175: jump_null(181)
-    176: push_const(11)  -- 1
-    177: jump_null(180)
-    178: add
-    179: jump(183)
-    180: pop
+    162: load_var(7)  -- _PR_RESULT
+    163: load_var(8)  -- _PR_LEAF
+    164: push_const(26)  -- ident
+    165: load_var(5)  -- _PV_TOKVAL
+    166: call(2)
+    167: load_var(2)  -- _PV_POS
+    168: jump_null(174)
+    169: push_const(10)  -- 1
+    170: jump_null(173)
+    171: add
+    172: jump(176)
+    173: pop
+    174: pop
+    175: push_const(11)  -- null
+    176: call(2)
+    177: ret
+    178: pop_scope
+    179: jump(181)
+    180: push_const(11)  -- null
     181: pop
-    182: push_const(12)  -- null
-    183: make_map(2)
-    184: ret
-    185: pop_scope
-    186: jump(188)
-    187: push_const(12)  -- null
-    188: pop
-    189: load_var(3)  -- _PV_TOKTYPE
-    190: push_const(28)  -- -
-    191: cmp_eq
-    192: jump_false(229)
-    193: push_scope
-    194: load_var(2)  -- _PV_POS
-    195: jump_null(201)
-    196: push_const(11)  -- 1
-    197: jump_null(200)
-    198: add
-    199: jump(203)
-    200: pop
-    201: pop
-    202: push_const(12)  -- null
-    203: store_var(2)  -- _PV_POS
-    204: load_var(2)  -- _PV_POS
+    182: load_var(3)  -- _PV_TOKTYPE
+    183: push_const(27)  -- -
+    184: cmp_eq
+    185: jump_false(219)
+    186: push_scope
+    187: load_var(2)  -- _PV_POS
+    188: jump_null(194)
+    189: push_const(10)  -- 1
+    190: jump_null(193)
+    191: add
+    192: jump(196)
+    193: pop
+    194: pop
+    195: push_const(11)  -- null
+    196: store_var(2)  -- _PV_POS
+    197: load_var(2)  -- _PV_POS
+    198: pop
+    199: load_var(28)  -- _PR_UNARY_RHS
+    200: load_var(1)  -- _PV_TOKS
+    201: load_var(2)  -- _PV_POS
+    202: call(2)
+    203: store_var(29)  -- _PV_R
+    204: load_var(29)  -- _PV_R
     205: pop
-    206: load_var(29)  -- _PR_UNARY_RHS
-    207: load_var(1)  -- _PV_TOKS
-    208: load_var(2)  -- _PV_POS
-    209: call(2)
-    210: store_var(30)  -- _PV_R
-    211: load_var(30)  -- _PV_R
-    212: pop
-    213: push_const(7)  -- node
-    214: load_var(31)  -- _PR_NODE
-    215: push_const(32)  -- neg
-    216: load_var(30)  -- _PV_R
-    217: push_const(7)  -- node
-    218: get_index
-    219: make_list(1)
-    220: call(2)
-    221: push_const(10)  -- pos
-    222: load_var(30)  -- _PV_R
-    223: push_const(10)  -- pos
-    224: get_index
-    225: make_map(2)
-    226: ret
-    227: pop_scope
-    228: jump(230)
-    229: push_const(12)  -- null
-    230: pop
-    231: load_var(3)  -- _PV_TOKTYPE
-    232: push_const(33)  -- +
-    233: cmp_eq
-    234: jump_false(255)
-    235: push_scope
+    206: load_var(7)  -- _PR_RESULT
+    207: load_var(30)  -- _PR_NODE
+    208: push_const(31)  -- neg
+    209: load_var(29)  -- _PV_R
+    210: get_member(32)  -- NODE
+    211: make_list(1)
+    212: call(2)
+    213: load_var(29)  -- _PV_R
+    214: get_member(33)  -- POS
+    215: call(2)
+    216: ret
+    217: pop_scope
+    218: jump(220)
+    219: push_const(11)  -- null
+    220: pop
+    221: load_var(3)  -- _PV_TOKTYPE
+    222: push_const(34)  -- +
+    223: cmp_eq
+    224: jump_false(245)
+    225: push_scope
+    226: load_var(2)  -- _PV_POS
+    227: jump_null(233)
+    228: push_const(10)  -- 1
+    229: jump_null(232)
+    230: add
+    231: jump(235)
+    232: pop
+    233: pop
+    234: push_const(11)  -- null
+    235: store_var(2)  -- _PV_POS
     236: load_var(2)  -- _PV_POS
-    237: jump_null(243)
-    238: push_const(11)  -- 1
-    239: jump_null(242)
-    240: add
-    241: jump(245)
-    242: pop
-    243: pop
-    244: push_const(12)  -- null
-    245: store_var(2)  -- _PV_POS
-    246: load_var(2)  -- _PV_POS
-    247: pop
-    248: load_var(29)  -- _PR_UNARY_RHS
-    249: load_var(1)  -- _PV_TOKS
-    250: load_var(2)  -- _PV_POS
-    251: call(2)
-    252: ret
-    253: pop_scope
-    254: jump(256)
-    255: push_const(12)  -- null
-    256: pop
-    257: load_var(3)  -- _PV_TOKTYPE
-    258: push_const(34)  -- NOT
-    259: cmp_eq
-    260: jump_false(297)
-    261: push_scope
+    237: pop
+    238: load_var(28)  -- _PR_UNARY_RHS
+    239: load_var(1)  -- _PV_TOKS
+    240: load_var(2)  -- _PV_POS
+    241: call(2)
+    242: ret
+    243: pop_scope
+    244: jump(246)
+    245: push_const(11)  -- null
+    246: pop
+    247: load_var(3)  -- _PV_TOKTYPE
+    248: push_const(35)  -- NOT
+    249: cmp_eq
+    250: jump_false(284)
+    251: push_scope
+    252: load_var(2)  -- _PV_POS
+    253: jump_null(259)
+    254: push_const(10)  -- 1
+    255: jump_null(258)
+    256: add
+    257: jump(261)
+    258: pop
+    259: pop
+    260: push_const(11)  -- null
+    261: store_var(2)  -- _PV_POS
     262: load_var(2)  -- _PV_POS
-    263: jump_null(269)
-    264: push_const(11)  -- 1
-    265: jump_null(268)
-    266: add
-    267: jump(271)
-    268: pop
-    269: pop
-    270: push_const(12)  -- null
-    271: store_var(2)  -- _PV_POS
-    272: load_var(2)  -- _PV_POS
-    273: pop
-    274: load_var(29)  -- _PR_UNARY_RHS
-    275: load_var(1)  -- _PV_TOKS
-    276: load_var(2)  -- _PV_POS
+    263: pop
+    264: load_var(28)  -- _PR_UNARY_RHS
+    265: load_var(1)  -- _PV_TOKS
+    266: load_var(2)  -- _PV_POS
+    267: call(2)
+    268: store_var(29)  -- _PV_R
+    269: load_var(29)  -- _PV_R
+    270: pop
+    271: load_var(7)  -- _PR_RESULT
+    272: load_var(30)  -- _PR_NODE
+    273: push_const(36)  -- not
+    274: load_var(29)  -- _PV_R
+    275: get_member(32)  -- NODE
+    276: make_list(1)
     277: call(2)
-    278: store_var(30)  -- _PV_R
-    279: load_var(30)  -- _PV_R
-    280: pop
-    281: push_const(7)  -- node
-    282: load_var(31)  -- _PR_NODE
-    283: push_const(35)  -- not
-    284: load_var(30)  -- _PV_R
-    285: push_const(7)  -- node
-    286: get_index
-    287: make_list(1)
-    288: call(2)
-    289: push_const(10)  -- pos
-    290: load_var(30)  -- _PV_R
-    291: push_const(10)  -- pos
-    292: get_index
-    293: make_map(2)
+    278: load_var(29)  -- _PV_R
+    279: get_member(33)  -- POS
+    280: call(2)
+    281: ret
+    282: pop_scope
+    283: jump(285)
+    284: push_const(11)  -- null
+    285: pop
+    286: load_var(3)  -- _PV_TOKTYPE
+    287: push_const(37)  -- IF
+    288: cmp_eq
+    289: jump_false(296)
+    290: load_var(38)  -- _PR_IF
+    291: load_var(1)  -- _PV_TOKS
+    292: load_var(2)  -- _PV_POS
+    293: call(2)
     294: ret
-    295: pop_scope
-    296: jump(298)
-    297: push_const(12)  -- null
-    298: pop
-    299: load_var(3)  -- _PV_TOKTYPE
-    300: push_const(36)  -- IF
-    301: cmp_eq
-    302: jump_false(309)
-    303: load_var(37)  -- _PR_IF
-    304: load_var(1)  -- _PV_TOKS
-    305: load_var(2)  -- _PV_POS
-    306: call(2)
-    307: ret
-    308: jump(310)
-    309: push_const(12)  -- null
-    310: pop
-    311: load_var(3)  -- _PV_TOKTYPE
-    312: push_const(38)  -- WHILE
-    313: cmp_eq
-    314: jump_false(321)
-    315: load_var(39)  -- _PR_WHILE
-    316: load_var(1)  -- _PV_TOKS
-    317: load_var(2)  -- _PV_POS
-    318: call(2)
-    319: ret
-    320: jump(322)
-    321: push_const(12)  -- null
-    322: pop
-    323: load_var(3)  -- _PV_TOKTYPE
-    324: push_const(40)  -- REPEAT
-    325: cmp_eq
-    326: jump_false(333)
-    327: load_var(41)  -- _PR_REPEAT
-    328: load_var(1)  -- _PV_TOKS
-    329: load_var(2)  -- _PV_POS
-    330: call(2)
-    331: ret
-    332: jump(334)
-    333: push_const(12)  -- null
-    334: pop
-    335: load_var(3)  -- _PV_TOKTYPE
-    336: push_const(42)  -- FOR
-    337: cmp_eq
-    338: jump_false(345)
-    339: load_var(43)  -- _PR_FOR
-    340: load_var(1)  -- _PV_TOKS
-    341: load_var(2)  -- _PV_POS
-    342: call(2)
-    343: ret
-    344: jump(346)
-    345: push_const(12)  -- null
-    346: pop
-    347: load_var(3)  -- _PV_TOKTYPE
-    348: push_const(44)  -- BEGIN
-    349: cmp_eq
-    350: jump_false(357)
-    351: load_var(45)  -- _PR_BEGIN
-    352: load_var(1)  -- _PV_TOKS
-    353: load_var(2)  -- _PV_POS
-    354: call(2)
-    355: ret
-    356: jump(358)
-    357: push_const(12)  -- null
-    358: pop
-    359: load_var(3)  -- _PV_TOKTYPE
-    360: push_const(46)  -- OBJECT
-    361: cmp_eq
-    362: jump_false(369)
-    363: load_var(47)  -- _PR_OBJECT
-    364: load_var(1)  -- _PV_TOKS
-    365: load_var(2)  -- _PV_POS
-    366: call(2)
-    367: ret
-    368: jump(370)
-    369: push_const(12)  -- null
+    295: jump(297)
+    296: push_const(11)  -- null
+    297: pop
+    298: load_var(3)  -- _PV_TOKTYPE
+    299: push_const(39)  -- WHILE
+    300: cmp_eq
+    301: jump_false(308)
+    302: load_var(40)  -- _PR_WHILE
+    303: load_var(1)  -- _PV_TOKS
+    304: load_var(2)  -- _PV_POS
+    305: call(2)
+    306: ret
+    307: jump(309)
+    308: push_const(11)  -- null
+    309: pop
+    310: load_var(3)  -- _PV_TOKTYPE
+    311: push_const(41)  -- REPEAT
+    312: cmp_eq
+    313: jump_false(320)
+    314: load_var(42)  -- _PR_REPEAT
+    315: load_var(1)  -- _PV_TOKS
+    316: load_var(2)  -- _PV_POS
+    317: call(2)
+    318: ret
+    319: jump(321)
+    320: push_const(11)  -- null
+    321: pop
+    322: load_var(3)  -- _PV_TOKTYPE
+    323: push_const(43)  -- FOR
+    324: cmp_eq
+    325: jump_false(332)
+    326: load_var(44)  -- _PR_FOR
+    327: load_var(1)  -- _PV_TOKS
+    328: load_var(2)  -- _PV_POS
+    329: call(2)
+    330: ret
+    331: jump(333)
+    332: push_const(11)  -- null
+    333: pop
+    334: load_var(3)  -- _PV_TOKTYPE
+    335: push_const(45)  -- BEGIN
+    336: cmp_eq
+    337: jump_false(344)
+    338: load_var(46)  -- _PR_BEGIN
+    339: load_var(1)  -- _PV_TOKS
+    340: load_var(2)  -- _PV_POS
+    341: call(2)
+    342: ret
+    343: jump(345)
+    344: push_const(11)  -- null
+    345: pop
+    346: load_var(3)  -- _PV_TOKTYPE
+    347: push_const(47)  -- OBJECT
+    348: cmp_eq
+    349: jump_false(356)
+    350: load_var(48)  -- _PR_OBJECT
+    351: load_var(1)  -- _PV_TOKS
+    352: load_var(2)  -- _PV_POS
+    353: call(2)
+    354: ret
+    355: jump(357)
+    356: push_const(11)  -- null
+    357: pop
+    358: load_var(3)  -- _PV_TOKTYPE
+    359: push_const(49)  -- (
+    360: cmp_eq
+    361: jump_false(579)
+    362: push_scope
+    363: load_var(2)  -- _PV_POS
+    364: jump_null(370)
+    365: push_const(10)  -- 1
+    366: jump_null(369)
+    367: add
+    368: jump(372)
+    369: pop
     370: pop
-    371: load_var(3)  -- _PV_TOKTYPE
-    372: push_const(48)  -- (
-    373: cmp_eq
-    374: jump_false(604)
-    375: push_scope
-    376: load_var(2)  -- _PV_POS
-    377: jump_null(383)
-    378: push_const(11)  -- 1
-    379: jump_null(382)
-    380: add
-    381: jump(385)
-    382: pop
-    383: pop
-    384: push_const(12)  -- null
-    385: store_var(2)  -- _PV_POS
-    386: load_var(2)  -- _PV_POS
-    387: pop
-    388: load_var(0)  -- _PR_TT
-    389: load_var(1)  -- _PV_TOKS
-    390: load_var(2)  -- _PV_POS
-    391: call(2)
-    392: push_const(49)  -- )
-    393: cmp_eq
-    394: jump_false(413)
-    395: push_const(7)  -- node
-    396: load_var(31)  -- _PR_NODE
-    397: push_const(50)  -- list
-    398: make_list(0)
-    399: call(2)
-    400: push_const(10)  -- pos
-    401: load_var(2)  -- _PV_POS
-    402: jump_null(408)
-    403: push_const(11)  -- 1
-    404: jump_null(407)
-    405: add
-    406: jump(410)
+    371: push_const(11)  -- null
+    372: store_var(2)  -- _PV_POS
+    373: load_var(2)  -- _PV_POS
+    374: pop
+    375: load_var(0)  -- _PR_TT
+    376: load_var(1)  -- _PV_TOKS
+    377: load_var(2)  -- _PV_POS
+    378: call(2)
+    379: push_const(50)  -- )
+    380: cmp_eq
+    381: jump_false(399)
+    382: load_var(7)  -- _PR_RESULT
+    383: load_var(30)  -- _PR_NODE
+    384: push_const(51)  -- list
+    385: make_list(0)
+    386: call(2)
+    387: load_var(2)  -- _PV_POS
+    388: jump_null(394)
+    389: push_const(10)  -- 1
+    390: jump_null(393)
+    391: add
+    392: jump(396)
+    393: pop
+    394: pop
+    395: push_const(11)  -- null
+    396: call(2)
+    397: ret
+    398: jump(400)
+    399: push_const(11)  -- null
+    400: pop
+    401: load_var(52)  -- _PR_EXPR
+    402: load_var(1)  -- _PV_TOKS
+    403: load_var(2)  -- _PV_POS
+    404: call(2)
+    405: store_var(29)  -- _PV_R
+    406: load_var(29)  -- _PV_R
     407: pop
-    408: pop
-    409: push_const(12)  -- null
-    410: make_map(2)
-    411: ret
-    412: jump(414)
-    413: push_const(12)  -- null
-    414: pop
-    415: load_var(51)  -- _PR_EXPR
-    416: load_var(1)  -- _PV_TOKS
+    408: load_var(29)  -- _PV_R
+    409: get_member(32)  -- NODE
+    410: make_list(1)
+    411: store_var(53)  -- _PV_ITEMS
+    412: load_var(53)  -- _PV_ITEMS
+    413: pop
+    414: load_var(29)  -- _PV_R
+    415: get_member(33)  -- POS
+    416: store_var(2)  -- _PV_POS
     417: load_var(2)  -- _PV_POS
-    418: call(2)
-    419: store_var(30)  -- _PV_R
-    420: load_var(30)  -- _PV_R
-    421: pop
-    422: load_var(30)  -- _PV_R
-    423: push_const(7)  -- node
-    424: get_index
-    425: make_list(1)
-    426: store_var(52)  -- _PV_ITEMS
-    427: load_var(52)  -- _PV_ITEMS
-    428: pop
-    429: load_var(30)  -- _PV_R
-    430: push_const(10)  -- pos
-    431: get_index
-    432: store_var(2)  -- _PV_POS
-    433: load_var(2)  -- _PV_POS
-    434: pop
-    435: push_const(12)  -- null
-    436: store_reg(0)
-    437: load_var(0)  -- _PR_TT
-    438: load_var(1)  -- _PV_TOKS
+    418: pop
+    419: push_const(11)  -- null
+    420: store_reg(0)
+    421: load_var(0)  -- _PR_TT
+    422: load_var(1)  -- _PV_TOKS
+    423: load_var(2)  -- _PV_POS
+    424: call(2)
+    425: push_const(54)  -- ,
+    426: cmp_eq
+    427: jump_false(469)
+    428: push_scope
+    429: load_var(2)  -- _PV_POS
+    430: jump_null(436)
+    431: push_const(10)  -- 1
+    432: jump_null(435)
+    433: add
+    434: jump(438)
+    435: pop
+    436: pop
+    437: push_const(11)  -- null
+    438: store_var(2)  -- _PV_POS
     439: load_var(2)  -- _PV_POS
-    440: call(2)
-    441: push_const(53)  -- ,
-    442: cmp_eq
-    443: jump_false(487)
-    444: push_scope
-    445: load_var(2)  -- _PV_POS
-    446: jump_null(452)
-    447: push_const(11)  -- 1
-    448: jump_null(451)
-    449: add
-    450: jump(454)
-    451: pop
-    452: pop
-    453: push_const(12)  -- null
-    454: store_var(2)  -- _PV_POS
-    455: load_var(2)  -- _PV_POS
+    440: pop
+    441: load_var(52)  -- _PR_EXPR
+    442: load_var(1)  -- _PV_TOKS
+    443: load_var(2)  -- _PV_POS
+    444: call(2)
+    445: store_var(55)  -- _PV_R2
+    446: load_var(55)  -- _PV_R2
+    447: pop
+    448: load_var(53)  -- _PV_ITEMS
+    449: jump_null(457)
+    450: load_var(55)  -- _PV_R2
+    451: get_member(32)  -- NODE
+    452: make_list(1)
+    453: jump_null(456)
+    454: add
+    455: jump(459)
     456: pop
-    457: load_var(51)  -- _PR_EXPR
-    458: load_var(1)  -- _PV_TOKS
-    459: load_var(2)  -- _PV_POS
-    460: call(2)
-    461: store_var(54)  -- _PV_R2
-    462: load_var(54)  -- _PV_R2
-    463: pop
-    464: load_var(52)  -- _PV_ITEMS
-    465: jump_null(474)
-    466: load_var(54)  -- _PV_R2
-    467: push_const(7)  -- node
-    468: get_index
-    469: make_list(1)
-    470: jump_null(473)
-    471: add
-    472: jump(476)
-    473: pop
-    474: pop
-    475: push_const(12)  -- null
-    476: store_var(52)  -- _PV_ITEMS
-    477: load_var(52)  -- _PV_ITEMS
-    478: pop
-    479: load_var(54)  -- _PV_R2
-    480: push_const(10)  -- pos
-    481: get_index
-    482: store_var(2)  -- _PV_POS
-    483: load_var(2)  -- _PV_POS
-    484: pop_scope
-    485: store_reg(0)
-    486: jump(437)
-    487: load_reg(0)
-    488: pop
-    489: load_var(0)  -- _PR_TT
-    490: load_var(1)  -- _PV_TOKS
-    491: load_var(2)  -- _PV_POS
-    492: call(2)
-    493: push_const(49)  -- )
-    494: cmp_eq
-    495: jump_false(508)
-    496: load_var(2)  -- _PV_POS
-    497: jump_null(503)
-    498: push_const(11)  -- 1
-    499: jump_null(502)
-    500: add
-    501: jump(505)
-    502: pop
-    503: pop
-    504: push_const(12)  -- null
-    505: store_var(2)  -- _PV_POS
-    506: load_var(2)  -- _PV_POS
-    507: jump(509)
-    508: push_const(12)  -- null
-    509: pop
-    510: load_var(55)  -- LENGTH
-    511: load_var(52)  -- _PV_ITEMS
-    512: call(1)
-    513: push_const(11)  -- 1
-    514: cmp_eq
-    515: jump_false(591)
-    516: push_scope
-    517: load_var(0)  -- _PR_TT
-    518: load_var(1)  -- _PV_TOKS
-    519: load_var(2)  -- _PV_POS
-    520: call(2)
-    521: store_var(56)  -- _PV_NTT
-    522: load_var(56)  -- _PV_NTT
-    523: pop
-    524: load_var(56)  -- _PV_NTT
-    525: push_const(18)  -- ID
-    526: cmp_eq
-    527: load_var(56)  -- _PV_NTT
-    528: push_const(6)  -- INT
-    529: cmp_eq
-    530: log_or
-    531: load_var(56)  -- _PV_NTT
-    532: push_const(13)  -- FLOAT
-    533: cmp_eq
-    534: log_or
-    535: load_var(56)  -- _PV_NTT
-    536: push_const(36)  -- IF
-    537: cmp_eq
-    538: log_or
-    539: jump_false(579)
-    540: push_scope
-    541: load_var(57)  -- _PR_OPERAND
-    542: load_var(1)  -- _PV_TOKS
-    543: load_var(2)  -- _PV_POS
-    544: call(2)
-    545: store_var(54)  -- _PV_R2
-    546: load_var(54)  -- _PV_R2
-    547: pop
-    548: load_var(58)  -- _PR_CONSUME_PF
-    549: load_var(1)  -- _PV_TOKS
-    550: load_var(54)  -- _PV_R2
-    551: push_const(10)  -- pos
-    552: get_index
-    553: load_var(54)  -- _PV_R2
-    554: push_const(7)  -- node
-    555: get_index
-    556: call(3)
-    557: store_var(54)  -- _PV_R2
-    558: load_var(54)  -- _PV_R2
-    559: pop
-    560: push_const(7)  -- node
-    561: load_var(31)  -- _PR_NODE
-    562: push_const(59)  -- mul
-    563: load_var(52)  -- _PV_ITEMS
-    564: push_const(60)  -- 0
-    565: get_index
-    566: load_var(54)  -- _PV_R2
-    567: push_const(7)  -- node
-    568: get_index
-    569: make_list(2)
-    570: call(2)
-    571: push_const(10)  -- pos
-    572: load_var(54)  -- _PV_R2
-    573: push_const(10)  -- pos
-    574: get_index
-    575: make_map(2)
+    457: pop
+    458: push_const(11)  -- null
+    459: store_var(53)  -- _PV_ITEMS
+    460: load_var(53)  -- _PV_ITEMS
+    461: pop
+    462: load_var(55)  -- _PV_R2
+    463: get_member(33)  -- POS
+    464: store_var(2)  -- _PV_POS
+    465: load_var(2)  -- _PV_POS
+    466: pop_scope
+    467: store_reg(0)
+    468: jump(421)
+    469: load_reg(0)
+    470: pop
+    471: load_var(0)  -- _PR_TT
+    472: load_var(1)  -- _PV_TOKS
+    473: load_var(2)  -- _PV_POS
+    474: call(2)
+    475: push_const(50)  -- )
+    476: cmp_eq
+    477: jump_false(490)
+    478: load_var(2)  -- _PV_POS
+    479: jump_null(485)
+    480: push_const(10)  -- 1
+    481: jump_null(484)
+    482: add
+    483: jump(487)
+    484: pop
+    485: pop
+    486: push_const(11)  -- null
+    487: store_var(2)  -- _PV_POS
+    488: load_var(2)  -- _PV_POS
+    489: jump(491)
+    490: push_const(11)  -- null
+    491: pop
+    492: load_var(56)  -- LENGTH
+    493: load_var(53)  -- _PV_ITEMS
+    494: call(1)
+    495: push_const(10)  -- 1
+    496: cmp_eq
+    497: jump_false(567)
+    498: push_scope
+    499: load_var(0)  -- _PR_TT
+    500: load_var(1)  -- _PV_TOKS
+    501: load_var(2)  -- _PV_POS
+    502: call(2)
+    503: store_var(57)  -- _PV_NTT
+    504: load_var(57)  -- _PV_NTT
+    505: pop
+    506: load_var(57)  -- _PV_NTT
+    507: push_const(17)  -- ID
+    508: cmp_eq
+    509: load_var(57)  -- _PV_NTT
+    510: push_const(6)  -- INT
+    511: cmp_eq
+    512: log_or
+    513: load_var(57)  -- _PV_NTT
+    514: push_const(12)  -- FLOAT
+    515: cmp_eq
+    516: log_or
+    517: load_var(57)  -- _PV_NTT
+    518: push_const(37)  -- IF
+    519: cmp_eq
+    520: log_or
+    521: jump_false(556)
+    522: push_scope
+    523: load_var(58)  -- _PR_OPERAND
+    524: load_var(1)  -- _PV_TOKS
+    525: load_var(2)  -- _PV_POS
+    526: call(2)
+    527: store_var(55)  -- _PV_R2
+    528: load_var(55)  -- _PV_R2
+    529: pop
+    530: load_var(59)  -- _PR_CONSUME_PF
+    531: load_var(1)  -- _PV_TOKS
+    532: load_var(55)  -- _PV_R2
+    533: get_member(33)  -- POS
+    534: load_var(55)  -- _PV_R2
+    535: get_member(32)  -- NODE
+    536: call(3)
+    537: store_var(55)  -- _PV_R2
+    538: load_var(55)  -- _PV_R2
+    539: pop
+    540: load_var(7)  -- _PR_RESULT
+    541: load_var(30)  -- _PR_NODE
+    542: push_const(60)  -- mul
+    543: load_var(53)  -- _PV_ITEMS
+    544: push_const(61)  -- 0
+    545: get_index
+    546: load_var(55)  -- _PV_R2
+    547: get_member(32)  -- NODE
+    548: make_list(2)
+    549: call(2)
+    550: load_var(55)  -- _PV_R2
+    551: get_member(33)  -- POS
+    552: call(2)
+    553: ret
+    554: pop_scope
+    555: jump(557)
+    556: push_const(11)  -- null
+    557: pop
+    558: load_var(7)  -- _PR_RESULT
+    559: load_var(53)  -- _PV_ITEMS
+    560: push_const(61)  -- 0
+    561: get_index
+    562: load_var(2)  -- _PV_POS
+    563: call(2)
+    564: ret
+    565: pop_scope
+    566: jump(568)
+    567: push_const(11)  -- null
+    568: pop
+    569: load_var(7)  -- _PR_RESULT
+    570: load_var(30)  -- _PR_NODE
+    571: push_const(51)  -- list
+    572: load_var(53)  -- _PV_ITEMS
+    573: call(2)
+    574: load_var(2)  -- _PV_POS
+    575: call(2)
     576: ret
     577: pop_scope
     578: jump(580)
-    579: push_const(12)  -- null
+    579: push_const(11)  -- null
     580: pop
-    581: push_const(7)  -- node
-    582: load_var(52)  -- _PV_ITEMS
-    583: push_const(60)  -- 0
-    584: get_index
-    585: push_const(10)  -- pos
+    581: load_var(3)  -- _PV_TOKTYPE
+    582: push_const(62)  -- [
+    583: cmp_eq
+    584: jump_false(701)
+    585: push_scope
     586: load_var(2)  -- _PV_POS
-    587: make_map(2)
-    588: ret
-    589: pop_scope
-    590: jump(592)
-    591: push_const(12)  -- null
+    587: jump_null(593)
+    588: push_const(10)  -- 1
+    589: jump_null(592)
+    590: add
+    591: jump(595)
     592: pop
-    593: push_const(7)  -- node
-    594: load_var(31)  -- _PR_NODE
-    595: push_const(50)  -- list
-    596: load_var(52)  -- _PV_ITEMS
-    597: call(2)
-    598: push_const(10)  -- pos
-    599: load_var(2)  -- _PV_POS
-    600: make_map(2)
-    601: ret
-    602: pop_scope
-    603: jump(605)
-    604: push_const(12)  -- null
-    605: pop
-    606: load_var(3)  -- _PV_TOKTYPE
-    607: push_const(61)  -- [
-    608: cmp_eq
-    609: jump_false(729)
-    610: push_scope
-    611: load_var(2)  -- _PV_POS
-    612: jump_null(618)
-    613: push_const(11)  -- 1
-    614: jump_null(617)
-    615: add
-    616: jump(620)
-    617: pop
-    618: pop
-    619: push_const(12)  -- null
-    620: store_var(2)  -- _PV_POS
+    593: pop
+    594: push_const(11)  -- null
+    595: store_var(2)  -- _PV_POS
+    596: load_var(2)  -- _PV_POS
+    597: pop
+    598: make_list(0)
+    599: store_var(53)  -- _PV_ITEMS
+    600: load_var(53)  -- _PV_ITEMS
+    601: pop
+    602: push_const(11)  -- null
+    603: store_reg(1)
+    604: load_var(0)  -- _PR_TT
+    605: load_var(1)  -- _PV_TOKS
+    606: load_var(2)  -- _PV_POS
+    607: call(2)
+    608: push_const(63)  -- ]
+    609: cmp_neq
+    610: load_var(0)  -- _PR_TT
+    611: load_var(1)  -- _PV_TOKS
+    612: load_var(2)  -- _PV_POS
+    613: call(2)
+    614: push_const(64)  -- EOF
+    615: cmp_neq
+    616: log_and
+    617: jump_false(668)
+    618: push_scope
+    619: load_var(52)  -- _PR_EXPR
+    620: load_var(1)  -- _PV_TOKS
     621: load_var(2)  -- _PV_POS
-    622: pop
-    623: make_list(0)
-    624: store_var(52)  -- _PV_ITEMS
-    625: load_var(52)  -- _PV_ITEMS
-    626: pop
-    627: push_const(12)  -- null
-    628: store_reg(1)
-    629: load_var(0)  -- _PR_TT
-    630: load_var(1)  -- _PV_TOKS
-    631: load_var(2)  -- _PV_POS
-    632: call(2)
-    633: push_const(62)  -- ]
-    634: cmp_neq
-    635: load_var(0)  -- _PR_TT
-    636: load_var(1)  -- _PV_TOKS
-    637: load_var(2)  -- _PV_POS
-    638: call(2)
-    639: push_const(63)  -- EOF
-    640: cmp_neq
-    641: log_and
-    642: jump_false(695)
-    643: push_scope
-    644: load_var(51)  -- _PR_EXPR
-    645: load_var(1)  -- _PV_TOKS
-    646: load_var(2)  -- _PV_POS
-    647: call(2)
-    648: store_var(30)  -- _PV_R
-    649: load_var(30)  -- _PV_R
-    650: pop
-    651: load_var(52)  -- _PV_ITEMS
-    652: jump_null(661)
-    653: load_var(30)  -- _PV_R
-    654: push_const(7)  -- node
-    655: get_index
-    656: make_list(1)
-    657: jump_null(660)
-    658: add
-    659: jump(663)
-    660: pop
-    661: pop
-    662: push_const(12)  -- null
-    663: store_var(52)  -- _PV_ITEMS
-    664: load_var(52)  -- _PV_ITEMS
-    665: pop
-    666: load_var(30)  -- _PV_R
-    667: push_const(10)  -- pos
-    668: get_index
-    669: store_var(2)  -- _PV_POS
-    670: load_var(2)  -- _PV_POS
-    671: pop
-    672: load_var(0)  -- _PR_TT
-    673: load_var(1)  -- _PV_TOKS
-    674: load_var(2)  -- _PV_POS
-    675: call(2)
-    676: push_const(53)  -- ,
-    677: cmp_eq
-    678: jump_false(691)
-    679: load_var(2)  -- _PV_POS
-    680: jump_null(686)
-    681: push_const(11)  -- 1
-    682: jump_null(685)
-    683: add
-    684: jump(688)
-    685: pop
-    686: pop
-    687: push_const(12)  -- null
-    688: store_var(2)  -- _PV_POS
-    689: load_var(2)  -- _PV_POS
-    690: jump(692)
-    691: push_const(12)  -- null
-    692: pop_scope
-    693: store_reg(1)
-    694: jump(629)
-    695: load_reg(1)
-    696: pop
-    697: load_var(0)  -- _PR_TT
-    698: load_var(1)  -- _PV_TOKS
-    699: load_var(2)  -- _PV_POS
-    700: call(2)
-    701: push_const(62)  -- ]
-    702: cmp_eq
-    703: jump_false(716)
-    704: load_var(2)  -- _PV_POS
-    705: jump_null(711)
-    706: push_const(11)  -- 1
-    707: jump_null(710)
-    708: add
-    709: jump(713)
-    710: pop
-    711: pop
-    712: push_const(12)  -- null
-    713: store_var(2)  -- _PV_POS
-    714: load_var(2)  -- _PV_POS
-    715: jump(717)
-    716: push_const(12)  -- null
-    717: pop
-    718: push_const(7)  -- node
-    719: load_var(31)  -- _PR_NODE
-    720: push_const(50)  -- list
-    721: load_var(52)  -- _PV_ITEMS
-    722: call(2)
-    723: push_const(10)  -- pos
-    724: load_var(2)  -- _PV_POS
-    725: make_map(2)
-    726: ret
-    727: pop_scope
-    728: jump(730)
-    729: push_const(12)  -- null
-    730: pop
-    731: load_var(3)  -- _PV_TOKTYPE
-    732: push_const(64)  -- {
-    733: cmp_eq
-    734: jump_false(741)
-    735: load_var(65)  -- _PR_MAP
-    736: load_var(1)  -- _PV_TOKS
-    737: load_var(2)  -- _PV_POS
-    738: call(2)
-    739: ret
-    740: jump(742)
-    741: push_const(12)  -- null
-    742: pop
-    743: push_const(7)  -- node
-    744: load_var(8)  -- _PR_LEAF
-    745: push_const(66)  -- error
-    746: push_const(67)  -- Unexpected token: 
-    747: jump_null(753)
-    748: load_var(3)  -- _PV_TOKTYPE
-    749: jump_null(752)
-    750: add
-    751: jump(755)
-    752: pop
-    753: pop
-    754: push_const(12)  -- null
-    755: jump_null(761)
-    756: push_const(68)  --  (
-    757: jump_null(760)
-    758: add
-    759: jump(763)
-    760: pop
-    761: pop
-    762: push_const(12)  -- null
-    763: jump_null(769)
-    764: load_var(5)  -- _PV_TOKVAL
-    765: jump_null(768)
-    766: add
-    767: jump(771)
-    768: pop
-    769: pop
-    770: push_const(12)  -- null
-    771: jump_null(777)
-    772: push_const(49)  -- )
-    773: jump_null(776)
-    774: add
-    775: jump(779)
-    776: pop
-    777: pop
-    778: push_const(12)  -- null
-    779: call(2)
-    780: push_const(10)  -- pos
-    781: load_var(2)  -- _PV_POS
-    782: jump_null(788)
-    783: push_const(11)  -- 1
-    784: jump_null(787)
-    785: add
-    786: jump(790)
-    787: pop
-    788: pop
-    789: push_const(12)  -- null
-    790: make_map(2)
-    791: ret
-    792: pop_scope
-    793: ret
-CHUNK ___PR_POP_OP_6 (_PV_OPS, _PV_NDS)
+    622: call(2)
+    623: store_var(29)  -- _PV_R
+    624: load_var(29)  -- _PV_R
+    625: pop
+    626: load_var(53)  -- _PV_ITEMS
+    627: jump_null(635)
+    628: load_var(29)  -- _PV_R
+    629: get_member(32)  -- NODE
+    630: make_list(1)
+    631: jump_null(634)
+    632: add
+    633: jump(637)
+    634: pop
+    635: pop
+    636: push_const(11)  -- null
+    637: store_var(53)  -- _PV_ITEMS
+    638: load_var(53)  -- _PV_ITEMS
+    639: pop
+    640: load_var(29)  -- _PV_R
+    641: get_member(33)  -- POS
+    642: store_var(2)  -- _PV_POS
+    643: load_var(2)  -- _PV_POS
+    644: pop
+    645: load_var(0)  -- _PR_TT
+    646: load_var(1)  -- _PV_TOKS
+    647: load_var(2)  -- _PV_POS
+    648: call(2)
+    649: push_const(54)  -- ,
+    650: cmp_eq
+    651: jump_false(664)
+    652: load_var(2)  -- _PV_POS
+    653: jump_null(659)
+    654: push_const(10)  -- 1
+    655: jump_null(658)
+    656: add
+    657: jump(661)
+    658: pop
+    659: pop
+    660: push_const(11)  -- null
+    661: store_var(2)  -- _PV_POS
+    662: load_var(2)  -- _PV_POS
+    663: jump(665)
+    664: push_const(11)  -- null
+    665: pop_scope
+    666: store_reg(1)
+    667: jump(604)
+    668: load_reg(1)
+    669: pop
+    670: load_var(0)  -- _PR_TT
+    671: load_var(1)  -- _PV_TOKS
+    672: load_var(2)  -- _PV_POS
+    673: call(2)
+    674: push_const(63)  -- ]
+    675: cmp_eq
+    676: jump_false(689)
+    677: load_var(2)  -- _PV_POS
+    678: jump_null(684)
+    679: push_const(10)  -- 1
+    680: jump_null(683)
+    681: add
+    682: jump(686)
+    683: pop
+    684: pop
+    685: push_const(11)  -- null
+    686: store_var(2)  -- _PV_POS
+    687: load_var(2)  -- _PV_POS
+    688: jump(690)
+    689: push_const(11)  -- null
+    690: pop
+    691: load_var(7)  -- _PR_RESULT
+    692: load_var(30)  -- _PR_NODE
+    693: push_const(51)  -- list
+    694: load_var(53)  -- _PV_ITEMS
+    695: call(2)
+    696: load_var(2)  -- _PV_POS
+    697: call(2)
+    698: ret
+    699: pop_scope
+    700: jump(702)
+    701: push_const(11)  -- null
+    702: pop
+    703: load_var(3)  -- _PV_TOKTYPE
+    704: push_const(65)  -- {
+    705: cmp_eq
+    706: jump_false(713)
+    707: load_var(66)  -- _PR_MAP
+    708: load_var(1)  -- _PV_TOKS
+    709: load_var(2)  -- _PV_POS
+    710: call(2)
+    711: ret
+    712: jump(714)
+    713: push_const(11)  -- null
+    714: pop
+    715: load_var(7)  -- _PR_RESULT
+    716: load_var(8)  -- _PR_LEAF
+    717: push_const(67)  -- error
+    718: push_const(68)  -- Unexpected token: 
+    719: jump_null(725)
+    720: load_var(3)  -- _PV_TOKTYPE
+    721: jump_null(724)
+    722: add
+    723: jump(727)
+    724: pop
+    725: pop
+    726: push_const(11)  -- null
+    727: jump_null(733)
+    728: push_const(69)  --  (
+    729: jump_null(732)
+    730: add
+    731: jump(735)
+    732: pop
+    733: pop
+    734: push_const(11)  -- null
+    735: jump_null(741)
+    736: load_var(5)  -- _PV_TOKVAL
+    737: jump_null(740)
+    738: add
+    739: jump(743)
+    740: pop
+    741: pop
+    742: push_const(11)  -- null
+    743: jump_null(749)
+    744: push_const(50)  -- )
+    745: jump_null(748)
+    746: add
+    747: jump(751)
+    748: pop
+    749: pop
+    750: push_const(11)  -- null
+    751: call(2)
+    752: load_var(2)  -- _PV_POS
+    753: jump_null(759)
+    754: push_const(10)  -- 1
+    755: jump_null(758)
+    756: add
+    757: jump(761)
+    758: pop
+    759: pop
+    760: push_const(11)  -- null
+    761: call(2)
+    762: ret
+    763: pop_scope
+    764: ret
+CHUNK ___PR_POPRESULT_5 (_PV_OPS, _PV_NDS)
+  CONST  0: OP_STK
+  CONST  1: _PV_OPS
+  CONST  2: ND_STK
+  CONST  3: _PV_NDS
+  CODE:
+    0: push_scope
+    1: push_const(0)  -- OP_STK
+    2: load_var(1)  -- _PV_OPS
+    3: push_const(2)  -- ND_STK
+    4: load_var(3)  -- _PV_NDS
+    5: make_object_here(2)
+    6: pop_scope
+    7: ret
+CHUNK ___PR_POP_OP_9 (_PV_OPS, _PV_NDS)
   CONST  0: _PV_OPS
   CONST  1: LENGTH
   CONST  2: 1
@@ -3622,21 +3582,19 @@ CHUNK ___PR_POP_OP_6 (_PV_OPS, _PV_NDS)
   CONST  12: 3
   CONST  13: _PV_NEW_NDS
   CONST  14: :=
-  CONST  15: op_stk
-  CONST  16: nd_stk
-  CONST  17: _PR_NODE
-  CONST  18: assign
-  CONST  19: =>
-  CONST  20: _PR_EXTRACT_PARAMS
-  CONST  21: _PV_PARAMS
-  CONST  22: sym
-  CONST  23: lambda
-  CONST  24: children
-  CONST  25: val
-  CONST  26: .
-  CONST  27: member
-  CONST  28: _PR_OP_SYM
-  CONST  29: _PV_SYM
+  CONST  15: _PR_POPRESULT
+  CONST  16: _PR_NODE
+  CONST  17: assign
+  CONST  18: =>
+  CONST  19: _PR_EXTRACT_PARAMS
+  CONST  20: _PV_PARAMS
+  CONST  21: _PR_NODE_V
+  CONST  22: lambda
+  CONST  23: .
+  CONST  24: member
+  CONST  25: VAL
+  CONST  26: _PR_OP_SYM
+  CONST  27: _PV_SYM
   CODE:
     0: push_scope
     1: load_var(0)  -- _PV_OPS
@@ -3726,127 +3684,118 @@ CHUNK ___PR_POP_OP_6 (_PV_OPS, _PV_NDS)
     85: load_var(4)  -- _PV_OP
     86: push_const(14)  -- :=
     87: cmp_eq
-    88: jump_false(110)
-    89: push_const(15)  -- op_stk
+    88: jump_false(109)
+    89: load_var(15)  -- _PR_POPRESULT
     90: load_var(11)  -- _PV_NEW_OPS
-    91: push_const(16)  -- nd_stk
-    92: load_var(13)  -- _PV_NEW_NDS
-    93: jump_null(105)
-    94: load_var(17)  -- _PR_NODE
-    95: push_const(18)  -- assign
-    96: load_var(8)  -- _PV_LHS
-    97: load_var(6)  -- _PV_RHS
-    98: make_list(2)
-    99: call(2)
-    100: make_list(1)
-    101: jump_null(104)
-    102: add
-    103: jump(107)
+    91: load_var(13)  -- _PV_NEW_NDS
+    92: jump_null(104)
+    93: load_var(16)  -- _PR_NODE
+    94: push_const(17)  -- assign
+    95: load_var(8)  -- _PV_LHS
+    96: load_var(6)  -- _PV_RHS
+    97: make_list(2)
+    98: call(2)
+    99: make_list(1)
+    100: jump_null(103)
+    101: add
+    102: jump(106)
+    103: pop
     104: pop
-    105: pop
-    106: push_const(3)  -- null
-    107: make_map(2)
-    108: ret
-    109: jump(111)
-    110: push_const(3)  -- null
-    111: pop
-    112: load_var(4)  -- _PV_OP
-    113: push_const(19)  -- =>
-    114: cmp_eq
-    115: jump_false(147)
-    116: push_scope
-    117: load_var(20)  -- _PR_EXTRACT_PARAMS
-    118: load_var(8)  -- _PV_LHS
-    119: call(1)
-    120: store_var(21)  -- _PV_PARAMS
-    121: load_var(21)  -- _PV_PARAMS
-    122: pop
-    123: push_const(15)  -- op_stk
-    124: load_var(11)  -- _PV_NEW_OPS
-    125: push_const(16)  -- nd_stk
-    126: load_var(13)  -- _PV_NEW_NDS
-    127: jump_null(141)
-    128: push_const(22)  -- sym
-    129: push_const(23)  -- lambda
-    130: push_const(24)  -- children
-    131: load_var(6)  -- _PV_RHS
+    105: push_const(3)  -- null
+    106: call(2)
+    107: ret
+    108: jump(110)
+    109: push_const(3)  -- null
+    110: pop
+    111: load_var(4)  -- _PV_OP
+    112: push_const(18)  -- =>
+    113: cmp_eq
+    114: jump_false(143)
+    115: push_scope
+    116: load_var(19)  -- _PR_EXTRACT_PARAMS
+    117: load_var(8)  -- _PV_LHS
+    118: call(1)
+    119: store_var(20)  -- _PV_PARAMS
+    120: load_var(20)  -- _PV_PARAMS
+    121: pop
+    122: load_var(15)  -- _PR_POPRESULT
+    123: load_var(11)  -- _PV_NEW_OPS
+    124: load_var(13)  -- _PV_NEW_NDS
+    125: jump_null(137)
+    126: load_var(21)  -- _PR_NODE_V
+    127: push_const(22)  -- lambda
+    128: load_var(6)  -- _PV_RHS
+    129: make_list(1)
+    130: load_var(20)  -- _PV_PARAMS
+    131: call(3)
     132: make_list(1)
-    133: push_const(25)  -- val
-    134: load_var(21)  -- _PV_PARAMS
-    135: make_map(3)
-    136: make_list(1)
-    137: jump_null(140)
-    138: add
-    139: jump(143)
-    140: pop
-    141: pop
-    142: push_const(3)  -- null
-    143: make_map(2)
-    144: ret
-    145: pop_scope
-    146: jump(148)
-    147: push_const(3)  -- null
-    148: pop
-    149: load_var(4)  -- _PV_OP
-    150: push_const(26)  -- .
-    151: cmp_eq
-    152: jump_false(178)
-    153: push_const(15)  -- op_stk
-    154: load_var(11)  -- _PV_NEW_OPS
-    155: push_const(16)  -- nd_stk
-    156: load_var(13)  -- _PV_NEW_NDS
-    157: jump_null(173)
-    158: push_const(22)  -- sym
-    159: push_const(27)  -- member
-    160: push_const(24)  -- children
-    161: load_var(8)  -- _PV_LHS
-    162: make_list(1)
-    163: push_const(25)  -- val
-    164: load_var(6)  -- _PV_RHS
-    165: push_const(25)  -- val
-    166: get_index
-    167: make_map(3)
-    168: make_list(1)
-    169: jump_null(172)
-    170: add
-    171: jump(175)
-    172: pop
-    173: pop
-    174: push_const(3)  -- null
-    175: make_map(2)
-    176: ret
-    177: jump(179)
-    178: push_const(3)  -- null
-    179: pop
-    180: load_var(28)  -- _PR_OP_SYM
-    181: load_var(4)  -- _PV_OP
-    182: get_index
-    183: store_var(29)  -- _PV_SYM
-    184: load_var(29)  -- _PV_SYM
-    185: pop
-    186: push_const(15)  -- op_stk
-    187: load_var(11)  -- _PV_NEW_OPS
-    188: push_const(16)  -- nd_stk
-    189: load_var(13)  -- _PV_NEW_NDS
-    190: jump_null(202)
-    191: load_var(17)  -- _PR_NODE
-    192: load_var(29)  -- _PV_SYM
-    193: load_var(8)  -- _PV_LHS
-    194: load_var(6)  -- _PV_RHS
-    195: make_list(2)
-    196: call(2)
-    197: make_list(1)
-    198: jump_null(201)
-    199: add
-    200: jump(204)
-    201: pop
-    202: pop
-    203: push_const(3)  -- null
-    204: make_map(2)
-    205: ret
-    206: pop_scope
-    207: ret
-CHUNK ___PR_PROGRAM_20 (_PV_TOKS)
+    133: jump_null(136)
+    134: add
+    135: jump(139)
+    136: pop
+    137: pop
+    138: push_const(3)  -- null
+    139: call(2)
+    140: ret
+    141: pop_scope
+    142: jump(144)
+    143: push_const(3)  -- null
+    144: pop
+    145: load_var(4)  -- _PV_OP
+    146: push_const(23)  -- .
+    147: cmp_eq
+    148: jump_false(170)
+    149: load_var(15)  -- _PR_POPRESULT
+    150: load_var(11)  -- _PV_NEW_OPS
+    151: load_var(13)  -- _PV_NEW_NDS
+    152: jump_null(165)
+    153: load_var(21)  -- _PR_NODE_V
+    154: push_const(24)  -- member
+    155: load_var(8)  -- _PV_LHS
+    156: make_list(1)
+    157: load_var(6)  -- _PV_RHS
+    158: get_member(25)  -- VAL
+    159: call(3)
+    160: make_list(1)
+    161: jump_null(164)
+    162: add
+    163: jump(167)
+    164: pop
+    165: pop
+    166: push_const(3)  -- null
+    167: call(2)
+    168: ret
+    169: jump(171)
+    170: push_const(3)  -- null
+    171: pop
+    172: load_var(26)  -- _PR_OP_SYM
+    173: load_var(4)  -- _PV_OP
+    174: get_index
+    175: store_var(27)  -- _PV_SYM
+    176: load_var(27)  -- _PV_SYM
+    177: pop
+    178: load_var(15)  -- _PR_POPRESULT
+    179: load_var(11)  -- _PV_NEW_OPS
+    180: load_var(13)  -- _PV_NEW_NDS
+    181: jump_null(193)
+    182: load_var(16)  -- _PR_NODE
+    183: load_var(27)  -- _PV_SYM
+    184: load_var(8)  -- _PV_LHS
+    185: load_var(6)  -- _PV_RHS
+    186: make_list(2)
+    187: call(2)
+    188: make_list(1)
+    189: jump_null(192)
+    190: add
+    191: jump(195)
+    192: pop
+    193: pop
+    194: push_const(3)  -- null
+    195: call(2)
+    196: ret
+    197: pop_scope
+    198: ret
+CHUNK ___PR_PROGRAM_23 (_PV_TOKS)
   CONST  0: _PV_STMTS
   CONST  1: 0
   CONST  2: _PV_POS
@@ -3860,8 +3809,8 @@ CHUNK ___PR_PROGRAM_20 (_PV_TOKS)
   CONST  10: program
   CONST  11: _PR_STMT
   CONST  12: _PV_R
-  CONST  13: node
-  CONST  14: pos
+  CONST  13: NODE
+  CONST  14: POS
   CONST  15: LENGTH
   CODE:
     0: push_scope
@@ -3920,150 +3869,147 @@ CHUNK ___PR_PROGRAM_20 (_PV_TOKS)
     53: load_var(12)  -- _PV_R
     54: pop
     55: load_var(0)  -- _PV_STMTS
-    56: jump_null(65)
+    56: jump_null(64)
     57: load_var(12)  -- _PV_R
-    58: push_const(13)  -- node
-    59: get_index
-    60: make_list(1)
-    61: jump_null(64)
-    62: add
-    63: jump(67)
+    58: get_member(13)  -- NODE
+    59: make_list(1)
+    60: jump_null(63)
+    61: add
+    62: jump(66)
+    63: pop
     64: pop
-    65: pop
-    66: push_const(3)  -- null
-    67: store_var(0)  -- _PV_STMTS
-    68: load_var(0)  -- _PV_STMTS
-    69: pop
-    70: load_var(12)  -- _PV_R
-    71: push_const(14)  -- pos
-    72: get_index
-    73: store_var(2)  -- _PV_POS
-    74: load_var(2)  -- _PV_POS
-    75: pop
-    76: push_const(3)  -- null
-    77: store_reg(1)
-    78: load_var(4)  -- _PR_TT
-    79: load_var(5)  -- _PV_TOKS
-    80: load_var(2)  -- _PV_POS
-    81: call(2)
-    82: push_const(6)  -- ;
-    83: cmp_eq
-    84: jump_false(163)
-    85: push_scope
-    86: load_var(2)  -- _PV_POS
-    87: jump_null(93)
-    88: push_const(7)  -- 1
-    89: jump_null(92)
-    90: add
-    91: jump(95)
-    92: pop
-    93: pop
-    94: push_const(3)  -- null
-    95: store_var(2)  -- _PV_POS
-    96: load_var(2)  -- _PV_POS
-    97: pop
-    98: push_const(3)  -- null
-    99: store_reg(2)
-    100: load_var(4)  -- _PR_TT
-    101: load_var(5)  -- _PV_TOKS
-    102: load_var(2)  -- _PV_POS
-    103: call(2)
-    104: push_const(6)  -- ;
-    105: cmp_eq
-    106: jump_false(120)
-    107: load_var(2)  -- _PV_POS
-    108: jump_null(114)
-    109: push_const(7)  -- 1
-    110: jump_null(113)
-    111: add
-    112: jump(116)
-    113: pop
-    114: pop
-    115: push_const(3)  -- null
-    116: store_var(2)  -- _PV_POS
-    117: load_var(2)  -- _PV_POS
-    118: store_reg(2)
-    119: jump(100)
-    120: load_reg(2)
-    121: pop
-    122: load_var(4)  -- _PR_TT
-    123: load_var(5)  -- _PV_TOKS
-    124: load_var(2)  -- _PV_POS
-    125: call(2)
-    126: push_const(8)  -- EOF
-    127: cmp_eq
-    128: jump_false(131)
-    129: jump(163)
-    130: jump(132)
-    131: push_const(3)  -- null
-    132: pop
-    133: load_var(11)  -- _PR_STMT
-    134: load_var(5)  -- _PV_TOKS
-    135: load_var(2)  -- _PV_POS
-    136: call(2)
-    137: store_var(12)  -- _PV_R
-    138: load_var(12)  -- _PV_R
-    139: pop
-    140: load_var(0)  -- _PV_STMTS
-    141: jump_null(150)
-    142: load_var(12)  -- _PV_R
-    143: push_const(13)  -- node
-    144: get_index
-    145: make_list(1)
-    146: jump_null(149)
-    147: add
-    148: jump(152)
-    149: pop
-    150: pop
-    151: push_const(3)  -- null
-    152: store_var(0)  -- _PV_STMTS
-    153: load_var(0)  -- _PV_STMTS
-    154: pop
-    155: load_var(12)  -- _PV_R
-    156: push_const(14)  -- pos
-    157: get_index
-    158: store_var(2)  -- _PV_POS
-    159: load_var(2)  -- _PV_POS
-    160: pop_scope
-    161: store_reg(1)
-    162: jump(78)
-    163: load_reg(1)
-    164: pop
-    165: load_var(15)  -- LENGTH
-    166: load_var(0)  -- _PV_STMTS
-    167: call(1)
-    168: push_const(7)  -- 1
-    169: cmp_eq
-    170: jump_false(176)
-    171: load_var(0)  -- _PV_STMTS
-    172: push_const(1)  -- 0
-    173: get_index
-    174: ret
-    175: jump(177)
-    176: push_const(3)  -- null
-    177: pop
-    178: load_var(9)  -- _PR_NODE
-    179: push_const(10)  -- program
-    180: load_var(0)  -- _PV_STMTS
-    181: call(2)
-    182: ret
-    183: pop_scope
-    184: ret
-CHUNK ___PR_REPEAT_16 (_PV_TOKS, _PV_POS)
+    65: push_const(3)  -- null
+    66: store_var(0)  -- _PV_STMTS
+    67: load_var(0)  -- _PV_STMTS
+    68: pop
+    69: load_var(12)  -- _PV_R
+    70: get_member(14)  -- POS
+    71: store_var(2)  -- _PV_POS
+    72: load_var(2)  -- _PV_POS
+    73: pop
+    74: push_const(3)  -- null
+    75: store_reg(1)
+    76: load_var(4)  -- _PR_TT
+    77: load_var(5)  -- _PV_TOKS
+    78: load_var(2)  -- _PV_POS
+    79: call(2)
+    80: push_const(6)  -- ;
+    81: cmp_eq
+    82: jump_false(159)
+    83: push_scope
+    84: load_var(2)  -- _PV_POS
+    85: jump_null(91)
+    86: push_const(7)  -- 1
+    87: jump_null(90)
+    88: add
+    89: jump(93)
+    90: pop
+    91: pop
+    92: push_const(3)  -- null
+    93: store_var(2)  -- _PV_POS
+    94: load_var(2)  -- _PV_POS
+    95: pop
+    96: push_const(3)  -- null
+    97: store_reg(2)
+    98: load_var(4)  -- _PR_TT
+    99: load_var(5)  -- _PV_TOKS
+    100: load_var(2)  -- _PV_POS
+    101: call(2)
+    102: push_const(6)  -- ;
+    103: cmp_eq
+    104: jump_false(118)
+    105: load_var(2)  -- _PV_POS
+    106: jump_null(112)
+    107: push_const(7)  -- 1
+    108: jump_null(111)
+    109: add
+    110: jump(114)
+    111: pop
+    112: pop
+    113: push_const(3)  -- null
+    114: store_var(2)  -- _PV_POS
+    115: load_var(2)  -- _PV_POS
+    116: store_reg(2)
+    117: jump(98)
+    118: load_reg(2)
+    119: pop
+    120: load_var(4)  -- _PR_TT
+    121: load_var(5)  -- _PV_TOKS
+    122: load_var(2)  -- _PV_POS
+    123: call(2)
+    124: push_const(8)  -- EOF
+    125: cmp_eq
+    126: jump_false(129)
+    127: jump(159)
+    128: jump(130)
+    129: push_const(3)  -- null
+    130: pop
+    131: load_var(11)  -- _PR_STMT
+    132: load_var(5)  -- _PV_TOKS
+    133: load_var(2)  -- _PV_POS
+    134: call(2)
+    135: store_var(12)  -- _PV_R
+    136: load_var(12)  -- _PV_R
+    137: pop
+    138: load_var(0)  -- _PV_STMTS
+    139: jump_null(147)
+    140: load_var(12)  -- _PV_R
+    141: get_member(13)  -- NODE
+    142: make_list(1)
+    143: jump_null(146)
+    144: add
+    145: jump(149)
+    146: pop
+    147: pop
+    148: push_const(3)  -- null
+    149: store_var(0)  -- _PV_STMTS
+    150: load_var(0)  -- _PV_STMTS
+    151: pop
+    152: load_var(12)  -- _PV_R
+    153: get_member(14)  -- POS
+    154: store_var(2)  -- _PV_POS
+    155: load_var(2)  -- _PV_POS
+    156: pop_scope
+    157: store_reg(1)
+    158: jump(76)
+    159: load_reg(1)
+    160: pop
+    161: load_var(15)  -- LENGTH
+    162: load_var(0)  -- _PV_STMTS
+    163: call(1)
+    164: push_const(7)  -- 1
+    165: cmp_eq
+    166: jump_false(172)
+    167: load_var(0)  -- _PV_STMTS
+    168: push_const(1)  -- 0
+    169: get_index
+    170: ret
+    171: jump(173)
+    172: push_const(3)  -- null
+    173: pop
+    174: load_var(9)  -- _PR_NODE
+    175: push_const(10)  -- program
+    176: load_var(0)  -- _PV_STMTS
+    177: call(2)
+    178: ret
+    179: pop_scope
+    180: ret
+CHUNK ___PR_REPEAT_19 (_PV_TOKS, _PV_POS)
   CONST  0: _PV_POS
   CONST  1: 1
   CONST  2: null
   CONST  3: _PR_STMT
   CONST  4: _PV_TOKS
   CONST  5: _PV_RB
-  CONST  6: pos
+  CONST  6: POS
   CONST  7: _PR_TT
   CONST  8: UNTIL
   CONST  9: _PR_EXPR
   CONST  10: _PV_RC
-  CONST  11: node
+  CONST  11: _PR_RESULT
   CONST  12: _PR_NODE
   CONST  13: repeat
+  CONST  14: NODE
   CODE:
     0: push_scope
     1: load_var(0)  -- _PV_POS
@@ -4086,59 +4032,68 @@ CHUNK ___PR_REPEAT_16 (_PV_TOKS, _PV_POS)
     18: load_var(5)  -- _PV_RB
     19: pop
     20: load_var(5)  -- _PV_RB
-    21: push_const(6)  -- pos
-    22: get_index
-    23: store_var(0)  -- _PV_POS
-    24: load_var(0)  -- _PV_POS
-    25: pop
-    26: load_var(7)  -- _PR_TT
-    27: load_var(4)  -- _PV_TOKS
-    28: load_var(0)  -- _PV_POS
-    29: call(2)
-    30: push_const(8)  -- UNTIL
-    31: cmp_eq
-    32: jump_false(45)
-    33: load_var(0)  -- _PV_POS
-    34: jump_null(40)
-    35: push_const(1)  -- 1
-    36: jump_null(39)
-    37: add
-    38: jump(42)
+    21: get_member(6)  -- POS
+    22: store_var(0)  -- _PV_POS
+    23: load_var(0)  -- _PV_POS
+    24: pop
+    25: load_var(7)  -- _PR_TT
+    26: load_var(4)  -- _PV_TOKS
+    27: load_var(0)  -- _PV_POS
+    28: call(2)
+    29: push_const(8)  -- UNTIL
+    30: cmp_eq
+    31: jump_false(44)
+    32: load_var(0)  -- _PV_POS
+    33: jump_null(39)
+    34: push_const(1)  -- 1
+    35: jump_null(38)
+    36: add
+    37: jump(41)
+    38: pop
     39: pop
-    40: pop
-    41: push_const(2)  -- null
-    42: store_var(0)  -- _PV_POS
-    43: load_var(0)  -- _PV_POS
-    44: jump(46)
-    45: push_const(2)  -- null
-    46: pop
-    47: load_var(9)  -- _PR_EXPR
-    48: load_var(4)  -- _PV_TOKS
-    49: load_var(0)  -- _PV_POS
-    50: call(2)
-    51: store_var(10)  -- _PV_RC
-    52: load_var(10)  -- _PV_RC
-    53: pop
-    54: push_const(11)  -- node
-    55: load_var(12)  -- _PR_NODE
-    56: push_const(13)  -- repeat
-    57: load_var(5)  -- _PV_RB
-    58: push_const(11)  -- node
-    59: get_index
-    60: load_var(10)  -- _PV_RC
-    61: push_const(11)  -- node
-    62: get_index
-    63: make_list(2)
+    40: push_const(2)  -- null
+    41: store_var(0)  -- _PV_POS
+    42: load_var(0)  -- _PV_POS
+    43: jump(45)
+    44: push_const(2)  -- null
+    45: pop
+    46: load_var(9)  -- _PR_EXPR
+    47: load_var(4)  -- _PV_TOKS
+    48: load_var(0)  -- _PV_POS
+    49: call(2)
+    50: store_var(10)  -- _PV_RC
+    51: load_var(10)  -- _PV_RC
+    52: pop
+    53: load_var(11)  -- _PR_RESULT
+    54: load_var(12)  -- _PR_NODE
+    55: push_const(13)  -- repeat
+    56: load_var(5)  -- _PV_RB
+    57: get_member(14)  -- NODE
+    58: load_var(10)  -- _PV_RC
+    59: get_member(14)  -- NODE
+    60: make_list(2)
+    61: call(2)
+    62: load_var(10)  -- _PV_RC
+    63: get_member(6)  -- POS
     64: call(2)
-    65: push_const(6)  -- pos
-    66: load_var(10)  -- _PV_RC
-    67: push_const(6)  -- pos
-    68: get_index
-    69: make_map(2)
-    70: ret
-    71: pop_scope
-    72: ret
-CHUNK ___PR_STMT_19 (_PV_TOKS, _PV_POS)
+    65: ret
+    66: pop_scope
+    67: ret
+CHUNK ___PR_RESULT_4 (_PV_ND, _PV_POS)
+  CONST  0: NODE
+  CONST  1: _PV_ND
+  CONST  2: POS
+  CONST  3: _PV_POS
+  CODE:
+    0: push_scope
+    1: push_const(0)  -- NODE
+    2: load_var(1)  -- _PV_ND
+    3: push_const(2)  -- POS
+    4: load_var(3)  -- _PV_POS
+    5: make_object_here(2)
+    6: pop_scope
+    7: ret
+CHUNK ___PR_STMT_22 (_PV_TOKS, _PV_POS)
   CONST  0: _PR_TT
   CONST  1: _PV_TOKS
   CONST  2: _PV_POS
@@ -4150,17 +4105,18 @@ CHUNK ___PR_STMT_19 (_PV_TOKS, _PV_POS)
   CONST  8: ;
   CONST  9: EOF
   CONST  10: END
-  CONST  11: node
+  CONST  11: _PR_RESULT
   CONST  12: _PR_NODE
   CONST  13: return
-  CONST  14: pos
-  CONST  15: _PR_EXPR
-  CONST  16: _PV_R
-  CONST  17: BREAK
-  CONST  18: _PR_LEAF
-  CONST  19: break
-  CONST  20: CONTINUE
-  CONST  21: continue
+  CONST  14: _PR_EXPR
+  CONST  15: _PV_R
+  CONST  16: NODE
+  CONST  17: POS
+  CONST  18: BREAK
+  CONST  19: _PR_LEAF
+  CONST  20: break
+  CONST  21: CONTINUE
+  CONST  22: continue
   CODE:
     0: push_scope
     1: load_var(0)  -- _PR_TT
@@ -4173,7 +4129,7 @@ CHUNK ___PR_STMT_19 (_PV_TOKS, _PV_POS)
     8: load_var(3)  -- _PV_TOKTYPE
     9: push_const(4)  -- RETURN
     10: cmp_eq
-    11: jump_false(79)
+    11: jump_false(75)
     12: push_scope
     13: load_var(2)  -- _PV_POS
     14: jump_null(20)
@@ -4205,122 +4161,114 @@ CHUNK ___PR_STMT_19 (_PV_TOKS, _PV_POS)
     40: push_const(10)  -- END
     41: cmp_eq
     42: log_or
-    43: jump_false(54)
-    44: push_const(11)  -- node
+    43: jump_false(53)
+    44: load_var(11)  -- _PR_RESULT
     45: load_var(12)  -- _PR_NODE
     46: push_const(13)  -- return
     47: make_list(0)
     48: call(2)
-    49: push_const(14)  -- pos
-    50: load_var(2)  -- _PV_POS
-    51: make_map(2)
-    52: ret
-    53: jump(55)
-    54: push_const(6)  -- null
-    55: pop
-    56: load_var(15)  -- _PR_EXPR
-    57: load_var(1)  -- _PV_TOKS
-    58: load_var(2)  -- _PV_POS
-    59: call(2)
-    60: store_var(16)  -- _PV_R
-    61: load_var(16)  -- _PV_R
-    62: pop
-    63: push_const(11)  -- node
-    64: load_var(12)  -- _PR_NODE
-    65: push_const(13)  -- return
-    66: load_var(16)  -- _PV_R
-    67: push_const(11)  -- node
-    68: get_index
-    69: make_list(1)
-    70: call(2)
-    71: push_const(14)  -- pos
-    72: load_var(16)  -- _PV_R
-    73: push_const(14)  -- pos
-    74: get_index
-    75: make_map(2)
-    76: ret
-    77: pop_scope
-    78: jump(80)
-    79: push_const(6)  -- null
-    80: pop
-    81: load_var(3)  -- _PV_TOKTYPE
-    82: push_const(17)  -- BREAK
-    83: cmp_eq
-    84: jump_false(103)
-    85: push_const(11)  -- node
-    86: load_var(18)  -- _PR_LEAF
-    87: push_const(19)  -- break
-    88: push_const(6)  -- null
-    89: call(2)
-    90: push_const(14)  -- pos
-    91: load_var(2)  -- _PV_POS
-    92: jump_null(98)
-    93: push_const(5)  -- 1
-    94: jump_null(97)
-    95: add
-    96: jump(100)
-    97: pop
-    98: pop
-    99: push_const(6)  -- null
-    100: make_map(2)
-    101: ret
-    102: jump(104)
-    103: push_const(6)  -- null
-    104: pop
-    105: load_var(3)  -- _PV_TOKTYPE
-    106: push_const(20)  -- CONTINUE
-    107: cmp_eq
-    108: jump_false(127)
-    109: push_const(11)  -- node
-    110: load_var(18)  -- _PR_LEAF
-    111: push_const(21)  -- continue
-    112: push_const(6)  -- null
-    113: call(2)
-    114: push_const(14)  -- pos
-    115: load_var(2)  -- _PV_POS
-    116: jump_null(122)
-    117: push_const(5)  -- 1
-    118: jump_null(121)
-    119: add
-    120: jump(124)
-    121: pop
+    49: load_var(2)  -- _PV_POS
+    50: call(2)
+    51: ret
+    52: jump(54)
+    53: push_const(6)  -- null
+    54: pop
+    55: load_var(14)  -- _PR_EXPR
+    56: load_var(1)  -- _PV_TOKS
+    57: load_var(2)  -- _PV_POS
+    58: call(2)
+    59: store_var(15)  -- _PV_R
+    60: load_var(15)  -- _PV_R
+    61: pop
+    62: load_var(11)  -- _PR_RESULT
+    63: load_var(12)  -- _PR_NODE
+    64: push_const(13)  -- return
+    65: load_var(15)  -- _PV_R
+    66: get_member(16)  -- NODE
+    67: make_list(1)
+    68: call(2)
+    69: load_var(15)  -- _PV_R
+    70: get_member(17)  -- POS
+    71: call(2)
+    72: ret
+    73: pop_scope
+    74: jump(76)
+    75: push_const(6)  -- null
+    76: pop
+    77: load_var(3)  -- _PV_TOKTYPE
+    78: push_const(18)  -- BREAK
+    79: cmp_eq
+    80: jump_false(98)
+    81: load_var(11)  -- _PR_RESULT
+    82: load_var(19)  -- _PR_LEAF
+    83: push_const(20)  -- break
+    84: push_const(6)  -- null
+    85: call(2)
+    86: load_var(2)  -- _PV_POS
+    87: jump_null(93)
+    88: push_const(5)  -- 1
+    89: jump_null(92)
+    90: add
+    91: jump(95)
+    92: pop
+    93: pop
+    94: push_const(6)  -- null
+    95: call(2)
+    96: ret
+    97: jump(99)
+    98: push_const(6)  -- null
+    99: pop
+    100: load_var(3)  -- _PV_TOKTYPE
+    101: push_const(21)  -- CONTINUE
+    102: cmp_eq
+    103: jump_false(121)
+    104: load_var(11)  -- _PR_RESULT
+    105: load_var(19)  -- _PR_LEAF
+    106: push_const(22)  -- continue
+    107: push_const(6)  -- null
+    108: call(2)
+    109: load_var(2)  -- _PV_POS
+    110: jump_null(116)
+    111: push_const(5)  -- 1
+    112: jump_null(115)
+    113: add
+    114: jump(118)
+    115: pop
+    116: pop
+    117: push_const(6)  -- null
+    118: call(2)
+    119: ret
+    120: jump(122)
+    121: push_const(6)  -- null
     122: pop
-    123: push_const(6)  -- null
-    124: make_map(2)
-    125: ret
-    126: jump(128)
-    127: push_const(6)  -- null
-    128: pop
-    129: load_var(15)  -- _PR_EXPR
-    130: load_var(1)  -- _PV_TOKS
-    131: load_var(2)  -- _PV_POS
-    132: call(2)
-    133: ret
-    134: pop_scope
-    135: ret
-CHUNK ___PR_TT_3 (_PV_TOKS, _PV_P)
+    123: load_var(14)  -- _PR_EXPR
+    124: load_var(1)  -- _PV_TOKS
+    125: load_var(2)  -- _PV_POS
+    126: call(2)
+    127: ret
+    128: pop_scope
+    129: ret
+CHUNK ___PR_TT_6 (_PV_TOKS, _PV_P)
   CONST  0: _PV_TOKS
   CONST  1: _PV_P
-  CONST  2: t
+  CONST  2: T
   CODE:
     0: load_var(0)  -- _PV_TOKS
     1: load_var(1)  -- _PV_P
     2: get_index
-    3: push_const(2)  -- t
-    4: get_index
-    5: ret
-CHUNK ___PR_TV_4 (_PV_TOKS, _PV_P)
+    3: get_member(2)  -- T
+    4: ret
+CHUNK ___PR_TV_7 (_PV_TOKS, _PV_P)
   CONST  0: _PV_TOKS
   CONST  1: _PV_P
-  CONST  2: v
+  CONST  2: V
   CODE:
     0: load_var(0)  -- _PV_TOKS
     1: load_var(1)  -- _PV_P
     2: get_index
-    3: push_const(2)  -- v
-    4: get_index
-    5: ret
-CHUNK ___PR_UNARY_RHS_10 (_PV_TOKS, _PV_POS)
+    3: get_member(2)  -- V
+    4: ret
+CHUNK ___PR_UNARY_RHS_13 (_PV_TOKS, _PV_POS)
   CONST  0: _PR_TT
   CONST  1: _PV_TOKS
   CONST  2: _PV_POS
@@ -4334,8 +4282,8 @@ CHUNK ___PR_UNARY_RHS_10 (_PV_TOKS, _PV_POS)
   CONST  10: list
   CONST  11: _PR_EXPR
   CONST  12: _PV_R
-  CONST  13: node
-  CONST  14: pos
+  CONST  13: NODE
+  CONST  14: POS
   CONST  15: _PR_CONSUME_PF
   CONST  16: _PR_OPERAND
   CODE:
@@ -4350,7 +4298,7 @@ CHUNK ___PR_UNARY_RHS_10 (_PV_TOKS, _PV_POS)
     8: load_var(3)  -- _PV_TOKTYPE
     9: push_const(4)  -- (
     10: cmp_eq
-    11: jump_false(107)
+    11: jump_false(105)
     12: push_scope
     13: load_var(2)  -- _PV_POS
     14: jump_null(20)
@@ -4395,7 +4343,7 @@ CHUNK ___PR_UNARY_RHS_10 (_PV_TOKS, _PV_POS)
     53: store_var(2)  -- _PV_POS
     54: load_var(2)  -- _PV_POS
     55: pop_scope
-    56: jump(98)
+    56: jump(96)
     57: push_scope
     58: load_var(11)  -- _PR_EXPR
     59: load_var(1)  -- _PV_TOKS
@@ -4405,84 +4353,81 @@ CHUNK ___PR_UNARY_RHS_10 (_PV_TOKS, _PV_POS)
     63: load_var(12)  -- _PV_R
     64: pop
     65: load_var(12)  -- _PV_R
-    66: push_const(13)  -- node
-    67: get_index
-    68: store_var(7)  -- _PV_ND
-    69: load_var(7)  -- _PV_ND
-    70: pop
-    71: load_var(12)  -- _PV_R
-    72: push_const(14)  -- pos
-    73: get_index
-    74: store_var(2)  -- _PV_POS
-    75: load_var(2)  -- _PV_POS
-    76: pop
-    77: load_var(0)  -- _PR_TT
-    78: load_var(1)  -- _PV_TOKS
-    79: load_var(2)  -- _PV_POS
-    80: call(2)
-    81: push_const(8)  -- )
-    82: cmp_eq
-    83: jump_false(96)
-    84: load_var(2)  -- _PV_POS
-    85: jump_null(91)
-    86: push_const(5)  -- 1
-    87: jump_null(90)
-    88: add
-    89: jump(93)
-    90: pop
-    91: pop
-    92: push_const(6)  -- null
-    93: store_var(2)  -- _PV_POS
-    94: load_var(2)  -- _PV_POS
-    95: jump(97)
-    96: push_const(6)  -- null
-    97: pop_scope
-    98: pop
-    99: load_var(15)  -- _PR_CONSUME_PF
-    100: load_var(1)  -- _PV_TOKS
-    101: load_var(2)  -- _PV_POS
-    102: load_var(7)  -- _PV_ND
-    103: call(3)
-    104: ret
-    105: pop_scope
-    106: jump(108)
-    107: push_const(6)  -- null
-    108: pop
-    109: load_var(16)  -- _PR_OPERAND
-    110: load_var(1)  -- _PV_TOKS
-    111: load_var(2)  -- _PV_POS
-    112: call(2)
-    113: store_var(12)  -- _PV_R
-    114: load_var(12)  -- _PV_R
-    115: pop
-    116: load_var(15)  -- _PR_CONSUME_PF
-    117: load_var(1)  -- _PV_TOKS
+    66: get_member(13)  -- NODE
+    67: store_var(7)  -- _PV_ND
+    68: load_var(7)  -- _PV_ND
+    69: pop
+    70: load_var(12)  -- _PV_R
+    71: get_member(14)  -- POS
+    72: store_var(2)  -- _PV_POS
+    73: load_var(2)  -- _PV_POS
+    74: pop
+    75: load_var(0)  -- _PR_TT
+    76: load_var(1)  -- _PV_TOKS
+    77: load_var(2)  -- _PV_POS
+    78: call(2)
+    79: push_const(8)  -- )
+    80: cmp_eq
+    81: jump_false(94)
+    82: load_var(2)  -- _PV_POS
+    83: jump_null(89)
+    84: push_const(5)  -- 1
+    85: jump_null(88)
+    86: add
+    87: jump(91)
+    88: pop
+    89: pop
+    90: push_const(6)  -- null
+    91: store_var(2)  -- _PV_POS
+    92: load_var(2)  -- _PV_POS
+    93: jump(95)
+    94: push_const(6)  -- null
+    95: pop_scope
+    96: pop
+    97: load_var(15)  -- _PR_CONSUME_PF
+    98: load_var(1)  -- _PV_TOKS
+    99: load_var(2)  -- _PV_POS
+    100: load_var(7)  -- _PV_ND
+    101: call(3)
+    102: ret
+    103: pop_scope
+    104: jump(106)
+    105: push_const(6)  -- null
+    106: pop
+    107: load_var(16)  -- _PR_OPERAND
+    108: load_var(1)  -- _PV_TOKS
+    109: load_var(2)  -- _PV_POS
+    110: call(2)
+    111: store_var(12)  -- _PV_R
+    112: load_var(12)  -- _PV_R
+    113: pop
+    114: load_var(15)  -- _PR_CONSUME_PF
+    115: load_var(1)  -- _PV_TOKS
+    116: load_var(12)  -- _PV_R
+    117: get_member(14)  -- POS
     118: load_var(12)  -- _PV_R
-    119: push_const(14)  -- pos
-    120: get_index
-    121: load_var(12)  -- _PV_R
-    122: push_const(13)  -- node
-    123: get_index
-    124: call(3)
-    125: ret
-    126: pop_scope
-    127: ret
-CHUNK ___PR_WHILE_15 (_PV_TOKS, _PV_POS)
+    119: get_member(13)  -- NODE
+    120: call(3)
+    121: ret
+    122: pop_scope
+    123: ret
+CHUNK ___PR_WHILE_18 (_PV_TOKS, _PV_POS)
   CONST  0: _PV_POS
   CONST  1: 1
   CONST  2: null
   CONST  3: _PR_EXPR
   CONST  4: _PV_TOKS
   CONST  5: _PV_RC
-  CONST  6: node
+  CONST  6: NODE
   CONST  7: _PV_COND
-  CONST  8: pos
+  CONST  8: POS
   CONST  9: _PR_TT
   CONST  10: DO
   CONST  11: _PR_STMT
   CONST  12: _PV_RB
-  CONST  13: _PR_NODE
-  CONST  14: while
+  CONST  13: _PR_RESULT
+  CONST  14: _PR_NODE
+  CONST  15: while
   CODE:
     0: push_scope
     1: load_var(0)  -- _PV_POS
@@ -4505,63 +4450,58 @@ CHUNK ___PR_WHILE_15 (_PV_TOKS, _PV_POS)
     18: load_var(5)  -- _PV_RC
     19: pop
     20: load_var(5)  -- _PV_RC
-    21: push_const(6)  -- node
-    22: get_index
-    23: store_var(7)  -- _PV_COND
-    24: load_var(7)  -- _PV_COND
-    25: pop
-    26: load_var(5)  -- _PV_RC
-    27: push_const(8)  -- pos
-    28: get_index
-    29: store_var(0)  -- _PV_POS
-    30: load_var(0)  -- _PV_POS
-    31: pop
-    32: load_var(9)  -- _PR_TT
-    33: load_var(4)  -- _PV_TOKS
-    34: load_var(0)  -- _PV_POS
-    35: call(2)
-    36: push_const(10)  -- DO
-    37: cmp_eq
-    38: jump_false(51)
-    39: load_var(0)  -- _PV_POS
-    40: jump_null(46)
-    41: push_const(1)  -- 1
-    42: jump_null(45)
-    43: add
-    44: jump(48)
-    45: pop
-    46: pop
-    47: push_const(2)  -- null
-    48: store_var(0)  -- _PV_POS
-    49: load_var(0)  -- _PV_POS
-    50: jump(52)
-    51: push_const(2)  -- null
-    52: pop
-    53: load_var(11)  -- _PR_STMT
-    54: load_var(4)  -- _PV_TOKS
-    55: load_var(0)  -- _PV_POS
-    56: call(2)
-    57: store_var(12)  -- _PV_RB
-    58: load_var(12)  -- _PV_RB
-    59: pop
-    60: push_const(6)  -- node
-    61: load_var(13)  -- _PR_NODE
-    62: push_const(14)  -- while
-    63: load_var(7)  -- _PV_COND
-    64: load_var(12)  -- _PV_RB
-    65: push_const(6)  -- node
-    66: get_index
-    67: make_list(2)
+    21: get_member(6)  -- NODE
+    22: store_var(7)  -- _PV_COND
+    23: load_var(7)  -- _PV_COND
+    24: pop
+    25: load_var(5)  -- _PV_RC
+    26: get_member(8)  -- POS
+    27: store_var(0)  -- _PV_POS
+    28: load_var(0)  -- _PV_POS
+    29: pop
+    30: load_var(9)  -- _PR_TT
+    31: load_var(4)  -- _PV_TOKS
+    32: load_var(0)  -- _PV_POS
+    33: call(2)
+    34: push_const(10)  -- DO
+    35: cmp_eq
+    36: jump_false(49)
+    37: load_var(0)  -- _PV_POS
+    38: jump_null(44)
+    39: push_const(1)  -- 1
+    40: jump_null(43)
+    41: add
+    42: jump(46)
+    43: pop
+    44: pop
+    45: push_const(2)  -- null
+    46: store_var(0)  -- _PV_POS
+    47: load_var(0)  -- _PV_POS
+    48: jump(50)
+    49: push_const(2)  -- null
+    50: pop
+    51: load_var(11)  -- _PR_STMT
+    52: load_var(4)  -- _PV_TOKS
+    53: load_var(0)  -- _PV_POS
+    54: call(2)
+    55: store_var(12)  -- _PV_RB
+    56: load_var(12)  -- _PV_RB
+    57: pop
+    58: load_var(13)  -- _PR_RESULT
+    59: load_var(14)  -- _PR_NODE
+    60: push_const(15)  -- while
+    61: load_var(7)  -- _PV_COND
+    62: load_var(12)  -- _PV_RB
+    63: get_member(6)  -- NODE
+    64: make_list(2)
+    65: call(2)
+    66: load_var(12)  -- _PV_RB
+    67: get_member(8)  -- POS
     68: call(2)
-    69: push_const(8)  -- pos
-    70: load_var(12)  -- _PV_RB
-    71: push_const(8)  -- pos
-    72: get_index
-    73: make_map(2)
-    74: ret
-    75: pop_scope
-    76: ret
-CHUNK __lambda_21 (_PV_TOKS)
+    69: ret
+    70: pop_scope
+    71: ret
+CHUNK __lambda_24 (_PV_TOKS)
   CONST  0: _PR_PROGRAM
   CONST  1: _PV_TOKS
   CODE:

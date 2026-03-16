@@ -1,4 +1,5 @@
-/// One-time seed: produces initial .shqlbc files using the Dart compiler.
+/// One-time seed: produces initial .shqlbc files using the Dart compiler,
+/// then compiles shql.dart and shqlc.dart to native binaries.
 /// After seeding, use shql_bootstrap which is pure SHQL™.
 import 'dart:io';
 import 'package:shql/bytecode/bytecode_codec.dart';
@@ -10,6 +11,7 @@ import 'package:shql/parser/parser.dart';
 void main() async {
   final assetsDir = '${Directory.current.path}/assets';
   final outputDir = '$assetsDir/compiled';
+  final binDir = '${Directory.current.path}/bin';
   await Directory(outputDir).create(recursive: true);
   final cs = Runtime.prepareConstantsSet();
   final files = ['stdlib', 'console_io', 'shql_lexer', 'shql_parser',
@@ -24,4 +26,13 @@ void main() async {
     stdout.writeln('  $name.shql -> $name.shqlbc (${encoded.length} bytes)');
   }
   stdout.writeln('Seed complete');
+
+  for (final name in ['shql', 'shqlc']) {
+    stdout.writeln('Compiling $name.dart to native binary...');
+    final result = await Process.run(
+      'dart', ['compile', 'exe', '$binDir/$name.dart'],
+    );
+    if (result.stdout.toString().isNotEmpty) stdout.write(result.stdout);
+    if (result.stderr.toString().isNotEmpty) stderr.write(result.stderr);
+  }
 }

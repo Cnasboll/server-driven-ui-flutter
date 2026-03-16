@@ -5843,7 +5843,7 @@ f()
   // Everything in this group goes through _runOnVm (Dart BytecodeCompiler +
   // BytecodeInterpreter). No evalEngine calls.
   group('SHQL™ self-hosting compiler', () {
-    /// Run the SHQL™ self-hosting pipeline on [shqlSrc], returning the program Map.
+    /// Run the SHQL™ self-hosting pipeline on [shqlSrc], returning the compiled program.
     Future<Map> compile(String shqlSrc) async {
       await _ensurePipeline();
       return await _runOnVm('''
@@ -5853,15 +5853,19 @@ compiler.compile(tree)
 ''', _pipelineRt!, _pipelineCs!, boundValues: {'src': shqlSrc}) as Map;
     }
 
-    /// Execute a SHQL™-compiled program Map on a fresh bytecode VM.
+    /// Execute a SHQL™-compiled program on a fresh bytecode VM.
     Future<dynamic> run(Map program) {
       final rt = Runtime.prepareRuntime(Runtime.prepareConstantsSet());
-      return BytecodeInterpreter(shqlMapToProgram(program), rt).executeScoped('main');
+      return BytecodeInterpreter(
+        shqlMapToProgram(program),
+        rt,
+      ).executeScoped('main');
     }
 
     test('tokenizer: 1+2', () async {
       await _ensurePipeline();
-      final result = await _runOnVm("lexer.tokenize('1+2')", _pipelineRt!, _pipelineCs!);
+      final raw = await _runOnVm("lexer.tokenize('1+2')", _pipelineRt!, _pipelineCs!);
+      final result = shqlToNested(raw, _pipelineCs!.identifiers);
       expect(result, [
         {'t': 'INT', 'v': '1', 'l': 1, 'sc': 1, 'len': 1},
         {'t': '+',   'v': '+', 'l': 1, 'sc': 2, 'len': 1},

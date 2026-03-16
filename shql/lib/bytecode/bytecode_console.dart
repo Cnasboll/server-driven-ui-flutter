@@ -76,6 +76,17 @@ void registerConsoleBindings(Runtime rt, List<String> args) {
     final bd = ByteData(8)..setFloat64(0, (d as num).toDouble(), Endian.little);
     return bd.buffer.asUint8List().toList();
   };
+  Runtime.unaryFunctions['UTF8_DECODE'] = (caller, bytes) {
+    if (bytes == null) throw ArgumentError('UTF8_DECODE: argument is null');
+    return utf8.decode((bytes as List).cast<int>());
+  };
+  Runtime.unaryFunctions['BYTES_TO_DOUBLE'] = (caller, bytes) {
+    if (bytes == null) throw ArgumentError('BYTES_TO_DOUBLE: argument is null');
+    final list = (bytes as List).cast<int>();
+    final bd = ByteData(8);
+    for (var i = 0; i < 8; i++) bd.setUint8(i, list[i]);
+    return bd.getFloat64(0, Endian.little);
+  };
 
   // Binary
   Runtime.binaryFunctions['FILE_WRITE'] = (path, content) {

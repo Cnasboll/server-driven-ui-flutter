@@ -19,8 +19,12 @@ CHUNK main ()
   CONST  17: FILE_WRITE_BYTES
   CONST  18: .__UTF8_ENCODE_9
   CONST  19: UTF8_ENCODE
-  CONST  20: .__DOUBLE_TO_BYTES_10
-  CONST  21: DOUBLE_TO_BYTES
+  CONST  20: .__UTF8_DECODE_10
+  CONST  21: UTF8_DECODE
+  CONST  22: .__DOUBLE_TO_BYTES_11
+  CONST  23: DOUBLE_TO_BYTES
+  CONST  24: .__BYTES_TO_DOUBLE_12
+  CONST  25: BYTES_TO_DOUBLE
   CODE:
     0: make_closure(0)  -- .__FILE_READ_0
     1: store_var(1)  -- FILE_READ
@@ -62,10 +66,29 @@ CHUNK main ()
     37: store_var(19)  -- UTF8_ENCODE
     38: load_var(19)  -- UTF8_ENCODE
     39: pop
-    40: make_closure(20)  -- .__DOUBLE_TO_BYTES_10
-    41: store_var(21)  -- DOUBLE_TO_BYTES
-    42: load_var(21)  -- DOUBLE_TO_BYTES
-    43: ret
+    40: make_closure(20)  -- .__UTF8_DECODE_10
+    41: store_var(21)  -- UTF8_DECODE
+    42: load_var(21)  -- UTF8_DECODE
+    43: pop
+    44: make_closure(22)  -- .__DOUBLE_TO_BYTES_11
+    45: store_var(23)  -- DOUBLE_TO_BYTES
+    46: load_var(23)  -- DOUBLE_TO_BYTES
+    47: pop
+    48: make_closure(24)  -- .__BYTES_TO_DOUBLE_12
+    49: store_var(25)  -- BYTES_TO_DOUBLE
+    50: load_var(25)  -- BYTES_TO_DOUBLE
+    51: ret
+CHUNK __BYTES_TO_DOUBLE_12 (A)
+  CONST  0: _EXTERN
+  CONST  1: BYTES_TO_DOUBLE
+  CONST  2: A
+  CODE:
+    0: load_var(0)  -- _EXTERN
+    1: push_const(1)  -- BYTES_TO_DOUBLE
+    2: load_var(2)  -- A
+    3: make_list(1)
+    4: call(2)
+    5: ret
 CHUNK __DIR_CREATE_3 (A)
   CONST  0: _EXTERN
   CONST  1: DIR_CREATE
@@ -77,7 +100,7 @@ CHUNK __DIR_CREATE_3 (A)
     3: make_list(1)
     4: call(2)
     5: ret
-CHUNK __DOUBLE_TO_BYTES_10 (A)
+CHUNK __DOUBLE_TO_BYTES_11 (A)
   CONST  0: _EXTERN
   CONST  1: DOUBLE_TO_BYTES
   CONST  2: A
@@ -176,6 +199,17 @@ CHUNK __STDERR_6 (A)
   CODE:
     0: load_var(0)  -- _EXTERN
     1: push_const(1)  -- STDERR
+    2: load_var(2)  -- A
+    3: make_list(1)
+    4: call(2)
+    5: ret
+CHUNK __UTF8_DECODE_10 (A)
+  CONST  0: _EXTERN
+  CONST  1: UTF8_DECODE
+  CONST  2: A
+  CODE:
+    0: load_var(0)  -- _EXTERN
+    1: push_const(1)  -- UTF8_DECODE
     2: load_var(2)  -- A
     3: make_list(1)
     4: call(2)
