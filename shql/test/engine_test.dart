@@ -1,5 +1,6 @@
+import 'dart:convert' show utf8;
 import 'dart:io' show File;
-import 'dart:typed_data' show Uint8List;
+import 'dart:typed_data' show ByteData, Endian, Uint8List;
 import 'package:shql/bytecode/bytecode_codec.dart';
 import 'package:shql/bytecode/bytecode_compiler.dart';
 import 'package:shql/bytecode/bytecode_interpreter.dart';
@@ -73,56 +74,53 @@ Future<dynamic> evalBytecode(
   cs ??= Runtime.prepareConstantsSet();
   runtime ??= Runtime.prepareRuntime(cs);
   final dartTree     = Parser.parse(src, cs, sourceCode: src);
-  final dartProg     = BytecodeCompiler.compile(dartTree, cs);
-  final roundTripped = BytecodeDecoder.decode(BytecodeEncoder.encode(dartProg));
-  final dartLines    = disasm(roundTripped['main']);
-  expect(dartLines, expectedBytecode);
-  final dartResult = await BytecodeInterpreter(roundTripped, runtime).executeScoped(
-    'main',
-    boundValues: boundValues,
-    startingScope: startingScope,
-  );
+  final dartProg    = BytecodeCompiler.compile(dartTree, cs);
+  final dartEncoded = BytecodeEncoder.encode(dartProg);
+  final roundTripped = BytecodeDecoder.decode(dartEncoded);
+  expect(disasm(roundTripped['main']), expectedBytecode);
 
-  // SHQL™ self-hosting pipeline: compile + decode via the SHQL™ compiler and
-  // codec, then assert both the bytecode disassembly and the execution result
-  // match the Dart reference. Skipped when startingScope is provided (the
-  // scope chain can't be replicated on the pipeline runtime).
+  // Assert all three compilers produce identical bytecode before executing.
+  // Skipped when startingScope is provided (the scope chain can't be
+  // replicated on the pipeline runtimes).
   if (startingScope == null) {
-    await _ensurePipeline();
-    // Pass runtime constants (ANSWER, PI, …) so the SHQL™ compiler can inline
+    // Pass runtime constants (ANSWER, PI, …) so the SHQL™ compilers inline
     // them as push_const instead of load_var — matching the Dart compiler.
     final consts = {
       for (final e in Runtime.allConstants.entries)
         if (e.value is! bool) e.key: e.value,
     };
-    // Run the pre-compiled pipeline invocation script on the dedicated pipeline
-    // runtime.  boundValues are scoped locally so the pipeline runtime's global
-    // scope is never polluted by per-test variables (src, consts, tokens, …).
-    final shqlOutput = await _pipelineVm!
+    final canonical       = canonicalCodec(roundTripped);
+    final dartEncodedList = dartEncoded.toList();
+
+    // Compiler 2: SHQL™ self-hosting pipeline running on the bytecode VM.
+    await _ensurePipeline();
+    final shqlOut = await _pipelineVm!
         .executeScoped('main', boundValues: {'src': src, 'consts': consts}) as List;
-    final shqlProgMap    = shqlOutput[0] as Map;
-    final shqlLines      = (shqlOutput[1] as List).cast<String>();
-    expect(shqlLines, canonicalCodec(roundTripped),
-        reason: 'SHQL™ compiler + codec must produce identical output to Dart compiler + codec');
-    // Execute the SHQL™-compiled program on the same per-test runtime used by
-    // the Dart path — keeping _pipelineRt dedicated to compilation only.
-    final shqlResult = await BytecodeInterpreter(
-      shqlMapToProgram(shqlProgMap),
-      runtime,
-    ).executeScoped('main', boundValues: boundValues);
-    // Compare results. For non-primitive values (closures) equality is not
-    // meaningful across VM instances — just verify both are non-null.
-    if (dartResult == null || dartResult is bool || dartResult is num ||
-        dartResult is String || dartResult is List || dartResult is Map) {
-      expect(shqlResult, dartResult,
-          reason: 'SHQL™ self-hosting pipeline must produce the same result as the Dart compiler');
-    } else if (dartResult != null) {
-      expect(shqlResult, isNotNull,
-          reason: 'SHQL™ self-hosting pipeline must produce a non-null result');
-    }
+    expect((shqlOut[1] as List).cast<String>(), canonical,
+        reason: 'bytecode-VM SHQL™ compiler must produce identical output to Dart compiler');
+    expect((shqlOut[2] as List).cast<int>(), dartEncodedList,
+        reason: 'bytecode-VM codec.encode() must produce identical bytes to BytecodeEncoder');
+
+    // Compiler 3: tree-walking (interpreted) SHQL™ pipeline.
+    await _ensureTreePipeline();
+    final treeOut = await Engine.execute(
+      _pipelineInvocSrc,
+      runtime: _treePipelineRt!,
+      constantsSet: _treePipelineCs!,
+      boundValues: {'src': src, 'consts': consts},
+    ) as List;
+    expect((treeOut[1] as List).cast<String>(), canonical,
+        reason: 'tree-walking SHQL™ compiler must produce identical output to Dart compiler');
+    expect((treeOut[2] as List).cast<int>(), dartEncodedList,
+        reason: 'tree-walking codec.encode() must produce identical bytes to BytecodeEncoder');
   }
 
-  return dartResult;
+  // All three compilers agree — execute once and return.
+  return BytecodeInterpreter(roundTripped, runtime).executeScoped(
+    'main',
+    boundValues: boundValues,
+    startingScope: startingScope,
+  );
 }
 
 /// Compile [src] with the Dart [BytecodeCompiler] and run it on [rt] via
@@ -140,7 +138,7 @@ Future<dynamic> _runOnVm(
   return BytecodeInterpreter(prog, rt).executeScoped('main', boundValues: boundValues);
 }
 
-late String _stdlibSrc;
+late String _stdlibSrc, _consoleIOSrc;
 late String _lexerSrc, _parserSrc, _compilerSrc, _codecSrc;
 
 /// Dedicated runtime for the SHQL™ self-hosting pipeline (lexer / parser /
@@ -148,6 +146,12 @@ late String _lexerSrc, _parserSrc, _compilerSrc, _codecSrc;
 /// programs so its state stays pristine across the entire test run.
 Runtime? _pipelineRt;
 ConstantsSet? _pipelineCs;
+
+/// Dedicated runtime for the tree-walking (interpreted) SHQL™ pipeline.
+/// Proves the interpreted compiler produces identical bytecode to both the
+/// Dart [BytecodeCompiler] and the self-hosting bytecode-VM pipeline.
+Runtime? _treePipelineRt;
+ConstantsSet? _treePipelineCs;
 
 /// Single reusable [BytecodeInterpreter] for the pipeline.  Created once in
 /// [_ensurePipeline]; safe to reuse because [executeScoped] creates its own
@@ -170,15 +174,26 @@ tokens  := lexer.tokenize(src);
 tree    := parser.parse(tokens);
 prog    := compiler.compile(tree, consts);
 dec     := codec.decode(prog);
-[prog, dec]
+enc     := codec.encode(prog);
+[prog, dec, enc]
 ''';
+
+Future<void> _ensureTreePipeline() async {
+  if (_treePipelineRt != null) return;
+  _treePipelineCs = Runtime.prepareConstantsSet();
+  _treePipelineRt = Runtime.prepareRuntime(_treePipelineCs!);
+  for (final src in [_stdlibSrc, _consoleIOSrc, _lexerSrc, _parserSrc, _compilerSrc, _codecSrc]) {
+    await Engine.execute(src, runtime: _treePipelineRt!, constantsSet: _treePipelineCs!);
+  }
+}
 
 Future<void> _ensurePipeline() async {
   if (_pipelineRt != null) return;
   _pipelineCs = Runtime.prepareConstantsSet();
   _pipelineRt = Runtime.prepareRuntime(_pipelineCs!);
-  // stdlib has no golden bytecode — it wraps native ops and is only loaded.
-  await _runOnVm(_stdlibSrc, _pipelineRt!, _pipelineCs!);
+  // stdlib and console_io have no golden bytecode — they wrap native ops.
+  await _runOnVm(_stdlibSrc,    _pipelineRt!, _pipelineCs!);
+  await _runOnVm(_consoleIOSrc, _pipelineRt!, _pipelineCs!);
   // For the four pipeline files, save the Dart-compiled bytecode as the
   // golden reference before executing each program into _pipelineRt.
   for (final src in [_lexerSrc, _parserSrc, _compilerSrc, _codecSrc]) {
@@ -234,11 +249,21 @@ void shqlBothStdlib(String name, String src, dynamic expected, List<String> expe
 
 void main() {
   setUpAll(() async {
-    _stdlibSrc   = await File('assets/stdlib.shql').readAsString();
-    _lexerSrc    = await File('assets/shql_lexer.shql').readAsString();
-    _parserSrc   = await File('assets/shql_parser.shql').readAsString();
-    _compilerSrc = await File('assets/shql_compiler.shql').readAsString();
-    _codecSrc    = await File('assets/shql_codec.shql').readAsString();
+    _stdlibSrc    = await File('assets/stdlib.shql').readAsString();
+    _consoleIOSrc = await File('assets/console_io.shql').readAsString();
+    _lexerSrc     = await File('assets/shql_lexer.shql').readAsString();
+    _parserSrc    = await File('assets/shql_parser.shql').readAsString();
+    _compilerSrc  = await File('assets/shql_compiler.shql').readAsString();
+    _codecSrc     = await File('assets/shql_codec.shql').readAsString();
+    // Register pure encoding natives needed by shql_codec's binary encoder.
+    // Must be set before any BytecodeInterpreter is constructed (they snapshot
+    // Runtime.unaryFunctions at construction time into _nativeFunctions).
+    Runtime.unaryFunctions['UTF8_ENCODE'] =
+        (_, s) => utf8.encode(s as String);
+    Runtime.unaryFunctions['DOUBLE_TO_BYTES'] = (_, d) {
+      final bd = ByteData(8)..setFloat64(0, (d as num).toDouble(), Endian.little);
+      return bd.buffer.asUint8List().toList();
+    };
   });
 
   test('Parse addition', () {
@@ -5940,13 +5965,13 @@ codec.decode(program)
           'main',
           boundValues: {'src': pipelineSrcs[i], 'consts': pipelineConsts},
         ) as List;
-        final shqlEncoded = BytecodeEncoder.encode(shqlMapToProgram(out[0] as Map));
         final shqlLines   = (out[1] as List).cast<String>();
+        final shqlEncoded = (out[2] as List).cast<int>();
         final (dartEncoded, dartLines) = _pipelineBytecodes[i];
         expect(shqlLines, dartLines,
             reason: 'SHQL™ codec disassembly must match Dart for ${pipelineNames[i]}.shql');
-        expect(shqlEncoded, dartEncoded,
-            reason: 'SHQL™ binary encoding must match Dart for ${pipelineNames[i]}.shql');
+        expect(shqlEncoded, dartEncoded.toList(),
+            reason: 'SHQL™ codec.encode() bytes must match BytecodeEncoder for ${pipelineNames[i]}.shql');
       }
     });
 
